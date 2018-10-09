@@ -8,3 +8,6 @@ These are the main steps in the cycle each time a new release is coming up:
 
 * new genomes/annotations are loaded on a different production server and health-checked
 
+
+Make sure you check also Dan Bolser's scripts at 
+[https://github.com/EnsemblGenomes/personal-dbolser](https://github.com/EnsemblGenomes/personal-dbolser)

@@ -2,6 +2,13 @@
 # checks ENA annotated assemblies not currently included in a give Ensembl division, 
 # EnsemblPlants by default 
 # 2018 Bruno Contreras Moreira EMBL-EBI
+#
+# Example run, takes a few hours: 
+# $ ./check_new_ENA_assemblies.pl -t Viridiplantae 
+#
+# Or if you want to re-run without re-downloading ENA files: 
+# $ ./check_new_ENA_assemblies.pl -t Viridiplantae -S
+
 
 use strict;
 use warnings;

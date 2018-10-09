@@ -1,2 +1,4 @@
 # plant_tools
-Tools and documentation for Plants
+
+Here you'll find a few scripts and protocols used during the release cycle of Ensembl Plants.
+

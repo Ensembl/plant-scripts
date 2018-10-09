@@ -16,16 +16,37 @@ export gca=GCA_000188115.3
 export genes_are_annotated=false # set to false if your assembly carries no gene annotation
 export user=bcontreras
 
-## manually set current Ensembl version, division and production server 
+## manually set current Ensembl version, division, paths
 # check https://www.ensembl.org for current version
 # https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsGen&title=MySQL+commands
-prod_db=eg-p3-w # EG production server 3 rewrite, previous version should be in a diff prod server copied from stage
-division=EnsemblPlants
+
 web_ensembl_version=94
 next_ensembl_version=$(echo $web_ensembl_version+1 | bc)
+division=EnsemblPlants
 
 ensemblapipath=/nfs/production/panda/ensemblgenomes/apis
 mydevelpath=/nfs/panda/ensemblgenomes/development/$user
+
+## manually set stage and production servers
+
+stage_db=eg-s2  
+prod_db=eg-p3-w # -w rewrite, ideally not the same copied over from stage
+
+## manually set Health Check parameters
+
+ENDPOINT=http://eg-prod-01.ebi.ac.uk:7000/hc/
+
+SERVER=$(         $prod_db  details url)
+PRODUCTION=$(     eg-pan    details url)
+STAGING=$(        $stage_db  details url) # master_schema_$ensembl_version is looked up here
+LIVE=$(           eg-sql    details url)
+COMPARA_MASTER=$( eg-pan    details url)
+
+GROUP=EGCoreHandover
+
+DATA_FILE_PATH=/nfs/panda/ensembl/production/ensemblftp/data_files/
+
+TAG=my_gl_hc_run
 
 ##############################################################################
 ##############################################################################
@@ -119,20 +140,6 @@ fi
 ############################################################################
 # NOTE: docs at https://github.com/Ensembl/ensembl-prodinf-core/blob/master/docs/bulk_hc_submission.rst
 
-ENDPOINT=http://eg-prod-01.ebi.ac.uk:7000/hc/
-
-SERVER=$(         $prod_db  details url)
-PRODUCTION=$(     eg-pan    details url)
-STAGING=$(        eg-s2     details url) # this is where master_schema_$ensembl_version is looked up
-LIVE=$(           eg-sql    details url)
-COMPARA_MASTER=$( eg-pan    details url)
-
-GROUP=EGCoreHandover
-
-DATA_FILE_PATH=/nfs/panda/ensembl/production/ensemblftp/data_files/
-
-TAG=my_gl_hc_run
-
 if [ ! -d "$mydevelpath/ensembl-prodinf-core" ]; then
     git clone git@github.com:Ensembl/ensembl-prodinf-core.git "$mydevelpath/ensembl-prodinf-core"
 else
@@ -146,7 +153,7 @@ hccmd="python \
     --uri $ENDPOINT \
     --db_uri "${SERVER}${db_name}" \
     --production_uri "${PRODUCTION}ensembl_production" \
-    --staging_uri $STAGING \
+    --staging_uri "${stage_db}\
     --live_uri $LIVE \
     --compara_uri "${COMPARA_MASTER}ensembl_compara_master" \
     --hc_groups $GROUP \

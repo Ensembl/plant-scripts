@@ -9,175 +9,105 @@
 
 ######## manually edit as needed #############################################
 
-# edit lc species name and full.\d GCA accession from ENA 
-export species=solanum_lycopersicum
-export gca=GCA_000188115.3
-export genes_are_annotated=false # set to false if your assembly carries no gene annotation
-export user=bcontreras
+# set input GFF and protein FASTA files
+species=solanum_lycopersicum
+dir=/nfs/production/panda/ensemblgenomes/data/Plants/Tomato/ITAG3.0_release/
+protein_fasta_file=$dir/ITAG3.0_proteins.fasta
+gff3_file=$dir/ITAG3.0_gene_models.gff
+gene_source=$(grep -v "^#" $gff3_file | grep gene | cut -f 2 | head -1)
+#gene_source=Gnomon
+#gene_source=maker
 
-## The GFF and protein FASTA for that species...
-# dir=/homes/dbolser/EG_Places/Data/Yam/GFF
-# gff3_file=$dir/TDr96_F1_Pseudo_Chromosome_v1.0.gff_20170804.gff3
-# protein_fasta_file=$dir/TDr96_F1_v1.0.protein_20170801.fasta
+# set pipeline and api paths, registry file
+pipeline_dir=/hps/cstor01/nobackup/crop_genomics/Production_Pipelines
+pipeline_dir=$pipeline_dir/${USER}/load_gff3/$species
+ensemblapipath=/nfs/production/panda/ensemblgenomes/apis
+mydevelpath=/nfs/panda/ensemblgenomes/development/$USER
+registry=$mydevelpath/Registries/p2pan.reg
 
-dir=/homes/dbolser/EG_Places/Data/Vigna_radiata
-#gff3_file=$dir/GCF_000741045.1_Vradiata_ver6_genomic.gff
-#protein_fasta_file=$dir/GCF_000741045.1_Vradiata_ver6_protein.faa
-gff3_file=$dir/vigra.VC1973A.gnm6.ann1.M1Qs.gene_models_main-fix.gff3
-protein_fasta_file=$dir/vigra.VC1973A.gnm6.ann1.M1Qs.protein.faa.gz
-
-# dir=/homes/dbolser/EG_Places/Data/Arabidopsis_halleri
-# gff3_file=$dir/annotation.gff
-# protein_fasta_file=$dir/protein.fa
-
-ll $gff3_file $protein_fasta_file
-
-
-
-## manually set current Ensembl version, division and production server 
+# manually set current Ensembl version, division and hive server 
 # check https://www.ensembl.org for current version
-# https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsGen&title=MySQL+commands
-prod_db=eg-p3-w # EG production server 3 rewrite
-division=EnsemblPlants
 web_ensembl_version=94
 next_ensembl_version=$(echo $web_ensembl_version+1 | bc)
 
-ensemblapipath=/nfs/production/panda/ensemblgenomes/apis
-mydevelpath=/nfs/panda/ensemblgenomes/development/$user
+# hive db server and web frontend
+hive_server=mysql-eg-hive-ensrw
+hive_url=http://guihive.ebi.ac.uk:8080/
 
 ##############################################################################
 ##############################################################################
 
-## checkout current Ensembl API 
-# See: https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Creating+a+work+directory
-# NOTE: it will complain if it was cloned earliear, you can safely skip errors such as
-# "fatal: destination path 'ensembl' already exists and is not an empty directory."
-# "Could not check out ensembl (release/95)"
+## check main arguments
+if [ ! -d "$dir" ] ; then
+	echo "# ERROR: cannot find $dir"
+	exit 1
+elif [ ! -e "$gff3_file" ] ; then
+	echo "# ERROR: cannot find $gff3_file"
+	exit 1
+elif [ ! -s "$protein_fasta_file" ] ; then
+        echo "# ERROR: cannot find $protein_fasta_file"
+	exit 1
+else
+	echo "# input: $gff3_file $protein_fasta_file"
+fi
+
+## checkout current Ensembl API and eg-pipelines 
 cd $mydevelpath
-$ensemblapipath/eg-utils/bin/checkout_ensembl.sh ensembl-$next_ensembl_version release/$next_ensembl_version
+cd ensembl-$next_ensembl_version/ensembl-hive
+git checkout origin/version/2.4
+cd $mydevelpath
 source ensembl-$next_ensembl_version/setup.sh
 
-
-exit 1
-
-
-
-## get to-be-deprecated EG version and check version for the last time
+# get to-be-deprecated EG version and check version for the last time
 ensembl_version=$(perl -MBio::EnsEMBL::ApiVersion -e "print software_version")
 eg_version=$(echo $ensembl_version-53 | bc)
 
 if [ "$ensembl_version" != "$next_ensembl_version" ]; then
-	echo "ERROR: make sure web_ensembl_version is correct ($web_ensembl_version)"
-	exit 1	
+        echo "ERROR: make sure web_ensembl_version is correct ($web_ensembl_version)"
+        exit 1
 else
-	echo "About to load $species $gca with version $ensembl_version ($eg_version)"
+        echo "About to load $species GFF with version $ensembl_version ($eg_version)"
 fi
 
-## create folder for input assembly, clone and build Ensembl genome loader there
-# NOTE: this avoids conflicts when different instances of GL are running at the same time
-# NOTE2: I had to add my public farm node key to my github SSH keys
-if [ ! -d "$gca" ]; then
-    git clone git@github.com:Ensembl/ensembl-genomeloader.git "$gca"
+# now update eg-pipelines and add modules to $PERL5LIB
+if [ ! -d eg-pipelines ]; then
+    git clone git@github.com:EnsemblGenomes/eg-pipelines.git 
 else
-    cd "$gca"
-    git status
-    git branch -v
-    cd ..
-fi
-
-cd "$gca"/genome_materializer
-time ./gradlew fatJar
-cd ..
-
-## Get Genome loader appropriate configuration
-# See: https://github.com/Ensembl/ensembl-genomeloader/blob/master/CONFIG.md
-# NOTE: Dan's copy was ~/EG_Places/Devel/lib/ensembl-genomeloader/enagenome_config.xml
-# NOTE: might be useful comparing to https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Oracle+Instances
-if [ "$genes_are_annotated" = true ] ; then
-    cp ../enagenome_config.xml ./enagenome_config.xml
-else
-    cp ../enagenome_config.nogenes.xml ./enagenome_config.xml
-fi
-
-
-## set database name for this assembly and choose db server
-db_suffix=${gca#*.}
-db_name=${species}_core_${eg_version}_${ensembl_version}_${db_suffix}
-
-echo "About to load $species $gca to database $db_name at server $prod_db"
-
-cmd="perl \
-    -I ./modules \
-    ./scripts/load_genome.pl \
-    \
-    -a ${gca%.*}     \
-    --division $division \
-    \
-    $($prod_db --details script) \
-    --dbname $db_name
-    \
-    $(eg-pan     --details script_tax_) \
-    --tax_dbname ncbi_taxonomy \
-    \
-    $(eg-pan     --details script_prod_) \
-    --prod_dbname ensembl_production"
-
-echo $cmd
-time $cmd
-
-# printout diagnostic info
-if [ $? -eq 0 ]; then
-    echo OK 
-    hostname
-    echo $species $gca
-else
-    echo FAIL
-    hostname
-    echo $species $gca
-    exit
-fi
-
-
-### Now lets Health Check (HC) #############################################
-############################################################################
-# NOTE: docs at https://github.com/Ensembl/ensembl-prodinf-core/blob/master/docs/bulk_hc_submission.rst
-
-ENDPOINT=http://eg-prod-01.ebi.ac.uk:7000/hc/
-
-SERVER=$(         $prod_db  details url)
-PRODUCTION=$(     eg-pan    details url)
-STAGING=$(        eg-s2     details url) # this is where master_schema_$ensembl_version is looked up
-LIVE=$(           eg-sql    details url)
-COMPARA_MASTER=$( eg-pan    details url)
-
-GROUP=EGCoreHandover
-
-DATA_FILE_PATH=/nfs/panda/ensembl/production/ensemblftp/data_files/
-
-TAG=my_gl_hc_run
-
-if [ ! -d "$mydevelpath/ensembl-prodinf-core" ]; then
-    git clone git@github.com:Ensembl/ensembl-prodinf-core.git "$mydevelpath/ensembl-prodinf-core"
-else
-    cd "$mydevelpath/ensembl-prodinf-core"
+    cd eg-pipelines
     git pull
     cd ..
 fi
 
-hccmd="python \
-    $mydevelpath/ensembl-prodinf-core/ensembl_prodinf/hc_client.py \
-    --uri $ENDPOINT \
-    --db_uri "${SERVER}${db_name}" \
-    --production_uri "${PRODUCTION}ensembl_production" \
-    --staging_uri $STAGING \
-    --live_uri $LIVE \
-    --compara_uri "${COMPARA_MASTER}ensembl_compara_master" \
-    --hc_groups $GROUP \
-    --data_files_path $DATA_FILE_PATH \
-    --tag $TAG  \
-    --action submit"
+PERL5LIB=$PERL5LIB:$mydevelpath/eg-pipelines/modules
+export PERL5LIB=$(brew --prefix bioperl-169)/libexec:$PERL5LIB # adds Bio/DB/SeqFeature/Store.pm
 
-echo $hccmd
-$hccmd
+## Run init script and produce a hive_db with all tasks to be carried out
+cmd="init_pipeline.pl \
+  	Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf \
+    	$($hive_server details script) \
+    	--registry $registry \
+    	--pipeline_dir $pipeline_dir \
+    	--species $species \
+    	--gff3_file $gff3_file \
+    	--protein_fasta_file $protein_fasta_file \
+    	--gene_source "$gene_source" \
+	--hive_force_init 1" # make sure a previous db instance is overwritten
 
-echo "# NOTE: interactive submission of jobs might fail, you might have to re-send"
+echo $cmd
+time $cmd
+
+# this might change with future pipelines updates
+hive_db=${USER}_${pipeline}_${species}
+
+url=$($hive_server --details url)$hive_db
+
+echo "# hive job URL: $url"
+
+url="${url};reconnect_when_lost=1"
+
+beekeeper.pl -url ${url} -sync
+runWorker.pl -url ${url} -reg_conf ${registry}
+beekeeper.pl -url ${url} -reg_conf ${registry} -loop
+
+echo "# Monitor this job at $hive_url"
+

@@ -13,8 +13,7 @@ bshell25
 # edit lc species name and full.\d GCA accession from ENA 
 export species=solanum_lycopersicum
 export gca=GCA_000188115.3
-export genes_are_annotated=false # set to false if your assembly carries no gene annotation
-export user=bcontreras
+export genes_are_annotated=false # set to false if your assembly carries no gene annotation 
 
 ## manually set current Ensembl version, division, paths
 # check https://www.ensembl.org for current version
@@ -25,7 +24,7 @@ next_ensembl_version=$(echo $web_ensembl_version+1 | bc)
 division=EnsemblPlants
 
 ensemblapipath=/nfs/production/panda/ensemblgenomes/apis
-mydevelpath=/nfs/panda/ensemblgenomes/development/$user
+mydevelpath=/nfs/panda/ensemblgenomes/development/$USER 
 
 ## manually set stage and production servers
 

@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# This protocol was adapted from DBolser's run_the_genome_loader_pipeline_4.sh
+# Protocol to load an ENA genome assembly into a production mysql db
+# NOTE: ENA seems to consistently name chromosome names as integers from 1 to N
+# NOTE: pseudo-chromosomes 0 are not supported and instead represented as a set of 
+# sequences with "unplaced-scaffold" annotation
+#
+# Adapted from DBolser's run_the_genome_loader_pipeline_4.sh
 # by Bruno Contreras Moreira EMBL-EBI 2018
 
 ## See: https://github.com/Ensembl/ensembl-genomeloader

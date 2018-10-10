@@ -97,7 +97,7 @@ echo $cmd
 time $cmd
 
 # this might change with future pipelines updates
-hive_db=${USER}_${pipeline}_${species}
+hive_db=${USER}_load_gff3_${species}
 
 url=$($hive_server --details url)$hive_db
 

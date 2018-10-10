@@ -111,3 +111,4 @@ beekeeper.pl -url ${url} -reg_conf ${registry} -loop
 
 echo "# Monitor this job at $hive_url"
 
+echo "# re-run it with: beekeeper.pl -url ${url} -reg_conf ${registry} -loop"

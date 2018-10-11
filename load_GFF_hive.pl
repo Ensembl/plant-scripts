@@ -5,19 +5,15 @@ use Getopt::Std;
 use Cwd;
 
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
-# features on top of a previously loaded ENA genome assembly
+# features on top of a previously loaded ENA genome assembly in hive.
+# This should be run after loading a genome from ENA 
 #
-# This should be run after HOWTO_genome_loader.sh
-# It submits related tasks to hive 
-#
-# It uses env $USER to create hive job names
+# It uses env $USER to create hive job names and assumes Ensembl-version API
+# is loaced in @INC / $PERL5LIB
 #
 # Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira
-
-## https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
-
-# set lib paths from env
-my $ENSAPIPATH = $ENV{'ENSAPIPATH'}; 
+#
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
 
 ## check user arguments ######################################################
 ##############################################################################
@@ -46,7 +42,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
 
 if($opts{'s'}){ 
 	$species = $opts{'s'}; 
-	$hive_db = "$ENV{'USER'}_load_gff3_$species"; 
+	$hive_db = $ENV{'USER'}."_load_gff3_$species";  
 } 
 else{ die "# EXIT : need a valid -s species_name, such as -s arabidopsis_thaliana\n" }
 
@@ -58,24 +54,17 @@ else{ die "# EXIT : need a valid -g file, such as -g atha.gff\n" }
 
 if($opts{'S'}){ $gene_source = $opts{'S'} }
 else{
-	$gene_source = `grep -v "^#" $gff3_file | grep gene | cut -f 2 | head -1`;
+	chomp( $gene_source = `grep -v "^#" $gff3_file | grep gene | cut -f 2 | head -1` );
 	if(!$gene_source){ die "# EXIT : cannot parse annotation source from $gff3_file\n" }
 }
 
 if($opts{'v'}){
 	$ensembl_version = $opts{'v'};	
 
-	# check Ensembl API is in place, make sure it is up-to-date, and source it
-	my $hive_api_dir = "$ENSAPIPATH/ensembl-$ensembl_version/ensembl-hive";
-	if(-d $hive_api_dir){
-		my $cwd = getcwd();
-		chdir($hive_api_dir);
-		system("git checkout origin/version/2.4");
-		chdir($ENSAPIPATH);
-		system("source ensembl-$ensembl_version/setup.sh");
-		chdir($cwd);
-	}
-	else { die "# EXIT : cannot find $hive_api_dir, is \$ENSAPIPATH set?\n" }
+	# check Ensembl API is in env
+	if(!grep(/ensembl-$ensembl_version\/ensembl-hive\/modules/,@INC)){
+		die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive/modules in \$PERL5LIB / \@INC\n"
+	} 
 }
 else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
 
@@ -83,28 +72,33 @@ if($opts{'R'} && -e $opts{'R'}){ $reg_file = $opts{'R'} }
 else{ die "# EXIT : need a valid -R file, such as -R \$p2panreg\n" }
 
 if($opts{'H'}){ $hive_db_cmd = $opts{'H'} }
-$hive_args = `$hive_db_cmd details script`;
-$hive_url  = `$hive_db_cmd --details url`.$hive_db;
+chomp( $hive_args = `$hive_db_cmd details script` );
+chomp( $hive_url  = `$hive_db_cmd --details url` );
+$hive_url .= $hive_db;
 
 if($opts{'P'} && -d $opts{'P'}){ $pipeline_dir = "$opts{'P'}/$species" }
 else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$gfftmp\n" }
 
 if($opts{'r'}){ $rerun = 1 }
 
+## TO BE DONE
+# fiz chr names to int
+# add int as synonyms in prod
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
 
-my $initcmd="init_pipeline.pl \
-  	Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf \
-    	$hive_args \
-    	--registry $reg_file \
-    	--pipeline_dir $pipeline_dir \
-    	--species $species \
-    	--gff3_file $gff3_file \
-    	--protein_fasta_file $protein_fasta_file \
-    	--gene_source '$gene_source' \
-	--hive_force_init 1"; # previous db instance will be overwritten
+my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf ".
+    	"$hive_args ".
+    	"--registry $reg_file ".
+    	"--pipeline_dir $pipeline_dir ".
+    	"--species $species ".
+    	"--gff3_file $gff3_file ".
+    	"--protein_fasta_file $protein_fasta_file ".
+    	"--gene_source '$gene_source' ".
+	"--hive_force_init 1";
+
+print "# $initcmd\n\n";
 
 if($rerun == 0){
 
@@ -118,9 +112,11 @@ if($rerun == 0){
 ## Send jobs to hive 
 ######################################################################### 
 
-system("beekeeper.pl -url $hive_url;reconnect_when_lost=1 -sync");
-system("runWorker.pl -url $hive_url;reconnect_when_lost=1 -reg_conf $reg_file");
-system("beekeeper.pl -url $hive_url;reconnect_when_lost=1 -reg_conf $reg_file -loop");
+print "# hive job URL: $hive_url";
+
+system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync");
+system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file");
+system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
 print "# hive job URL: $hive_url";
 

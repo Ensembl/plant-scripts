@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # This protocol was written as follow up of HOWTO_genome_loader.sh
+
+# It submits related tasks to hive and its meant to be run 
+
 # Most of it was adapted from Dan Bolser's run_the_gff_loader2.sh
-# Unlike the former, this pipeline uses hive
 # by Bruno Contreras Moreira EMBL-EBI 2018
 
 ## https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline

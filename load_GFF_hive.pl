@@ -19,11 +19,11 @@ use Cwd;
 ##############################################################################
 
 my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version);
-my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url);
+my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline,$new_gff3file);
+my ($rerun,$sub_chr_names,$nonzero,$synonyms) = (0,'',0,0);
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
-my $rerun = 0;
 
-getopts('hrs:f:g:S:v:R:H:P:', \%opts);
+getopts('hzyrn:s:f:g:S:v:R:H:P:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -34,8 +34,11 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-g GFF3 file                                   (required, example: -g atha.gff)\n";
   print "-R registry file, can be env variable          (required, example: -R \$p2panreg)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
-  print "-S source of gene annotation, one word         (optional, default: taken from 3rd column of GFF3 file)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
+  print "-n replace chr names with Perl-regex           (optional, example: -n 'SL3.0ch0*(\\d+)' )\n";
+  print "-z skip chr zero in GFF3 file                  (optional, requires -n)\n";
+  print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
+  print "-S source of gene annotation, one word         (optional, example: -S SL3.0, default: 3rd col of GFF3)\n";
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
   exit(0);
 }
@@ -81,9 +84,59 @@ else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$g
 
 if($opts{'r'}){ $rerun = 1 }
 
-## TO BE DONE
-# fiz chr names to int
-# add int as synonyms in prod
+if($opts{'n'}){ 
+	$sub_chr_names = $opts{'n'};
+
+	if($opts{'z'}){ $nonzero = 1 }
+	if($opts{'y'}){ $synonyms = 1 }
+}
+
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -n '%s' -z %d -y %d -r %d",
+  $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
+  $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, 
+  $sub_chr_names, $nonzero, $synonyms, 
+  $rerun );
+
+print "# $argsline\n\n";
+
+## replace chr names with natural & add original names to synonyms in db
+########################################################################
+
+if($sub_chr_names ne ''){
+
+	my (%synonyms,$chr_int,$chr_orig);
+	$new_gff3file = $gff3_file . '.edited';
+
+	open(NEWGFF,'>',$new_gff3file) || die "# ERROR: cannot create $new_gff3file\n";
+
+	# read original GFF3 file, chr name is 1st column
+	open(GFF,'<',$gff3_file) || die "# ERROR: cannot read $gff3_file\n";
+	while(<GFF>){
+		if(/^$sub_chr_names/){ # /^SL3.0ch0*(\d+)/
+
+			$chr_int = $1; # natural chr number
+			next if($nonzero == 1 && $chr_int eq '0');
+			
+			my @gffdata = split(/\t/,$_); 
+			$chr_orig = shift(@gffdata); # original chr name, 1st column
+
+			if(!defined($synonyms{ $chr_int })){
+				print "# chr $chr_orig replaced by $chr_int\n";
+			}
+			$synonyms{ $chr_int } = $chr_orig;
+				
+			print NEWGFF "$chr_int\t" . join("\t",@gffdata);
+		}
+		else{ print NEWGFF $_ } 
+	}
+	close(GFF);
+
+	close(NEWGFF);
+
+	print "# using edited GFF3 file: $new_gff3file\n";
+}
+else{ $new_gff3file = $gff3_file }
+
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
@@ -93,7 +146,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_c
     	"--registry $reg_file ".
     	"--pipeline_dir $pipeline_dir ".
     	"--species $species ".
-    	"--gff3_file $gff3_file ".
+    	"--gff3_file $new_gff3file ".
     	"--protein_fasta_file $protein_fasta_file ".
     	"--gene_source '$gene_source' ".
 	"--hive_force_init 1";

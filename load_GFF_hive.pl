@@ -14,16 +14,19 @@ use Cwd;
 # Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
-
+#
+# TO DO: process only N records, check coords in GFF and ENA match
+#
 ## check user arguments ######################################################
 ##############################################################################
 
 my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version);
-my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline,$new_gff3file);
-my ($rerun,$sub_chr_names,$nonzero,$synonyms) = (0,'',0,0);
+my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
+my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
+my ($new_gff3file,$short_gff3file);
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
-getopts('hzyrn:s:f:g:S:v:R:H:P:', \%opts);
+getopts('hwzyrn:s:f:g:S:v:R:H:P:m:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -35,10 +38,12 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-R registry file, can be env variable          (required, example: -R \$p2panreg)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
+  print "-m max genes to load                           (optional, default: all loaded)\n";
   print "-n replace chr names with Perl-regex           (optional, example: -n 'SL3.0ch0*(\\d+)' )\n";
   print "-z skip chr zero in GFF3 file                  (optional, requires -n)\n";
   print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
   print "-S source of gene annotation, one word         (optional, example: -S SL3.0, default: 3rd col of GFF3)\n";
+  print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
   exit(0);
 }
@@ -82,7 +87,13 @@ $hive_url .= $hive_db;
 if($opts{'P'} && -d $opts{'P'}){ $pipeline_dir = "$opts{'P'}/$species" }
 else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$gfftmp\n" }
 
+if($opts{'m'} && $opts{'m'} > 0){ 
+	$max_feats = int($opts{'m'}); 
+}
+
 if($opts{'r'}){ $rerun = 1 }
+
+if($opts{'w'}){ $overwrite = 1 }
 
 if($opts{'n'}){ 
 	$sub_chr_names = $opts{'n'};
@@ -91,19 +102,23 @@ if($opts{'n'}){
 	if($opts{'y'}){ $synonyms = 1 }
 }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -n '%s' -z %d -y %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
-  $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, 
+  $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
   $sub_chr_names, $nonzero, $synonyms, 
-  $rerun );
+  $overwrite, $rerun );
 
 print "# $argsline\n\n";
 
+## query db and check whether coords in GFF3 are within bounds 
+##############################################################
+
+
 ## replace chr names with natural & add original names to synonyms in db
 ########################################################################
-
 if($sub_chr_names ne ''){
 
+	my $prev_sep_line = 0; # to count ### separators
 	my (%synonyms,$chr_int,$chr_orig);
 	$new_gff3file = $gff3_file . '.edited';
 
@@ -127,16 +142,72 @@ if($sub_chr_names ne ''){
 				
 			print NEWGFF "$chr_int\t" . join("\t",@gffdata);
 		}
-		else{ print NEWGFF $_ } 
+		elsif(/^##sequence-region\s+$sub_chr_names\s+/){ ##sequence-region   SL3.0ch00 16480 20797619
+			$chr_int = $1; # natural chr number
+                        next if($nonzero == 1 && $chr_int eq '0');
+
+			print NEWGFF $_;
+		} 
+		else{ 
+			next if($prev_sep_line == 1 && /^###/);
+			print NEWGFF $_; 
+			
+			if(/^###/){ $prev_sep_line = 1 }
+			else{ $prev_sep_line = 0 }
+		} 
 	}
 	close(GFF);
 
 	close(NEWGFF);
 
-	print "# using edited GFF3 file: $new_gff3file\n";
+	print "# created edited GFF3 file: $new_gff3file\n";
+
+	# add chr name synonyms to target db
+	if($synonyms == 1){
+
+	# find out coord_system_id for complete chromosomes
+	#SELECT coord_system_id FROM solanum_lycopersicum_core_42_95_3.coord_system WHERE name = "chromosome";
+
+
+	#INSERT INTO seq_region_synonym (seq_region_id, synonym, external_db_id)
+	#SELECT seq_region_id, CONCAT("SL3.0ch", name), 50691 FROM seq_region
+	#WHERE coord_system_id = 2 AND name > 9;
+
+	#find out external_db_id of original chr ids
+	#SELECT * FROM external_db WHERE db_name rlike 'sgn';
+
+	}
 }
 else{ $new_gff3file = $gff3_file }
 
+## make custom-GFF subset with user-provided number of features
+if($max_feats > 0){
+
+	my $num_of_features = 0;
+	$short_gff3file = $gff3_file . ".m$max_feats";
+
+        open(SHORTGFF,'>',$short_gff3file) || die "# ERROR: cannot create $short_gff3file\n";
+
+	open(GFF,'<',$new_gff3file) || die "# ERROR: cannot read $new_gff3file\n";
+        while(<GFF>){
+		if(/^#/){ print SHORTGFF $_ }
+		else{
+			my @gffdata = split(/\t/,$_);
+                        if($gffdata[2] eq 'gene'){ $num_of_features++ }
+
+			print SHORTGFF $_;
+
+			last if($num_of_features > $max_feats);
+		}
+	}
+	close(GFF);
+
+	close(SHORTGFF);
+
+	$new_gff3file = $short_gff3file;
+
+	print "# shortened GFF3 file: $short_gff3file\n";
+}
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
@@ -149,7 +220,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_c
     	"--gff3_file $new_gff3file ".
     	"--protein_fasta_file $protein_fasta_file ".
     	"--gene_source '$gene_source' ".
-	"--hive_force_init 1";
+	"--hive_force_init $overwrite";
 
 print "# $initcmd\n\n";
 
@@ -171,5 +242,5 @@ system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync");
 system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file");
 system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
-print "# hive job URL: $hive_url";
+print "# hive job URL: $hive_url\n\n";
 

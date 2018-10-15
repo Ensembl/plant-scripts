@@ -3,6 +3,9 @@ use strict;
 use warnings;
 use Getopt::Std;
 use Cwd;
+use Bio::EnsEMBL::Registry;
+use Bio::EnsEMBL::Utils::Slice qw(split_Slices);
+use Bio::SeqIO;
 
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
 # features on top of a previously loaded ENA genome assembly in hive.
@@ -15,18 +18,17 @@ use Cwd;
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
 #
-# TO DO: process only N records, check coords in GFF and ENA match
-#
 ## check user arguments ######################################################
 ##############################################################################
 
 my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version);
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
+my ($check_gff_CDS,$check_chr_ends) = (0,0);
 my ($new_gff3file,$short_gff3file);
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
-getopts('hwzyrn:s:f:g:S:v:R:H:P:m:', \%opts);
+getopts('hwzyrcen:s:f:g:S:v:R:H:P:m:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -42,6 +44,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-n replace chr names with Perl-regex           (optional, example: -n 'SL3.0ch0*(\\d+)' )\n";
   print "-z skip chr zero in GFF3 file                  (optional, requires -n)\n";
   print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
+  print "-e print sequence of chromosome ends in db     (optional, requires -n)\n";
+  print "-c check CDS coords in GFF3                    (optional, requires -m)\n";
   print "-S source of gene annotation, one word         (optional, example: -S SL3.0, default: 3rd col of GFF3)\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
@@ -89,6 +93,7 @@ else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$g
 
 if($opts{'m'} && $opts{'m'} > 0){ 
 	$max_feats = int($opts{'m'}); 
+	if($opts{'c'}){ $check_gff_CDS = 1 }
 }
 
 if($opts{'r'}){ $rerun = 1 }
@@ -100,26 +105,29 @@ if($opts{'n'}){
 
 	if($opts{'z'}){ $nonzero = 1 }
 	if($opts{'y'}){ $synonyms = 1 }
+	if($opts{'e'}){ $check_chr_ends = 1 }
 }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -w %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -e %d -c %d -w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
   $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
-  $sub_chr_names, $nonzero, $synonyms, 
+  $sub_chr_names, $nonzero, $synonyms, $check_chr_ends, $check_gff_CDS,
   $overwrite, $rerun );
 
 print "# $argsline\n\n";
 
-## query db and check whether coords in GFF3 are within bounds 
-##############################################################
-
-
-## replace chr names with natural & add original names to synonyms in db
+## replace chr names with natural & add original names to synonyms in db;
+## also check whether coords in GFF3 are within chromosomes in db
 ########################################################################
 if($sub_chr_names ne ''){
 
+	# connect to production db
+	my $registry = 'Bio::EnsEMBL::Registry';
+	$registry->load_all($reg_file);
+	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
+
 	my $prev_sep_line = 0; # to count ### separators
-	my (%synonyms,$chr_int,$chr_orig);
+	my (%synonyms,$chr_int,$chr_orig,$chr_start,$chr_end,$chr_length);
 	$new_gff3file = $gff3_file . '.edited';
 
 	open(NEWGFF,'>',$new_gff3file) || die "# ERROR: cannot create $new_gff3file\n";
@@ -142,10 +150,23 @@ if($sub_chr_names ne ''){
 				
 			print NEWGFF "$chr_int\t" . join("\t",@gffdata);
 		}
-		elsif(/^##sequence-region\s+$sub_chr_names\s+/){ ##sequence-region   SL3.0ch00 16480 20797619
+		elsif(/^##sequence-region\s+$sub_chr_names\s+(\d+)\s+(\d+)/){ ##sequence-region   SL3.0ch00 16480 20797619
 			$chr_int = $1; # natural chr number
-                        next if($nonzero == 1 && $chr_int eq '0');
+                        
+			next if($nonzero == 1 && $chr_int eq '0');
 
+			# check chr end sequences
+			if($check_chr_ends){
+				($chr_start,$chr_end) = ($2,$3);
+				my $chr_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chr_int );
+				$chr_length = length($chr_slice->seq);
+
+				print "# chr $chr_int length=$chr_length ";
+				if($chr_end > $chr_length){ print "WARNING: $chr_end > $chr_length" }
+				print "\n";
+				print "# ".substr($chr_slice->seq,0,30) ." .. ".substr($chr_slice->seq,-30)."\n"; 
+			}
+			
 			print NEWGFF $_;
 		} 
 		else{ 
@@ -180,11 +201,18 @@ if($sub_chr_names ne ''){
 }
 else{ $new_gff3file = $gff3_file }
 
-## make custom-GFF subset with user-provided number of features
+## make custom-GFF subset with user-provided number of features (genes)
+## and cut CDS sequences as internal control
 if($max_feats > 0){
 
 	my $num_of_features = 0;
+	my ($chr,$CDS_start,$CDS_end,$CDS_strand,$CDS_seq,$CDS_name);
 	$short_gff3file = $gff3_file . ".m$max_feats";
+
+	# connect to production db
+	my $registry = 'Bio::EnsEMBL::Registry';
+	$registry->load_all($reg_file);
+	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
 
         open(SHORTGFF,'>',$short_gff3file) || die "# ERROR: cannot create $short_gff3file\n";
 
@@ -194,8 +222,31 @@ if($max_feats > 0){
 		else{
 			my @gffdata = split(/\t/,$_);
                         if($gffdata[2] eq 'gene'){ $num_of_features++ }
+			elsif($check_gff_CDS && $gffdata[2] =~ m/mRNA/i){ 
+				if($CDS_seq ne ''){ # print previous CDS
+					print "$CDS_strand $CDS_name";
+					print "$CDS_seq\n"; #substr($CDS_seq,0,60)."\n";
+
+					use Bio::Seq;
+					my $seq_obj = Bio::Seq->new(-seq => $CDS_seq, -alphabet => 'dna' );
+					my $prot_obj = $seq_obj->translate();
+					print $prot_obj->seq()."\n";
+				}
+
+				# CDS_name is set to parent mRNA, sequence is initialized
+				($CDS_name,$CDS_seq) = ($gffdata[8],'');				
+			}
 
 			print SHORTGFF $_;
+
+			if($check_gff_CDS == 1 && $gffdata[2] eq 'CDS'){ 
+				#1 maker_ITAG CDS 30927	31259 .	- 0 ID=CDS:Soly...
+				($chr,$CDS_start,$CDS_end,$CDS_strand) = @gffdata[0,3,4,6];
+				if($CDS_strand eq '-'){ $CDS_strand = -1 }
+				else{ $CDS_strand = 1 }
+				my $chr_slice = $slice_adaptor->fetch_by_region('chromosome',$chr,$CDS_start,$CDS_end,$CDS_strand);
+				$CDS_seq .= $chr_slice->seq();
+			}
 
 			last if($num_of_features > $max_feats);
 		}
@@ -208,6 +259,8 @@ if($max_feats > 0){
 
 	print "# shortened GFF3 file: $short_gff3file\n";
 }
+
+exit;
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################

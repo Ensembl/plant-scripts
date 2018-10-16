@@ -181,22 +181,30 @@ if($sub_chr_names ne ''){
 
 	close(NEWGFF);
 
-	print "# created edited GFF3 file: $new_gff3file\n";
+	print "# created edited GFF3 file: $new_gff3file\n\n";
 
 	# add chr name synonyms to target db
 	if($synonyms == 1){
+			
+		for $chr_int (keys(%synonyms)){
 
-	# find out coord_system_id for complete chromosomes
-	#SELECT coord_system_id FROM solanum_lycopersicum_core_42_95_3.coord_system WHERE name = "chromosome";
+			$chr_orig = $synonyms{ $chr_int };
+			my $chr_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chr_int );
 
+			print "# adding synonym $chr_orig ($chr_int)\n";
+			$chr_slice->add_synonym( $chr_orig );
+		}
 
-	#INSERT INTO seq_region_synonym (seq_region_id, synonym, external_db_id)
-	#SELECT seq_region_id, CONCAT("SL3.0ch", name), 50691 FROM seq_region
-	#WHERE coord_system_id = 2 AND name > 9;
+		# DanBolser's SQL queries for doing just that
+		# find out coord_system_id for complete chromosomes
+		#SELECT coord_system_id FROM solanum_lycopersicum_core_42_95_3.coord_system WHERE name = "chromosome";
 
-	#find out external_db_id of original chr ids
-	#SELECT * FROM external_db WHERE db_name rlike 'sgn';
+		#INSERT INTO seq_region_synonym (seq_region_id, synonym, external_db_id)
+		#SELECT seq_region_id, CONCAT("SL3.0ch", name), 50691 FROM seq_region
+		#WHERE coord_system_id = 2 AND name > 9;
 
+		#find out external_db_id of original chr ids
+		#SELECT * FROM external_db WHERE db_name rlike 'sgn';
 	}
 }
 else{ $new_gff3file = $gff3_file }
@@ -278,8 +286,6 @@ if($max_feats > 0){
 
 	print "\n# shortened GFF3 file: $short_gff3file\n";
 }
-
-exit;
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################

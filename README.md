@@ -1,12 +1,12 @@
 # plant_tools
 
-Here you'll find a few scripts and protocols used during the release cycle of Ensembl Plants.
+These are a few scripts and protocols used during the release cycle of Ensembl Plants.
 
 These are the main steps in the cycle each time a new release is coming up:
 
-* genomes (core dbs) from the previous release are copied from a stage server to a production server
+* Genomes (core dbs) from the previous release are copied from a stage server to a production server (p1,p2,p3)
 
-* new genomes/annotations are loaded on a different production server and health-checked
+* New genomes/annotations are loaded on a different production server and health-checked. If a new assembly is added, the corresponding annotation mut be loaded in the same db.
 
 
 Make sure you check also Dan Bolser's scripts at 

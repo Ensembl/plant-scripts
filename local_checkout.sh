@@ -30,6 +30,12 @@ cd $ensembl_api_path
 $eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version release/$ensembl_version
 source ensembl-$ensembl_version/setup.sh
 
+# update Health Check code
+# NOTE: docs at https://github.com/Ensembl/ensembl-prodinf-core/blob/master/docs/bulk_hc_submission.rst
+cd ensembl-prodinf-core
+git pull
+cd ..
+
 # checkout hive  
 cd ensembl-$ensembl_version/ensembl-hive
 git checkout origin/version/2.4
@@ -46,4 +52,3 @@ cd eg-pipelines
 git pull
 cd ..
 
-exit 0

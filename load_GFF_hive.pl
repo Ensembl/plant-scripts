@@ -12,7 +12,7 @@ use Bio::Seq;
 # This should be run after loading a genome from ENA 
 #
 # It uses env $USER to create hive job names and assumes Ensembl-version API
-# is loaced in @INC / $PERL5LIB
+# is loaded in @INC / $PERL5LIB
 #
 # Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira
 #

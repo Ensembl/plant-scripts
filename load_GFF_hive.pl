@@ -5,7 +5,7 @@ use Getopt::Std;
 use Cwd;
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::Utils::Slice qw(split_Slices);
-use Bio::SeqIO;
+use Bio::Seq;
 
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
 # features on top of a previously loaded ENA genome assembly in hive.
@@ -214,6 +214,8 @@ if($max_feats > 0){
 	$registry->load_all($reg_file);
 	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
 
+	if($check_gff_CDS){ print "\n# CDS sequences, internal check:\n\n" } 
+
         open(SHORTGFF,'>',$short_gff3file) || die "# ERROR: cannot create $short_gff3file\n";
 
 	open(GFF,'<',$new_gff3file) || die "# ERROR: cannot read $new_gff3file\n";
@@ -223,14 +225,16 @@ if($max_feats > 0){
 			my @gffdata = split(/\t/,$_);
                         if($gffdata[2] eq 'gene'){ $num_of_features++ }
 			elsif($check_gff_CDS && $gffdata[2] =~ m/mRNA/i){ 
-				if($CDS_seq ne ''){ # print previous CDS
-					print "$CDS_strand $CDS_name";
-					print "$CDS_seq\n"; #substr($CDS_seq,0,60)."\n";
+				if(defined($CDS_seq) && $CDS_seq ne ''){ # print previous CDS
+					print ">$CDS_strand|$CDS_name";
+						
+					if($CDS_strand eq '-'){ # get reverse complement
+						$CDS_seq =~ tr/ACGTacgtyrkmYRKM/TGCAtgcarymkRYMK/; 
+						$CDS_seq = reverse($CDS_seq);
+					} #print "$CDS_seq\n"; 
 
-					use Bio::Seq;
 					my $seq_obj = Bio::Seq->new(-seq => $CDS_seq, -alphabet => 'dna' );
-					my $prot_obj = $seq_obj->translate();
-					print $prot_obj->seq()."\n";
+					print $seq_obj->translate()->seq()."\n";
 				}
 
 				# CDS_name is set to parent mRNA, sequence is initialized
@@ -242,13 +246,28 @@ if($max_feats > 0){
 			if($check_gff_CDS == 1 && $gffdata[2] eq 'CDS'){ 
 				#1 maker_ITAG CDS 30927	31259 .	- 0 ID=CDS:Soly...
 				($chr,$CDS_start,$CDS_end,$CDS_strand) = @gffdata[0,3,4,6];
-				if($CDS_strand eq '-'){ $CDS_strand = -1 }
-				else{ $CDS_strand = 1 }
-				my $chr_slice = $slice_adaptor->fetch_by_region('chromosome',$chr,$CDS_start,$CDS_end,$CDS_strand);
+			
+				# cut always leading strand, take rev comp just before translating	
+				my $chr_slice = $slice_adaptor->fetch_by_region('chromosome',$chr,$CDS_start,$CDS_end);
 				$CDS_seq .= $chr_slice->seq();
 			}
 
-			last if($num_of_features > $max_feats);
+			if($num_of_features > $max_feats){
+				
+				if($check_gff_CDS && $CDS_seq ne ''){ # print last CDS
+                                        print ">$CDS_strand|$CDS_name";
+                                        
+					if($CDS_strand eq '-'){ # get reverse complement
+                                                $CDS_seq =~ tr/ACGTacgtyrkmYRKM/TGCAtgcarymkRYMK/; 
+                                                $CDS_seq = reverse($CDS_seq);
+                                        } #print "|$CDS_seq|\n";
+
+                                        my $seq_obj = Bio::Seq->new(-seq => $CDS_seq, -alphabet => 'dna' );
+                                        print $seq_obj->translate()->seq()."\n";
+                                }
+
+				last;
+			}
 		}
 	}
 	close(GFF);
@@ -257,7 +276,7 @@ if($max_feats > 0){
 
 	$new_gff3file = $short_gff3file;
 
-	print "# shortened GFF3 file: $short_gff3file\n";
+	print "\n# shortened GFF3 file: $short_gff3file\n";
 }
 
 exit;

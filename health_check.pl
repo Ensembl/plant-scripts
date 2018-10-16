@@ -45,7 +45,7 @@ my $hccmd="python $ENV{'ENSAPIPATH'}/ensembl-prodinf-core/ensembl_prodinf/hc_cli
     "--compara_uri \"$ENV{'HCCOMPARA_MASTER'}ensembl_compara_master\" ". 
     "--hc_groups $ENV{'HCGROUP'} ".
     "--data_files_path $ENV{'HCDATA_FILE_PATH'} ".
-    "--tag $ENV{'HCTAG'} ".
+    "--tag $db_name ".
     "--action submit ";
 
 print $hccmd;

@@ -4,20 +4,28 @@ use warnings;
 use Getopt::Std;
 
 # call to health check python script from API, uses HV env variables
-#
 # by Bruno Contreras Moreira EMBL-EBI 2018
 
-my ($db_name,$prod_server,$stage_server,%opts);
+my ($db_name,$prod_server,$stage_server,$hccmd,%opts);
 my ($HCSERVER,$HCSTAGING);
+
+my $HCTEMPLATE = "python $ENV{'ENSAPIPATH'}/ensembl-prodinf-core/ensembl_prodinf/hc_client.py ".
+	"--uri $ENV{'HCENDPOINT'} ".
+	"--production_uri \"$ENV{'HCPRODUCTION'}ensembl_production\" " .
+	"--live_uri $ENV{'HCLIVE'} ".
+	"--compara_uri \"$ENV{'HCCOMPARA_MASTER'}ensembl_compara_master\" ". 
+	"--hc_groups $ENV{'HCGROUP'} ".
+	"--data_files_path $ENV{'HCDATA_FILE_PATH'} ".
+	"--action submit ";
 
 getopts('hs:p:d:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
-  print "-d species database name                       (required, example: -d solanum_lycopersicum_core_42_95_3)\n";
-  print "-p production db server                        (required, example: -p eg-p3-w)\n";
-  print "-s staging db server                           (required, example: -s eg-s2)\n\n";
+  print "-d species database name or file with 1name/line (required, example: -d solanum_lycopersicum_core_42_95_3)\n";
+  print "-p production db server                          (required, example: -p eg-p3-w)\n";
+  print "-s staging db server                             (required, example: -s eg-s2)\n\n";
   exit(0);
 }
 
@@ -33,21 +41,27 @@ else{ die "# EXIT : need a valid -p production db server, such as -p eg-p3-w\n" 
 if($opts{'s'}){ 
 	$stage_server = $opts{'s'}; 
 	chomp( $HCSTAGING = `$stage_server details url` );
+	$HCTEMPLATE .= "--staging_uri $HCSTAGING ";
 }
 else{ die "# EXIT : need a valid -s staging db server, such as -s eg-s2\n" }
 
-my $hccmd="python $ENV{'ENSAPIPATH'}/ensembl-prodinf-core/ensembl_prodinf/hc_client.py ".
-    "--uri $ENV{'HCENDPOINT'} ".
-    "--db_uri \"$HCSERVER$db_name\" ".
-    "--production_uri \"$ENV{'HCPRODUCTION'}ensembl_production\" " .
-    "--staging_uri $HCSTAGING ".
-    "--live_uri $ENV{'HCLIVE'} ".
-    "--compara_uri \"$ENV{'HCCOMPARA_MASTER'}ensembl_compara_master\" ". 
-    "--hc_groups $ENV{'HCGROUP'} ".
-    "--data_files_path $ENV{'HCDATA_FILE_PATH'} ".
-    "--tag $db_name ".
-    "--action submit ";
+if(-s $db_name){ # file with several dbs to HC
 
-print $hccmd;
-system("$hccmd");
+	open(LIST,'<',$db_name) || die "# ERROR: cannot read $db_name\n";
+	while(<LIST>){
+		my $this_db_name = (split)[0];
+	
+		$hccmd = "$HCTEMPLATE --db_uri \"$HCSERVER$this_db_name\" --tag $db_name";
 
+	        print $hccmd;
+        	system("$hccmd");
+	}
+	close(LIST);
+}
+else{ # single dn_name
+
+	$hccmd = "$HCTEMPLATE --db_uri \"$HCSERVER$db_name\" --tag $db_name";
+
+	print $hccmd;
+	system("$hccmd");
+}

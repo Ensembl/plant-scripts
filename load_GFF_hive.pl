@@ -116,6 +116,29 @@ $argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n
 
 print "# $argsline\n\n";
 
+
+## check ID=names in GFF3 file to warn about gene:, mRNA:,... tags, which otherwise are added as stable_ids to db
+#SL3.0ch00	maker_ITAG	gene	16480	17940	.	+	.	ID=gene:Solyc00g005000.3...
+#SL3.0ch00	maker_ITAG	mRNA	16480	17940	.	+	.	ID=mRNA:Solyc00g005000.3.1...
+#SL3.0ch00	maker_ITAG	exon	16480	16794	.	+	.	ID=exon:Solyc00g005000.3.1.1...
+#SL3.0ch00	maker_ITAG	CDS	16480	16794	.	+	0	ID=CDS:Solyc00g005000.3.1.1...
+open(GFF,'<',$gff3_file) || die "# ERROR: cannot read $gff3_file\n";
+while(<GFF>){
+	next if(/^#/);
+	my @gffdata = split(/\t/,$_);
+
+	if($gffdata[8] && 
+		(/\=gene:/ || /\=mRNA:/ || /\=exon:/ || /\=CDS:/)){
+
+		print "# ERROR: please edit the GFF file to remove redundant ID names:\n$_\n\n";
+		print "# You can try: \$ perl -lne 's/ID=\\w+:/ID=/; print' <gff3file> \n\n";
+		exit(0);
+	}
+}
+close(GFF);
+
+exit;
+
 ## replace chr names with natural & add original names to synonyms in db;
 ## also check whether coords in GFF3 are within chromosomes in db
 ########################################################################

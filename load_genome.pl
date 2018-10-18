@@ -19,7 +19,7 @@ use Getopt::Std;
 # Dan's copy was ~/EG_Places/Devel/lib/ensembl-genomeloader/enagenome_config.xml
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Oracle+Instances
 
-my (%opts,$GCA_accession,$species,$division,$ensembl_version);
+my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version);
 my ($prod_server,$config_file,$argsline,$GCA_version,$db_name);
 
 getopts('hs:d:G:v:p:c:', \%opts);
@@ -42,7 +42,10 @@ else{ die "# EXIT : need a valid -s species_name, such as -s arabidopsis_thalian
 if($opts{'d'}){ $division = $opts{'d'} }
 else{ die "# EXIT : need a valid -d division, such as -d EnsemblPlants\n" }
 
-if($opts{'v'}){ $ensembl_version = $opts{'v'} }
+if($opts{'v'}){ 
+	$ensembl_version = $opts{'v'}; 
+	$eg_version = $ensembl_version-53;
+}
 else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
 
 if($opts{'G'}){ 
@@ -51,7 +54,7 @@ if($opts{'G'}){
 	else{ die "# EXIT : need a valid -G GCA accession, such as -G GCA_000188115.3\n" }
 
 	# compose db name
-	$db_name = $species.'_core_'.$ensembl_version.'_'.$GCA_version;
+	$db_name = $species.'_core_'.$eg_version.'_'.$ensembl_version.'_'.$GCA_version;
 }
 else{ die "# EXIT : need a valid -G GCA accession, such as -G GCA_000188115.3\n" }
 
@@ -66,20 +69,15 @@ $argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -n %s",
 
 print "# $argsline\n\n";
 
-print "# loading $GCA_accession ($species) on database $db_name at $prod_server\n";
+print "# loading $GCA_accession ($species) on database $db_name at $prod_server\n\n";
 
 ##############################################################################
 ##############################################################################
 
-## create folder for input assembly, clone and build Ensembl genome loader there
-mkdir($GCA_accession) if(!-d $GCA_accession);
-
-# link config file
-symlink($config_file,$GCA_accession.'/enagenome_config.xml');
-
-# clone and build ensembl-genomeloader; this avoids conflicts with other instances of GL 
+# clone and build ensembl-genomeloader in folder called $GCA_accession
+# NOTE: this avoids conflicts with other instances of GL 
 # NOTE: you'll need to add your public key to the list if github SSH keys
-if(!-d 'ensembl-genomeloader'){
+if(!-d $GCA_accession){
 	system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
 }
 else {
@@ -92,6 +90,9 @@ else {
 chdir($GCA_accession.'/genome_materializer');
 system("./gradlew fatJar");
 chdir('..');
+
+# link config file
+symlink($config_file,'enagenome_config.xml');
 
 
 

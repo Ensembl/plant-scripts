@@ -36,6 +36,12 @@ cd ensembl-prodinf-core
 git pull
 cd ..
 
+# datacheck for core_stats
+cd ensembl-datacheck
+git pull
+cd ..
+
+
 # checkout hive  
 cd ensembl-$ensembl_version/ensembl-hive
 git checkout origin/version/2.4

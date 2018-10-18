@@ -20,9 +20,10 @@ use Getopt::Std;
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Oracle+Instances
 
 my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version);
-my ($prod_server,$config_file,$argsline,$GCA_version,$db_name);
+my ($prod_server,$egserver,$config_file,$argsline,$GCA_core_acc,$GCA_version);
+my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$cmd);
 
-getopts('hs:d:G:v:p:c:', \%opts);
+getopts('hs:d:G:v:p:c:e:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -31,7 +32,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-d Ensembl division                            (required, example: -d EnsemblPlants)\n";
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-G GCA accession                               (required, example: -G GCA_000188115.3)\n";
-  print "-p production db server                        (required, example: -p eg-p3-w)\n";
+  print "-p production db server, where data is loaded  (required, example: -p eg-p3-w)\n";
+  print "-e EG production server for taxon/analysis     (required, example: -e \$egprodserver)\n";
   print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n\n";
   exit(0);
 }
@@ -50,7 +52,9 @@ else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
 
 if($opts{'G'}){ 
 	$GCA_accession = $opts{'G'};
-	if($GCA_accession =~ m/\.(\d+)$/){ $GCA_version	= $1 }
+	if($GCA_accession =~ m/(\S+?)\.(\d+)$/){ 
+		($GCA_core_acc,$GCA_version) = ($1,$2) 
+	}
 	else{ die "# EXIT : need a valid -G GCA accession, such as -G GCA_000188115.3\n" }
 
 	# compose db name
@@ -58,14 +62,25 @@ if($opts{'G'}){
 }
 else{ die "# EXIT : need a valid -G GCA accession, such as -G GCA_000188115.3\n" }
 
-if($opts{'p'}){ $prod_server = $opts{'p'} }
+if($opts{'p'}){ 
+	$prod_server = $opts{'p'};
+	chomp( $prod_db_args = `$prod_server -details script` );
+}
 else{ die "# EXIT : need a valid -p production db server, such as -p eg-p3-w\n" }
+
+if($opts{'e'}){ 
+	$egserver = $opts{'e'};
+	chomp( $taxonomy_db_args = `$egserver --details script_tax_` );
+	chomp( $analysis_db_args = `$egserver --details script_prod_` );
+}
+else{ die "# EXIT : need a valid -e EG production server, such as -e \$egprodserver\n" }
 
 if($opts{'c'}){ $config_file = $opts{'c'} }
 else{ die "# EXIT : need a valid -c file, such as -c \$enaconfigng\n" }
 
-$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -n %s",
-  $0, $species, $division, $ensembl_version, $GCA_accession, $prod_server,$config_file);
+$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s",
+	$0, $species, $division, $ensembl_version, $GCA_accession, 
+	$prod_server, $egserver, $config_file);
 
 print "# $argsline\n\n";
 
@@ -94,38 +109,17 @@ chdir('..');
 # link config file
 symlink($config_file,'enagenome_config.xml');
 
+# actually call genome loader script
+$cmd = "perl -I ./modules ./scripts/load_genome.pl ".
+	"-a $GCA_core_acc ".
+	"--division $division ".
+	"$prod_db_args --dbname $db_name ".
+	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
+	"$analysis_db_args --prod_dbname ensembl_production";
 
+print "$cmd\n\n";
 
-#cmd="perl \
-#    -I ./modules \
-#    ./scripts/load_genome.pl \
-#    \
-#    -a ${gca%.*}     \
-#    --division $division \
-#    \
-#    $($prod_db --details script) \
-#    --dbname $db_name
-#    \
-#    $(eg-pan     --details script_tax_) \
-#    --tax_dbname ncbi_taxonomy \
-#    \
-#    $(eg-pan     --details script_prod_) \
-#    --prod_dbname ensembl_production"
-#
-#echo $cmd
-#time $cmd
-#
-## printout diagnostic info
-#if [ $? -eq 0 ]; then
-#    echo OK 
-#    hostname
-#    echo $species $gca
-#else
-#    echo FAIL
-#    hostname
-#    echo $species $gca
-#    exit
-#fi
-
-
-
+system("time $cmd");
+if($? != 0){
+    die "# ERROR: failed running $cmd\n";
+}

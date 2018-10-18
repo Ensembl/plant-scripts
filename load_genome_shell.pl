@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Std;
+use Sys::Hostname;
 
 # This script takes an ENA assembly's GCA accession and attempts to 
 # load it into a production mysql db. Creates a local folder, clones 
@@ -84,10 +85,12 @@ $argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s",
 
 print "# $argsline\n\n";
 
-print "# loading $GCA_accession ($species) on database $db_name at $prod_server\n\n";
-
-##############################################################################
-##############################################################################
+# check this is not a login farm node
+my $thishost = hostname();
+if($thishost =~ m/ebi-login/ || $thishost =~ m/ebi-cli/){
+	print "# ERROR: you should run this job in a farm interactive shell, not a login node\n\n";
+	exit(0);
+}
 
 # clone and build ensembl-genomeloader in folder called $GCA_accession
 # NOTE: this avoids conflicts with other instances of GL 
@@ -110,6 +113,9 @@ chdir('..');
 symlink($config_file,'enagenome_config.xml');
 
 # actually call genome loader script
+
+print "# loading $GCA_accession ($species) on database $db_name at $prod_server\n\n";
+
 $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
 	"-a $GCA_core_acc ".
 	"--division $division ".

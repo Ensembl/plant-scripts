@@ -16,8 +16,11 @@ use Bio::EnsEMBL::Registry;
 ## check user arguments ######################################################
 ##############################################################################
 
+my $METASPREADSHEET = 'https://docs.google.com/spreadsheets/d/1cfXs8y5rdXTfe5kf8MvsWVcgZKcql8WxOIUbYDW37Fk/edit';
+
 my (%opts,$species_db_name,@species_dbs,$probes_dir,$core_db,$ensembl_version,$check_db);
-my ($prod_server,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline,$sqlpath);
+my ($prod_server,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
+my ($funcgenpath,$sqlpath);
 my $overwrite = 0;
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
@@ -65,6 +68,8 @@ if($opts{'v'}){
 	if(@funcgen_paths){
 		$sqlpath = $funcgen_paths[0];
 		$sqlpath =~ s/modules/sql\/table.sql/;
+		$funcgenpath = $funcgen_paths[0];
+		$funcgenpath =~ s/modules/scripts\/release/;
 	}
 	else{ die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-funcgen/sql in \$PERL5LIB / \@INC\n" }
 }
@@ -130,7 +135,7 @@ foreach $species_db_name (@species_dbs){
 	}
 }
 
-## Run init script and produce a hive_db with all tasks to be carried out
+## Run init script 
 #########################################################################
 
 my $conf="Bio::EnsEMBL::Funcgen::PipeConfig::ProbeMapping";
@@ -150,36 +155,31 @@ system("init_pipeline.pl $conf\::RunProbeToTranscriptHealthchecks_conf $pipeline
 system("init_pipeline.pl $conf\::SwitchToMyIsam_conf                   $pipeline_parameters -hive_no_init 1");
 system("init_pipeline.pl $conf\::RunSwitchTableEngineHealthchecks_conf $pipeline_parameters -hive_no_init 1");
 
-
-
-# foreach my $species_db_name {
-# 	$core_db = $species_db_name;
-#       $core_db =~ s/_funcgen_/_core_/; # this task requires a matching core db to run
-#
-
-my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf ".
-    	"$hive_args ".
-    	"--registry $reg_file ".
-    	"--pipeline_dir $pipeline_dir ".
-    	"--species $species_db_name ".
-	"--hive_force_init $overwrite";
-
-print "# $initcmd\n\n";
-
-#open(INITRUN,"$initcmd |") || die "# ERROR: cannot run $initcmd\n";
-#while(<INITRUN>){
-#	print;
-#}
-#close(INITRUN);
+## Seed pipeline with all input species
+########################################################################
+foreach $species_db_name (@species_dbs){
+	system("seed_pipeline.pl -url $hive_url -logic_name start -input_id \"{\"species\" => \"$species_db_name\" }");
+}
 
 ## Send jobs to hive 
 ######################################################################### 
 
-#print "# hive job URL: $hive_url";
+system("beekeeper.pl -url $hive_url -sync");
+system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+system("beekeeper.pl -url $hive_url -reg_conf $reg_file -loop -keep_alive");
 
-#system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync");
-#system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file");
-#system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
+print "# hive job URL: $hive_url\n\n";
 
-#print "# hive job URL: $hive_url\n\n";
+## Finally populate meta-data 
+##########################################################################
 
+foreach $species_db_name (@species_dbs){
+	system("$funcgenpath/populate_meta_coord.pl --registry $reg_file --species $species_db_name");
+}
+
+print "\n\n# IMPORTANT: please edit $METASPREADSHEET\n\n";

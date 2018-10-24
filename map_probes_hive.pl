@@ -135,7 +135,7 @@ foreach $species_db_name (@species_dbs){
 	}
 }
 
-## Run init script 
+## Compose init script step by step, topping up the hive db
 #########################################################################
 
 my $conf="Bio::EnsEMBL::Funcgen::PipeConfig::ProbeMapping";
@@ -143,27 +143,36 @@ my $conf="Bio::EnsEMBL::Funcgen::PipeConfig::ProbeMapping";
 my $pipeline_parameters = "--pipeline_url $hive_url --reg_conf $reg_file ".
 	"--tempdir $pipeline_dir --probe_directory $probes_dir ";
 
-system("init_pipeline.pl $conf\::Backbone_conf                         $pipeline_parameters -hive_force_init $overwrite");
-system("init_pipeline.pl $conf\::ImportArrays_conf                     $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::RunImportHealthchecks_conf            $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::ExportSequences_conf                  $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::AlignProbes_conf                      $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::StoreProbeFeatures_conf               $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::RunAlignHealthchecks_conf             $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::Probe2Transcript_conf                 $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::RunProbeToTranscriptHealthchecks_conf $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::SwitchToMyIsam_conf                   $pipeline_parameters -hive_no_init 1");
-system("init_pipeline.pl $conf\::RunSwitchTableEngineHealthchecks_conf $pipeline_parameters -hive_no_init 1");
+my @hive_cmds = (
+	"init_pipeline.pl $conf\::Backbone_conf                         $pipeline_parameters -hive_force_init $overwrite",
+	"init_pipeline.pl $conf\::ImportArrays_conf                     $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::RunImportHealthchecks_conf            $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::ExportSequences_conf                  $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::AlignProbes_conf                      $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::StoreProbeFeatures_conf               $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::RunAlignHealthchecks_conf             $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::Probe2Transcript_conf                 $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::RunProbeToTranscriptHealthchecks_conf $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::SwitchToMyIsam_conf                   $pipeline_parameters -hive_no_init 1",
+	"init_pipeline.pl $conf\::RunSwitchTableEngineHealthchecks_conf $pipeline_parameters -hive_no_init 1"
+);
 
 ## Seed pipeline with all input species
-########################################################################
+#########################################################################
 foreach $species_db_name (@species_dbs){
-	$species = (split(/_funcgen_/,$species_db_name))[0];
-	system("seed_pipeline.pl -url $hive_url -logic_name start -input_id \"{\"species\" => \"$species\" }");
+        $species = (split(/_funcgen_/,$species_db_name))[0];
+	push(@hive_cmds, "seed_pipeline.pl -url $hive_url -logic_name start -input_id '{ \"species\" => \"$species\" }' ");
 }
 
 ## Send jobs to hive 
 ######################################################################### 
+
+foreach my $cmd (@hive_cmds){
+        system("$cmd");
+        if($? != 0){
+                die "ERROR: cannot run $cmd\n\n";
+        }
+}
 
 print "# hive job URL: $hive_url\n\n";
 
@@ -184,6 +193,9 @@ print "# hive job URL: $hive_url\n\n";
 foreach $species_db_name (@species_dbs){
 	$species = (split(/_funcgen_/,$species_db_name))[0];	
 	system("$funcgenpath/populate_meta_coord.pl --registry $reg_file --species $species");
+	if($? != 0){
+                die "ERROR: cannot run $funcgenpath/populate_meta_coord.pl --registry $reg_file --species $species\n\n";
+        }
 }
 
 print "\n\n# IMPORTANT: please edit $METASPREADSHEET\n\n";

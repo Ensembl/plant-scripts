@@ -20,7 +20,7 @@ my $METASPREADSHEET = 'https://docs.google.com/spreadsheets/d/1cfXs8y5rdXTfe5kf8
 
 my (%opts,$species_db_name,@species_dbs,$probes_dir,$core_db,$ensembl_version,$check_db);
 my ($prod_server,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
-my ($funcgenpath,$sqlpath);
+my ($funcgenpath,$sqlpath,$species);
 my $overwrite = 0;
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
@@ -158,11 +158,14 @@ system("init_pipeline.pl $conf\::RunSwitchTableEngineHealthchecks_conf $pipeline
 ## Seed pipeline with all input species
 ########################################################################
 foreach $species_db_name (@species_dbs){
-	system("seed_pipeline.pl -url $hive_url -logic_name start -input_id \"{\"species\" => \"$species_db_name\" }");
+	$species = (split(/_funcgen_/,$species_db_name))[0];
+	system("seed_pipeline.pl -url $hive_url -logic_name start -input_id \"{\"species\" => \"$species\" }");
 }
 
 ## Send jobs to hive 
 ######################################################################### 
+
+print "# hive job URL: $hive_url\n\n";
 
 system("beekeeper.pl -url $hive_url -sync");
 system("runWorker.pl -url $hive_url -reg_conf $reg_file");
@@ -179,7 +182,8 @@ print "# hive job URL: $hive_url\n\n";
 ##########################################################################
 
 foreach $species_db_name (@species_dbs){
-	system("$funcgenpath/populate_meta_coord.pl --registry $reg_file --species $species_db_name");
+	$species = (split(/_funcgen_/,$species_db_name))[0];	
+	system("$funcgenpath/populate_meta_coord.pl --registry $reg_file --species $species");
 }
 
 print "\n\n# IMPORTANT: please edit $METASPREADSHEET\n\n";

@@ -2,6 +2,9 @@
 
 # This script does a local checkout of Ensembl APIs using env variables
 
+# Should be run in interactive shell such as
+# bsub -q production-rh7 -M4000 -R "select[mem>4000] rusage[mem=4000]" -Is bash 
+
 # by Bruno Contreras Moreira EMBL-EBI 2018
 
 eg_api_path=$EGAPIPATH

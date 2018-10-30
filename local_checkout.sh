@@ -28,6 +28,9 @@ fi
 # "Could not check out ensembl (release/95)"
 cd $ensembl_api_path
 $eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version release/$ensembl_version
+cd ensembl-$4nsmbl_version
+git ensembl --clone regulation --branch master
+cd
 source ensembl-$ensembl_version/setup.sh
 
 # update Health Check code

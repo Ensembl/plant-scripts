@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Std;
+use File::Path;
 use Bio::EnsEMBL::Registry;
 
 # This script submits hive jobs to map probes to previously loaded gene builds
@@ -21,10 +22,11 @@ my $METASPREADSHEET = 'https://docs.google.com/spreadsheets/d/1cfXs8y5rdXTfe5kf8
 my (%opts,$species_db_name,@species_dbs,$probes_dir,$core_db,$ensembl_version,$check_db);
 my ($prod_server,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($funcgenpath,$sqlpath,$species);
+my $clean_tmp = 1;
 my $overwrite = 0;
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
-getopts('hws:d:v:p:R:H:P:', \%opts);
+getopts('hnws:d:v:p:R:H:P:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -36,7 +38,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-R registry file, can be env variable          (required, example: -R \$p2panreg, must match production server)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$probetmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
-  print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n\n";                             
+  print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";
+  print "-n do not clean temporary files                (optional, default: deleted)\n\n";                             
   exit(0);
 }
 
@@ -97,10 +100,12 @@ $hive_url .= $hive_db;
 
 if($opts{'w'}){ $overwrite = 1 }
 
-$argsline = sprintf("%s -s %s -v %s -d %s -p %s -R %s -H %s -P %s -w %d",
+if($opts{'n'}){ $clean_tmp = 0 }
+
+$argsline = sprintf("%s -s %s -v %s -d %s -p %s -R %s -H %s -P %s -w %d -n %d",
 	$0, $species_db_name, $ensembl_version, $probes_dir, 
 	$prod_server,$reg_file, $hive_db_cmd, $pipeline_dir, 
-	$overwrite);
+	$overwrite, $clean_tmp);
 
 print "# $argsline\n\n";
 
@@ -187,7 +192,7 @@ system("beekeeper.pl -url $hive_url -reg_conf $reg_file -loop -keep_alive");
 
 print "# hive job URL: $hive_url\n\n";
 
-## Finally populate meta-data 
+## Finally populate meta-data i
 ##########################################################################
 
 foreach $species_db_name (@species_dbs){
@@ -196,6 +201,13 @@ foreach $species_db_name (@species_dbs){
 	if($? != 0){
                 die "ERROR: cannot run $funcgenpath/populate_meta_coord.pl --registry $reg_file --species $species\n\n";
         }
+
+	if($clean_tmp == 1){
+		my $tmp_dir_species = "$pipeline_dir/$species";
+		if($tmp_dir_species !~ /\*/){
+			remove_tree($tmp_dir_species);		
+		}
+	}
 }
 
 print "\n\n# IMPORTANT: please edit $METASPREADSHEET\n\n";

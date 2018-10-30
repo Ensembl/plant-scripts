@@ -50,9 +50,12 @@ if($opts{'s'}){
 			die "# ERROR: cannot read $species_db_name\n";
 		while(<DBLIST>){
 			next if(/^#/);
-			push(@species_dbs,(split)[0])
+			$species = (split)[0];
+			push(@species_dbs,$species);
+			print "# $species\n";
 		}
 		close(DBLIST);
+		print "\n";
 	}
 	else{ push(@species_dbs,$species_db_name) }
 } 

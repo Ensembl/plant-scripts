@@ -98,7 +98,7 @@ else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$g
 if($opts{'H'}){ $hive_db_cmd = $opts{'H'} }
 chomp( $hive_args = `$hive_db_cmd details script` );
 chomp( $hive_url  = `$hive_db_cmd --details url` );
-$hive_db = $ENV{'USER'}."_probemapping_hive";
+$hive_db = $ENV{'USER'}."_probemapping_$species_db_name";
 $hive_url .= $hive_db;
 
 if($opts{'w'}){ $overwrite = 1 }

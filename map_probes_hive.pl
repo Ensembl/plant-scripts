@@ -195,6 +195,9 @@ system("beekeeper.pl -url $hive_url -reg_conf $reg_file -loop -keep_alive");
 
 print "# hive job URL: $hive_url\n\n";
 
+print "# If any jobs failed you can run them locally with:\n";
+print "# runWorker.pl -url=$hive_url -reg_conf $reg_file -job_id=XYZ\n\n";
+
 ## Finally populate meta-data i
 ##########################################################################
 

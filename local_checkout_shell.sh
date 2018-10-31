@@ -38,6 +38,11 @@ ant clean jar
 cd ../..
 source ensembl-$ensembl_version/setup.sh
 
+# checkout hive  
+cd ensembl-$ensembl_version/ensembl-hive
+git checkout origin/version/2.4
+cd ../..
+
 # update Health Check code
 # NOTE: docs at https://github.com/Ensembl/ensembl-prodinf-core/blob/master/docs/bulk_hc_submission.rst
 cd ensembl-prodinf-core
@@ -49,9 +54,10 @@ cd ensembl-datacheck
 git pull
 cd ..
 
-# checkout hive  
-cd ensembl-$ensembl_version/ensembl-hive
-git checkout origin/version/2.4
+# for ATAC assembly mappings, commented in case local edited copy is not synced
+#cd eg-assemblyconverter
+#git pull
+#cd ..
 
 # check ensembl version matches API
 api_ensembl_version=$(perl -MBio::EnsEMBL::ApiVersion -e "print software_version")

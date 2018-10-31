@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use File::Path;
+use File::Path qw(remove_tree);
 use Bio::EnsEMBL::Registry;
 
 # This script submits hive jobs to map probes to previously loaded gene builds

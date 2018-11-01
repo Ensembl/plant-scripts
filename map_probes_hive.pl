@@ -24,9 +24,10 @@ my ($prod_server,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline
 my ($funcgenpath,$sqlpath,$species);
 my $clean_tmp = 1;
 my $overwrite = 0;
+my $only_metadata = 0;
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
-getopts('hnws:d:v:p:R:H:P:', \%opts);
+getopts('hMnws:d:v:p:R:H:P:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -39,7 +40,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-P folder to put pipeline files, can be env    (required, example: -P \$probetmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";
-  print "-n do not clean temporary files                (optional, default: deleted)\n\n";                             
+  print "-n do not clean temporary files                (optional, default: deleted)\n";
+  print "-M only populate metadata                      (optional, default: complete job)\n"; 
   exit(0);
 }
 
@@ -105,10 +107,12 @@ if($opts{'w'}){ $overwrite = 1 }
 
 if($opts{'n'}){ $clean_tmp = 0 }
 
-$argsline = sprintf("%s -s %s -v %s -d %s -p %s -R %s -H %s -P %s -w %d -n %d",
+if($opts{'M'}){ $only_metadata = 1 }
+
+$argsline = sprintf("%s -s %s -v %s -d %s -p %s -R %s -H %s -P %s -w %d -n %d -M %d",
 	$0, $species_db_name, $ensembl_version, $probes_dir, 
 	$prod_server,$reg_file, $hive_db_cmd, $pipeline_dir, 
-	$overwrite, $clean_tmp);
+	$overwrite, $clean_tmp, $only_metadata);
 
 print "# $argsline\n\n";
 
@@ -143,62 +147,62 @@ foreach $species_db_name (@species_dbs){
 	}
 }
 
-## Compose init script step by step, topping up the hive db
+## Compose init script step by step, topping up the hive db, and run jobs
 #########################################################################
 
-my $conf="Bio::EnsEMBL::Funcgen::PipeConfig::ProbeMapping";
+if($only_metadata == 0){
 
-my $pipeline_parameters = "--pipeline_url $hive_url --reg_conf $reg_file ".
-	"--tempdir $pipeline_dir --probe_directory $probes_dir ";
+	my $conf="Bio::EnsEMBL::Funcgen::PipeConfig::ProbeMapping";
 
-my @hive_cmds = (
-	"init_pipeline.pl $conf\::Backbone_conf                         $pipeline_parameters -hive_force_init $overwrite",
-	"init_pipeline.pl $conf\::ImportArrays_conf                     $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::RunImportHealthchecks_conf            $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::ExportSequences_conf                  $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::AlignProbes_conf                      $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::StoreProbeFeatures_conf               $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::RunAlignHealthchecks_conf             $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::Probe2Transcript_conf                 $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::RunProbeToTranscriptHealthchecks_conf $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::SwitchToMyIsam_conf                   $pipeline_parameters -hive_no_init 1",
-	"init_pipeline.pl $conf\::RunSwitchTableEngineHealthchecks_conf $pipeline_parameters -hive_no_init 1"
-);
+	my $pipeline_parameters = "--pipeline_url $hive_url --reg_conf $reg_file ".
+		"--tempdir $pipeline_dir --probe_directory $probes_dir ";
 
-## Seed pipeline with all input species
-#########################################################################
-foreach $species_db_name (@species_dbs){
-        $species = (split(/_funcgen_/,$species_db_name))[0];
-	push(@hive_cmds, "seed_pipeline.pl -url $hive_url -logic_name start -input_id '{ \"species\" => \"$species\" }' ");
+	my @hive_cmds = (
+		"init_pipeline.pl $conf\::Backbone_conf                         $pipeline_parameters -hive_force_init $overwrite",
+		"init_pipeline.pl $conf\::ImportArrays_conf                     $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::RunImportHealthchecks_conf            $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::ExportSequences_conf                  $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::AlignProbes_conf                      $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::StoreProbeFeatures_conf               $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::RunAlignHealthchecks_conf             $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::Probe2Transcript_conf                 $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::RunProbeToTranscriptHealthchecks_conf $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::SwitchToMyIsam_conf                   $pipeline_parameters -hive_no_init 1",
+		"init_pipeline.pl $conf\::RunSwitchTableEngineHealthchecks_conf $pipeline_parameters -hive_no_init 1"
+	);
+
+	## Seed pipeline with all input species
+	foreach $species_db_name (@species_dbs){
+	        $species = (split(/_funcgen_/,$species_db_name))[0];
+		push(@hive_cmds, "seed_pipeline.pl -url $hive_url -logic_name start -input_id '{ \"species\" => \"$species\" }' ");
+	}
+	
+	## Send jobs to hive 
+	foreach my $cmd (@hive_cmds){
+	        system("$cmd");
+	        if($? != 0){
+	                die "ERROR: cannot run $cmd\n\n";
+	        }
+	}
+
+	print "# hive job URL: $hive_url\n\n";
+	
+	system("beekeeper.pl -url $hive_url -sync");
+	system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+	system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+	system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+	system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+	system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+	system("runWorker.pl -url $hive_url -reg_conf $reg_file");
+	system("beekeeper.pl -url $hive_url -reg_conf $reg_file -loop -keep_alive");
+	
+	print "# hive job URL: $hive_url\n\n";
+	
+	print "# If any jobs failed you can run them locally with:\n";
+	print "# runWorker.pl -url=$hive_url -reg_conf $reg_file -job_id=XYZ\n\n";
 }
 
-## Send jobs to hive 
-######################################################################### 
-
-foreach my $cmd (@hive_cmds){
-        system("$cmd");
-        if($? != 0){
-                die "ERROR: cannot run $cmd\n\n";
-        }
-}
-
-print "# hive job URL: $hive_url\n\n";
-
-system("beekeeper.pl -url $hive_url -sync");
-system("runWorker.pl -url $hive_url -reg_conf $reg_file");
-system("runWorker.pl -url $hive_url -reg_conf $reg_file");
-system("runWorker.pl -url $hive_url -reg_conf $reg_file");
-system("runWorker.pl -url $hive_url -reg_conf $reg_file");
-system("runWorker.pl -url $hive_url -reg_conf $reg_file");
-system("runWorker.pl -url $hive_url -reg_conf $reg_file");
-system("beekeeper.pl -url $hive_url -reg_conf $reg_file -loop -keep_alive");
-
-print "# hive job URL: $hive_url\n\n";
-
-print "# If any jobs failed you can run them locally with:\n";
-print "# runWorker.pl -url=$hive_url -reg_conf $reg_file -job_id=XYZ\n\n";
-
-## Finally populate meta-data i
+## Finally populate meta-data 
 ##########################################################################
 
 foreach $species_db_name (@species_dbs){
@@ -216,4 +220,4 @@ foreach $species_db_name (@species_dbs){
 	}
 }
 
-print "\n\n# IMPORTANT: please edit $METASPREADSHEET\n\n";
+print "\n\n# IMPORTANT: if you mapped a new probeset please edit $METASPREADSHEET\n\n";

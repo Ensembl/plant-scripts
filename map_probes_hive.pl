@@ -147,6 +147,9 @@ foreach $species_db_name (@species_dbs){
 	}
 }
 
+# TO BE DONE: run DuplicateGenes test for all species before doing any mapping
+
+
 ## Compose init script step by step, topping up the hive db, and run jobs
 #########################################################################
 

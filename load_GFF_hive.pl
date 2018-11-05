@@ -137,8 +137,6 @@ while(<GFF>){
 }
 close(GFF);
 
-exit;
-
 ## replace chr names with natural & add original names to synonyms in db;
 ## also check whether coords in GFF3 are within chromosomes in db
 ########################################################################
@@ -344,4 +342,3 @@ system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file"
 system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
 print "# hive job URL: $hive_url\n\n";
-

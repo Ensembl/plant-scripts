@@ -3,7 +3,7 @@
 # takes ENA accession and visits NCBI FTP to retrieve contig/chr synonyms from full assembly report
 # 2018 Bruno Contreras Moreira EMBL-EBI
 #
-# Example run, takes a few hours: 
+# Example run: 
 # $ ./get_chr_synonyms.pl GCA_000188115.3
 
 use strict;
@@ -69,4 +69,5 @@ foreach my $subfolder ( $ftp->ls() ){
 	}
 } 
 
+# 5) disconnect and exit
 $ftp->quit();

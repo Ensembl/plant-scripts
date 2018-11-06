@@ -35,7 +35,7 @@ if(defined($ARGV[0])){
 		push(@ENA_accessions,$ARGV[0]);
 	}
 }
-else{ die "# usage: $0 <valid ENA accession>\n\n£ example: $0 GCA_000188115.3\n"; }
+else{ die "# usage: $0 <valid ENA accession>\n\n# example: $0 GCA_000188115.3\n"; }
 
 ## 1) connect to FTP site 
 my $ftp = Net::FTP->new($NCBIFTPURL, Debug => 0) ||

@@ -123,7 +123,7 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 
 		$species_db_name = $species_names[$input_sp];
 
-		if($input_is_file == 1){
+		if(defined($dbpass) && $input_is_file == 1){
                 	$species_db_name .= '_core_'.$eg_version.'_'.$ensembl_version.'_'.$GCA_version;
         	}
         }

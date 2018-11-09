@@ -1,45 +1,38 @@
 #!/usr/bin/env perl
 #
-# takes ENA accession and visits NCBI FTP to retrieve contig/chr synonyms from full assembly report
+# takes ENA accessions and visits NCBI FTP to retrieve contig/chr synonyms from full assembly report
 # 2018 Bruno Contreras Moreira EMBL-EBI
 #
 # Example calls: 
-# $ ./get_chr_synonyms.pl GCA_000188115.3
-# $ ./get_chr_synonyms.pl Viridiplantae.2018-10-09.report.tsv
+# $ ./get_chr_synonyms.pl -a GCA_000188115.3
+# $ ./get_chr_synonyms.pl -a GCA_000188115.3 -R p2panreg -s solanum_lycopersicum
+# $ ./get_chr_synonyms.pl -a Viridiplantae.2018-10-09.report.tsv -R p2panreg
 
 use strict;
 use warnings;
 use Net::FTP;
 use Getopt::Std;
+use Bio::EnsEMBL::Registry;
 
 # hard-coded paths, based on
 # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_assembly_report.txt
 my $NCBIFTPURL = 'ftp.ncbi.nlm.nih.gov';
 my $GGAGENPATH = '/genomes/all/GCA/'; # absolute
 
-# EXTERNAL_ID_DB values in db schema
-my %ENSEXTIDDB = (
-	'RefSeq' => 50840,
-	'INSDC'  => 50710
-);
-
 my (@ENA_accessions,@species_names,%opts);
 my $input_is_file = 0;
-my ($prod_server,$ensembl_version,$species_db_name) = ('','','');
-my ($acc2path,$fullpath,$species,$GCA_version,$eg_version,$prod_db_args);
-my ($dbhost,$dbport,$dbuser,$dbpass,$report_file,$ENA_accession);
+my ($reg_file,$species_name) = ('','');
+my ($acc2path,$fullpath,$species);
+my ($report_file,$ENA_accession);
 
-getopts('hs:p:a:v:', \%opts);
+getopts('hs:R:a:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
   print " -h this message\n";
   print " -a ENA assembly accession OR file with 1 accession/line   (required, example: -a GCA_000188115.3)\n";
-  print " -p add synonyms to this production db server              (optional, example: -p eg-p2-w)\n\n";
-  print "When -a is a file produced by check_new_ENA_assemblies.pl:\n";
-  print " -v next Ensembl version                                   (optional, example: -v 95, required with -p)\n\n";
-  print "When -a is a single ENA accession:\n";
-  print " -s species_name, required with -p                         (optional, example: -s solanum_lycopersicum_core_42_95_3)\n\n";
+  print " -R add synonyms to db server pointed by to registry file  (optional, example: -R \$p2panreg)\n";
+  print " -s species_name, required with -R & single ENA accession  (optional, example: -s solanum_lycopersicum)\n\n";
   exit(0);
 }
 
@@ -72,35 +65,23 @@ if($opts{'a'}){
 }
 else{ die "# ERROR: nead valid ENA accession\n\n# example: $0 -a GCA_000188115.3\n"; }
 
-if($opts{'p'}){ 
-	$prod_server = $opts{'p'};
-	chomp( $prod_db_args = `$prod_server -details script` ); 
-	if($prod_db_args =~ m/--host (\S+) --port (\d+) --user (\S+) --pass (\S+)/){
-		($dbhost,$dbport,$dbuser,$dbpass) = ($1,$2,$3,$4);
-	}
-	else{ die "# ERROR: cannot parse db server details\n" }
+if($opts{'R'}){
 
-	if($input_is_file == 1){
-		if($opts{'v'}){
-        		$ensembl_version = $opts{'v'};
-			$eg_version = $ensembl_version-53;
-		}
-		else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
-	}
-	else{
+	if(-e $opts{'R'}){ $reg_file = $opts{'R'} }
+	else{ die "# EXIT : need a valid -R file, such as -R \$p2panreg\n" }
+
+	if($input_is_file == 0){
+		
 		if($opts{'s'}){ 
-			$species_db_name = $opts{'s'};
-			if($species_db_name =~ m/_core_\d+_\d+_\d+$/){
-				push(@species_names,$opts{'s'});
-			}
-			else{ die "# EXIT : need a valid -s species_db_name, such as -s solanum_lycopersicum_core_42_95_3\n" }
+			$species = $opts{'s'};
+			push(@species_names,$species);
 		}
-		else{ die "# EXIT : need a valid -s species_db_name, such as -s solanum_lycopersicum_core_42_95_3\n" }
+		else{ die "# EXIT : need a valid -s species_db_name, such as -s solanum_lycopersicum\n" }
 	}
 }
 
-printf("# %s -a %s -p %s -v %s -s %s\n\n", 
-	$0, $opts{'a'}, $prod_server, $ensembl_version, $species_db_name );
+printf("# %s -a %s -R %s -s %s\n\n", 
+	$0, $opts{'a'}, $reg_file, $species_name );
 
 ## 1) connect to FTP site 
 my $ftp = Net::FTP->new($NCBIFTPURL, Debug => 0) ||
@@ -116,16 +97,12 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 
 	# 2.0) check accession format
 	# https://stackoverflow.com/questions/25523899/in-perl-best-way-to-insert-a-char-every-n-chars
-	if($ENA_accession =~ /GCA_(\d+)\.(\d+)$/){
+	if($ENA_accession =~ /GCA_(\d+)\.\d+$/){
 
-		($acc2path,$GCA_version) = ($1,$2);
+		$acc2path = $1;
                 $acc2path =~ s/...\K(?=.)/\//sg;
 
-		$species_db_name = $species_names[$input_sp];
-
-		if(defined($dbpass) && $input_is_file == 1){
-                	$species_db_name .= '_core_'.$eg_version.'_'.$ensembl_version.'_'.$GCA_version;
-        	}
+		$species_name = $species_names[$input_sp];
         }
         else{ die "# EXIT : bad ENA accession: $ENA_accession lacks .version\n"; }
 
@@ -162,10 +139,38 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 	print "# assembly report: $report_file\n\n";
 
 	# 2.4) parse report file and add synonyms to db if requested 
-	if(defined($dbpass)){
+	if(defined($reg_file)){
 
-		my ($community_name,$seqtype,$insdc_acc,$refseq_acc);
+		my ($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc);
+		my ($insdc_db_id,$refseq_db_id);
 
+		# connect to production db
+		my $registry = 'Bio::EnsEMBL::Registry';
+		$registry->load_all($reg_file);
+		my $dba = Bio::EnsEMBL::Registry->get_DBAdaptor($species_names[$input_sp], "core");
+
+		# find out ids of external dbs for synonyms
+		my $external_db_sql = 
+			"SELECT external_db_id FROM external_db WHERE db_name = ?;";
+
+		my $sth = $dba->dbc->prepare($external_db_sql);
+		$sth->execute('INSDC');
+		my @results = $sth->fetchrow_array;		
+		if(scalar(@results) > 0){ $insdc_db_id = $results[0] }
+		else{ die "# ERROR: cannot find internal_db_id for INSDC\n" }
+
+		$sth->execute('RefSeq');
+                @results = $sth->fetchrow_array;             
+                if(scalar(@results) > 0){ $refseq_db_id = $results[0] }  
+                else{ die "# ERROR: cannot find internal_db_id for RefSeq\n" }
+
+		# prepare synonym sql
+		my $synonym_sql =
+			"INSERT IGNORE INTO seq_region_synonym ".
+			"(seq_region_id, synonym, external_db_id) VALUES (?, ?, ?);";
+		$sth = $dba->dbc->prepare($synonym_sql);
+
+		# actually parse and insert synonyms
 		open(REPORT,'<',$report_file) || 
 			die "# ERROR: cannot read $report_file\n";
 		while(<REPORT>){
@@ -174,12 +179,18 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			# SL3.00SC0000001	unplaced-scaffold	na	na	AEKE03000001.1 <>	na
 			next if(/^#/); 
 			my @tsvdata = split(/\t/,$_);
-			($community_name,$seqtype,$insdc_acc,$refseq_acc) = @tsvdata[0,3,4,6];
+			($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,4,6];
 
-			print "$community_name,$seqtype,$insdc_acc,$refseq_acc  $report_file\n";
+			# first INSDC synonyms
+    			$sth->execute($ENA_acc, $insdc_acc, $insdc_db_id);
+
+			# now RefSeq synonyms		
+			next if($refseq_acc eq 'na');
+
+			$sth->execute($ENA_acc, $refseq_acc, $refseq_db_id);	
+
 		}
 		close(REPORT);
-
 	}
 }
 

@@ -17,6 +17,12 @@ use Getopt::Std;
 my $NCBIFTPURL = 'ftp.ncbi.nlm.nih.gov';
 my $GGAGENPATH = '/genomes/all/GCA/'; # absolute
 
+# EXTERNAL_ID_DB values in db schema
+my %ENSEXTIDDB = (
+	'RefSeq' => 50840,
+	'INSDC'  => 50710
+);
+
 my (@ENA_accessions,@species_names,%opts);
 my $input_is_file = 0;
 my ($prod_server,$ensembl_version,$species_db_name) = ('','','');
@@ -31,7 +37,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print " -a ENA assembly accession OR file with 1 accession/line   (required, example: -a GCA_000188115.3)\n";
   print " -p add synonyms to this production db server              (optional, example: -p eg-p2-w)\n\n";
   print "When -a is a file produced by check_new_ENA_assemblies.pl:\n";
-  print " -v next Ensembl versioni                                  (optional, example: -v 95, required with -p)\n\n";
+  print " -v next Ensembl version                                   (optional, example: -v 95, required with -p)\n\n";
   print "When -a is a single ENA accession:\n";
   print " -s species_name, required with -p                         (optional, example: -s solanum_lycopersicum_core_42_95_3)\n\n";
   exit(0);
@@ -158,14 +164,19 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 	# 2.4) parse report file and add synonyms to db if requested 
 	if(defined($dbpass)){
 
-		print "$report_file $dbpass\n";
+		my ($community_name,$seqtype,$insdc_acc,$refseq_acc);
 
 		open(REPORT,'<',$report_file) || 
 			die "# ERROR: cannot read $report_file\n";
-		while(<REPOR>){
-			# Sequence-Name Sequence-Role Assigned-Molecule Assigned-Molecule-Location/Type GenBank-Accn ...
-			# SL3.0ch01	assembled-molecule	1	Chromosome	CM001064.3
-			# SL3.00SC0000001	unplaced-scaffold	na	na	AEKE03000001.1
+		while(<REPORT>){
+			# Sequence-Name Role Assigned-Molecule Assigned-Molecule-Location/Type GenBank-Accn Relationship RefSeq-Accn
+			# SL3.0ch01	assembled-molecule	1	Chromosome	CM001064.3 <>	na
+			# SL3.00SC0000001	unplaced-scaffold	na	na	AEKE03000001.1 <>	na
+			next if(/^#/); 
+			my @tsvdata = split(/\t/,$_);
+			($community_name,$seqtype,$insdc_acc,$refseq_acc) = @tsvdata[0,3,4,6];
+
+			print "$community_name,$seqtype,$insdc_acc,$refseq_acc  $report_file\n";
 		}
 		close(REPORT);
 

@@ -200,12 +200,12 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			}
 
 			# first INSDC synonyms
-    			$sth3->execute($ENA_acc, $insdc_acc, $insdc_db_id);
+    			$sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
 
 			# now RefSeq synonyms		
 			next if($refseq_acc eq 'na');
 
-			$sth3->execute($ENA_acc, $refseq_acc, $refseq_db_id);	
+			$sth3->execute($seq_region_id, $refseq_acc, $refseq_db_id);	
 
 		}
 		close(REPORT);

@@ -53,6 +53,7 @@ if($opts{'a'}){
 			push(@ENA_accessions,$tsvdata[0]);
 			$species = lc($tsvdata[1]);
 			$species =~ s/\s+/_/;
+			$species =~ s/_+$//;	
 			push(@species_names,$species);
 		}
 		close(INFILE);
@@ -142,7 +143,7 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 	if(defined($reg_file)){
 
 		my ($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc);
-		my ($insdc_db_id,$refseq_db_id);
+		my ($insdc_db_id,$refseq_db_id,$seq_region_id);
 
 		# connect to production db
 		my $registry = 'Bio::EnsEMBL::Registry';
@@ -164,11 +165,16 @@ foreach my $input_sp (0 .. $#ENA_accessions){
                 if(scalar(@results) > 0){ $refseq_db_id = $results[0] }  
                 else{ die "# ERROR: cannot find internal_db_id for RefSeq\n" }
 
+		# prepare seq_region_id query
+		my $seq_region_id_sql =
+                        "SELECT seq_region_id FROM seq_region WHERE name = ?;";
+                my $sth2 = $dba->dbc->prepare($seq_region_id_sql);
+
 		# prepare synonym sql
 		my $synonym_sql =
 			"INSERT IGNORE INTO seq_region_synonym ".
 			"(seq_region_id, synonym, external_db_id) VALUES (?, ?, ?);";
-		$sth = $dba->dbc->prepare($synonym_sql);
+		my $sth3 = $dba->dbc->prepare($synonym_sql);
 
 		# actually parse and insert synonyms
 		open(REPORT,'<',$report_file) || 
@@ -180,16 +186,26 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			next if(/^#/); 
 			my @tsvdata = split(/\t/,$_);
 			($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,4,6];
+			$seq_region_id = '';
 
 			next if($ENA_acc eq 'na');
 
+			$sth2->execute($ENA_acc);
+
+			my @results = $sth2->fetchrow_array;
+			if(scalar(@results) > 0){ $seq_region_id = $results[0] }
+                	else{ 
+				print "# WARNING: cannot find seq_region_id for $ENA_acc, skip it\n";
+				next;
+			}
+
 			# first INSDC synonyms
-    			$sth->execute($ENA_acc, $insdc_acc, $insdc_db_id);
+    			$sth3->execute($ENA_acc, $insdc_acc, $insdc_db_id);
 
 			# now RefSeq synonyms		
 			next if($refseq_acc eq 'na');
 
-			$sth->execute($ENA_acc, $refseq_acc, $refseq_db_id);	
+			$sth3->execute($ENA_acc, $refseq_acc, $refseq_db_id);	
 
 		}
 		close(REPORT);

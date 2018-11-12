@@ -19,6 +19,8 @@ use Bio::EnsEMBL::Registry;
 my $NCBIFTPURL = 'ftp.ncbi.nlm.nih.gov';
 my $GGAGENPATH = '/genomes/all/GCA/'; # absolute
 
+my $CLEAN = 0; # set to 1 to force cleaning matching synonyms previously added
+
 my (@ENA_accessions,@species_names,%opts);
 my $input_is_file = 0;
 my ($reg_file,$species_name) = ('','');
@@ -165,16 +167,20 @@ foreach my $input_sp (0 .. $#ENA_accessions){
                 if(scalar(@results) > 0){ $refseq_db_id = $results[0] }  
                 else{ die "# ERROR: cannot find internal_db_id for RefSeq\n" }
 
-		# prepare seq_region_id query
+		# prepare seq_region_id queries
 		my $seq_region_id_sql =
                         "SELECT seq_region_id FROM seq_region WHERE name = ?;";
                 my $sth2 = $dba->dbc->prepare($seq_region_id_sql);
 
-		# prepare synonym sql
+		# prepare synonym sqls
 		my $synonym_sql =
 			"INSERT IGNORE INTO seq_region_synonym ".
 			"(seq_region_id, synonym, external_db_id) VALUES (?, ?, ?);";
 		my $sth3 = $dba->dbc->prepare($synonym_sql);
+
+		my $synonym_delete_sql =                     # with $CLEAN=1
+                        "DELETE from seq_region_synonym WHERE synonym = ?;";
+                my $sth4 = $dba->dbc->prepare($synonym_delete_sql);
 
 		# actually parse and insert synonyms
 		open(REPORT,'<',$report_file) || 
@@ -199,11 +205,15 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 				next;
 			}
 
+			if($CLEAN == 1){ $sth4->execute($insdc_acc) }
+
 			# first INSDC synonyms
     			$sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
 
 			# now RefSeq synonyms		
 			next if($refseq_acc eq 'na');
+
+			if($CLEAN == 1){ $sth4->execute($refseq_acc) }
 
 			$sth3->execute($seq_region_id, $refseq_acc, $refseq_db_id);	
 

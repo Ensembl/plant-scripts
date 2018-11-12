@@ -181,6 +181,8 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			my @tsvdata = split(/\t/,$_);
 			($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,4,6];
 
+			next if($ENA_acc eq 'na');
+
 			# first INSDC synonyms
     			$sth->execute($ENA_acc, $insdc_acc, $insdc_db_id);
 

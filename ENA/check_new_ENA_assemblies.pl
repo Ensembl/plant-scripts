@@ -6,10 +6,8 @@
 # Example run, takes a few hours: 
 # $ ./check_new_ENA_assemblies.pl -t Viridiplantae 
 #
-# Or if you want to re-run without re-downloading ENA files: 
+# Or if you want to re-run without re-downloading GFF files: 
 # $ ./check_new_ENA_assemblies.pl -t Viridiplantae -S
-
-# TO BE DONE: check whether GFF file is available from NCBI/RefSeq
 
 use strict;
 use warnings;
@@ -23,9 +21,8 @@ use Net::FTP;
 my $required_assembly_state = 'chromosome';
 my $required_genome_representation = 'full';
 my $ensembl_division = 'EnsemblPlants';
-my $ENAfolder = './ENAfiles/'; 
+my $GFFfolder = './GFFfiles/';
 my $used_saved_files = 0;
-my $KEEPCHR = 1; # bool, set to zero to avoid keeping local copies of ENA files
 
 # URLs and query paths, can change with time
 my $RESTURL    = 'http://rest.ensemblgenomes.org';
@@ -35,7 +32,8 @@ my $ENAquery   = '&fields=assembly_level%2Cgenome_representation%2Cassembly_name
 my $ENAviewURL = 'https://www.ebi.ac.uk/ena/data/view';
 # also NCBI
 my $NCBIFTPURL = 'ftp.ncbi.nlm.nih.gov';
-my $GGAGENPATH = '/genomes/all/GCA/'; # absolute
+my $GCAGENPATH = '/genomes/all/GCA/'; # absolute path (GenBank)
+my $GCFGENPATH = '/genomes/all/GCF/'; # absolute path (RefSeq)
 
 # binaries, edit if required
 my $WGETEXE = 'wget';
@@ -50,8 +48,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-h this message\n";
   print "-t taxon scientific name as in NCBI Taxonomy   (required, example: -t Arabidopsis%20thaliana)\n";
   print "-d Ensembl division                            (optional, default: -d $ensembl_division)\n";
-  print "-f path to folder to save downloaded ENA files (optional, default: -f $ENAfolder)\n";
-  print "-S used available local ENA files              (optional, default: download from scratch)\n";
+  print "-f path to folder to save downloaded GFF files (optional, default: -f $GFFfolder)\n";
+  print "-S use available local GFF files               (optional, default: download from scratch)\n";
   print "-s required ENA assembly state                 (optional, default: -s $required_assembly_state)\n";
   print "-r required ENA assembly representation        (optional, default: -r $required_genome_representation)\n\n";
   print "Please check https://www.ebi.ac.uk/ena/browse/assembly-format for valid values for -r/-s\n\n";
@@ -69,8 +67,8 @@ if($opts{'s'}){ $required_assembly_state = $opts{'s'} }
 
 if($opts{'r'}){ $required_genome_representation = $opts{'r'} }
 
-if($opts{'f'}){ $ENAfolder = $opts{'f'} }
-if(!-d $ENAfolder){ mkdir($ENAfolder) }
+if($opts{'f'}){ $GFFfolder = $opts{'f'} }
+if(!-d $GFFfolder){ mkdir($GFFfolder) }
 
 if($opts{'S'}){ $used_saved_files = 1 }
 
@@ -78,9 +76,9 @@ if($opts{'S'}){ $used_saved_files = 1 }
 my $RESTtaxonomy_query = "$RESTURL/taxonomy/name/$taxon_name?";
 my $RESTdivision_query = "$RESTURL/info/genomes/division/$ensembl_division?";
 
-printf("# %s -t %s -d %s -s %s -r %s -f %s -S %d (\$KEEPCHR=%d)\n\n",
+printf("# %s -t %s -d %s -s %s -r %s -f %s -S %d\n\n",
   $0, $taxon_name, $ensembl_division, $required_assembly_state, 
-  $required_genome_representation, $ENAfolder, $used_saved_files, $KEEPCHR);
+  $required_genome_representation, $GFFfolder, $used_saved_files);
 
 
 ## 1) get taxon ID from REST ensemblgenomes
@@ -124,18 +122,20 @@ if(length($response->{content})) {
      
 ## 4) check ENA annotated assemblies which might not be currently supported in Ensembl division
 my ($assembly_id,$assembly_state,$genome_representation,$strain,$fullpath,$acc2path);
-my ($full_assembly_id,$chr_acc,$n_of_genes,$scientific_name,$ENAfile);
+my ($full_assembly_id,$chr_acc,$scientific_name,$prev_mod_time,$mod_time);
+my ($GFF_fileG,$GFF_fileR,$n_of_genesG,$n_of_genesR,$subfolderR,$local_file,$file);
 
-# connect to NCBI FTP site 
-my $ftp = Net::FTP->new($NCBIFTPURL, Debug => 0) ||
+# connect to FTP site
+my $ftp = Net::FTP->new($NCBIFTPURL, Debug => 0, Passive => 1) ||
 	die "# ERROR: cannot connect to $NCBIFTPURL: $@";
 
-$ftp->login("anonymous",'-anonymous@') || 
+$ftp->login("anonymous",'-anonymous@') ||
 	die "# ERROR: cannot login ", $ftp->message();
 
+$ftp->binary();
 
 open(REPORT,">",$report_file) || die "# ERROR: cannot create $report_file\n";
-print REPORT "# ENA_assembly_id\tscientific_name\tstrain\tannotated_genes\tchromosomes\tchromosome_accessions\n";
+print REPORT "# ENA_assembly_id\tscientific_name\tstrain\tchromosomes\tGenBank\tgenes\tRefSeq\tgenes\n";
 
 open(LOCALENA,$ENAcurrent_file) || die "ERROR: cannot read $ENAcurrent_file\n";
 while(<LOCALENA>){
@@ -149,7 +149,7 @@ while(<LOCALENA>){
 
 	if($strain eq ''){ $strain = 'NA' }
 
-	# get this assembly most recent version attached to GCA accession + linked chr accessions
+	# get this assembly most recent version attached to GCA accession
 	# NOTE: when you request a view you get the most recent version (Dan Bolser)
 	my @chr_accessions;
 
@@ -174,57 +174,112 @@ while(<LOCALENA>){
 		$genome_representation ne $required_genome_representation ||
 		defined($current_ensembl_assembly_ids{$full_assembly_id}) );
 
-
-	# check whether NCBI/RefSeq provide GFF for this assembly
+	## check whether GenBank provides GFF for this assembly
 	if($full_assembly_id =~ /GCA_(\d+)\.\d+$/){
 
-		$acc2path = $1;
+                $acc2path = $1;
+                $assembly_id = 'GCF_'.$acc2path;
                 $acc2path =~ s/...\K(?=.)/\//sg;
         }
         else{ die "# EXIT : bad ENA accession: $full_assembly_id lacks .version\n"; }
 
 	# compose folder path based on ENA full assembly id
-	$fullpath = $GGAGENPATH . $acc2path;
+        $fullpath = $GCAGENPATH . $acc2path;
 
-	# 2.2) get to appropriate remote folder
-	$ftp->cwd($fullpath) || 
-		die "# ERROR: cannot change working directory ", $ftp->message();
+	# find right folder for this assembly
+        # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_genomic.gff.gz
+ 	$ftp->cwd($fullpath) ||
+                die "# ERROR: cannot change working directory ", $ftp->message();
 
+        $GFF_fileG = 'NA';
+        foreach my $subfolder ( $ftp->ls() ){
+                if($subfolder =~ $full_assembly_id) {
 
+                        $ftp->cwd($subfolder) ||
+                                die "# ERROR: cannot change working directory ", $ftp->message();
 
-	# compute the number of annotated genes on top of this assembly 
-	$n_of_genes = 0;
-	foreach $chr_acc (@chr_accessions){
+                        foreach my $file ( $ftp->ls() ){
+                        	if($file =~ $full_assembly_id && $file =~ /_genomic.gff.gz/){
 
-		# download a local copy of all chr files of this assembly
-		# Note: XML is smaller than text in my Athaliana tests, 
-		# but EMBL/text format is more readable
-		$ENAfile = "$ENAfolder/$chr_acc.embl.gz";
+					$GFF_fileG = $file;
+					$local_file = "$GFFfolder/$file";
 
-		if($used_saved_files && -s $ENAfile){
-			print "# re-using $ENAfile\n";
-		}
-		else {
-			print "# downloading $ENAfile\n";
-        		system("$WGETEXE -q -c -N '$ENAviewURL/$chr_acc&display=text&download=gzip' -O $ENAfile -o $ENAlogfile");
-			if($? != 0){
-                		die "ERROR: cannot download $ENAviewURL/$chr_acc&display=text&download=gzip\n";
+                			if($used_saved_files && -s $local_file){
+                				print "# re-using $GFF_fileG\n";
+                			}
+                			else { 
+						print "# downloading $GFF_fileG\n"; 
+						$ftp->get($file,$local_file) ||
+                                                	die "# ERROR: cannot download $file ", $ftp->message;
+					}
+
+					$n_of_genesG = count_genes_GFF($local_file);
+					last;
+				}
 			}
+			last;
 		}	
-
-		open(EMBLENA,"zcat $ENAfile |") || die "ERROR: cannot read $ENAfile\n";
-        	while(<EMBLENA>){
-			if(/^FT   gene/){
-				$n_of_genes++;
-			}
-		}
-		close(EMBLENA);
-
-		unlink($ENAfile) if($KEEPCHR == 0);
 	}
 
-	print REPORT "$full_assembly_id\t$scientific_name\t$strain\t$n_of_genes\t".
-		scalar(@chr_accessions)."\t".join(',',@chr_accessions)."\n";
+	## now check whether RefSeq provides GFF for this assembly
+	($subfolderR,$GFF_fileR) = ('NA','NA');
+        ($prev_mod_time,$mod_time)  = (0, 0);
+
+	# check assembly is in RefSeq
+	$fullpath = $GCFGENPATH . $acc2path;
+	if($ftp->cwd($fullpath)) { 
+
+		# check remote folder(s) for this assembly
+		# ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_genomic.gff.gz
+		# corresponds to
+		# ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/188/115/GCF_000188115.4_SL3.0/GCF_000188115.4_SL3.0_genomic.gff.gz
+		# note that version number don't necessarily match, so take latest
+	
+		foreach my $subfolder ( $ftp->ls() ){
+			if($subfolder =~ $assembly_id) {
+		
+				$ftp->cwd($subfolder) || 
+					die "# ERROR: cannot change working directory ", $ftp->message();
+
+				foreach $file ( $ftp->ls() ){
+					if($file =~ $assembly_id && $file =~ /_genomic.gff.gz/){
+						$mod_time = $ftp->mdtm($file);
+
+						if($mod_time > $prev_mod_time){
+                                        		$prev_mod_time = $mod_time;
+                                        		$subfolderR = $subfolder;
+                                        		$GFF_fileR = $file;
+                                		}
+					}
+				}
+
+				$ftp->cwd($fullpath) ||
+                        		die "# ERROR: cannot return to working directory ", $ftp->message();
+			}
+		}
+
+		# actually download most recent GFF file
+		$local_file = "$GFFfolder/$GFF_fileR";
+	
+		if($used_saved_files && -s $local_file){
+        		print "# re-using $GFF_fileR\n";
+        	}
+		else{
+			print "# downloading $GFF_fileR\n"; 
+
+			$ftp->cwd($subfolderR);
+			$ftp->get($GFF_fileR,$local_file) || 
+				die "# ERROR: cannot download $GFF_fileR ", $ftp->message;
+		}
+
+		$n_of_genesR = count_genes_GFF($local_file);
+
+	}
+
+	# incrementally add data to report
+	print REPORT "$full_assembly_id\t$scientific_name\t$strain\t".
+		scalar(@chr_accessions).
+		"\t$GFF_fileG\t$n_of_genesG\t$GFF_fileR\t$n_of_genesR\n";
 }
 close(LOCALENA);
 
@@ -233,3 +288,22 @@ close(REPORT);
 $ftp->quit();
 
 print "# created report $report_file\n";
+
+
+
+## subs
+
+sub count_genes_GFF {
+
+	my ($gff_file_gz) = @_;
+	my $n_of_genes = 0;
+
+	open(GFF,"zcat $gff_file_gz |") || 
+		die "ERROR: cannot read $gff_file_gz\n";
+        while(<GFF>){
+        	if(/\tgene\t/){ $n_of_genes++ }
+	}
+        close(GFF);
+       
+	return $n_of_genes;
+}

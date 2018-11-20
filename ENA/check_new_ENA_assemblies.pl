@@ -192,6 +192,8 @@ while(<LOCALENA>){
                 die "# ERROR: cannot change working directory ", $ftp->message();
 
         $GFF_fileG = 'NA';
+	$n_of_genesG = 0;
+
         foreach my $subfolder ( $ftp->ls() ){
                 if($subfolder =~ $full_assembly_id) {
 
@@ -223,7 +225,7 @@ while(<LOCALENA>){
 
 	## now check whether RefSeq provides GFF for this assembly
 	($subfolderR,$GFF_fileR) = ('NA','NA');
-        ($prev_mod_time,$mod_time)  = (0, 0);
+        ($prev_mod_time,$mod_time,$n_of_genesR)  = (0, 0, 0);
 
 	# check assembly is in RefSeq
 	$fullpath = $GCFGENPATH . $acc2path;

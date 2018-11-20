@@ -17,7 +17,7 @@ use Bio::EnsEMBL::Registry;
 # hard-coded paths, based on
 # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_assembly_report.txt
 my $NCBIFTPURL = 'ftp.ncbi.nlm.nih.gov';
-my $GGAGENPATH = '/genomes/all/GCA/'; # absolute
+my $GCAGENPATH = '/genomes/all/GCA/'; # absolute
 
 my $CLEAN = 0; # set to 1 to force cleaning matching synonyms previously added
 
@@ -110,7 +110,7 @@ foreach my $input_sp (0 .. $#ENA_accessions){
         else{ die "# EXIT : bad ENA accession: $ENA_accession lacks .version\n"; }
 
 	# 2.1) compose folder path based on ENA accession
-	$fullpath = $GGAGENPATH . $acc2path;
+	$fullpath = $GCAGENPATH . $acc2path;
 
 	# 2.2) get to appropriate remote folder
 	$ftp->cwd($fullpath) || 

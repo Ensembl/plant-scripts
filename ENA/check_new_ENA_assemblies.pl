@@ -17,6 +17,7 @@ use POSIX qw(strftime);
 use Getopt::Std;
 use HTTP::Tiny;
 use JSON;
+use Net::FTP;
 
 # hard-coded default parameters
 my $required_assembly_state = 'chromosome';
@@ -32,6 +33,9 @@ my $ENAURL     = 'https://www.ebi.ac.uk/ena/portal/api/search?result=assembly&qu
 my $ENAquery   = '&fields=assembly_level%2Cgenome_representation%2Cassembly_name'.
 			'%2Cassembly_title%2Cscientific_name%2Cstrain%2Cstudy_accession';
 my $ENAviewURL = 'https://www.ebi.ac.uk/ena/data/view';
+# also NCBI
+my $NCBIFTPURL = 'ftp.ncbi.nlm.nih.gov';
+my $GGAGENPATH = '/genomes/all/GCA/'; # absolute
 
 # binaries, edit if required
 my $WGETEXE = 'wget';
@@ -119,11 +123,19 @@ if(length($response->{content})) {
 }
      
 ## 4) check ENA annotated assemblies which might not be currently supported in Ensembl division
-my ($assembly_id,$assembly_state,$genome_representation);
+my ($assembly_id,$assembly_state,$genome_representation,$strain,$fullpath,$acc2path);
 my ($full_assembly_id,$chr_acc,$n_of_genes,$scientific_name,$ENAfile);
 
+# connect to NCBI FTP site 
+my $ftp = Net::FTP->new($NCBIFTPURL, Debug => 0) ||
+	die "# ERROR: cannot connect to $NCBIFTPURL: $@";
+
+$ftp->login("anonymous",'-anonymous@') || 
+	die "# ERROR: cannot login ", $ftp->message();
+
+
 open(REPORT,">",$report_file) || die "# ERROR: cannot create $report_file\n";
-print REPORT "# ENA_assembly_id\tscientific_name\tannotated_genes\tchromosomes\tchromosome_accessions\n";
+print REPORT "# ENA_assembly_id\tscientific_name\tstrain\tannotated_genes\tchromosomes\tchromosome_accessions\n";
 
 open(LOCALENA,$ENAcurrent_file) || die "ERROR: cannot read $ENAcurrent_file\n";
 while(<LOCALENA>){
@@ -132,8 +144,10 @@ while(<LOCALENA>){
 	#GCA_000001735	chromosome	full	TAIR10;TAIR10.1	TAIR10.1 assembly for Arabidopsis thaliana	Arabidopsis thaliana
 	
 	my @data = split(/\t/,$_);
-	($assembly_id,$assembly_state,$genome_representation,$scientific_name) = @data[0,1,2,5];
+	($assembly_id,$assembly_state,$genome_representation,$scientific_name,$strain) = @data[0,1,2,5,6];
 	next if($assembly_id eq 'accession');
+
+	if($strain eq ''){ $strain = 'NA' }
 
 	# get this assembly most recent version attached to GCA accession + linked chr accessions
 	# NOTE: when you request a view you get the most recent version (Dan Bolser)
@@ -159,6 +173,24 @@ while(<LOCALENA>){
 	next if($assembly_state ne $required_assembly_state || 
 		$genome_representation ne $required_genome_representation ||
 		defined($current_ensembl_assembly_ids{$full_assembly_id}) );
+
+
+	# check whether NCBI/RefSeq provide GFF for this assembly
+	if($full_assembly_id =~ /GCA_(\d+)\.\d+$/){
+
+		$acc2path = $1;
+                $acc2path =~ s/...\K(?=.)/\//sg;
+        }
+        else{ die "# EXIT : bad ENA accession: $full_assembly_id lacks .version\n"; }
+
+	# compose folder path based on ENA full assembly id
+	$fullpath = $GGAGENPATH . $acc2path;
+
+	# 2.2) get to appropriate remote folder
+	$ftp->cwd($fullpath) || 
+		die "# ERROR: cannot change working directory ", $ftp->message();
+
+
 
 	# compute the number of annotated genes on top of this assembly 
 	$n_of_genes = 0;
@@ -191,11 +223,13 @@ while(<LOCALENA>){
 		unlink($ENAfile) if($KEEPCHR == 0);
 	}
 
-	print REPORT "$full_assembly_id\t$scientific_name\t$n_of_genes\t".
+	print REPORT "$full_assembly_id\t$scientific_name\t$strain\t$n_of_genes\t".
 		scalar(@chr_accessions)."\t".join(',',@chr_accessions)."\n";
 }
 close(LOCALENA);
 
 close(REPORT);
+
+$ftp->quit();
 
 print "# created report $report_file\n";

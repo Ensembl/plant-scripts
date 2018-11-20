@@ -9,6 +9,7 @@
 # Or if you want to re-run without re-downloading ENA files: 
 # $ ./check_new_ENA_assemblies.pl -t Viridiplantae -S
 
+# TO BE DONE: check whether GFF file is available from NCBI/RefSeq
 
 use strict;
 use warnings;

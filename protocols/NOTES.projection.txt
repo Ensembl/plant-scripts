@@ -1,0 +1,1170 @@
+
+## Note that the seq_region_ids of the variation database that you're
+## projecting FROM need to match the corresponding IDs of the correct
+## sequence in the core where the assembly data is. i.e. the old IDs
+## (for the old seq_regions in the old database) probably need
+## updating to the new IDs (for the old seq_regions in the new
+## database).
+
+-- OK, what IDs should be mapped to what?
+-- (Using sorghum as an example)
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT * FROM coord_system;
++-------------------+--------------+------------+--------------------+--------+-----------------+
+|   coord_system_id |   species_id | name       | version            |   rank | attrib          |
+|-------------------+--------------+------------+--------------------+--------+-----------------|
+|                 3 |            1 | chromosome | Sorghum_bicolor_v2 |      1 | default_version |
++-------------------+--------------+------------+--------------------+--------+-----------------+
+1 row in set
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT coord_system_id, COUNT(*) FROM seq_region GROUP BY 1;
++-------------------+------------+
+|   coord_system_id |   COUNT(*) |
+|-------------------+------------|
+|                 3 |         12 |
++-------------------+------------+
+1 row in set
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT coord_system_id, COUNT(*) FROM seq_region
+INNER JOIN variation_feature USING (seq_region_id) GROUP BY 1;
++-------------------+------------+
+|   coord_system_id |   COUNT(*) |
+|-------------------+------------|
+|                 3 |    8187272 |
++-------------------+------------+
+1 row in set
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT COUNT(*) FROM variation;
++------------+
+|   COUNT(*) |
+|------------|
+|    8187272 |
++------------+
+1 row in set
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT corecs.* FROM sorghum_bicolor_core_37_90_30.coord_system corecs
+INNER JOIN coord_system USING(name, version);
++-------------------+--------------+------------+--------------------+--------+----------+
+|   coord_system_id |   species_id | name       | version            |   rank |   attrib |
+|-------------------+--------------+------------+--------------------+--------+----------|
+|                 7 |            1 | chromosome | Sorghum_bicolor_v2 |      8 |   <null> |
++-------------------+--------------+------------+--------------------+--------+----------+
+1 row in set
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT seq_region.seq_region_id AS FROMFROM, corecs.seq_region_id AS TOTO FROM seq_region INNER JOIN sorghum_bicolor_core_37_90_30.seq_region corecs USING(name) WHERE corecs.coord_system_id = 7;
++------------+--------+
+|   FROMFROM |   TOTO |
+|------------+--------|
+|         62 |  10468 |
+|         98 |  10469 |
+|        895 |  10470 |
+|       1170 |  10471 |
+|       2732 |  10472 |
+|       3752 |  10473 |
+|       5139 |  10474 |
+|       5541 |  10475 |
+|       6999 |  10476 |
+|       7092 |  10477 |
+|       7997 |  10478 |
+|       8681 |  10479 |
++------------+--------+
+12 rows in set
+
+
+
+## OH FUCK....
+
+ensrw@mysql-eg-prod-1.ebi.ac.uk:4238/ sorghum_bicolor_variation_37_90_30
+> SELECT CONCAT("UPDATE ", TABLE_NAME, " SET seq_region_id = ", core_sr.seq_region_id, " WHERE seq_region_id = ", vari_sr.seq_region_id, ";") FROM seq_region vari_sr INNER JOIN sorghum_bicolor_core_37_90_30.seq_region core_sr USING (name) INNER JOIN (SELECT TABLE_NAME FROM information_schema.COLUMNS WHERE COLUMNS.TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = 'seq_region_id') AS x WHERE core_sr.coord_system_id = 7;
+
+... -Ne > puky.sql
+
+mysql-prod-1-ensrw sorghum_bicolor_variation_37_90_30 < puky.sql 
+
+
+
+
+
+## Now proceed with projection...
+
+libdir=/nfs/panda/ensemblgenomes/apis/ensembl/master
+source ${libdir}/setup.sh
+
+time \
+  ./project_features_generic_copy.pl --prefix tom-test4
+
+
+
+## 48 hours later...
+
+wc -l Scratch/tom-test4-0.tsv
+  71151005 Scratch/tom-test4-0.tsv
+
+grep -c "^failed to project " Scratch/tom-test4-0.err
+      5255
+
+# Total
+perl -e 'print 71151005+5255, "\n"'
+  71156260
+
+# Total in original DB
+  71156260
+
+perl cut -f 5 Scratch/tom-test4-0.tsv | sort | uniq -c
+71103414 2
+   47591 5
+71151005 total
+
+# Those still on CS 5 were those that didn't 'fail to project' but
+# rather those that had no valid projection. I still don't knwo the
+# cause of these different classes!
+
+perl -e 'print 5255+47591, "\n"'
+   52846
+
+perl -e 'print 100-(52846/71156260*100), "\n"'
+      99.93 %
+
+
+
+-- LOADING AND UPDATING...
+
+DROP   TABLE IF EXISTS temp_vfp;
+CREATE TABLE temp_vfp (
+  PRIMARY KEY (variation_feature_id),
+  INDEX pos_idx (seq_region_id, seq_region_start, seq_region_end)
+)
+SELECT
+  variation_feature_id,
+  variation_name,
+  seq_region_id,
+#  seq_region_name,
+#  coord_system_id,
+#  coord_system_name,
+  seq_region_start,
+  seq_region_end,
+  seq_region_strand
+FROM
+  variation_feature
+LIMIT 0
+;
+
+
+
+## Version with extra three columns above
+#LOAD DATA LOCAL INFILE "projected2.tsv" INTO TABLE temp_vfp
+
+## Version without the extra three columns above
+LOAD DATA LOCAL INFILE
+  #"projected4.tsv"
+  #"Scratch/brachypodium_distachyon-0.tsv"
+  #"Scratch/barley-0.tsv"
+  "Scratch/tom-test4-0.tsv"
+INTO TABLE temp_vfp (
+  variation_feature_id, variation_name, seq_region_id,
+  @null, @null, @null,
+  seq_region_start,
+  seq_region_end,
+  seq_region_strand
+);
+
+Query OK, 71151005 rows affected (9 min 28.11 sec)
+Records:  71151005 Deleted: 0  Skipped: 0  Warnings: 0
+
+
+
+
+
+-- TEST SQL
+
+## Step 0
+
+SELECT COUNT(DISTINCT variation_feature_id), COUNT(*)
+FROM variation_feature;
+
++--------------------------------------+----------+
+| COUNT(DISTINCT variation_feature_id) | COUNT(*) |
++--------------------------------------+----------+
+|                             71156260 | 71156260 |
++--------------------------------------+----------+
+1 row in set (2 min 18.91 sec)
+
+
+
+## Step 1
+
+SELECT COUNT(DISTINCT variation_feature_id), COUNT(*)
+FROM variation_feature
+INNER JOIN temp_vfp USING (variation_feature_id);
+
++--------------------------------------+----------+
+| COUNT(DISTINCT variation_feature_id) | COUNT(*) |
++--------------------------------------+----------+
+|                             71151005 | 71151005 |
++--------------------------------------+----------+
+1 row in set (6 min 26.99 sec)
+
+SELECT 71156260-71151005; # 5255
+
+
+
+## Step 2
+
+SELECT COUNT(DISTINCT variation_feature.variation_feature_id), COUNT(*)
+FROM variation_feature INNER JOIN temp_vfp
+USING (variation_feature_id,
+       seq_region_id, seq_region_start, seq_region_end, seq_region_strand);
++--------------------------------------------------------+----------+
+| COUNT(DISTINCT variation_feature.variation_feature_id) | COUNT(*) |
++--------------------------------------------------------+----------+
+|                                                  47591 |    47591 |
++--------------------------------------------------------+----------+
+1 row in set (3 min 58.21 sec)
+
+
+
+
+
+-- UPDATE SQL...
+
+UPDATE
+  variation_feature a
+INNER JOIN
+  temp_vfp          b
+USING
+  (variation_feature_id)
+SET
+  a.seq_region_id     =
+  b.seq_region_id,
+  ##
+  a.seq_region_start  =
+  b.seq_region_start,
+  ##
+  a.seq_region_end    =
+  b.seq_region_end,
+  ##
+  a.seq_region_strand =
+  b.seq_region_strand
+;
+
+Query OK,     71103414 rows affected (34 min 39.37 sec)
+Rows matched: 71151005  Changed: 71103414  Warnings: 0
+
+SELECT 71151005 -   47591; # 71103414
+
+
+
+
+
+-- RE-TEST SQL
+
+## Step 1
+
+SELECT COUNT(DISTINCT variation_feature_id), COUNT(*)
+FROM variation_feature
+INNER JOIN temp_vfp USING (variation_feature_id);
+
++--------------------------------------+----------+
+| COUNT(DISTINCT variation_feature_id) | COUNT(*) |
++--------------------------------------+----------+
+|                             71151005 | 71151005 |
++--------------------------------------+----------+
+1 row in set (5 min 8.98 sec)
+
+
+
+## Step 2
+
+SELECT COUNT(DISTINCT variation_feature.variation_feature_id), COUNT(*)
+FROM variation_feature INNER JOIN temp_vfp
+USING (variation_feature_id,
+       seq_region_id, seq_region_start, seq_region_end, seq_region_strand);
+
++--------------------------------------------------------+----------+
+| COUNT(DISTINCT variation_feature.variation_feature_id) | COUNT(*) |
++--------------------------------------------------------+----------+
+|                                               71151005 | 71151005 |
++--------------------------------------------------------+----------+
+1 row in set (10 min 41.43 sec)
+
+
+
+
+
+
+
+
+--
+-- Final fixes...
+--
+
+SELECT COUNT(*) FROM variation_feature;
++----------+
+| COUNT(*) |
++----------+
+| 71156260 |
++----------+
+1 row in set (0.00 sec)
+
+SELECT COUNT(*) FROM variation_feature
+INNER JOIN seq_region USING (seq_region_id);
++----------+
+| COUNT(*) |
++----------+
+|    52846 |
++----------+
+1 row in set (0.06 sec)
+
+
+
+## Time to be bold...
+
+DELETE FROM coord_system;
+
+DELETE FROM seq_region
+INNER JOIN variation_feature USING (seq_region_id)
+INNER JOIN variation USING (variation_id);
+
+
+
+## Only add what we need...
+
+INSERT INTO seq_region SELECT seq_region_id, name, coord_system_id
+FROM solanum_lycopersicum_core_42_95_3.seq_region
+WHERE coord_system_id = 2;
+
+Query OK, 12 rows affected (0.00 sec)
+Records: 12  Duplicates: 0  Warnings: 0
+
+INSERT INTO coord_system SELECT *
+FROM solanum_lycopersicum_core_42_95_3.coord_system
+WHERE coord_system_id = 2;
+
+Query OK, 1 row affected (0.00 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+
+
+-- Final re-check
+
+SELECT COUNT(*) FROM variation_feature;
+
++----------+
+| COUNT(*) |
++----------+
+| 71103414 |
++----------+
+1 row in set (0.00 sec)
+
+
+
+SELECT COUNT(*) FROM variation_feature
+INNER JOIN seq_region USING (seq_region_id);
+
++----------+
+| COUNT(*) |
++----------+
+| 71103414 |
++----------+
+1 row in set (1 min 14.29 sec)
+
+
+
+
+
+
+
+## Proffit?
+
+-- FUCKKKKKKKKKKKKKKKKKKKKKKKKKKKk
+UPDATE meta_coord SET coord_system_id = 2;
+
+
+
+-- We should check reference bases...
+
+
+
+
+
+-- This is ...
+
+DROP TABLE IF EXISTS MTMP_transcript_variation;
+DROP TABLE IF EXISTS MTMP_evidence;
+DROP TABLE IF EXISTS MTMP_population_genotype;
+DROP TABLE IF EXISTS MTMP_sample_genotype;
+DROP TABLE IF EXISTS MTMP_variation_annotation;
+DROP TABLE IF EXISTS MTMP_variation_set_variation;
+DROP TABLE IF EXISTS tmp_individual_genotype_single_bp;
+
+
+
+-- What about other tables that refernce variations that we just
+-- deleted????? ANSWER ME!
+
+SELECT @a:=COUNT(*)
+FROM tmp_sample_genotype_single_bp t;
+
+SELECT @b:=COUNT(DISTINCT variation_id)
+FROM tmp_sample_genotype_single_bp t;
+
+SELECT @c:=COUNT(*), @d:=COUNT(DISTINCT variation_id)
+FROM tmp_sample_genotype_single_bp t INNER JOIN variation v USING (variation_id);
+
+SELECT @a-@c, @b-@d;
+
+SELECT COUNT(*), COUNT(DISTINCT variation_id)
+FROM tmp_sample_genotype_single_bp t LEFT  JOIN variation v USING (variation_id)
+WHERE v.variation_id IS NULL;
+
+DELETE t
+FROM tmp_sample_genotype_single_bp t LEFT  JOIN variation v USING (variation_id)
+WHERE v.variation_id IS NULL;
+
+
+
+SELECT @a:=COUNT(*)
+FROM sample_genotype_multiple_bp t;
+
+SELECT @b:=COUNT(DISTINCT variation_id)
+FROM sample_genotype_multiple_bp t;
+
+SELECT @c:=COUNT(*), @d:=COUNT(DISTINCT variation_id)
+FROM sample_genotype_multiple_bp t INNER JOIN variation v USING (variation_id);
+
+SELECT @a-@c, @b-@d;
+
+SELECT COUNT(*), COUNT(DISTINCT variation_id)
+FROM sample_genotype_multiple_bp t LEFT  JOIN variation v USING (variation_id)
+WHERE v.variation_id IS NULL;
+
+DELETE t
+FROM sample_genotype_multiple_bp t LEFT  JOIN variation v USING (variation_id)
+WHERE v.variation_id IS NULL;
+
+
+
+
+
+
+
+
+
+-- Now run Compression pipeline / VEP pipeline / SIFT pipeline, etc.
+
+
+SELECT COUNT(*) FROM compressed_genotype_var;
+SELECT COUNT(*) FROM variation;
+SELECT COUNT(*) FROM compressed_genotype_var
+INNER JOIN           variation USING (variation_id);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- LOADING AND UPDATING STRUCTURAL!!!!
+
+
+-- Create an empty table...
+DROP   TABLE IF EXISTS temp_svfp;
+CREATE TEMPORARY TABLE temp_svfp (
+  PRIMARY KEY (structural_variation_feature_id),
+  INDEX pos_idx (seq_region_id, seq_region_start, seq_region_end)
+)
+SELECT
+  structural_variation_feature_id,
+  variation_name,
+  seq_region_id,
+#  seq_region_name,
+#  coord_system_id,
+#  coord_system_name,
+  outer_start,
+  seq_region_start,
+  inner_start,
+  inner_end,
+  seq_region_end,
+  outer_end,
+  seq_region_strand
+FROM
+  structural_variation_feature
+LIMIT
+  0
+;
+
+Query OK, 0 rows affected
+Query OK, 0 rows affected
+
+LOAD DATA LOCAL INFILE
+  "sorg_sv3.tsv"
+INTO TABLE temp_svfp (
+  structural_variation_feature_id,
+  variation_name,
+  seq_region_id,
+  @null, @null, @null,
+  outer_start,
+  seq_region_start,
+  inner_start,
+  inner_end,
+  seq_region_end,
+  outer_end,
+  seq_region_strand
+);
+
+
+
+
+-- Hack the API (we put this back later)
+
+CREATE TABLE structural_variation_bk LIKE          structural_variation;
+INSERT INTO  structural_variation_bk SELECT * FROM structural_variation;
+
+CREATE TABLE structural_variation_feature_bk LIKE          structural_variation_feature;
+INSERT INTO  structural_variation_feature_bk SELECT * FROM structural_variation_feature;
+
+UPDATE structural_variation         SET is_evidence = 0;
+Query OK, 32261 rows affected (0.14 sec)
+Rows matched: 64507  Changed: 32261  Warnings: 0
+Query OK, 29172 rows affected
+
+UPDATE structural_variation_feature SET is_evidence = 0;
+Query OK, 32261 rows affected (0.16 sec)
+Rows matched: 64507  Changed: 32261  Warnings: 0
+Query OK, 29172 rows affected
+
+## Ukh
+TRUNCATE    structural_variation;
+INSERT INTO structural_variation SELECT * FROM structural_variation_bk;
+Query OK, 58336 rows affected
+
+TRUNCATE    structural_variation_feature;
+INSERT INTO structural_variation_feature SELECT * FROM structural_variation_feature_bk;
+Query OK, 58336 rows affected
+
+
+
+
+
+-- Note the inner column...
+
+SELECT
+  is_evidence,
+  inner_start < seq_region_start AS A,
+  outer_start > seq_region_start AS B,
+  inner_end   > seq_region_end   AS C,
+  outer_end   < seq_region_end   AS D,
+  COUNT(*)
+FROM
+  structural_variation_feature
+GROUP BY
+  1, A, B, C, D
+;
++-------------+------+------+------+------+----------+
+| is_evidence | A    | B    | C    | D    | COUNT(*) |
++-------------+------+------+------+------+----------+
+|           0 | NULL | NULL | NULL | NULL |    32246 |
+|           0 | NULL |    0 | NULL |    0 |    15150 | <- Was 'is_evidence = 1'
+|           0 |    0 | NULL |    0 | NULL |    17111 | <- Was 'is_evidence = 1'
++-------------+------+------+------+------+----------+
+
++---------------+--------+--------+--------+--------+------------+
+|   is_evidence |      A |      B |      C |      D |   COUNT(*) |
+|---------------+--------+--------+--------+--------+------------|
+|             0 | <null> | <null> | <null> | <null> |      29164 |
+|             0 | <null> |      0 | <null> |      0 |      13365 | <- Was 'is_evidence = 1'
+|             0 |      0 | <null> |      0 | <null> |      15807 | <- Was 'is_evidence = 1'
++---------------+--------+--------+--------+--------+------------+
+
+SELECT COUNT(*) FROM structural_variation_feature
+WHERE outer_start IS NOT NULL AND outer_start != seq_region_start;
+SELECT COUNT(*) FROM structural_variation_feature
+WHERE outer_start IS NOT NULL AND outer_end != seq_region_end;
+
+SELECT COUNT(*) FROM structural_variation_feature
+WHERE inner_start IS NOT NULL AND inner_start != seq_region_start;
+SELECT COUNT(*) FROM structural_variation_feature
+WHERE inner_start IS NOT NULL AND inner_end != seq_region_end;
+
+
+
+
+-- TEST SQL
+
+SELECT COUNT(DISTINCT structural_variation_feature_id), COUNT(*)
+FROM structural_variation_feature;
++-------------------------------------------------+----------+
+| COUNT(DISTINCT structural_variation_feature_id) | COUNT(*) |
++-------------------------------------------------+----------+
+|                                           64507 |    64507 |
++-------------------------------------------------+----------+
+
++---------------------------------------------------+------------+
+|   COUNT(DISTINCT structural_variation_feature_id) |   COUNT(*) |
+|---------------------------------------------------+------------|
+|                                             58336 |      58336 |
++---------------------------------------------------+------------+
+
+SELECT COUNT(DISTINCT structural_variation_feature_id), COUNT(*)
+FROM structural_variation_feature
+INNER JOIN temp_svfp USING (structural_variation_feature_id);
++-------------------------------------------------+----------+
+| COUNT(DISTINCT structural_variation_feature_id) | COUNT(*) |
++-------------------------------------------------+----------+
+|                                           58448 |    58448 |
++-------------------------------------------------+----------+
+
++---------------------------------------------------+------------+
+|   COUNT(DISTINCT structural_variation_feature_id) |   COUNT(*) |
+|---------------------------------------------------+------------|
+|                                             55982 |      55982 |
++---------------------------------------------------+------------+
+
+SELECT 58336-55982; # 2354
+
+grep -c 'failed to project' sorg_sv3.err 
+2354
+
+
+
+SELECT COUNT(DISTINCT p.structural_variation_feature_id), COUNT(*)
+FROM structural_variation_feature p INNER JOIN temp_svfp q
+ON
+  #p.structural_variation_feature_id =
+  #q.structural_variation_feature_id
+  -- OR
+  p.seq_region_id = q.seq_region_id AND
+  COALESCE(p.outer_start, 0) = COALESCE(q.outer_start, 0) AND
+  p.seq_region_start         = q.seq_region_start AND
+  COALESCE(p.inner_start, 0) = COALESCE(q.inner_start, 0) AND
+  COALESCE(p.inner_end, 0)   = COALESCE(q.inner_end, 0) AND
+  p.seq_region_end           = q.seq_region_end AND
+  COALESCE(p.outer_end, 0)   = COALESCE(q.outer_end, 0)
+;
+
++---------------------------------------------------+----------+
+| COUNT(DISTINCT p.structural_variation_feature_id) | COUNT(*) |
++---------------------------------------------------+----------+
+|                                               112 |      120 |
++---------------------------------------------------+----------+
++-----------------------------------------------------+------------+
+|   COUNT(DISTINCT p.structural_variation_feature_id) |   COUNT(*) |
+|-----------------------------------------------------+------------|
+|                                                 209 |        217 |
++-----------------------------------------------------+------------+
+
+
+
+
+
+-- UPDATE SQL...
+
+UPDATE
+  structural_variation_feature a
+INNER JOIN
+  temp_svfp b
+USING
+  (structural_variation_feature_id)
+SET
+  a.seq_region_id     =
+  b.seq_region_id,
+  a.outer_start =
+  b.outer_start,
+  a.seq_region_start  =
+  b.seq_region_start,
+  a.inner_start =
+  b.inner_start,
+  a.inner_end =
+  b.inner_end,
+  a.seq_region_end    =
+  b.seq_region_end,
+  a.outer_end =
+  b.outer_end,
+  a.seq_region_strand =
+  b.seq_region_strand
+;
+Query OK, 58336 rows affected (1.29 sec)
+Rows matched: 58448  Changed: 58336  Warnings: 0
+
+Query OK, 55773 rows affected
+
+SELECT 58448-112; # 58336
+
+SELECT 55982-209; # 55773
+
+
+
+
+-- TEST SQL
+
+SELECT COUNT(DISTINCT structural_variation_feature_id), COUNT(*)
+FROM structural_variation_feature
+INNER JOIN temp_svfp USING (structural_variation_feature_id);
++-------------------------------------------------+----------+
+| COUNT(DISTINCT structural_variation_feature_id) | COUNT(*) |
++-------------------------------------------------+----------+
+|                                           58448 |    58448 |
++-------------------------------------------------+----------+
+1 row in set (0.19 sec)
+
+SELECT COUNT(DISTINCT p.structural_variation_feature_id), COUNT(*)
+FROM structural_variation_feature p INNER JOIN temp_svfp q
+ON
+  #p.structural_variation_feature_id =
+  #q.structural_variation_feature_id AND
+  p.seq_region_id = q.seq_region_id AND
+  COALESCE(p.outer_start, 0) = COALESCE(q.outer_start, 0) AND
+  p.seq_region_start         = q.seq_region_start AND
+  COALESCE(p.inner_start, 0) = COALESCE(q.inner_start, 0) AND
+  COALESCE(p.inner_end, 0)   = COALESCE(q.inner_end, 0) AND
+  p.seq_region_end           = q.seq_region_end AND
+  COALESCE(p.outer_end, 0)   = COALESCE(q.outer_end, 0)
+;
++---------------------------------------------------+----------+
+| COUNT(DISTINCT p.structural_variation_feature_id) | COUNT(*) |
++---------------------------------------------------+----------+
+|                                             58448 |    58478 |
++---------------------------------------------------+----------+
+1 row in set (0.39 sec)
+
++---------------------------------------------------+----------+
+| COUNT(DISTINCT p.structural_variation_feature_id) | COUNT(*) |
+|---------------------------------------------------+----------|
+|                                             55982 |    56108 |
++---------------------------------------------------+----------+
+
+
+
+
+-- Final fixes...
+
+SELECT seq_region_id, COUNT(*) FROM structural_variation_feature GROUP BY 1;
+
+SELECT COUNT(*) FROM structural_variation_feature WHERE seq_region_id < 10468;
+55773
+
+SELECT COUNT(*) FROM structural_variation_feature WHERE seq_region_id > 4852;
+2563
+
+SELECT 2354+209; # 2563
+
+DELETE structural_variation, structural_variation_feature
+FROM structural_variation
+INNER JOIN structural_variation_feature USING (structural_variation_id)
+WHERE seq_region_id > 4852;
+
+#WHERE seq_region_id BETWEEN  9310 AND  9319;
+
+Query OK,  6171 rows affected (0.38 sec)
+Query OK, 12342 rows affected (0.52 sec)
+Query OK, 5126 rows affected
+
+
+
+SELECT COUNT(*) FROM structural_variation_feature;
++----------+
+| COUNT(*) |
++----------+
+|    58336 |
++----------+
+
++----------+
+| COUNT(*) |
+|----------|
+|    55773 |
++----------+
+
+SELECT COUNT(*) FROM structural_variation_feature
+INNER JOIN seq_region USING (seq_region_id);
++----------+
+| COUNT(*) |
++----------+
+|    58336 |
++----------+
+
++----------+
+| COUNT(*) |
+|----------|
+|    55773 |
++----------+
+
+
+
+-- Fix is_evidence
+
+SELECT COUNT(*) FROM structural_variation;
+SELECT COUNT(*) FROM structural_variation
+INNER JOIN           structural_variation_bk USING (structural_variation_id);
+
+UPDATE     structural_variation
+INNER JOIN structural_variation_bk USING (structural_variation_id)
+SET structural_variation.is_evidence =
+    structural_variation_bk.is_evidence;
+Query OK, 29172 rows affected (0.26 sec)
+Rows matched: 58336  Changed: 29172  Warnings: 0
+Query OK, 27889 rows affected
+
+
+SELECT COUNT(*) FROM structural_variation_feature;
+SELECT COUNT(*) FROM structural_variation_feature
+INNER JOIN           structural_variation_feature_bk USING (structural_variation_feature_id);
+
+UPDATE     structural_variation_feature
+INNER JOIN structural_variation_feature_bk USING (structural_variation_feature_id)
+SET        structural_variation_feature.is_evidence =
+           structural_variation_feature_bk.is_evidence;
+Query OK, 29172 rows affected (0.29 sec)
+Rows matched: 58336  Changed: 29172  Warnings: 0
+Query OK, 27889 rows affected
+
+
+
+-- Fix inner column
+
+SELECT
+  is_evidence,
+  inner_start < seq_region_start AS A,
+  outer_start > seq_region_start AS B,
+  inner_end   > seq_region_end   AS C,
+  outer_end   < seq_region_end   AS D,
+  COUNT(*)
+FROM
+  structural_variation_feature
+GROUP BY
+  1, A, B, C, D
+;
++---------------+--------+--------+--------+--------+------------+
+|   is_evidence |      A |      B |      C |      D |   COUNT(*) |
+|---------------+--------+--------+--------+--------+------------|
+|             0 | <null> | <null> | <null> | <null> |      27884 |
+|             1 | <null> |      0 | <null> |      0 |      12836 |
+|             1 |      0 | <null> |      0 | <null> |        133 |
+|             1 |      0 | <null> |      1 | <null> |       4521 |
+|             1 |      1 | <null> |      0 | <null> |      10397 |
+|             1 |      1 | <null> |      1 | <null> |          2 |
++---------------+--------+--------+--------+--------+------------+
+
+
+SELECT COUNT(*) FROM structural_variation_feature
+WHERE inner_start IS NOT NULL
+AND inner_start != seq_region_start;
+14919
+
+UPDATE structural_variation_feature
+SET inner_start = seq_region_start
+WHERE inner_start IS NOT NULL;
+Query OK, 15589 rows affected (0.11 sec)
+Rows matched: 15807  Changed: 15589  Warnings: 0
+Query OK, 14919 rows affected
+
+
+SELECT COUNT(*) FROM structural_variation_feature
+WHERE inner_end   IS NOT NULL
+AND inner_end   != seq_region_end;
+14920
+
+UPDATE structural_variation_feature
+SET inner_end   = seq_region_end
+WHERE inner_end   IS NOT NULL;
+Query OK, 15587 rows affected (0.12 sec)
+Rows matched: 15807  Changed: 15587  Warnings: 0
+Query OK, 14920 rows affected
+
+
+
+-- SUMMARY (Failed to project 9.57%)
+
+SELECT 6171/64507*100;
+
+SELECT 2563/55982*100; # 4.5783
+
+
+
+
+
+-- HC
+
+sample_population.sample_id 567 is not linked.
+sample_population.sample_id 583 is not linked.
+FAILED sample_population -> sample using FK sample_id(sample_id) relationships
+FAILURE DETAILS: 17 sample_population entries are not linked to sample
+USEFUL SQL: SELECT sample_population.sample_id FROM sample_population LEFT JOIN sample ON sample_population.sample_id = sample.sample_id WHERE sample.sample_id IS NULL
+
+structural_variation_sample.structural_variation_id 2 is not linked.
+structural_variation_sample.structural_variation_id 111 is not linked.
+FAILED structural_variation_sample -> structural_variation using FK structural_variation_id(structural_variation_id) relationships
+FAILURE DETAILS: 3089 structural_variation_sample entries are not linked to structural_variation
+USEFUL SQL: SELECT structural_variation_sample.structural_variation_id FROM structural_variation_sample LEFT JOIN structural_variation ON structural_variation_sample.structural_variation_id = structural_variation.structural_variation_id WHERE structural_variation.structural_variation_id IS NULL
+
+DELETE structural_variation_sample FROM structural_variation_sample LEFT JOIN structural_variation USING(structural_variation_id) WHERE structural_variation.structural_variation_id IS NULL;
+Query OK, 3089 rows affected (0.24 sec)
+
+
+structural_variation_association.structural_variation_id 32266 is not linked.
+structural_variation_association.structural_variation_id 32379 is not linked.
+FAILED structural_variation_association -> structural_variation using FK structural_variation_id(structural_variation_id) relationships
+FAILURE DETAILS: 3089 structural_variation_association entries are not linked to structural_variation
+USEFUL SQL: SELECT structural_variation_association.structural_variation_id FROM structural_variation_association LEFT JOIN structural_variation ON structural_variation_association.structural_variation_id = structural_variation.structural_variation_id WHERE structural_variation.structural_variation_id IS NULL
+
+DELETE structural_variation_association FROM structural_variation_association LEFT JOIN structural_variation USING (structural_variation_id) WHERE structural_variation.structural_variation_id IS NULL;
+Query OK, 3089 rows affected (0.22 sec)
+
+
+
+
+
+
+
+
+
+
+-- OTHER NOTES TO INTEGRATE ABOVE...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+64507 SVs to care about
+
+Projection moved (or failed to move) this many (58448):
+
+cut -f 3 projected4.tsv  | sort | uniq -c | sort -n 
+
+
+FAILED
+      2 9310
+      4 9311
+      4 9314
+      4 9318
+      8 9312
+      8 9316
+     10 9315
+     12 9317
+     24 9313
+     36 9319
+    112 TOTO
+
+PROJECTED
+
+   6810 62
+   6369 98
+   5022 895
+   7244 1170
+   6356 2732
+   6054 3752
+   4996 5541
+   4958 7092
+   5867 7997
+   4660 8681
+  58336 TOTO
+
+   6059 were 'failed to project' 
+
+
+  112 +
+58448 +
+ 6059 =
+64507
+
+  112 +
+ 6059 =
+ 6171
+
+-- OK
+
+
+
+
+
+
+
+
+
+-- Sanify the two tables...
+
+-- Don't do actions...
+
+SELECT
+  is_evidence,
+  COUNT(DISTINCT seq_region_id)               AS aa,
+  COUNT(DISTINCT COALESCE(outer_start, 1))    AS bb,
+  COUNT(DISTINCT seq_region_start)            AS cc,
+  COUNT(DISTINCT COALESCE(inner_start, 1))    AS dd,
+  COUNT(DISTINCT COALESCE(inner_end, 1))      AS ee,
+  COUNT(DISTINCT seq_region_end)              AS ff,
+  COUNT(DISTINCT COALESCE(outer_end, 1))      AS gg,
+  COUNT(DISTINCT seq_region_strand)           AS hh,
+  COUNT(*)
+FROM
+  structural_variation_feature
+GROUP BY
+  1
+LIMIT
+  03
+;
++-------------+----+-------+-------+-------+-------+-------+-------+----+----------+
+| is_evidence | aa | bb    | cc    | dd    | ee    | ff    | gg    | hh | COUNT(*) |
++-------------+----+-------+-------+-------+-------+-------+-------+----+----------+
+|           0 | 10 |     1 | 32200 |     1 |     1 | 32158 |     1 |  1 |    32246 |
+|           1 | 10 | 15124 | 32200 | 17080 | 17041 | 32158 | 15123 |  1 |    32261 |
++-------------+----+-------+-------+-------+-------+-------+-------+----+----------+
+2 rows in set (0.20 sec)
+
++---------------+------+-------+-------+-------+-------+-------+-------+------+------------+
+|   is_evidence |   aa |    bb |    cc |    dd |    ee |    ff |    gg |   hh |   COUNT(*) |
+|---------------+------+-------+-------+-------+-------+-------+-------+------+------------|
+|             0 |   10 |     1 | 29130 |     1 |     1 | 29088 |     1 |    2 |      29164 |
+|             1 |   10 | 13346 | 29130 | 15789 | 15751 | 29088 | 13344 |    2 |      29172 |
++---------------+------+-------+-------+-------+-------+-------+-------+------+------------+
+2 rows in set
+
+SELECT
+  COUNT(DISTINCT
+    seq_region_id,
+    COALESCE(outer_start, 0),
+    seq_region_start,
+    COALESCE(inner_start, 0),
+    COALESCE(inner_end, 0),
+    seq_region_end,
+    COALESCE(outer_end, 0),
+    seq_region_strand,
+    #variation_name,
+    source_id, study_id, class_attrib_id,
+    COALESCE(allele_string, 0),
+    is_evidence, somatic,
+    COALESCE(breakpoint_order, 0), variation_set_id,
+    COALESCE(length, 0)
+  ) AS x,
+  COUNT(*)
+FROM
+  structural_variation_feature
+;
+
+## Some dupes with different names? No, evidence!
+SELECT
+  seq_region_id, seq_region_start, seq_region_end, variation_name
+FROM
+  structural_variation_feature
+INNER JOIN
+(
+  SELECT
+    seq_region_id, seq_region_start, seq_region_end
+  FROM
+    structural_variation_feature
+  GROUP BY
+    seq_region_id, seq_region_start, seq_region_end
+  HAVING
+    COUNT(*) > 1
+) AS
+  x
+USING
+  (seq_region_id, seq_region_start, seq_region_end)
+;
+
+SELECT COUNT(*), COUNT(DISTINCT variation_name)
+FROM structural_variation_feature;
+
+SELECT COUNT(*) FROM structural_variation sv
+INNER JOIN           structural_variation_feature svf USING (structural_variation_id) 
+WHERE
+sv.class_attrib_id       != svf.class_attrib_id       AND
+sv.is_evidence           != svf.is_evidence           AND
+sv.source_id             != svf.source_id             AND
+sv.study_id              != svf.study_id              AND
+sv.variation_name        != svf.variation_name
+;
+
+
+
+
+
+
+
+
+
+
+SELECT
+  is_evidence,
+  IF(outer_start IS NULL, 1, 0) AS xOS,
+  IF(inner_start IS NULL, 1, 0) AS xIS,
+  IF(inner_end   IS NULL, 1, 0) AS xIE,
+  IF(outer_end IS NULL, 1, 0)   AS xOE,
+  COUNT(*)
+FROM structural_variation_feature
+GROUP BY 1, 2, 3, 4, 5;
++-----+-----+-----+-----+----------+
+| xOS | xIS | xIE | xOE | COUNT(*) |
++-----+-----+-----+-----+----------+
+|   0 |   1 |   1 |   0 |    15150 |
+|   1 |   0 |   0 |   1 |    17111 |
+|   1 |   1 |   1 |   1 |    32246 |
++-----+-----+-----+-----+----------+
+3 rows in set (0.06 sec)
+  
+  
+SELECT COUNT(*) FROM structural_variation_feature WHERE outer_start IS NOT NULL AND outer_start != seq_region_start;
+SELECT COUNT(*) FROM structural_variation_feature WHERE outer_start IS NOT NULL AND outer_end != seq_region_end;
+SELECT COUNT(*) FROM structural_variation_feature WHERE inner_start IS NOT NULL AND inner_start != seq_region_start;
+SELECT COUNT(*) FROM structural_variation_feature WHERE inner_start IS NOT NULL AND inner_end != seq_region_end;
+
+
+
+
+
+SELECT COUNT(*) FROM structural_variation_feature WHERE (inner_start <
+seq_region_start OR outer_start > seq_region_start OR inner_end >
+seq_region_end OR outer_end < seq_region_end)
+
+SELECT
+  is_evidence,
+  inner_start < seq_region_start AS A,
+  outer_start > seq_region_start AS B,
+  inner_end   > seq_region_end   AS C,
+  outer_end   < seq_region_end   AS D,
+  COUNT(*)
+FROM
+  structural_variation_feature
+GROUP BY
+  1, A, B, C, D
+;
++-------------+------+------+------+------+----------+
+| is_evidence | A    | B    | C    | D    | COUNT(*) |
++-------------+------+------+------+------+----------+
+|           0 | NULL | NULL | NULL | NULL |    29164 |
+|           1 | NULL |    0 | NULL |    0 |    13365 |
+|           1 |    0 | NULL |    0 | NULL |      218 |
+|           1 |    0 | NULL |    1 | NULL |    13755 |
+|           1 |    1 | NULL |    0 | NULL |     1829 |
+|           1 |    1 | NULL |    1 | NULL |        5 |
++-------------+------+------+------+------+----------+
+6 rows in set (0.05 sec)

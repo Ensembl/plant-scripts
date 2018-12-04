@@ -30,7 +30,9 @@ fi
 # "fatal: destination path 'ensembl' already exists and is not an empty directory."
 # "Could not check out ensembl (release/95)"
 cd $ensembl_api_path
-$eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version release/$ensembl_version
+#$eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version release/$ensembl_version
+#checkout master branch by default, so that you can run it before next release branch is frozen
+$eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version
 cd ensembl-$ensembl_version
 git ensembl --clone regulation --branch master
 cd ensj-healthcheck/

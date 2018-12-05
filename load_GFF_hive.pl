@@ -89,7 +89,7 @@ chomp( $hive_args = `$hive_db_cmd details script` );
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 
-if($opts{'P'} && -d $opts{'P'}){ $pipeline_dir = "$opts{'P'}/$species/$ensembl_version" }
+if($opts{'P'} && -d $opts{'P'}){ $pipeline_dir = "$opts{'P'}/$species\_$ensembl_version" }
 else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$gfftmp\n" }
 
 if($opts{'m'} && $opts{'m'} > 0){ 

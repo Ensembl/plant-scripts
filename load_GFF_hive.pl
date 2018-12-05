@@ -10,6 +10,7 @@ use Bio::Seq;
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
 # features on top of a previously loaded ENA genome assembly in hive.
 # This should be run after loading a genome from ENA 
+# NOTE: hive pipelines must be run in eb-cli nodes
 #
 # It uses env $USER to create hive job names and assumes Ensembl-version API
 # is loaded in @INC / $PERL5LIB
@@ -59,7 +60,7 @@ if($opts{'v'}){
         # check Ensembl API is in env
 	if(!grep(/ensembl-$ensembl_version\/ensembl-hive\/modules/,@INC)){
                 die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive/modules in \$PERL5LIB / \@INC\n"
-        }
+        } 
 }
 else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
 

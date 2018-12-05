@@ -24,11 +24,11 @@ use Bio::Seq;
 my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version);
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
-my ($check_gff_CDS,$check_chr_ends) = (0,0);
+my ($check_gff_CDS,$check_chr_ends,$add_to_previous) = (0,0,0);
 my ($new_gff3file,$short_gff3file);
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
-getopts('hwzyrcen:s:f:g:S:v:R:H:P:m:', \%opts);
+getopts('hawzyrcen:s:f:g:S:v:R:H:P:m:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -41,6 +41,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-m max genes to load                           (optional, default: all loaded)\n";
+  print "-a incrementally add GFF to prev annotation    (optional, default: delete previous)\n";
   print "-n replace chr names with Perl-regex           (optional, example: -n 'SL3.0ch0*(\\d+)' )\n";
   print "-z skip chr zero in GFF3 file                  (optional, requires -n)\n";
   print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
@@ -51,6 +52,16 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
   exit(0);
 }
+
+if($opts{'v'}){
+        $ensembl_version = $opts{'v'};
+
+        # check Ensembl API is in env
+	if(!grep(/ensembl-$ensembl_version\/ensembl-hive\/modules/,@INC)){
+                die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive/modules in \$PERL5LIB / \@INC\n"
+        }
+}
+else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
 
 if($opts{'s'}){ 
 	$species = $opts{'s'}; 
@@ -70,16 +81,6 @@ else{
 	if(!$gene_source){ die "# EXIT : cannot parse annotation source from $gff3_file\n" }
 }
 
-if($opts{'v'}){
-	$ensembl_version = $opts{'v'};	
-
-	# check Ensembl API is in env
-	if(!grep(/ensembl-$ensembl_version\/ensembl-hive\/modules/,@INC)){
-		die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive/modules in \$PERL5LIB / \@INC\n"
-	} 
-}
-else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
-
 if($opts{'R'} && -e $opts{'R'}){ $reg_file = $opts{'R'} }
 else{ die "# EXIT : need a valid -R file, such as -R \$p2panreg\n" }
 
@@ -88,7 +89,7 @@ chomp( $hive_args = `$hive_db_cmd details script` );
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 
-if($opts{'P'} && -d $opts{'P'}){ $pipeline_dir = "$opts{'P'}/$species" }
+if($opts{'P'} && -d $opts{'P'}){ $pipeline_dir = "$opts{'P'}/$species/$ensembl_version" }
 else{ die "# EXIT : need a valid -P folder to put pipeline files, such as -P \$gfftmp\n" }
 
 if($opts{'m'} && $opts{'m'} > 0){ 
@@ -100,6 +101,8 @@ if($opts{'r'}){ $rerun = 1 }
 
 if($opts{'w'}){ $overwrite = 1 }
 
+if($opts{'a'}){ $add_to_previous = 1 }
+
 if($opts{'n'}){ 
 	$sub_chr_names = $opts{'n'};
 
@@ -108,11 +111,11 @@ if($opts{'n'}){
 	if($opts{'e'}){ $check_chr_ends = 1 }
 }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -e %d -c %d -w %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -e %d -c %d -a %d -w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
   $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
   $sub_chr_names, $nonzero, $synonyms, $check_chr_ends, $check_gff_CDS,
-  $overwrite, $rerun );
+  $add_to_previous, $overwrite, $rerun );
 
 print "# $argsline\n\n";
 
@@ -131,7 +134,7 @@ while(<GFF>){
 		(/\=gene:/ || /\=mRNA:/ || /\=exon:/ || /\=CDS:/)){ 
 
 		print "# ERROR: please edit the GFF file to remove redundant ID names:\n$_\n\n";
-		print "# You can try: \$ perl -lne 's/(\w+)=\w+:/$1=/g; print' <gff3file> \n\n";
+		print "# You can try: \$ perl -lne 's/(\\w+)=\\w+:/$1=/g; print' <gff3file> \n\n";
 		exit(0);
 	}
 }
@@ -319,7 +322,9 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_c
     	"--gff3_file $new_gff3file ".
     	"--protein_fasta_file $protein_fasta_file ".
     	"--gene_source '$gene_source' ".
-	"--hive_force_init $overwrite";
+	"--hive_force_init $overwrite ";
+
+if($add_to_previous){ $initcmd .= "-delete_existing 0 " }
 
 print "# $initcmd\n\n";
 

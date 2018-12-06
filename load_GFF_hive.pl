@@ -25,11 +25,11 @@ use Bio::Seq;
 my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version);
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
-my ($check_gff_CDS,$check_chr_ends,$add_to_previous) = (0,0,0);
+my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable) = (0,0,0,0);
 my ($new_gff3file,$short_gff3file);
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 
-getopts('hawzyrcen:s:f:g:S:v:R:H:P:m:', \%opts);
+getopts('hNawzyrcen:s:f:g:S:v:R:H:P:m:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -43,6 +43,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-m max genes to load                           (optional, default: all loaded)\n";
   print "-a incrementally add GFF to prev annotation    (optional, default: delete previous)\n";
+  print "-N take name instead of ID as stable_id        (optional, default: ID is stable_id)\n";
   print "-n replace chr names with Perl-regex           (optional, example: -n 'SL3.0ch0*(\\d+)' )\n";
   print "-z skip chr zero in GFF3 file                  (optional, requires -n)\n";
   print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
@@ -104,6 +105,8 @@ if($opts{'w'}){ $overwrite = 1 }
 
 if($opts{'a'}){ $add_to_previous = 1 }
 
+if($opts{'N'}){ $names_stable = 1 }
+
 if($opts{'n'}){ 
 	$sub_chr_names = $opts{'n'};
 
@@ -112,11 +115,11 @@ if($opts{'n'}){
 	if($opts{'e'}){ $check_chr_ends = 1 }
 }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -e %d -c %d -a %d -w %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
   $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
   $sub_chr_names, $nonzero, $synonyms, $check_chr_ends, $check_gff_CDS,
-  $add_to_previous, $overwrite, $rerun );
+  $names_stable, $add_to_previous, $overwrite, $rerun );
 
 print "# $argsline\n\n";
 
@@ -325,6 +328,8 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_c
 	"--hive_force_init $overwrite ";
 
 if($add_to_previous){ $initcmd .= "-delete_existing 0 " }
+
+if($names_stable){ $initcmd .= "-use_name_field stable_id " }
 
 print "# $initcmd\n\n";
 

@@ -1,4 +1,5 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
+
 # usage: run without arguments, but redirect output (is large)
 # some errors will happen (grep: genomes.txt: No such file or directory)
 # Original by Marc Rosello

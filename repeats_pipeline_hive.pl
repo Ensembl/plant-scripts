@@ -9,6 +9,9 @@ use Bio::EnsEMBL::Registry;
 # It uses env $USER to create hive job names and assumes Ensembl-version API
 # is loaded in @INC / $PERL5LIB
 #
+# Only 1 job / per user allowed, as it creates a hive db called 
+# $ENV{'USER'}."_dna_features_$ensembl_version";
+#
 # Adapted from Dan Bolser's run_the_dna_pipeline.sh
 # by B Contreras Moreira
 #
@@ -87,7 +90,6 @@ while(<INITRUN>){
 	print;
 }
 close(INITRUN);
-
 
 ## Send jobs to hive 
 ######################################################################### 

@@ -1,7 +1,7 @@
 #!/bin/env perl
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw(:config no_ignore_case);
 use Bio::EnsEMBL::Registry;
 
 # This script submits a repeat pipeline job(s) to hive

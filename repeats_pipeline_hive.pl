@@ -21,7 +21,7 @@ use Bio::EnsEMBL::Registry;
 ##############################################################################
 
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
-my $overwrite = 0;
+my ($rerun,$overwrite) = (0,0);
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
 my ($hive_args,$hive_url,$hive_db,$rerun);      
 

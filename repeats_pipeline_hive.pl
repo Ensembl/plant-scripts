@@ -23,11 +23,12 @@ use Bio::EnsEMBL::Registry;
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 my $overwrite = 0;
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
-my ($hive_args,$hive_url,$hive_db);      
+my ($hive_args,$hive_url,$hive_db,$rerun);      
 
 GetOptions(	
-		"help|?" => \$help,
+		"help|?"      => \$help,
 		"overwrite|w" => \$overwrite, 
+		"rerun|r"     => \$rerun,
 		"version|v=s" => \$ensembl_version,
                 "species|s=s" => \@species,
 		"hivecmd|H=s" => \$hive_db_cmd,    
@@ -44,7 +45,8 @@ sub help_message {
 	"-R registry file, can be env variable       (required, example: -R \$p2panreg)\n".
         "-P folder to put pipeline files, can be env (required, example: -P \$reptmp)\n".
 	"-H hive database command                    (optional, default: $hive_db_cmd)\n".
-	"-w over-write db (hive_force_init)          (optional, useful when a previous run failed)\n";
+	"-w over-write db (hive_force_init)          (optional, useful when a previous run failed)\n".
+	"-r re-run jump to beekeper.pl               (optional, default: run init script from scratch)\n\n";
 	exit(0);
 }
 
@@ -83,13 +85,15 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::DNAFeature
     	"$species_cmd ".
 	"--hive_force_init $overwrite";
 
-print "# $initcmd\n\n";
+if($rerun == 0){
+	print "# $initcmd\n\n";
 
-open(INITRUN,"$initcmd |") || die "# ERROR: cannot run $initcmd\n";
-while(<INITRUN>){
-	print;
+	open(INITRUN,"$initcmd |") || die "# ERROR: cannot run $initcmd\n";
+	while(<INITRUN>){
+		print;
+	}	
+	close(INITRUN);
 }
-close(INITRUN);
 
 ## Send jobs to hive 
 ######################################################################### 

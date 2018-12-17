@@ -69,6 +69,9 @@ if(!$reg_file || !-e $reg_file){ die "# EXIT : need a valid -R file, such as -R 
 
 if(!$pipeline_dir || !-e $pipeline_dir){ die "# EXIT : need a valid -P path, such as -P \$reptmp\n" }
 
+if($rerun && $overwrite){
+	die "# cannot take -r and -w. please choose one\n"
+}
 
 chomp( $hive_args = `$hive_db_cmd details script` );
 $hive_db = $ENV{'USER'}."_dna_features_$ensembl_version";

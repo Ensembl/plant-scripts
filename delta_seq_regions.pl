@@ -5,6 +5,9 @@ use Getopt::Std;
 
 # Checks the evolution of the number of seq_regions of a species core db
 # by querying a production server and the mirror
+#
+# Example: perl delta_seq_regions.pl -s glycine_max -p eg-p2
+#
 # Bruno Contreras Moreira EMBL-EBI 2019
 
 my (%opts,$species,$prod_server);

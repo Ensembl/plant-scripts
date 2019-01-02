@@ -45,7 +45,7 @@ sub help_message {
 	"-R registry file, can be env variable       (required, example: -R \$p2panreg)\n".
         "-P folder to put pipeline files, can be env (required, example: -P \$reptmp)\n".
 	"-H hive database command                    (optional, default: $hive_db_cmd)\n".
-	"-w over-write db (hive_force_init)          (optional, useful when a previous run failed)\n".
+	"-w over-write db (hive_force_init)          (recommended, as hive job name does not include species)\n".
 	"-r re-run jump to beekeper.pl               (optional, default: run init script from scratch)\n\n";
 	exit(0);
 }

@@ -1,30 +1,47 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
-# Adapted from Dan Staines's original by B Contreras Moreira 
-# EMBL-EBI 2019
-
-use Bio::EnsEMBL::Utils::CliHelper;
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
 use Data::Dumper;
+use Getopt::Std;
 
-my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
+# Takes a db server details plus the name of core db and eliminates duplicated xrefs.
+#
+# Example call: fix_duplicate_xrefs.pl -p eg-p3-w -d solanum_lycopersicum_core_42_95_3
+#
+# Adapted from Dan Staines's original by Bruno Contreras Moreira EMBL-EBI 2019
 
-# get the basic options for connecting to a database server
-my $optsd = [@{$cli_helper->get_dba_opts()}];
-my $opts = $cli_helper->process_args($optsd, \&pod2usage);
+my $VERBOSE = 0;
 
-my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
-    -USER=>$opts->{user},
-    -PASS=>$opts->{pass},
-    -PORT=>$opts->{port},
-    -HOST=>$opts->{host},
-    -DBNAME=>$opts->{dbname}
-);
+my ($db_name,$prod_server,$server_args,$dba,%opts);
+getopts('hp:d:', \%opts);
+
+if(($opts{'h'})||(scalar(keys(%opts))==0)){
+  print "\nusage: $0 [options]\n\n";
+  print "-h this message\n";
+  print "-d species database name     (required, example: -d solanum_lycopersicum_core_42_95_3)\n";
+  print "-p production db server rw   (required, example: -p eg-p3-w)\n\n";
+  exit(0);
+}
+
+if($opts{'d'}){ $db_name = $opts{'d'} }
+else{ die "# EXIT : need a valid -d species db name, such as -f solanum_lycopersicum_core_42_95_3\n" }
+
+if($opts{'p'}){
+        $prod_server = $opts{'p'};
+        chomp( $server_args = `$prod_server details` );
+	if($server_args =~ m/--host=(\S+) --port=(\S+) --user=(\S+) --pass=(\S+)/){
+		$dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
+			-HOST=>$1,-PORT=>$2,-USER=>$3,-PASS=>$4,-DBNAME=>$db_name
+		);
+		print "# host=$1\n# port=$2\n# user=$3\n# pass=$4\n" if($VERBOSE);	
+	}
+	else{ die "# EXIT : cannot parse $prod_server details\n" }
+}
+else{ die "# EXIT : need a valid -p production db server, such as -p eg-p3-w\n" }
 
 
-my $sql = q/select xx.xref_id,xx.external_db_id,xx.dbprimary_acc,xx.version from (select  x.dbprimary_acc acc, x.external_db_id db, count(*) from xref x group by x.dbprimary_acc, x.external_db_id having count(*)>1) as dups join xref xx on (xx.dbprimary_acc=dups.acc and xx.external_db_id=dups.db) order by xx.external_db_id,xx.dbprimary_acc,xx.version/;
+my $sql = q/select xx.xref_id,xx.external_db_id,xx.dbprimary_acc,xx.version from (select x.dbprimary_acc acc, x.external_db_id db, count(*) from xref x group by x.dbprimary_acc, x.external_db_id having count(*)>1) as dups join xref xx on (xx.dbprimary_acc=dups.acc and xx.external_db_id=dups.db) order by xx.external_db_id,xx.dbprimary_acc,xx.version/;
 
 my $tables = {
     object_xref=>["xref_id"],
@@ -34,7 +51,8 @@ my $tables = {
     dependent_xref=>["dependent_xref_id","master_xref_id"],
     external_synonym=>["xref_id"],
 };
-print "Processing $opts->{dbname}\n";
+
+print "# Checking xref duplicates in $db_name\n";
 my $dups = {};
 $dba->dbc()->sql_helper()->execute_no_return(
 -SQL=>$sql,
@@ -42,12 +60,13 @@ $dba->dbc()->sql_helper()->execute_no_return(
         my ($row) = @_;
         my ($xref_id,$db_id,$acc,$version) = @$row;
         my $key = join ('-',$db_id,$acc);
-        push @{$dups->{$key}}, $xref_id;
+        push @{$dups->{$key}}, $xref_id; 
+	print "$key $xref_id\n" if($VERBOSE);
         return;
     }
 );
 
-print "Found ".scalar(keys (%$dups))." duplicates\n";
+print "# Found ".scalar(keys (%$dups))." duplicates\n";
 
 my $n= 0;
 while(my ($key,$xrefs) = each %$dups) {
@@ -80,4 +99,4 @@ while(my ($key,$xrefs) = each %$dups) {
     } 
 }
 
-print "Removed $n duplicates\n";
+print "# Removed $n duplicates\n";

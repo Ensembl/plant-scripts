@@ -58,7 +58,7 @@ if(-s $db_name){ # file with several dbs to HC
 	}
 	close(LIST);
 }
-else{ # single dn_name
+else{ # single db_name
 
 	$hccmd = "$HCTEMPLATE --db_uri \"$HCSERVER$db_name\" --tag $db_name";
 

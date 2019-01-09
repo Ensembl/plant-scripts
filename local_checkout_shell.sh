@@ -32,9 +32,10 @@ fi
 cd $ensembl_api_path
 #$eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version release/$ensembl_version
 #checkout master branch by default, so that you can run it before next release branch is frozen
-$eg_api_path/eg-utils/bin/checkout_ensembl.sh ensembl-$ensembl_version
+$eg_api_path/eg-utils/bin/checkout_or_update_ensembl.sh ensembl-$ensembl_version
 cd ensembl-$ensembl_version
 git ensembl --clone regulation --branch master
+git ensembl --pull regulation --branch master
 cd ensj-healthcheck/
 ant clean jar
 cd ../..
@@ -66,7 +67,7 @@ api_ensembl_version=$(perl -MBio::EnsEMBL::ApiVersion -e "print software_version
 if [ "$ensembl_version" != "$api_ensembl_version" ]; then
         echo "ERROR: make sure ensembl_version is correct ($ensembl_version)"
         exit 1
-else
+fi
 
 # now update eg-pipelines and add modules to $PERL5LIB
 cd eg-pipelines

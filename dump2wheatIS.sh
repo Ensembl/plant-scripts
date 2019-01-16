@@ -6,18 +6,20 @@
 
 if [ $# -eq 0 ]; then
 	echo "# ERROR: need ensembl_genomes_version"
-	return 1
+	exit
 fi
 
-SERVER=mysql-ens-meta-prod-1 
 EGRELEASE=$1
+
+PRODSERVER=mysql-ens-meta-prod-1
+MIRRSERVER=mysql-eg-mirror 
 PLANTSDBLIST=plant_list-$EGRELEASE.txt
 WHEATISFILE=transplant.$EGRELEASE.tsv
 
 # make list of plant genomes in selected EGRELEASE
 export PERL5LIB=$PERL5LIB:$ENSAPIPATH/ensembl-metadata/modules/
 perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl \
-	$($SERVER details script) -release $EGRELEASE -division plants \
+	$($PRODSERVER details script) -release $EGRELEASE -division plants \
 	| grep -P '_core_|_otherfeatures_'  > $PLANTSDBLIST
 
 # extract metadata to TSV file
@@ -60,9 +62,7 @@ SQL='
 
 while read -r db; do
     >&2 echo $db
-    $SERVER $db -Ne "$SQL"
-done \
-     < <(grep $PLANTSDBLIST ) \
-     > $WHEATISFILE
+    $MIRRSERVER $db -Ne "$SQL"
+done < $PLANTSDBLIST >> $WHEATISFILE
 
 exit

@@ -14,7 +14,7 @@ EGRELEASE=$1
 PRODSERVER=mysql-ens-meta-prod-1
 MIRRSERVER=mysql-eg-mirror 
 PLANTSDBLIST=plant_list-$EGRELEASE.txt
-WHEATISFILE=transplant.$EGRELEASE.tsv
+WHEATISFILE=transplant-EBI-$EGRELEASE.tsv
 
 # make list of plant genomes in selected EGRELEASE
 export PERL5LIB=$PERL5LIB:$ENSAPIPATH/ensembl-metadata/modules/

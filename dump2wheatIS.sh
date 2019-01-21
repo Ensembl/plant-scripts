@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
 # usage: dump2wheatIS.sh 42
-# produces TSV file for https://urgi.versailles.inra.fr/wheatis/
+# produces core & otherfeatures TSV files for https://urgi.versailles.inra.fr/wheatis/
+#
 # requires $ENSAPIPATH pointing to ensembl-metadata
+#
+# by Bruno Contreras Moreira EMBL-EBI 2019
 
 if [ $# -eq 0 ]; then
 	echo "# ERROR: need ensembl_genomes_version"
@@ -13,18 +16,24 @@ EGRELEASE=$1
 
 PRODSERVER=mysql-ens-meta-prod-1
 MIRRSERVER=mysql-eg-mirror 
-PLANTSDBLIST=plant_list-$EGRELEASE.txt
-WHEATISFILE=transplant-EBI-$EGRELEASE.tsv
+PLANTCOREDBLIST=plant_list-core-$EGRELEASE.txt
+PLANTOTHERDBLIST=plant_list-otherfeatures-$EGRELEASE.txt
+WHEATISCOREFILE=transplant-EBI-core-$EGRELEASE.tsv
+WHEATISOTHERFILE=transplant-EBI-otherfeatures-$EGRELEASE.tsv
 
-# make list of plant genomes in selected EGRELEASE
+# make lists of plant databases in selected EGRELEASE
 export PERL5LIB=$PERL5LIB:$ENSAPIPATH/ensembl-metadata/modules/
+
 perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl \
 	$($PRODSERVER details script) -release $EGRELEASE -division plants \
-	| grep -P '_core_|_otherfeatures_'  > $PLANTSDBLIST
+	| grep -P '_core_'  > $PLANTCOREDBLIST
 
-# extract metadata to TSV file
+perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl \
+        $($PRODSERVER details script) -release $EGRELEASE -division plants \
+        | grep -P '_otherfeatures_'  > $PLANTOTHERDBLIST
+
 SQL='
-  -- made by Dan Bolser
+  -- same as used by Dan Bolser
   SELECT
     # ID is created by solr
     "Sequence feature" AS entry_type,
@@ -59,10 +68,15 @@ SQL='
     display_xref_id = xref_id
 '
 
+# extract metadata to TSV files
+while read -r db; do
+    >&2 echo $db
+    $MIRRSERVER $db -Ne "$SQL"
+done < $PLANTCOREDBLIST >> $WHEATISCOREFILE
 
 while read -r db; do
     >&2 echo $db
     $MIRRSERVER $db -Ne "$SQL"
-done < $PLANTSDBLIST >> $WHEATISFILE
+done < $PLANTOTHERDBLIST >> $WHEATISOTHERFILE
 
 exit

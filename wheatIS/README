@@ -20,4 +20,4 @@ Columns are:
 
 For details on how these are produced check the script:
 
-https://github.com/Ensembl/plant_tools/blob/master/dump2wheatIS.sh
+https://github.com/Ensembl/plant_tools/blob/master/wheatIS/dump2wheatIS.sh

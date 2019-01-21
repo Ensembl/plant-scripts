@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Std;
+use POSIX qw(strftime);
 use Cwd;
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::Utils::Slice qw(split_Slices);
@@ -10,6 +11,7 @@ use Bio::Seq;
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
 # features on top of a previously loaded ENA genome assembly in hive.
 # This should be run after loading a genome from ENA 
+# NOTE: it will update meta.genebuild dates and version
 # NOTE: hive pipelines must be run in eb-cli nodes
 #
 # It uses env $USER to create hive job names and assumes Ensembl-version API
@@ -49,7 +51,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
   print "-e print sequence of chromosome ends in db     (optional, requires -n)\n";
   print "-c check CDS coords in GFF3                    (optional, requires -m)\n";
-  print "-S source of gene annotation, one word         (optional, example: -S SL3.0, default: 3rd col of GFF3)\n";
+  print "-S source of gene annotation, one word         (optional, example: -S SOL, default: 3rd col of GFF3)\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
   exit(0);
@@ -80,7 +82,12 @@ else{ die "# EXIT : need a valid -g file, such as -g atha.gff\n" }
 if($opts{'S'}){ $gene_source = $opts{'S'} }
 else{
 	chomp( $gene_source = `grep -v "^#" $gff3_file | grep gene | cut -f 2 | head -1` );
-	if(!$gene_source){ die "# EXIT : cannot parse annotation source from $gff3_file\n" }
+
+	if(!$gene_source){ 
+		die "# EXIT : cannot parse annotation source from $gff3_file\n";
+	} elsif($gene_source =~ m/\s+/) {
+		die "# EXIT : annotation source '$gene_source' parsed from $gff3_file contains blanks\n";
+	}
 }
 
 if($opts{'R'} && -e $opts{'R'}){ $reg_file = $opts{'R'} }
@@ -312,6 +319,42 @@ if($max_feats > 0){
 	$new_gff3file = $short_gff3file;
 
 	print "\n# shortened GFF3 file: $short_gff3file\n";
+}
+
+## Update genebuild metadata
+#########################################################################
+
+# connect to production db
+my $registry = 'Bio::EnsEMBL::Registry';
+$registry->load_all($reg_file);
+my $meta_adaptor = $registry->get_adaptor($species, "core", "MetaContainer");
+
+my $year_month = strftime("%Y-%m", localtime());
+my $year_month_day = strftime("%Y-%m-%d", localtime());
+
+my $version_start_date = "$year_month-$gene_source";
+
+print "$version_start_date $year_month_day\n";
+
+print "\n# Setting meta genebuild.version to $version_start_date\n";
+if($meta_adaptor->key_value_exists( 'genebuild.version', $version_start_date )) {
+	$meta_adaptor->update_key_value( 'genebuild.version', $version_start_date );
+} else {
+	$meta_adaptor->store_key_value( 'genebuild.version', $version_start_date );
+}
+
+print "\n# Setting meta genebuild.start_date to $version_start_date\n";
+if($meta_adaptor->key_value_exists( 'genebuild.start_date', $version_start_date )) {
+	$meta_adaptor->update_key_value( 'genebuild.start_date', $version_start_date );
+} else {
+	$meta_adaptor->store_key_value( 'genebuild.start_date', $version_start_date );
+}
+
+print "\n# Setting meta genebuild.last_geneset_update to $year_month_day\n\n";
+if($meta_adaptor->key_value_exists( 'genebuild.last_geneset_update', $year_month_day )) {
+	$meta_adaptor->update_key_value( 'genebuild.last_geneset_update', $year_month_day );
+} else {
+	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month_day )
 }
 
 ## Run init script and produce a hive_db with all tasks to be carried out

@@ -8,10 +8,14 @@ use Getopt::Std;
 # By looking at patterns of position-specific amino acid substitutions
 # observed in BLASTP hits, SIFT predicts whether variations are likely to 
 # be deletereous (rare) or not (frequent)
+#
+# NOTE: FULL Mode populates these tables: meta, protein_function_predictions, 
+# protein_function_predictions_attrib, translation_md5,translation_mapping
+#
 # NOTE: hive pipelines must be run in eb-cli nodes
 #
-# It uses env $USER to create hive job names and assumes Ensembl-version API
-# is loaded in @INC / $PERL5LIB
+# Uses env $ENSAPIPATH to locate ensembl-hive API
+# and env $USER to create hive job names 
 #
 # B Contreras Moreira EMBL-EBI 2019
 #
@@ -22,8 +26,9 @@ use Getopt::Std;
 
 my (%opts,$species,$protein_fasta_file,$ensembl_version);
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
-my ($rerun,$update,$overwrite) = (0,0,0);
+my ($rerun,$update,$overwrite,$hive_path) = (0,0,0);
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
+my $ensemblpath = $ENV{'ENSAPIPATH'};
 my $blastbin = $ENV{'blastbin'};
 my $blastdb = $ENV{'uniref90'};
 
@@ -48,9 +53,11 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
 if($opts{'v'}){
         $ensembl_version = $opts{'v'};
 
-        # check Ensembl API is in env
-	if(!grep(/ensembl-$ensembl_version\/ensembl-hive\/modules/,@INC)){
-                die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive/modules in \$PERL5LIB / \@INC\n"
+        # check ensembl-hive API exists for this version
+        $hive_path = "$ensemblpath/ensembl-$ensembl_version/ensembl-hive/";
+        if(!-d $hive_path) {
+                die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive,".
+			"\n# make sure \$ENSAPIPATH is set\n";
         } 
 }
 else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
@@ -86,6 +93,10 @@ if($opts{'b'}){
 
 if($opts{'H'}){ $hive_db_cmd = $opts{'H'} }
 chomp( $hive_args = `$hive_db_cmd details script` );
+if($hive_args =~ m/--host (\S+) --port (\d+) --user (\S+) --pass (\S+)/){
+	$hive_args = "-pipeline_db -host=$1 --pipeline_db -port=$2 --pipeline_db -user=$3 -password $4"; 	
+}
+
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 
@@ -112,9 +123,9 @@ print "# $argsline\n\n";
 
 my $initcmd = "init_pipeline.pl Bio::EnsEMBL::Variation::Pipeline::ProteinFunction::ProteinFunction_conf ".
     	"$hive_args ".
-    	"-ensembl_registry $reg_file ".
+	"-hive_root_dir $hive_path ".
+    	"-ensembl_registry $reg_file -species $species ".
     	"-pipeline_dir $pipeline_dir -sift_dir $pipeline_dir -sift_working $pipeline_dir ".
-    	"-species $species ".
 	"-ncbi_dir $blastbin -blastdb $blastdb ".
 	"--hive_force_init $overwrite ";
 

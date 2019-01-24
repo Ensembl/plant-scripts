@@ -2,6 +2,8 @@
 use strict;
 use warnings;
 use Getopt::Std;
+use File::Basename;
+use Bio::EnsEMBL::Registry;
 
 # This script runs SIFT for all single amino acid substitutions in protein
 # sequence of a selected species.
@@ -9,8 +11,8 @@ use Getopt::Std;
 # observed in BLASTP hits, SIFT predicts whether variations are likely to 
 # be deletereous (rare) or not (frequent)
 #
-# NOTE: FULL Mode populates these tables: meta, protein_function_predictions, 
-# protein_function_predictions_attrib, translation_md5,translation_mapping
+# NOTE: populates these variation tables: meta, protein_function_predictions, 
+# protein_function_predictions_attrib, translation_md5, translation_mapping
 #
 # NOTE: hive pipelines must be run in eb-cli nodes
 #
@@ -20,6 +22,7 @@ use Getopt::Std;
 # B Contreras Moreira EMBL-EBI 2019
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Running+the+Sift+pipeline
+# https://www.ebi.ac.uk/seqdb/confluence/display/EV/Protein+function+pipeline
 #
 ## check user arguments ######################################################
 ##############################################################################
@@ -27,10 +30,12 @@ use Getopt::Std;
 my (%opts,$species,$protein_fasta_file,$ensembl_version);
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$update,$overwrite,$hive_path) = (0,0,0);
+my ($blastdb_release,$sift_version) = ('','');
 my $hive_db_cmd = 'mysql-eg-hive-ensrw';
 my $ensemblpath = $ENV{'ENSAPIPATH'};
-my $blastbin = $ENV{'blastbin'};
-my $blastdb = $ENV{'uniref90'};
+my $blastbin = $ENV{'blastbin'} || '';
+my $blastdb = $ENV{'uniref90'} || '';
+my $siftdir = $ENV{'sift_dir'} || '';
 
 getopts('huwrb:p:s:v:R:H:P:', \%opts);
 
@@ -115,8 +120,57 @@ $argsline = sprintf("%s -s %s -f %s -v %s -R %s -H %s -P %s -p %s -b %s -u %d -w
 
 print "# $argsline\n\n";
 
-## Check BLASTDB 
+# print SIFT relevant details
+print "# BLAST+ path: $blastbin\n";
+print "# BLASTDB path: $blastdb\n";
+print "# SIFT path: $siftdir\n\n";
 
+## add metadata to variation.meta
+#################################################################
+
+# naive check of blastdb version, only works for uniref90
+my $release_notes_file = $blastdb;
+$blastdb_release = basename($blastdb);
+$release_notes_file =~ s/.fasta/.release_note/;
+if(open(RELNOTES,"<",$release_notes_file)){
+        while(<RELNOTES>){
+                if(/Release: (\w+)/){
+                        $blastdb_release .= " $1";
+                }
+        }
+        close(RELNOTES);
+}
+else{ warn "# cannot find $release_notes_file\n" }
+
+# check sift version
+if(open(SIFTUPDATES,"<","$siftdir/VERSION_UPDATE")){
+        while(<SIFTUPDATES>){
+                if(/Version (\S+)/i){
+                        $sift_version = $1;
+                }
+        }
+        close(SIFTUPDATES);
+}
+else{ warn "# cannot find $siftdir/VERSION_UPDATE\n" }
+
+# actually connect to variation db and add metadata
+my $registry = 'Bio::EnsEMBL::Registry';
+$registry->load_all($reg_file);
+my $meta_adaptor = $registry->get_adaptor($species, "variation", "MetaContainer");
+
+print "\n# Setting meta sift_protein_db_version to $blastdb_release\n";
+if($meta_adaptor->key_value_exists( 'sift_protein_db_version', $blastdb_release )) {
+	$meta_adaptor->update_key_value( 'sift_protein_db_version', $blastdb_release );
+} else {
+	$meta_adaptor->store_key_value( 'sift_protein_db_version', $blastdb_release );
+}
+
+print "# Setting meta sift_version to $sift_version\n\n";
+if($meta_adaptor->key_value_exists( 'sift_version', $sift_version )) {
+	$meta_adaptor->update_key_value( 'sift_version', $sift_version );
+} else {
+	$meta_adaptor->store_key_value( 'sift_version', $sift_version );
+}
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
@@ -125,8 +179,10 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::Variation::Pipeline::ProteinFuncti
     	"$hive_args ".
 	"-hive_root_dir $hive_path ".
     	"-ensembl_registry $reg_file -species $species ".
-    	"-pipeline_dir $pipeline_dir -sift_dir $pipeline_dir -sift_working $pipeline_dir ".
+    	"-pipeline_dir $pipeline_dir -sift_working $pipeline_dir ".
+	"-sift_dir $siftdir ".
 	"-ncbi_dir $blastbin -blastdb $blastdb ".
+	"-dbnsfp_run_type 0 -cadd_run_type 0 " . # only supported in human
 	"--hive_force_init $overwrite ";
 
 if(!$update){ $initcmd .= "-sift_run_type 1 " }

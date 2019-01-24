@@ -158,16 +158,26 @@ my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_all($reg_file);
 my $meta_adaptor = $registry->get_adaptor($species, "variation", "MetaContainer");
 
+if(!defined($meta_adaptor)){
+	die "# cannot find variation db for $species\n\n";
+}
+
 print "\n# Setting meta sift_protein_db_version to $blastdb_release\n";
 if($meta_adaptor->key_value_exists( 'sift_protein_db_version', $blastdb_release )) {
-	$meta_adaptor->update_key_value( 'sift_protein_db_version', $blastdb_release );
+	my @values = @{ $meta_adaptor->list_value_by_key('sift_protein_db_version') };
+	if(!grep(/$blastdb_release/,@values)){
+		$meta_adaptor->update_key_value( 'sift_protein_db_version', $blastdb_release );
+	}
 } else {
 	$meta_adaptor->store_key_value( 'sift_protein_db_version', $blastdb_release );
 }
 
 print "# Setting meta sift_version to $sift_version\n\n";
 if($meta_adaptor->key_value_exists( 'sift_version', $sift_version )) {
-	$meta_adaptor->update_key_value( 'sift_version', $sift_version );
+	my @values = @{ $meta_adaptor->list_value_by_key('sift_version') };
+        if(!grep(/$sift_version/,@values)){
+		$meta_adaptor->update_key_value( 'sift_version', $sift_version );
+	}
 } else {
 	$meta_adaptor->store_key_value( 'sift_version', $sift_version );
 }

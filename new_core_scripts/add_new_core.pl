@@ -3,8 +3,7 @@
 use 5.14.0;
 use warnings;
 use Data::Dumper;
-use lib '/nfs/production/panda/ensemblgenomes/development/gnaamati/lib';
-use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
+use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
 use Getopt::Long;
 use Pod::Usage;
 my $core;

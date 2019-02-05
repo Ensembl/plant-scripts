@@ -38,7 +38,7 @@ my $param_file;
     ##updating top level attrib
     set_top_level($h);
 
-    ##updating meta table
+    ##updating meta table (also needs manuall tweaking)
     copy_meta($h, $dbh);
     
 }

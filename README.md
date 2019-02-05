@@ -17,8 +17,6 @@ Most of these scripts were written following Dan Bolser's scripts at
 
 * A few things to take into account:
 Some of these scripts use modules in under the Tools directory
-In order to use these modules you should run:
+In order to use these modules you should run (or add to your .bashrc file)
 PERL5LIB=<local_path_of_repo>:$PERL5LIB
-
-For example:
-PERL5LIB=/nfs/production/panda/ensemblgenomes/development/gnaamati/plant_tools:$PERL5LIB
+For example: PERL5LIB=/nfs/production/panda/ensemblgenomes/development/gnaamati/plant_tools:$PERL5LIB

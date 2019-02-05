@@ -1,3 +1,5 @@
+##Gets as input a fasta file and parses it into an AGPa file
+##The fasta file is expected to have headers in this format: <chrom_num>_<chunk_num>
 use 5.14.0;
 use warnings;
 use Data::Dumper;

@@ -1,3 +1,5 @@
+##Breaks a chrom only fasta file into smaller chunks
+##Parsing is dependant on the fasta headers and chunk size
 use 5.14.0;
 use warnings;
 use Data::Dumper;
@@ -17,9 +19,10 @@ use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2h
         chomp($line);
         
         ##Create a new chunk each time there is a header
+        ##This needs to be chhaned according to the header
         if ($line =~ /chromosome (\d)\,/){
             
-            ##Header is the chrom number with the chunk count
+            ##Header is <chrom number>_<chunk count>
             $header = ">$1";
             $header_count = 1;
             say $header."_$header_count";

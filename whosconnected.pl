@@ -6,32 +6,47 @@
 
 use strict;
 use warnings;
-use DBI;
-use 5.010;
 use Getopt::Long;
+use DBI;
 
 # Set defaults
-my $host = 'localhost';
 my $db = 'information_schema';
-my $user = ''; 
-my $pass = ''; 
+my ($host,$user,$port,$pass,$help,$host_params) = ('','','',''); 
 
 # Get commandline options
 GetOptions (
-    "host=s"    => \$host,
-    "db=s"      => \$db,
-    "user=s"    => \$user,
-    "pass=s"    => \$pass,
-) or die ( "Valid options\n--host\n--user\n--password\n--db database" );
+	"help|?" => \$help,
+	"host=s" => \$host,
+) || help_message(); 
+
+if($help){ help_message() }
+
+sub help_message {
+	print "\nusage: $0 [options]\n\n".
+	"--host       (required, example: --host mysql-eg-hive\n";
+	exit(0);
+}
+
+if($host eq '') {
+	die "# ERROR: please indicate a valid mysql host\n"
+}
+
+chomp( $host_params = `$host details script` );
+if($host_params =~ m/--host (\S+) --port (\d+) --user (\S+) --pass (\S+)/){
+	($host,$port,$user,$pass) = ($1,$2,$3,$4);
+}
+elsif($host_params =~ m/--host (\S+) --port (\d+) --user (\S+)/){
+        ($host,$port,$user) = ($1,$2,$3);
+}
 
 # Create database connection
-my $dbh = DBI->connect( "DBI:mysql:$db:$host", $user, $pass, {'PrintError'=>0} )
-        or die "** Connection error!\nTry different options:\n--host\n--user\n--password\n--db database\n\n\n";
+my $dbh = DBI->connect( "DBI:mysql:$db:$host:$port", $user, $pass, {'PrintError'=>0} ) ||
+	die "# ERROR: cannot connect to $host : $DBI::errstr\n";
 
 # Get the current processes to check user
 my $sql = "show processlist";
 my $sth = $dbh->prepare($sql);
-$sth->execute() or die "SQL error: $DBI::errstr\n";
+$sth->execute() || die "# SQL ERROR: $DBI::errstr\n";
 
 # Create an array of all the users
 my %user;
@@ -40,12 +55,7 @@ while (my @row = $sth->fetchrow_array()) {
 }
 
 # Display User details
-print "MySQL - Logged in users\n";
-print "=" x 15, "\n";
-
+print "# Users logged in $host:\n";
 for my $x (keys %user) {
     print "$x - $user{$x} connections\n";
 }
-
-
-print "\n";

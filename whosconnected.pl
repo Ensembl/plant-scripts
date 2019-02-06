@@ -31,7 +31,9 @@ if($host eq '') {
 	die "# ERROR: please indicate a valid mysql host\n"
 }
 
-chomp( $host_params = `$host details script` );
+$host_params = `$host details script` || die "# ERROR: cannot find host $host\n";
+chomp( $host_params );
+
 if($host_params =~ m/--host (\S+) --port (\d+) --user (\S+) --pass (\S+)/){
 	($host,$port,$user,$pass) = ($1,$2,$3,$4);
 }

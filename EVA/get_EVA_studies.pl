@@ -10,14 +10,14 @@ use JSON qw(from_json);
 
 my $EVASTUDYLIST = 'https://www.ebi.ac.uk/eva/webservices/rest/v1/meta/studies/all';
 
-my ($GCA_acc,$TSV_file,%wantedGCA,%opts);
+my ($GCA_acc,$TSV_file,$species,%wantedGCA,%opts);
 
 getopts('ha:f:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
-  print "-a GCA accession                              (example: -a GCA_000001735.2 )\n";
+  print "-a GCA accession                              (example: -a GCA_000001735.2)\n";
   print "-f TSV file with GCA accessions in 1st column (example: -f Viridiplantae.2019-01-22.report.tsv)\n\n";
   exit(0);
 }
@@ -31,8 +31,10 @@ elsif($opts{'f'}){
 	open(TSV,"<",$TSV_file) || die "# ERROR: cannot read $TSV_file\n";
 	while(<TSV>) {
 		next if(/^#/);
-		$GCA_acc = (split(/\t/,$_))[0];
-		$wantedGCA{$GCA_acc} = 1;
+		my @data = split(/\t/,$_);
+		$GCA_acc = $data[0];
+		$species = $data[1];
+		$wantedGCA{$GCA_acc} = $species;
 	}
 	close(TSV);
 }
@@ -50,6 +52,9 @@ foreach my $study (@{ $json->{'response'}->[0]->{'result'} }){
 
 	next if(!$wantedGCA{ $GCA_acc });
 
-	print "$study->{'id'}\t$study->{'assemblyAccession'}\t$study->{'name'}\n";
+	$species = $wantedGCA{$GCA_acc};
+	if($species eq '1'={ $species = 'NA' }
+	
+	print "$study->{'id'}\t$study->{'assemblyAccession'}\t$species\t$study->{'name'}\n";
 }
 

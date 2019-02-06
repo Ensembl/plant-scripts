@@ -24,7 +24,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
 
 if($opts{'a'}){ 
 	$GCA_acc = $opts{'a'};
-	$wantedGCA{$GCA_acc} = 1;
+	$wantedGCA{$GCA_acc} = 'NA'; # unknown species
 }
 elsif($opts{'f'}){
 	$TSV_file = $opts{'f'};
@@ -53,7 +53,6 @@ foreach my $study (@{ $json->{'response'}->[0]->{'result'} }){
 	next if(!$wantedGCA{ $GCA_acc });
 
 	$species = $wantedGCA{$GCA_acc};
-	if($species eq '1'={ $species = 'NA' }
 	
 	print "$study->{'id'}\t$study->{'assemblyAccession'}\t$species\t$study->{'name'}\n";
 }

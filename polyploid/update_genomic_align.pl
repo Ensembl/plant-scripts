@@ -3,10 +3,8 @@
 use 5.14.0;
 use warnings;
 use Data::Dumper;
-use lib '/nfs/production/panda/ensemblgenomes/development/gnaamati/lib';
-use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
-use DBI;
 my $mlss = 9822;
+use Carp qw(croak);
 
 ##The genomic align id start (prefix is mlss_id)
 my $gab_id_count  = 98220000000000;
@@ -76,41 +74,48 @@ my $ga_id_count   = 98220000000000;
         };
         say $sql;
 
-        $count++;
-        #if ($count == 6){
-        #    die;
-        #}
     }
 
 }
 
-sub get_gab_id {
-    
 
-
-
+##Slurps a file into a list
+sub slurp {
+    my ($file) = @_;
+    my (@data, @data_chomped);
+    open IN, "<", $file or croak "can't open $file\n";
+    @data = <IN>;
+    for my $line (@data){
+        chomp($line);
+        push (@data_chomped, $line);
+    }
+    close IN;
+    return (@data_chomped);
 }
 
-sub get_max_gab_id {
+##Splits a line and parses it into the hash according to given headers
+sub line2hash {
+    my ($header, $line) = @_;
 
-    return "42";
+    ##Split header fields and line fields
+    my @header_fields = split (/\t/, $header);
+    my @line_fields   = split (/\t/, $line);
 
-    my $dsn = "DBI:mysql:database=ensembl_compara_plants_40_93;host=mysql-eg-prod-1.ebi.ac.uk;port=4238";
+    ##Fill the hash
+    my $hash = {};
+    my $i = 0;
+    for my $fld (@header_fields){
+        $fld =~ s/\s/_/g;
+        $hash->{lc($fld)} = $line_fields[$i];
+        $i++;
+    }
 
-    my $dbh = DBI->connect($dsn, 'ensrw', 'writ3rp1');
-
-
-    # now retrieve data from the table.
-    my $sth = $dbh->prepare("select max(genomic_align_block_id) from genomic_align_block;");
-    $sth->execute();
-    my @row = $sth->fetchrow_array();
-    my $max = $row[0];
-    $sth->finish();
-    $dbh->disconnect();
-
-    return $max;
-
+    return $hash;
 }
+
+
+
+
 
 sub usage {
     say "Usage perl update_genomic_align.pl [a] [b]";

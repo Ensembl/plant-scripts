@@ -25,8 +25,8 @@ WHEATISOTHERFILE=transplant-EBI-otherfeatures-$EGRELEASE.tsv
 export PERL5LIB=$PERL5LIB:$ENSAPIPATH/ensembl-metadata/modules/
 
 perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl \
-	$($PRODSERVER details script) -release $EGRELEASE -division plants \
-	| grep -P '_core_'  > $PLANTCOREDBLIST
+        $($PRODSERVER details script) -release $EGRELEASE -division plants \
+        | grep -P '_core_'  > $PLANTCOREDBLIST
 
 perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl \
         $($PRODSERVER details script) -release $EGRELEASE -division plants \

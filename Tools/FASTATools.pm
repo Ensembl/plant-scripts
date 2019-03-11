@@ -52,12 +52,12 @@ sub read_FASTA_file_array
   else{ open(FASTA,"<$infile") || die "# read_FASTA_sequence_array: cannot read $infile $!\n"; }
 
   while(<FASTA>)
-  {
+  { 
     next if(/^$/ || /^#/);
-    if(/^\>(\S+)[\n\r]/) # first non blank
+    if(/^\>(\S+)/) # first non blank
     {
       $n_of_sequences++; # first sequence ID is 0
-      $name = $1; 
+      $name = $1;  
       $FASTA[$n_of_sequences][NAME] = $name;
     }
     elsif($n_of_sequences>-1)

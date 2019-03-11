@@ -54,15 +54,15 @@ sub read_FASTA_file_array
   while(<FASTA>)
   {
     next if(/^$/ || /^#/);
-    if(/^\>(.*?)[\n\r]/)
+    if(/^\>(\S+)[\n\r]/) # first non blank
     {
       $n_of_sequences++; # first sequence ID is 0
-      $name = $1; #print "# $n_of_sequences $name\n";
+      $name = $1; 
       $FASTA[$n_of_sequences][NAME] = $name;
     }
     elsif($n_of_sequences>-1)
     {
-		$_ =~ s/[\s|\n|\-|\.]//g;
+      $_ =~ s/[\s|\n|\-|\.]//g;
       $FASTA[$n_of_sequences][SEQ] .= $_; # conserve case
     }
   }

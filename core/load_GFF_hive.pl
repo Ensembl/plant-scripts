@@ -124,12 +124,13 @@ if($opts{'n'}){
 }
 elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s ".
-	"-m %d -Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d ".
+		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
   $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
-  $synonym_file,$sub_chr_names, $nonzero, $synonym_file,$synonyms, 
-  $check_chr_ends, $check_gff_CDS, $names_stable, $add_to_previous, $overwrite, $rerun );
+  $synonym_file, $sub_chr_names, $nonzero, $synonyms, 
+  $check_chr_ends, $check_gff_CDS, $names_stable, 
+  $add_to_previous, $overwrite, $rerun );
 
 print "# $argsline\n\n";
 
@@ -248,11 +249,14 @@ else{ $new_gff3file = $gff3_file }
 
 if(defined($synonym_file)){	
 
+	print "# adding synonyms from $synonym_file\n";
+
 	# connect to production db
 	my $registry = 'Bio::EnsEMBL::Registry';
-	$registry->load_all($reg_file);
+	$registry->load_all($reg_file); 
 	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
 
+	# parse synonyms
 	open(TSV,"<",$synonym_file) || 
 		die "# ERROR: cannot read $synonym_file\n";
 	while(<TSV>){
@@ -355,25 +359,30 @@ my $year_month_day = strftime("%Y-%m-%d", localtime());
 
 my $version_start_date = "$year_month-$gene_source";
 
-print "$version_start_date $year_month_day\n";
-
 print "\n# Setting meta genebuild.version to $version_start_date\n";
-if($meta_adaptor->key_value_exists( 'genebuild.version', $version_start_date )) {
-	$meta_adaptor->update_key_value( 'genebuild.version', $version_start_date );
+
+if($meta_adaptor->single_value_by_key( 'genebuild.version' )){
+	if(!$meta_adaptor->key_value_exists( 'genebuild.version', $version_start_date )) {
+		$meta_adaptor->update_key_value( 'genebuild.version', $version_start_date );
+	} 
 } else {
-	$meta_adaptor->store_key_value( 'genebuild.version', $version_start_date );
+		$meta_adaptor->store_key_value( 'genebuild.version', $version_start_date );
 }
 
 print "\n# Setting meta genebuild.start_date to $version_start_date\n";
-if($meta_adaptor->key_value_exists( 'genebuild.start_date', $version_start_date )) {
-	$meta_adaptor->update_key_value( 'genebuild.start_date', $version_start_date );
+if($meta_adaptor->single_value_by_key( 'genebuild.start_date' )){
+	if(!$meta_adaptor->key_value_exists( 'genebuild.start_date', $version_start_date )) {
+		$meta_adaptor->update_key_value( 'genebuild.start_date', $version_start_date );
+	} 
 } else {
 	$meta_adaptor->store_key_value( 'genebuild.start_date', $version_start_date );
 }
 
 print "\n# Setting meta genebuild.last_geneset_update to $year_month_day\n\n";
-if($meta_adaptor->key_value_exists( 'genebuild.last_geneset_update', $year_month_day )) {
-	$meta_adaptor->update_key_value( 'genebuild.last_geneset_update', $year_month_day );
+if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
+	if(!$meta_adaptor->key_value_exists( 'genebuild.last_geneset_update', $year_month_day )) {
+		$meta_adaptor->update_key_value( 'genebuild.last_geneset_update', $year_month_day );
+	}
 } else {
 	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month_day )
 }

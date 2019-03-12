@@ -28,10 +28,10 @@ my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version)
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable) = (0,0,0,0);
-my ($new_gff3file,$short_gff3file);
-my $hive_db_cmd = 'mysql-eg-hive-ensrw';
+my ($new_gff3file,$short_gff3file,$synonym_file);
+my $hive_db_cmd = 'mysql-ens-hive-prod-2';
 
-getopts('hNawzyrcen:s:f:g:S:v:R:H:P:m:', \%opts);
+getopts('hNawzyrceY:n:s:f:g:S:v:R:H:P:m:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -50,6 +50,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-z skip chr zero in GFF3 file                  (optional, requires -n)\n";
   print "-y saves original chr names as synonyms in db  (optional, requires -n)\n";
   print "-e print sequence of chromosome ends in db     (optional, requires -n)\n";
+  print "-Y add contig synonyms from file before load   (optional, takes a TSV file: gffname\\ENAtsynonym)\n";
   print "-c check CDS coords in GFF3                    (optional, requires -m)\n";
   print "-S source of gene annotation, one word         (optional, example: -S SOL, default: 3rd col of GFF3)\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
@@ -121,12 +122,14 @@ if($opts{'n'}){
 	if($opts{'y'}){ $synonyms = 1 }
 	if($opts{'e'}){ $check_chr_ends = 1 }
 }
+elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s ".
+	"-m %d -Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
   $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
-  $sub_chr_names, $nonzero, $synonyms, $check_chr_ends, $check_gff_CDS,
-  $names_stable, $add_to_previous, $overwrite, $rerun );
+  $synonym_file,$sub_chr_names, $nonzero, $synonym_file,$synonyms, 
+  $check_chr_ends, $check_gff_CDS, $names_stable, $add_to_previous, $overwrite, $rerun );
 
 print "# $argsline\n\n";
 
@@ -242,6 +245,24 @@ if($sub_chr_names ne ''){
 	}
 }
 else{ $new_gff3file = $gff3_file }
+
+if(defined($synonym_file)){	
+
+	# connect to production db
+	my $registry = 'Bio::EnsEMBL::Registry';
+	$registry->load_all($reg_file);
+	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
+
+	open(TSV,"<",$synonym_file) || 
+		die "# ERROR: cannot read $synonym_file\n";
+	while(<TSV>){
+		my ($orig_gff,$synonym) = split(/\s+/,$_);
+		my $contig_slice = $slice_adaptor->fetch_by_region( 'contig', $synonym );
+                print "# adding synonym $orig_gff ($synonym)\n";
+                $contig_slice->add_synonym( $orig_gff );
+	}
+	close(TSV);	
+}
 
 ## make custom-GFF subset with user-provided number of features (genes)
 ## and cut CDS sequences as internal control

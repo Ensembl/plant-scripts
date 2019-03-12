@@ -29,7 +29,7 @@ my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable) = (0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file);
-my $hive_db_cmd = 'mysql-ens-hive-prod-2';
+my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 
 getopts('hNawzyrceY:n:s:f:g:S:v:R:H:P:m:', \%opts);
 

@@ -191,10 +191,11 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			# SL3.00SC0000001	unplaced-scaffold	na	na	AEKE03000001.1 <>	na
 			#
 			# Chr_Y_A	unlocalized-scaffold	Y	Chromosome	KZ772944.1	<>	na	
-			# Chr_Y_B	unlocalized-scaffold	Y	Chromosome	KZ772945.1	<>	na
 			# scaffold_1	unplaced-scaffold	na	na	KZ772673.1	<>	na
-			# scaffold_2	unplaced-scaffold	na	na	KZ772674.1	<>	na
-			# scaffold_3	unplaced-scaffold	na	na	KZ772675.1	<>	na
+			#
+			# I	assembled-molecule	1	Chromosome	LT594788.1	=	NC_030850.1	
+			# II	assembled-molecule	2	Chromosome	LT594789.1	=	NC_030851.1
+			
 			next if(/^#/); 
 			my @tsvdata = split(/\t/,$_);
 			($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,4,6];

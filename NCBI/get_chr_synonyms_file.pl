@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #
 # takes ENA accessions and visits NCBI FTP to retrieve contig/chr synonyms from full assembly report
-# 2018 Bruno Contreras Moreira EMBL-EBI
+# 2018-9 Bruno Contreras Moreira EMBL-EBI
 #
 # Example calls: 
 # $ ./get_chr_synonyms.pl -a GCA_000188115.3
@@ -41,7 +41,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
 ## 0) check input params
 if($opts{'a'}){ 
 
-	if(-s $opts{'a'}){ # input file instead of accession code
+	if(-s $opts{'a'} && !-d $opts{'a'}){ # input file instead of accession code
 
 		# ENA_assembly_id	scientific_name	...
 		# GCA_000001735.2	Arabidopsis thaliana	...
@@ -96,7 +96,7 @@ $ftp->login("anonymous",'-anonymous@') ||
 ## 2) check all ENA accessions
 foreach my $input_sp (0 .. $#ENA_accessions){
 
-	$ENA_accession = $ENA_accessions[$input_sp];
+	$ENA_accession = $ENA_accessions[$input_sp]; 
 
 	# 2.0) check accession format
 	# https://stackoverflow.com/questions/25523899/in-perl-best-way-to-insert-a-char-every-n-chars
@@ -189,6 +189,12 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			# Sequence-Name Role Assigned-Molecule Assigned-Molecule-Location/Type GenBank-Accn Relationship RefSeq-Accn
 			# SL3.0ch01	assembled-molecule	1	Chromosome	CM001064.3 <>	na
 			# SL3.00SC0000001	unplaced-scaffold	na	na	AEKE03000001.1 <>	na
+			#
+			# Chr_Y_A	unlocalized-scaffold	Y	Chromosome	KZ772944.1	<>	na	
+			# Chr_Y_B	unlocalized-scaffold	Y	Chromosome	KZ772945.1	<>	na
+			# scaffold_1	unplaced-scaffold	na	na	KZ772673.1	<>	na
+			# scaffold_2	unplaced-scaffold	na	na	KZ772674.1	<>	na
+			# scaffold_3	unplaced-scaffold	na	na	KZ772675.1	<>	na
 			next if(/^#/); 
 			my @tsvdata = split(/\t/,$_);
 			($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,4,6];
@@ -196,8 +202,8 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 
 			next if($ENA_acc eq 'na');
 
+			# do query
 			$sth2->execute($ENA_acc);
-
 			my @results = $sth2->fetchrow_array;
 			if(scalar(@results) > 0){ $seq_region_id = $results[0] }
                 	else{ 
@@ -205,16 +211,18 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 				next;
 			}
 
+			# community synonyms
 			if($CLEAN == 1){ $sth4->execute($insdc_acc) }
+			$sth3->execute($seq_region_id, $community_name, $insdc_db_id);
 
-			# first INSDC synonyms
+			# INSDC synonyms
+			if($CLEAN == 1){ $sth4->execute($insdc_acc) }
     			$sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
 
-			# now RefSeq synonyms		
+			# RefSeq synonyms		
 			next if($refseq_acc eq 'na');
 
 			if($CLEAN == 1){ $sth4->execute($refseq_acc) }
-
 			$sth3->execute($seq_region_id, $refseq_acc, $refseq_db_id);	
 
 		}

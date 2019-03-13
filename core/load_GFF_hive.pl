@@ -28,7 +28,7 @@ my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version)
 my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable) = (0,0,0,0);
-my ($new_gff3file,$short_gff3file,$synonym_file);
+my ($new_gff3file,$short_gff3file,$synonym_file,%synonym);
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 
 getopts('hNawzyrceY:n:s:f:g:S:v:R:H:P:m:', \%opts);
@@ -257,15 +257,63 @@ if(defined($synonym_file)){
 	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
 
 	# parse synonyms
+	my $n_of_synonyms = 0;
 	open(TSV,"<",$synonym_file) || 
 		die "# ERROR: cannot read $synonym_file\n";
 	while(<TSV>){
 		my ($orig_gff,$synonym) = split(/\s+/,$_);
 		my $contig_slice = $slice_adaptor->fetch_by_region( 'contig', $synonym );
-                print "# adding synonym $orig_gff ($synonym)\n";
+                #print "# adding synonym $orig_gff ($synonym)\n";
+		$synonym{$orig_gff} = $synonym;
                 $contig_slice->add_synonym( $orig_gff );
+		$n_of_synonyms++;
 	}
 	close(TSV);	
+
+	print "# total=$n_of_synonyms synonyms\n";
+
+	# filter out sequences in GFF not matched in synonym list
+	my $n_filtered_genes = 0;
+	my %filter_scaffolds;
+	my $filter_gff3file = $gff3_file . ".syn.filt";
+	my $filter_log = $synonym_file.'.log';
+
+	open(FILTERLOG,">",$filter_log) || die "# ERROR: cannot create $filter_log\n";
+
+	open(FILTERGFF,">",$filter_gff3file) || die "# ERROR: cannot create $filter_gff3file\n";
+
+	open(GFF,'<',$new_gff3file) || die "# ERROR: cannot read $new_gff3file\n";
+        while(<GFF>){
+		if(/^#/){ print FILTERGFF $_ }
+                else{
+                        my @gffdata = split(/\t/,$_);
+
+			if(!defined($synonym{$gffdata[0]})){
+
+				if($gffdata[2] eq 'gene'){ 
+					print FILTERLOG "$gffdata[0] filtered out: $gffdata[8]";
+
+					if(!$filter_scaffolds{$gffdata[0]}){
+						$n_filtered_genes++;
+						$filter_scaffolds{$gffdata[0]} = 1;
+					}	
+				}
+				next;
+			}
+			
+			print FILTERGFF;
+		}
+	}
+	close(GFF);
+
+	close(FILTERGFF);
+
+	close(FILTERLOG);
+
+	$new_gff3file = $filter_gff3file;
+
+        print "\n# synonym-filtered GFF3 file: $filter_gff3file\n\n";
+	print "# filtered sequences=$n_filtered_genes synonym-filtered log file: $filter_log\n\n";
 }
 
 ## make custom-GFF subset with user-provided number of features (genes)

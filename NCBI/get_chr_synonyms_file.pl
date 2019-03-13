@@ -145,7 +145,7 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 	if(defined($reg_file)){
 
 		my ($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc);
-		my ($insdc_db_id,$refseq_db_id,$seq_region_id);
+		my ($insdc_db_id,$refseq_db_id,$seq_region_id,$insdc_only);
 
 		# connect to production db
 		my $registry = 'Bio::EnsEMBL::Registry';
@@ -204,25 +204,37 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			next if($ENA_acc eq 'na');
 
 			# do query
+			$insdc_only = 0;
 			$sth2->execute($ENA_acc);
 			my @results = $sth2->fetchrow_array;
 			if(scalar(@results) > 0){ $seq_region_id = $results[0] }
                 	else{ 
-				print "# WARNING: cannot find seq_region_id for $ENA_acc, skip it\n";
-				next;
+				$sth2->execute($insdc_acc);
+	                        my @results = $sth2->fetchrow_array;
+                        	if(scalar(@results) > 0){ 
+					$seq_region_id = $results[0];
+					$insdc_only = 1;
+				}
+                        	else{ print "# WARNING: cannot find seq_region_id for $ENA_acc,$insdc_acc skip it\n" }
 			}
+					
+
 
 			# community synonyms
-			if($CLEAN == 1){ $sth4->execute($insdc_acc) }
+			if($CLEAN == 1){ $sth4->execute($community_name) }
 			$sth3->execute($seq_region_id, $community_name, $insdc_db_id);
 
 			# INSDC synonyms
-			if($CLEAN == 1){ $sth4->execute($insdc_acc) }
-    			$sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
+			if($insdc_only){
+				if($CLEAN == 1){ $sth4->execute($ENA_acc) }
+    				$sth3->execute($seq_region_id, $ENA_acc, $insdc_db_id);
+			} else {
+				if($CLEAN == 1){ $sth4->execute($insdc_acc) }
+                                $sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
+			}
 
 			# RefSeq synonyms		
 			next if($refseq_acc eq 'na');
-
 			if($CLEAN == 1){ $sth4->execute($refseq_acc) }
 			$sth3->execute($seq_region_id, $refseq_acc, $refseq_db_id);	
 

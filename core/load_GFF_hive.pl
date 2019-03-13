@@ -29,6 +29,7 @@ my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable) = (0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file,%synonym);
+my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 
 getopts('hNawzyrceY:n:s:f:g:S:v:R:H:P:m:', \%opts);
@@ -252,6 +253,7 @@ if(defined($synonym_file)){
 	print "# adding synonyms from $synonym_file\n";
 
 	# connect to production db
+	my ($orig_gff,$synonym,$contig_slice,$regtype);
 	my $registry = 'Bio::EnsEMBL::Registry';
 	$registry->load_all($reg_file); 
 	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
@@ -261,12 +263,22 @@ if(defined($synonym_file)){
 	open(TSV,"<",$synonym_file) || 
 		die "# ERROR: cannot read $synonym_file\n";
 	while(<TSV>){
-		my ($orig_gff,$synonym) = split(/\s+/,$_);
-		my $contig_slice = $slice_adaptor->fetch_by_region( 'contig', $synonym );
-                #print "# adding synonym $orig_gff ($synonym)\n";
-		$synonym{$orig_gff} = $synonym;
-                $contig_slice->add_synonym( $orig_gff );
-		$n_of_synonyms++;
+		chomp;
+		($orig_gff,$synonym) = split(/\s+/,$_); 
+		foreach $regtype (@seqregion_types){
+			$contig_slice = $slice_adaptor->fetch_by_region( $regtype, $synonym );
+			last if(defined($contig_slice));
+		}
+
+		if(defined($contig_slice)){
+	                #print "# adding synonym $orig_gff ($synonym)\n";
+			$synonym{$orig_gff} = $synonym;
+                	$contig_slice->add_synonym( $orig_gff );
+			$n_of_synonyms++;
+		} else {
+			print "# cannot add unmatched synonym $orig_gff ($synonym)\n";
+		}
+		exit;
 	}
 	close(TSV);	
 

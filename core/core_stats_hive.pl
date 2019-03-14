@@ -10,14 +10,14 @@ use Bio::EnsEMBL::Registry;
 # is loaded in @INC / $PERL5LIB
 #
 # Adapted from Dan Bolser's run_the_core_stats_pipeline.sh
-# by B Contreras Moreira
+# by B Contreras Moreira 2018-9
 #
 # http://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Core+Statistics+Pipeline
 #
 ## check user arguments ######################################################
 ##############################################################################
 
-my $hive_db_cmd = 'mysql-eg-hive-ensrw';
+my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $overwrite = 0;
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version);
 my ($hive_args,$hive_url,$hive_db);      

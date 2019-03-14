@@ -13,18 +13,18 @@ use Sys::Hostname;
 # NOTE: pseudo-chromosomes 0 are not supported and instead represented as a set of "unplaced-scaffolds"
 #
 # Adapted from DBolser's run_the_genome_loader_pipeline_4.sh
-# by Bruno Contreras Moreira EMBL-EBI 2018
+# by Bruno Contreras Moreira EMBL-EBI 2018-9
 
 ## See: https://github.com/Ensembl/ensembl-genomeloader
 # https://github.com/Ensembl/ensembl-genomeloader/blob/master/CONFIG.md
 # Dan's copy was ~/EG_Places/Devel/lib/ensembl-genomeloader/enagenome_config.xml
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Oracle+Instances
 
-my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version);
+my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version,$nogenes);
 my ($prod_server,$egserver,$config_file,$argsline,$GCA_core_acc,$GCA_version);
 my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$cmd);
 
-getopts('hs:d:G:v:p:c:e:', \%opts);
+getopts('hNs:d:G:v:p:c:e:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -35,7 +35,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-G GCA accession                               (required, example: -G GCA_000188115.3)\n";
   print "-p production db server, where data is loaded  (required, example: -p eg-p3-w)\n";
   print "-e EG production server for taxon/analysis     (required, example: -e \$egprodserver)\n";
-  print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n\n";
+  print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n";
+  print "-N don't load genes or any other features      (optional)\n\n";
   exit(0);
 }
 
@@ -79,9 +80,13 @@ else{ die "# EXIT : need a valid -e EG production server, such as -e \$egprodser
 if($opts{'c'}){ $config_file = $opts{'c'} }
 else{ die "# EXIT : need a valid -c file, such as -c \$enaconfigng\n" }
 
-$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s",
+if($opts{'N'}){ $nogenes = 1 }
+else{ $nogenes = 0 }
+
+
+$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -N %d",
 	$0, $species, $division, $ensembl_version, $GCA_accession, 
-	$prod_server, $egserver, $config_file);
+	$prod_server, $egserver, $config_file, $nogenes);
 
 print "# $argsline\n\n";
 
@@ -96,9 +101,9 @@ if($thishost =~ m/ebi-login/ || $thishost =~ m/ebi-cli/){
 # NOTE: this avoids conflicts with other instances of GL 
 # NOTE: you'll need to add your public key to the list if github SSH keys
 if(!-d $GCA_accession){
-	system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
+	#system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
 	#testing fork
-	#system("git clone git\@github.com:brunocontrerasmoreira/ensembl-genomeloader.git $GCA_accession");
+	system("git clone git\@github.com:brunocontrerasmoreira/ensembl-genomeloader.git $GCA_accession");
 }
 else {
     chdir($GCA_accession);
@@ -123,7 +128,11 @@ $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
 	"--division $division ".
 	"$prod_db_args --dbname $db_name ".
 	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
-	"$analysis_db_args --prod_dbname ensembl_production";
+	"$analysis_db_args --prod_dbname ensembl_production ";
+
+if($nogenes){ 
+	$cmd .= " --nogenes ";
+}
 
 print "$cmd\n\n";
 

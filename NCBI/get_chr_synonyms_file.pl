@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 #
-# takes ENA accessions and visits NCBI FTP to retrieve contig/chr synonyms from full assembly report
+# takes ENA accessions and visits NCBI FTP to retrieve chr synonyms from full assembly report
 # 2018-9 Bruno Contreras Moreira EMBL-EBI
 #
 # Example calls: 
@@ -144,8 +144,8 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 	# 2.4) parse report file and add synonyms to db if requested 
 	if(defined($reg_file)){
 
-		my ($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc);
-		my ($insdc_db_id,$refseq_db_id,$seq_region_id,$insdc_only);
+		my ($community_name,$seqrole,$type,$ENA_acc,$insdc_acc,$refseq_acc);
+		my ($insdc_db_id,$refseq_db_id,$seq_region_id,$comm_ok);
 
 		# connect to production db
 		my $registry = 'Bio::EnsEMBL::Registry';
@@ -198,40 +198,38 @@ foreach my $input_sp (0 .. $#ENA_accessions){
 			
 			next if(/^#/); 
 			my @tsvdata = split(/\t/,$_);
-			($community_name,$seqrole,$ENA_acc,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,4,6];
+			($community_name,$seqrole,$ENA_acc,$type,$insdc_acc,$refseq_acc) = @tsvdata[0,1,2,3,4,6];
 			$seq_region_id = '';
 
-			next if($ENA_acc eq 'na');
+			next if($type ne 'Chromosome'); # warning, no contigs nor scaffolds!
 
-			# do query
-			$insdc_only = 0;
-			$sth2->execute($ENA_acc);
-			my @results = $sth2->fetchrow_array;
+			# do query to find chr in core db
+			$comm_ok = 0;
+			$sth2->execute($ENA_acc); # try with ENA accession first
+			my @results = $sth2->fetchrow_array();
 			if(scalar(@results) > 0){ $seq_region_id = $results[0] }
                 	else{ 
-				$sth2->execute($insdc_acc);
-	                        my @results = $sth2->fetchrow_array;
+				$sth2->execute($community_name); # else try with community name 
+	                        @results = $sth2->fetchrow_array();
                         	if(scalar(@results) > 0){ 
 					$seq_region_id = $results[0];
-					$insdc_only = 1;
+					$comm_ok = 1;
 				}
-                        	else{ print "# WARNING: cannot find seq_region_id for $ENA_acc,$insdc_acc skip it\n" }
+                        	else{ print "# WARNING: cannot find seq_region_id for $ENA_acc,$community_name skip it\n" }
 			}
-					
 
-
-			# community synonyms
-			if($CLEAN == 1){ $sth4->execute($community_name) }
-			$sth3->execute($seq_region_id, $community_name, $insdc_db_id);
+			# community/ENA synonyms
+			if(!$comm_ok){
+				if($CLEAN == 1){ $sth4->execute($community_name) }
+				$sth3->execute($seq_region_id, $community_name, $insdc_db_id);
+			} else {
+				if($CLEAN == 1){ $sth4->execute($ENA_acc) }
+                                $sth3->execute($seq_region_id, $ENA_acc, $insdc_db_id);
+			}
 
 			# INSDC synonyms
-			if($insdc_only){
-				if($CLEAN == 1){ $sth4->execute($ENA_acc) }
-    				$sth3->execute($seq_region_id, $ENA_acc, $insdc_db_id);
-			} else {
-				if($CLEAN == 1){ $sth4->execute($insdc_acc) }
-                                $sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
-			}
+			if($CLEAN == 1){ $sth4->execute($insdc_acc) }
+                        $sth3->execute($seq_region_id, $insdc_acc, $insdc_db_id);
 
 			# RefSeq synonyms		
 			next if($refseq_acc eq 'na');

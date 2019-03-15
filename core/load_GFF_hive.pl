@@ -17,7 +17,7 @@ use Bio::Seq;
 # It uses env $USER to create hive job names and assumes Ensembl-version API
 # is loaded in @INC / $PERL5LIB
 #
-# Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira
+# Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira 2018-9
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
 #
@@ -419,6 +419,18 @@ my $year_month_day = strftime("%Y-%m-%d", localtime());
 
 my $version_start_date = "$year_month-$gene_source";
 
+my $genebuild_method = "Generated from $gene_source annotation";
+
+print "\n# Setting meta genebuild.method to $genebuild_method \n";
+
+if($meta_adaptor->single_value_by_key( 'genebuild.method' )){
+        if(!$meta_adaptor->key_value_exists( 'genebuild.method', $genebuild_method )) {
+                $meta_adaptor->update_key_value( 'genebuild.method', $genebuild_method );
+        }
+} else {
+                $meta_adaptor->store_key_value( 'genebuild.method', $genebuild_method );
+}
+
 print "\n# Setting meta genebuild.version to $version_start_date\n";
 
 if($meta_adaptor->single_value_by_key( 'genebuild.version' )){
@@ -446,6 +458,15 @@ if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
 } else {
 	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month_day )
 }
+
+#PROBLEM: Meta table for 1 does not contain a value for genebuild.method
+#PROBLEM: Meta table for 1 does not contain a value for sample.gene_param
+#PROBLEM: Meta table for 1 does not contain a value for sample.gene_text
+#PROBLEM: Meta table for 1 does not contain a value for sample.location_param
+#PROBLEM: Meta table for 1 does not contain a value for sample.location_text
+#PROBLEM: Meta table for 1 does not contain a value for sample.transcript_param
+#PROBLEM: Meta table for 1 does not contain a value for sample.transcript_text
+
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################

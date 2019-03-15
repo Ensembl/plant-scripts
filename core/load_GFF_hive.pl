@@ -459,15 +459,6 @@ if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
 	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month_day )
 }
 
-#PROBLEM: Meta table for 1 does not contain a value for genebuild.method
-#PROBLEM: Meta table for 1 does not contain a value for sample.gene_param
-#PROBLEM: Meta table for 1 does not contain a value for sample.gene_text
-#PROBLEM: Meta table for 1 does not contain a value for sample.location_param
-#PROBLEM: Meta table for 1 does not contain a value for sample.location_text
-#PROBLEM: Meta table for 1 does not contain a value for sample.transcript_param
-#PROBLEM: Meta table for 1 does not contain a value for sample.transcript_text
-
-
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
 

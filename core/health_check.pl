@@ -30,7 +30,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
 }
 
 if($opts{'d'}){ $db_name = $opts{'d'} }
-else{ die "# EXIT : need a valid -d species db name, such as -f solanum_lycopersicum_core_42_95_3\n" }
+else{ die "# EXIT : need a valid -d species db name, such as -d solanum_lycopersicum_core_42_95_3\n" }
 
 if($opts{'p'}){ 
 	$prod_server = $opts{'p'}; 

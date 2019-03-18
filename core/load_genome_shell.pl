@@ -101,9 +101,9 @@ if($thishost =~ m/ebi-login/ || $thishost =~ m/ebi-cli/){
 # NOTE: this avoids conflicts with other instances of GL 
 # NOTE: you'll need to add your public key to the list if github SSH keys
 if(!-d $GCA_accession){
-	#system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
+	system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
 	#testing fork
-	system("git clone git\@github.com:brunocontrerasmoreira/ensembl-genomeloader.git $GCA_accession");
+	#system("git clone git\@github.com:brunocontrerasmoreira/ensembl-genomeloader.git $GCA_accession");
 }
 else {
     chdir($GCA_accession);

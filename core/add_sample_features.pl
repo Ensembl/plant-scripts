@@ -63,46 +63,49 @@ foreach $species_name (@species){
 
 
 	# get db adaptors from API
-	$species_name = 'homo_sapiens';
 	my $meta_adaptor = $registry2->get_adaptor($species_name, "core", "MetaContainer");
 	my $gene_adaptor = $registry2->get_adaptor($species_name, "core", "Gene");
 
-	# get all genes annotated, if any
-	my $ref_genes = $gene_adaptor->fetch_all();
-	#my $ref_genes = $gene_adaptor->fetch_all_by_biotype( 'protein_coding' );
-	
-
-	#my @genes = @{ $gene_adaptor->fetch_all_by_biotype( 'protein_coding' ) }; 
-	if(scalar(@$ref_genes) == 0){
+	# get all protein-coding genes, if any
+	my @genes = @{ $gene_adaptor->fetch_all_by_biotype( 'protein_coding' ) }; 
+	if(scalar(@genes) == 0){
                 print "# skip, no annotated genes\n";
                 next;
         }
 	 
-
 	# choose a random gene, giving preference to named genes
-  	#my @named_genes = grep { defined $_->external_name() } @genes;
-  	#if ( scalar(@named_genes) > 0 ) { @genes = @named_genes }
-	#my $random_gene_index = int( rand(scalar(@genes)) ); print "$random_gene_index\n";
-	
-	#my $random_gene = $genes[$random_gene_index];
-	#my $sr_name     = $random_gene->seq_region_name();
-	#my $sr_start    = $random_gene->seq_region_start();
-	#my $sr_end      = $random_gene->seq_region_end();
+  	my @named_genes = grep { defined $_->external_name() } @genes;
+  	if ( scalar(@named_genes) > 0 ) { @genes = @named_genes }
+	my $random_gene_index = int( rand(scalar(@genes)) ); #print "$random_gene_index\n";
+	my $random_gene = $genes[$random_gene_index];
 
-	#my $transcript = @{ $random_gene->get_all_Transcripts() }[0];
-	
+	# get the corresponding location
+	my $sr_name     = $random_gene->seq_region_name();
+	my $sr_start    = $random_gene->seq_region_start();
+	my $sr_end      = $random_gene->seq_region_end();
+	my $location    = "$sr_name:${sr_start}-${sr_end}";
 
+	# get the corresponding transcript
+	my $transcript = @{ $random_gene->get_all_Transcripts() }[0];
 
-  #       my $random_gene_index = int( rand($range) );
-  #
-		
+	printf("# Storing sample location, gene & transcript data: %s %s\n",
+		$location, 
+		$random_gene->external_name() || $random_gene->stable_id() );
 
+	$meta_adaptor->delete_key( 'sample.location_param' );
+	$meta_adaptor->store_key_value( 'sample.location_param', $location );
+	$meta_adaptor->delete_key( 'sample.location_text' );
+	$meta_adaptor->store_key_value( 'sample.location_text', $location );
 
-	#if($meta_adaptor->single_value_by_key( 'genebuild.method' )){
-        #	if(!$meta_adaptor->key_value_exists( 'genebuild.method', $genebuild_method )) {
-        #        	$meta_adaptor->update_key_value( 'genebuild.method', $genebuild_method );
-        #	}
-	#} else {
-        #        $meta_adaptor->store_key_value( 'genebuild.method', $genebuild_method );
-	#}
+	$meta_adaptor->delete_key( 'sample.gene_param' );
+	$meta_adaptor->store_key_value( 'sample.gene_param', $random_gene->stable_id() );
+	$meta_adaptor->delete_key( 'sample.gene_text' );
+	$meta_adaptor->store_key_value( 'sample.gene_text', 
+		$random_gene->external_name() || $random_gene->stable_id() );
+
+	$meta_adaptor->delete_key( 'sample.transcript_param' );
+	$meta_adaptor->store_key_value( 'sample.transcript_param', $transcript->stable_id() );
+	$meta_adaptor->delete_key( 'sample.transcript_text' );
+	$meta_adaptor->store_key_value( 'sample.transcript_text',
+		$transcript->external_name() || $transcript->stable_id() );
 }

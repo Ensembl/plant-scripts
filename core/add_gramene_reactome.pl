@@ -17,28 +17,28 @@ use Bio::EnsEMBL::Registry;
 
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $overwrite = 0;
-my ($help,$reg_file,@species,$species_cmd,$ensembl_version);
-my ($xref_reac_file,$xref_path_file,$pipeline_dir);
+my ($help,$reg_file,$sp,$species_cmd,$ensembl_version);
+my ($xref_reac_file,$xref_path_file,$pipeline_dir,@species);
 my ($hive_args,$hive_url,$hive_db);      
 
 GetOptions(	
 	"help|?" => \$help,
 	"overwrite|w" => \$overwrite, 
 	"version|v=s" => \$ensembl_version,
-	"species|s=s" => \@species,
 	"hivecmd|H=s" => \$hive_db_cmd,    
 	"regfile|R=s" => \$reg_file,
-	"reactfile|r=s" => \$xref_reac_file,
-	"pathwayfile|p=s" => \$xref_path_file,
-	"pipelinedir|P=s" => \$pipeline_dir
+	"reactions=s" => \$xref_reac_file,
+	"pathways=s" => \$xref_path_file,
+	"pipelinedir|P=s" => \$pipeline_dir,
+	"species|s=s" => \@species,
 ) || help_message(); 
 
 if($help){ help_message() }
 
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
-	"-r reactions file                      (required, example: -r Ensembl2PlantReactomeReactions.txt)\n".
-	"-p pathways file                       (required, example: -p Ensembl2PlantReactome.txt)\n".
+	"-reactions file                        (required, example: -reactions Ensembl2PlantReactomeReactions.txt)\n".
+	"-pathways file                         (required, example: -pathways Ensembl2PlantReactome.txt)\n".
 	"-v next Ensembl version                (required, example: -v 95)\n".
 	"-R registry file, can be env variable  (required, example: -R \$p1panreg)\n".
 	"-P pipeline dir, can be env variable   (required, example: -P \$dumptmp)\n".
@@ -66,20 +66,52 @@ if(!$pipeline_dir || !-e $pipeline_dir){
 	$pipeline_dir = "$pipeline_dir/$ensembl_version" 
 }
 
+if(@species){ # optional
+        foreach $sp (@species){
+                $species_cmd .= "-species $sp ";
+        }
+}
+
 if(!$xref_reac_file || !-e $xref_reac_file){
 	die "# EXIT : need a valid -r file, such as -r Ensembl2PlantReactomeReactions.txt\n"
 }
 
 if(!$xref_path_file || !-e $xref_path_file){
         die "# EXIT : need a valid -p file, such as -r Ensembl2PlantReactome.txt\n"
-}
+} else { 
 
-if(@species){
-	foreach my $sp (@species){ 
-		$species_cmd .= "-species $sp "; 
+	my (%supported);
+	open(PATHS,"<",$xref_path_file) || 
+		die "# ERROR: cannot read $xref_path_file\n";
+	while(<PATHS>) {
+		my @data = split(/\t/,$_); 
+		next if(!$data[5]); 
+		$sp = $data[5];	
+		$sp = lc($sp);
+                $sp =~ s/\s+/_/g;
+                $sp =~ s/_+$//g;
+
+		$supported{$sp}++;
+		next if($supported{$sp} > 1);
+	
+		if(scalar(@species) == 0){	
+			$species_cmd .= "-species $sp ";
+		}
 	}
-} 
-else{ print "# NOTE: running for all species\n" }
+	close(PATHS);
+
+	# check user's species if any
+	if(@species){
+		foreach $sp (@species){
+			if(!$supported{$sp}){
+				die "# ERROR: -s $sp is not currently supported, exit\n";
+				exit;
+			}
+		}
+	} else {
+		print "# running for all species\n" 
+	}
+}
 
 chomp( $hive_args = `$hive_db_cmd details script` );
 $hive_db = $ENV{'USER'}."_xref_gpr_$ensembl_version";

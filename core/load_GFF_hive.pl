@@ -497,3 +497,18 @@ system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file"
 system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
 print "# hive job URL: $hive_url\n\n";
+
+
+## Make features displayable after loading 
+##########################################################################
+
+#TODO
+#$registry = 'Bio::EnsEMBL::Registry';
+#$registry->load_all($reg_file);
+#my $dba = Bio::EnsEMBL::Registry->get_DBAdaptor($species, "core");
+#my $sql_query = 'SELECT DISTINCT(analysis_id) FROM gene WHERE source = ?;';
+#my $sth = $dba->dbc->prepare($sql_query);
+#$sth->execute($gene_source);
+#UPDATE analysis_description SET displayable=1 where analysis_id=XX;
+
+

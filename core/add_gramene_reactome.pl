@@ -15,6 +15,11 @@ use Bio::EnsEMBL::Registry;
 ## check user arguments ######################################################
 ##############################################################################
 
+my %tricky_names = (
+	'oryza_sativa_indica_group' => 'oryza_indica',
+	'oryza_sativa_japonica_group' => 'oryza_sativa',
+);
+
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $overwrite = 0;
 my ($help,$reg_file,$sp,$species_cmd,$ensembl_version,$stats_only);
@@ -100,6 +105,7 @@ if(!$xref_path_file || !-e $xref_path_file){
 		next if(!$data[5]); 
 		$sp = $data[5];	
 		$sp = lc($sp);
+		if($tricky_names{$sp}){ $sp = $tricky_names{$sp} }
                 $sp =~ s/\s+/_/g;
                 $sp =~ s/_+$//g;
 

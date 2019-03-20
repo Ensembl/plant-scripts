@@ -1,7 +1,7 @@
 #!/bin/env perl
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw(:config no_ignore_case);;
 use Bio::EnsEMBL::Registry;
 
 # This script submits a reactome load job to hive
@@ -17,7 +17,7 @@ use Bio::EnsEMBL::Registry;
 
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $overwrite = 0;
-my ($help,$reg_file,$sp,$species_cmd,$ensembl_version);
+my ($help,$reg_file,$sp,$species_cmd,$ensembl_version,$stats_only);
 my ($xref_reac_file,$xref_path_file,$pipeline_dir);
 my (@species,@db_names,$db);
 my ($hive_args,$hive_url,$hive_db);
@@ -31,6 +31,7 @@ GetOptions(
 	"reactions=s" => \$xref_reac_file,
 	"pathways=s" => \$xref_path_file,
 	"pipelinedir|P=s" => \$pipeline_dir,
+	"statsonly|S" => \$stats_only,
 	"species|s=s" => \@species
 ) || help_message(); 
 
@@ -45,7 +46,8 @@ sub help_message {
 	"-R registry file, can be env variable  (required, example: -R \$p1panreg)\n".
 	"-P pipeline dir, can be env variable   (required, example: -P \$dumptmp)\n".
 	"-H hive database command               (optional, default: $hive_db_cmd)\n".
-	"-w over-write db (hive_force_init)     (optional, useful when a previous run failed)\n";
+	"-w over-write db (hive_force_init)     (optional, useful when a previous run failed)\n".
+	"-S check stats only                    (optional, does not load new data)\n\n";
 	exit(0);
 }
 
@@ -140,32 +142,73 @@ $hive_url .= $hive_db;
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
 
-my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::Xref_GPR_conf ".
-    	"$hive_args ".
-    	"-registry $reg_file ".
-	"-pipeline_dir $pipeline_dir ".
-    	"$species_cmd ".
-	"-xref_reac_file $xref_reac_file ".
-	"-xref_path_file $xref_path_file ".
-	"-hive_force_init $overwrite";
+if(!$stats_only){
+	my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::Xref_GPR_conf ".
+    		"$hive_args ".
+    		"-registry $reg_file ".
+		"-pipeline_dir $pipeline_dir ".
+    		"$species_cmd ".
+		"-xref_reac_file $xref_reac_file ".
+		"-xref_path_file $xref_path_file ".
+		"-hive_force_init $overwrite";
 
-print "# $initcmd\n\n";
+	print "# $initcmd\n\n";
+	
+	open(INITRUN,"$initcmd |") || die "# ERROR: cannot run $initcmd\n";
+	while(<INITRUN>){
+		print;
+	}
+	close(INITRUN);
+	
+	## Send jobs to hive 
+	######################################################################### 
+	
+	print "# hive job URL: $hive_url";
+	
+	system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync");
+	system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file");
+	system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
-open(INITRUN,"$initcmd |") || die "# ERROR: cannot run $initcmd\n";
-while(<INITRUN>){
-	print;
+	print "# hive job URL: $hive_url\n\n";
 }
-close(INITRUN);
 
+## post sanity checks
+#########################################################################
 
-## Send jobs to hive 
-######################################################################### 
+my $registry = 'Bio::EnsEMBL::Registry';
+$registry->load_all($reg_file);
 
-print "# hive job URL: $hive_url";
+my $sql_query = '
+  SELECT
+    db_name,
+    COUNT(DISTINCT xref_id),
+    COUNT(DISTINCT ensembl_id),
+    COUNT(*)
+  FROM
+    external_db
+  INNER JOIN
+    xref        USING (external_db_id)
+  INNER JOIN
+    object_xref USING (xref_id)
+  INNER JOIN
+    gene ON ensembl_id = gene_id
+  WHERE
+    db_name = ?;
+';
 
-system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync");
-system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file");
-system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
+print "species\tdb_name\txref_ids\tensembl_ids\ttotal\n";
+while($species_cmd =~ m/-species (\S+)/g){
+	$sp = $1;
+	my $dba = Bio::EnsEMBL::Registry->get_DBAdaptor($sp, "core");
 
-print "# hive job URL: $hive_url\n\n";
+	my $sth = $dba->dbc->prepare($sql_query);
+
+	foreach my $external_db ( 'Plant_Reactome_Reaction', 'Plant_Reactome_Pathway'){ 
+		$sth->execute($external_db);
+		my @results = $sth->fetchrow_array;		
+		print $sp;
+		foreach my $n (@results) { print "\t$n" }
+		print "\n";
+	}
+}
 

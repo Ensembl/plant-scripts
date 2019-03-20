@@ -105,12 +105,12 @@ if(!$xref_path_file || !-e $xref_path_file){
 		next if(!$data[5]); 
 		$sp = $data[5];	
 		$sp = lc($sp);
-		if($tricky_names{$sp}){ $sp = $tricky_names{$sp} }
                 $sp =~ s/\s+/_/g;
                 $sp =~ s/_+$//g;
+		if($tricky_names{$sp}){ $sp = $tricky_names{$sp} }
 
 		$supported{$sp}++;
-		next if($supported{$sp} > 1);
+		next if($supported{$sp} > 1); 
 	
 		if(scalar(@species) == 0){	
 			$species_cmd .= "-species $sp ";

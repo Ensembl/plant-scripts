@@ -18,8 +18,9 @@ use Bio::EnsEMBL::Registry;
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $overwrite = 0;
 my ($help,$reg_file,$sp,$species_cmd,$ensembl_version);
-my ($xref_reac_file,$xref_path_file,$pipeline_dir,@species);
-my ($hive_args,$hive_url,$hive_db);      
+my ($xref_reac_file,$xref_path_file,$pipeline_dir);
+my (@species,@db_names,$db);
+my ($hive_args,$hive_url,$hive_db);
 
 GetOptions(	
 	"help|?" => \$help,
@@ -30,20 +31,20 @@ GetOptions(
 	"reactions=s" => \$xref_reac_file,
 	"pathways=s" => \$xref_path_file,
 	"pipelinedir|P=s" => \$pipeline_dir,
-	"species|s=s" => \@species,
+	"species|s=s" => \@species
 ) || help_message(); 
 
 if($help){ help_message() }
 
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
+	"-s species_name(s)                     (required, example: -s arabidopsis_thaliana -s ...)\n".
 	"-reactions file                        (required, example: -reactions Ensembl2PlantReactomeReactions.txt)\n".
 	"-pathways file                         (required, example: -pathways Ensembl2PlantReactome.txt)\n".
 	"-v next Ensembl version                (required, example: -v 95)\n".
 	"-R registry file, can be env variable  (required, example: -R \$p1panreg)\n".
 	"-P pipeline dir, can be env variable   (required, example: -P \$dumptmp)\n".
 	"-H hive database command               (optional, default: $hive_db_cmd)\n".
-	"-s species_name(s)                     (optional, by default all, example: -s arabidopsis_thaliana -s ...)\n".
 	"-w over-write db (hive_force_init)     (optional, useful when a previous run failed)\n";
 	exit(0);
 }
@@ -58,6 +59,13 @@ else{ die "# EXIT : need a valid -v version, such as -v 95\n" }
 
 if(!$reg_file || !-e $reg_file){ 
 	die "# EXIT : need a valid -R file, such as -R \$p1panreg\n"
+} else {
+	my $registry = 'Bio::EnsEMBL::Registry';
+	$registry->load_all($reg_file);
+	my $adaptors = $registry->get_all_DBAdaptors;
+	for my $a (@$adaptors){
+		push(@db_names, $a->dbc->dbname());
+	}
 }
 
 if(!$pipeline_dir || !-e $pipeline_dir){
@@ -70,6 +78,8 @@ if(@species){ # optional
         foreach $sp (@species){
                 $species_cmd .= "-species $sp ";
         }
+} else {
+	die "# EXIT : need a valid -s species, such as -s arabidopsis_thaliana -s ...\n"
 }
 
 if(!$xref_reac_file || !-e $xref_reac_file){
@@ -100,16 +110,24 @@ if(!$xref_path_file || !-e $xref_path_file){
 	}
 	close(PATHS);
 
-	# check user's species if any
-	if(@species){
-		foreach $sp (@species){
-			if(!$supported{$sp}){
-				die "# ERROR: -s $sp is not currently supported, exit\n";
-				exit;
+	# check user's species
+	foreach $sp (@species){
+		if(!$supported{$sp}){
+			die "# ERROR: -s $sp cannot be found in $xref_path_file, exit\n";
+			exit;
+		} else { 
+			my $indb = 0;
+			foreach $db (@db_names) {
+				if($db =~ m/$sp/) {
+					$indb = 1;
+					last;
+				}
+			}
+
+			if(!$indb){
+				die "# ERROR: -s $sp cannot be found in server pointed by $reg_file, exit\n";
 			}
 		}
-	} else {
-		print "# running for all species\n" 
 	}
 }
 
@@ -118,8 +136,6 @@ $hive_db = $ENV{'USER'}."_xref_gpr_$ensembl_version";
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 
-
-exit;
 
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################

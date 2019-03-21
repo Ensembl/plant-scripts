@@ -29,10 +29,12 @@ my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable) = (0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file,%synonym) = ('','','');
+my $logicname = '';
 my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 
-getopts('hNawzyrceY:n:s:f:g:S:v:R:H:P:m:', \%opts);
+
+getopts('hNawzyrceY:n:s:f:g:L:S:v:R:H:P:m:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -53,7 +55,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-e print sequence of chromosome ends in db     (optional, requires -n)\n";
   print "-Y add contig synonyms from file before load   (optional, takes a TSV file: gffname\\ENAtsynonym)\n";
   print "-c check CDS coords in GFF3                    (optional, requires -m)\n";
-  print "-S source of gene annotation, one word         (optional, example: -S SOL, default: 3rd col of GFF3)\n";
+  print "-S source of annotation for dumps, one word    (optional, example: -S SOL, default: 3rd col of GFF3)\n";
+  print "-L logicname to import analysis desc & webdata (optional, example: -L SOL_genomics, should be in production db)\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
   exit(0);
@@ -92,6 +95,8 @@ else{
 	}
 }
 
+if($opts{'L'}){ $logicname = $opts{'L'} }
+
 if($opts{'R'} && -e $opts{'R'}){ $reg_file = $opts{'R'} }
 else{ die "# EXIT : need a valid -R file, such as -R \$p2panreg\n" }
 
@@ -125,9 +130,9 @@ if($opts{'n'}){
 }
 elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -v %s -R %s -H %s -P %s -m %d ".
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -v %s -R %s -H %s -P %s -m %d ".
 		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
-  $0, $species, $protein_fasta_file, $gff3_file, $gene_source, 
+  $0, $species, $protein_fasta_file, $gff3_file, $gene_source, $logicname,
   $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
   $synonym_file, $sub_chr_names, $nonzero, $synonyms, 
   $check_chr_ends, $check_gff_CDS, $names_stable, 
@@ -476,6 +481,8 @@ if($add_to_previous){ $initcmd .= "-delete_existing 0 " }
 
 if($names_stable){ $initcmd .= "-use_name_field stable_id " }
 
+if($logicname){ $initcmd .= "--logic_name $logicname " }
+
 print "# $initcmd\n\n";
 
 if($rerun == 0){
@@ -497,18 +504,5 @@ system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file"
 system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
 print "# hive job URL: $hive_url\n\n";
-
-
-## Make features displayable after loading 
-##########################################################################
-
-#TODO
-#$registry = 'Bio::EnsEMBL::Registry';
-#$registry->load_all($reg_file);
-#my $dba = Bio::EnsEMBL::Registry->get_DBAdaptor($species, "core");
-#my $sql_query = 'SELECT DISTINCT(analysis_id) FROM gene WHERE source = ?;';
-#my $sth = $dba->dbc->prepare($sql_query);
-#$sth->execute($gene_source);
-#UPDATE analysis_description SET displayable=1 where analysis_id=XX;
 
 

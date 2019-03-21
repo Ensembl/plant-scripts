@@ -20,7 +20,7 @@ use Bio::EnsEMBL::Registry;
 ## check user arguments ######################################################
 ##############################################################################
 
-my $hive_db_cmd = 'mysql-eg-hive-ensrw';
+my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my ($rerun,$overwrite) = (0,0);
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
 my ($hive_args,$hive_url,$hive_db);      

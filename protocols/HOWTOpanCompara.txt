@@ -1,0 +1,224 @@
+
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Pan+Compara+production
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Peptide+Compara+pipeline
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Updating+the+master+database
+# https://gist.github.com/gnaamati/e0bb87326293c3cd4e257fc326758044
+
+# NOTE: release version of core databases, not ensembl-compara's version
+ENS_VERSION=97
+EG_VERSION=$(echo $ENS_VERSION-53 | bc)
+
+comparasetup $ENS_VERSION
+
+export LSB_DEFAULTQUEUE=production-rh74
+
+HIVE_CMD=mysql-ens-hive-prod-2-ensrw
+HIVE_URL=$(${HIVE_CMD} details url)
+
+# registry points to master in our prod server
+REG_FILE=$p2pancomparareg
+MASTER_CMD=mysql-ens-plants-prod-2-ensrw
+MASTER_DB=pan_compara_master
+MASTER_URL=$($MASTER_CMD details url)$MASTER_DB
+
+PROD_CMD=mysql-eg-pan-prod
+PROD_URL=$(${PROD_CMD} details url)ensembl_production
+
+COMPATH=$ENSEMBL_ROOT_DIR/ensembl-compara/scripts/pipeline/
+PRODPATH=$ENSAPIPATH/ensembl-prodinf-core/ensembl_prodinf/
+HIVEPATH=$ENSEMBL_ROOT_DIR/ensembl-hive/scripts/
+TMP_DIR=$comptmp
+
+## current pan species ##############################################
+
+$PROD_CMD $MASTER_DB -e 'select name from genome_db' | \
+	tail -n +2 | sort | uniq > current_pan_species.txt
+
+# hack for 97, due to a few bacteria & fungi sp being renamed (see updated_names.txt)
+# 1) manually update their genome_db.name and genome_db.strain_name in MASTER_DB
+# 2) -> current_pan_species.edited.txt
+
+# new genebuilds / updated species names
+echo oryza_sativa > updated_species.txt
+echo solanum_lycopersicum >> updated_species.txt
+echo physcomitrella_patens >> updated_species.txt
+cat updated_names.txt >> updated_species.txt
+
+# new species
+echo marchantia_polymorpha > new_species.txt
+echo brachypodium_distachyon >> new_species.txt
+
+# get list of core dbs for Pan species
+csv_species=`perl -ne 's/(\w+)/"$1",/g; print' current_pan_species.edited.txt`
+
+standaloneJob.pl Bio::EnsEMBL::Production::Pipeline::Common::DbFactory \
+	--input_id "{ 'species' => [ $csv_species ] }" --reg_conf $pancomparareg \
+	-debug 1 &> current_pan_dbs.log
+
+perl -lne 'if(/dbname" => "(\S+?)"/){ print $1 }' current_pan_dbs.log > current_pan_dbs.txt
+
+wc current_pan_dbs.txt
+#66
+
+## copy those core dbs to our production server ###################################
+
+TARGET_SERVER=$(${MASTER_CMD} details url)
+
+# comment as needed
+SOURCE_SERVER=$(mysql-ens-sta-1 details url)
+ENDPOINT=http://ens-prod-1.ebi.ac.uk:8000/dbcopy/
+
+SOURCE_SERVER=$(mysql-ens-sta-3 details url)
+SOURCE_SERVER=$(mysql-ens-sta-4 details url)
+ENDPOINT=http://eg-prod-01.ebi.ac.uk:7000/dbcopy/ 
+
+for db in $(cat current_pan_dbs.txt);
+	do $PRODPATH/db_copy_client.py --action submit --uri ${ENDPOINT} \
+		--source_db_uri "${SOURCE_SERVER}${db}" --target_db_uri "${TARGET_SERVER}${db}";
+done
+
+# check dbs were copied
+$MASTER_CMD -e "show databases" | grep _97_ | wc
+#66
+
+## copy cores of new species to our production server #############################
+
+# Copy from mysql://ensro@mysql-ens-sta-3:4160/marchantia_polymorpha_core_44_97_1 to 
+# 	mysql://ensrw:scr1b3d3@mysql-ens-plants-prod-2:4208/marchantia_polymorpha_core_44_97_1 is successful
+
+# Copy from mysql://ensro@mysql-ens-sta-3:4160/brachypodium_distachyon_core_44_97_4 to 
+#	mysql://ensrw:scr1b3d3@mysql-ens-plants-prod-2:4208/brachypodium_distachyon_core_44_97_4 is successful
+
+$MASTER_CMD -e "show databases" | grep _97_ | wc
+#68
+
+## copy pan_compara_master to prod server ######################################
+
+# Copy from mysql://ensro@mysql-eg-pan-prod:4276/pan_compara_master to 
+# 	mysql://ensrw:scr1b3d3@mysql-ens-plants-prod-2:4208/pan_compara_master is successful
+
+# check schema and update if needed 
+$MASTER_CMD $MASTER_DB -e "select meta_value from meta where meta_key='schema_version'"
+# 94
+
+# apply sequentially patches from /homes/bcontreras/devel/compara/97/ensembl-compara/sql
+# some might fail due to Pan being slightly different (MMuffato)
+patch_94_95_a.sql
+#patch_94_95_b.sql failed
+patch_94_95_c.sql
+#patch_94_95_d.sql failed
+patch_95_96_a.sql
+
+## update genomes in pan_compara_master ###########################################
+
+perl $COMPATH/update_genome.pl \
+  --reg_conf $REG_FILE \
+  --compara $MASTER_URL \
+  --release $ENS_VERSION \
+  --force 1 \
+  --file_of_production_names new_species.txt
+
+perl $COMPATH/update_genome.pl \
+  --reg_conf $REG_FILE \
+  --compara $MASTER_URL \
+  --release $ENS_VERSION \
+  --force 1 \
+  --file_of_production_names updated_species.txt
+
+perl $COMPATH/update_genome.pl \
+  --reg_conf $REG_FILE \
+  --compara $MASTER_URL \
+  --release $ENS_VERSION \
+  --force 1 \
+  --file_of_production_names metadata_updated_species.txt
+
+# get full species names as used in $MASTER_DB
+$MASTER_CMD $MASTER_DB -e "select name from genome_db where last_release is NULL" | tail -n +2 > all_species.txt
+
+# creae a new pan collection of genomes
+perl $COMPATH/edit_collection.pl --reg_conf $REG_FILE --compara $MASTER_URL \
+	--collection pan --file all_species.txt --new --release 97
+
+# ... there is a difference in the software release (97) and the database release (96)...
+# Stored: SpeciesSet dbID=701065 "collection-pan"', 190 genome_dbs [current]
+
+
+## Gene tree and homology configuration ##############################################
+
+# Once the species have been defined, we need to create one method_link_species_set (MLSS) for the gene tree, 
+# orthology MLSSs for each pair of species with a division & paralogy MLSSs for each species within a division
+
+# Orthologs
+perl $COMPATH/create_mlss.pl \
+    --method_link_type ENSEMBL_ORTHOLOGUES \
+    --reg_conf $REG_FILE \
+    --collection pan \
+    --compara $MASTER_URL \
+    --source ensembl \
+    --pw --f \
+    --release $ENS_VERSION \
+    1> ENSEMBL_ORTHOLOGUES.out
+
+
+# Paralogs
+perl $COMPATH/create_mlss.pl \
+    --method_link_type ENSEMBL_PARALOGUES \
+    --reg_conf $REG_FILE \
+    --collection pan \
+    --compara $MASTER_URL \
+    --source ensembl \
+    --sg --f \
+    --release $ENS_VERSION \
+    1> ENSEMBL_PARALOGUES.out
+
+# Trees
+perl $COMPATH/create_mlss.pl \ 
+    --method_link_type PROTEIN_TREES \
+    --reg_conf $REG_FILE \
+    --collection pan \
+    --compara $MASTER_URL \
+    --source ensembl \
+    --name protein_tree_pan_eg${EG_VERSION} \
+    --f \
+    --release $ENS_VERSION \
+    1> PROTEIN_TREES.out
+
+# store MLSS id for this Compara job
+mlss_id=`perl -lne 'if(/MethodLinkSpeciesSet has dbID: (\d+)/){ print $1 }' PROTEIN_TREES.out` 
+echo $mlss_id
+
+## Load Members, this queries the production server ($PROD_CMD) ############################
+
+# not used: -curr_core_sources_locs '' -prev_core_sources_locs '' -pipeline_dir $comptmp
+# note than $USER is added to db name by init script
+
+hive_db_name=${USER}_pan_load_members_${ENS_VERSION}
+hive_url=$HIVE_URL$hive_db_name
+
+perl $HIVEPATH/init_pipeline.pl \
+  Bio::EnsEMBL::Compara::PipeConfig::EBI::EG::LoadMembers_conf \
+  $($HIVE_CMD details hive) \
+  -collection pan \
+  -division pan \
+  -curr_core_registry $REG_FILE \
+  -master_db $MASTER_URL \
+  -reuse_member_db 0 \
+  -hive_force_init 1
+
+echo $hive_url
+
+url="${hive_url};reconnect_when_lost=1"
+
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+beekeeper.pl -url $url -reg_conf $REG_FILE -loop
+
+# This will fail, open the eHIVE GUI with $hive_url, in analysis 'check_versions_match' set 'manual_ok' to 1 and reset as READY
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+
+# Some species fail:
+# i) load_genomedb_factory : due to metadata, such as assembly or strain name, not matching the values in $MASTER_DB
+# ii) load_fresh_members_from_db : "MSG: start must be <= end
+# They'll need to be updated with update_genome.pl -> metadata_updated_species.txt (see above, and re-run from there)
+

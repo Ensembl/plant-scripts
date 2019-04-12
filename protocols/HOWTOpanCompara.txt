@@ -14,6 +14,7 @@ export LSB_DEFAULTQUEUE=production-rh74
 
 HIVE_CMD=mysql-ens-hive-prod-2-ensrw
 HIVE_URL=$(${HIVE_CMD} details url)
+MEMBER_URL=${HIVE_URL}$MEMBER_DB
 
 # registry points to master in our prod server
 REG_FILE=$p2pancomparareg
@@ -23,6 +24,7 @@ MASTER_URL=$($MASTER_CMD details url)$MASTER_DB
 
 PROD_CMD=mysql-eg-pan-prod
 PROD_URL=$(${PROD_CMD} details url)ensembl_production
+NCBI_URL=$(${PROD_CMD} details url)ncbi_taxonomy
 
 COMPATH=$ENSEMBL_ROOT_DIR/ensembl-compara/scripts/pipeline/
 PRODPATH=$ENSAPIPATH/ensembl-prodinf-core/ensembl_prodinf/
@@ -133,15 +135,16 @@ perl $COMPATH/update_genome.pl \
   --file_of_production_names metadata_updated_species.txt
 
 # get full species names as used in $MASTER_DB
-$MASTER_CMD $MASTER_DB -e "select name from genome_db where last_release is NULL" | tail -n +2 > all_species.txt
+$MASTER_CMD $MASTER_DB -e "select name from genome_db where last_release is NULL" | \
+	tail -n +2 | grep -v -f removed_species.txt > all_species.txt
 
 # creae a new pan collection of genomes
 perl $COMPATH/edit_collection.pl --reg_conf $REG_FILE --compara $MASTER_URL \
 	--collection pan --file all_species.txt --new --release 97
 
 # ... there is a difference in the software release (97) and the database release (96)...
-# Stored: SpeciesSet dbID=701065 "collection-pan"', 190 genome_dbs [current]
-
+# Stored: SpeciesSet dbID=701065 "collection-pan"', 190 genome_dbs [current] -> before excluding removed_species.txt
+# Stored: SpeciesSet dbID=702191 "collection-pan"', 188 genome_dbs [current]
 
 ## Gene tree and homology configuration ##############################################
 
@@ -213,12 +216,56 @@ beekeeper.pl -url $url -sync
 runWorker.pl -url $url -reg_conf $REG_FILE
 beekeeper.pl -url $url -reg_conf $REG_FILE -loop
 
-# This will fail, open the eHIVE GUI with $hive_url, in analysis 'check_versions_match' set 'manual_ok' to 1 and reset as READY
+# This will fail; open guiHive, type $hive_url, in analysis 'check_versions_match' set 'manual_ok' to 1 and reset as READY
 beekeeper.pl -url $url -sync
 runWorker.pl -url $url -reg_conf $REG_FILE
 
 # Some species fail:
 # i) load_genomedb_factory : due to metadata, such as assembly or strain name, not matching the values in $MASTER_DB
-# ii) load_fresh_members_from_db : "MSG: start must be <= end
-# They'll need to be updated with update_genome.pl -> metadata_updated_species.txt (see above, and re-run from there)
+# ii) load_fresh_members_from_db : "MSG: start must be <= end"
+# They'll need to be removed (removed_species.txt) or updated with update_genome.pl (metadata_updated_species.txt) and re-run 
+
+## compute ProteinTrees ######################################################################
+
+# not used: -production_db_url $PROD_URL -curr_core_registry $REG_FILE -store_goc_capacity 100  
+
+# member db created in previous step, should be removed after completion
+MEMBER_URL=${HIVE_URL}$hive_db_name
+
+compara_db_name=ensembl_compara_pan_hom_${EG_VERSION}_${ENS_VERSION}
+compara_url=$HIVE_URL$compara_db_name
+
+perl $HIVEPATH/init_pipeline.pl \
+  Bio::EnsEMBL::Compara::PipeConfig::EBI::EG::ProteinTrees_conf \
+  $($HIVE_CMD details hive) \
+  -division pan \
+  -mlss_id $mlss_id \
+  -ensembl_release $ENS_VERSION \
+  -eg_release $EG_VERSION \
+  -member_db $MEMBER_URL \
+  -master_db $MASTER_URL \
+  -ncbi_db $NCBI_URL \
+  -goc_threshold 25 \
+  -cdhit_identity_threshold 0.99 \
+  -blastp_capacity 420 \
+  -hive_force_init 1
+
+echo $compara_url
+
+url="${compara_url};reconnect_when_lost=1"
+
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+beekeeper.pl -url $url -reg_conf $REG_FILE -loop
+
+# This will fail; open guiHive, type $hive_url, 
+# in 'backbone_fire_clustering' and 'check_member_db_is_same_version' set 'manual_ok' to 1 and reset as READY
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+
+## final steps ###############################################################################
+
+# NOTE that the resulting db is called $compara_db_name  and should be renamed to
+# ensembl_compara_pan_homology_<eg_release>_<ensembl_release>
+
 

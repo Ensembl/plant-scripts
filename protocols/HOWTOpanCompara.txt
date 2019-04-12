@@ -1,8 +1,12 @@
+#!/bin/bash
 
+# Protocol to run the Pan Compara pipeline, based on 
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Pan+Compara+production
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Peptide+Compara+pipeline
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Updating+the+master+database
 # https://gist.github.com/gnaamati/e0bb87326293c3cd4e257fc326758044
+
+# by Bruno Contreras Moreira EMBL-EBI 2019
 
 # NOTE: release version of core databases, not ensembl-compara's version
 ENS_VERSION=97

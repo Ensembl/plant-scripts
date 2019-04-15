@@ -15,7 +15,7 @@ fi
 EGRELEASE=$1
 
 PRODSERVER=mysql-ens-meta-prod-1
-MIRRSERVER=mysql-eg-mirror 
+MIRRSERVER=mysql-ens-mirror-1 
 PLANTCOREDBLIST=plant_list-core-$EGRELEASE.txt
 PLANTOTHERDBLIST=plant_list-otherfeatures-$EGRELEASE.txt
 WHEATISCOREFILE=transplant-EBI-core-$EGRELEASE.tsv

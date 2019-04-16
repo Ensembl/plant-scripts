@@ -48,6 +48,7 @@ $PROD_CMD $MASTER_DB -e 'select name from genome_db' | \
 echo oryza_sativa > updated_species.txt
 echo solanum_lycopersicum >> updated_species.txt
 echo physcomitrella_patens >> updated_species.txt
+echo chondrus_crispus >> updated_species.txt
 cat updated_names.txt >> updated_species.txt
 
 # new species
@@ -148,7 +149,7 @@ perl $COMPATH/edit_collection.pl --reg_conf $REG_FILE --compara $MASTER_URL \
 
 # ... there is a difference in the software release (97) and the database release (96)...
 # Stored: SpeciesSet dbID=701065 "collection-pan"', 190 genome_dbs [current] -> before excluding removed_species.txt
-# Stored: SpeciesSet dbID=702191 "collection-pan"', 188 genome_dbs [current]
+# Stored: SpeciesSet dbID=702192 "collection-pan"', 187 genome_dbs [current]
 
 ## Gene tree and homology configuration ##############################################
 
@@ -266,6 +267,28 @@ beekeeper.pl -url $url -reg_conf $REG_FILE -loop
 # in 'backbone_fire_clustering' and 'check_member_db_is_same_version' set 'manual_ok' to 1 and reset as READY
 beekeeper.pl -url $url -sync
 runWorker.pl -url $url -reg_conf $REG_FILE
+
+# trouble-shooting
+
+# error in analysis 'genome_member_copy' : Cannot add or update a child row: a foreign key constraint fails 
+#    (ensembl_compara_pan_hom_44_97.gene_member, CONSTRAINT gene_member_ibfk_3 FOREIGN KEY (dnafrag_id) 
+#    REFERENCES dnafrag (dnafrag_id)), when using table: gene_member
+#
+# that seems like gene_member is pointing at a dnafrag_id that does not exist.
+#
+# in guiHive I see its genome_db_id = 2713 (chondrus_crispus)
+# then in the `bcontreras_pan_load_members_97` I do
+# select count(distinct(dnafrag_id)) from gene_member where genome_db_id = 2713
+#657
+# select count(distinct(dnafrag_id)) from dnafrag where genome_db_id = 2713
+#926
+# -> add to updated_species.txt (still same error)
+#
+# Don't really know what's going on, genes seem to point in all cases to valid seq_region_ids (dnafrag_ids)
+# I do see that coord_system for cp genes is different to the rest ?!
+#
+# eventually removed it as there are two other Rodophitae (Galdieria sulphuraria, Cyanidioschyzon merolae)
+# -> removed_species.txt
 
 ## final steps ###############################################################################
 

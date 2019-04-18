@@ -509,5 +509,5 @@ system("runWorker.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file"
 system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop");
 
 print "# hive job URL: $hive_url\n\n";
-
-
+print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync\n\n";
+print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop\n\n";

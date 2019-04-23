@@ -290,6 +290,38 @@ runWorker.pl -url $url -reg_conf $REG_FILE
 # eventually removed it as there are two other Rodophitae (Galdieria sulphuraria, Cyanidioschyzon merolae)
 # -> removed_species.txt
 
+# 1 out of 780 'blastp_unannotated_himem' analyses failed several times with diverse errors (seems to be a 2Gb_6_hour_job resource)
+# it is job_id 18911
+beekeeper.pl -url $url -analyses_pattern blastp_unannotated_himem -reset_failed_jobs
+#select * from resource_usage_stats where analysis rlike 'blastp_unannotated_himem'
+#select * from log_message where job_id = 18911
+#'GarbageCollector: The worker died because of RUNLIMIT', 'WORKER_ERROR'
+#'Can''t use an undefined value as an ARRAY reference at /nfs/panda/ensemblgenomes/development/bcontreras//compara/97/ensembl-compara/modules/Bio/EnsEMBL/Compara/Utils/Cigars.pm line 320, <BLASTTABLE> line 1470.'
+#'GarbageCollector: The worker died because of UNKNOWN'
+# so I now run it interactively:
+bshell4 -> ebi6-283
+screen -S compara1
+runWorker.pl -url "mysql://ensrw:scr1b3hive@mysql-ens-hive-prod-2:4411/ensembl_compara_pan_hom_44_97;reconnect_when_lost=1" -job_id 18911 -no_cleanup
+#...
+#Use of uninitialized value in hash element at /nfs/panda/ensemblgenomes/development/bcontreras//compara/97/ensembl-compara/modules/Bio/EnsEMBL/Compara/DBSQL/PeptideAlignFeatureAdaptor.pm line 327.
+#Worker 5090 [ Role 5001 , blastp_unannotated_himem(53) ] Job 18911 : complete
+#Worker 5090 [ Role 5001 , blastp_unannotated_himem(53) ] Having completed 1 jobs the Worker exits : JOB_LIMIT
+exit
+
+beekeeper.pl -url $url -sync
+beekeeper.pl -url $url -reg_conf $REG_FILE --balance_semaphores
+runWorker.pl -url $url -reg_conf $REG_FILE
+
+# 2 out of 187 per_genome_qc analyses failed:
+#genome_db_id 2714 has too many orphan genes -> cryptomonas_paramecium_gca_000194455
+#genome_db_id 2788 has too many orphan genes -> giardia_lamblia
+#edited ensembl-compara/modules/Bio/EnsEMBL/Compara/RunnableDB/GeneTrees/PerGenomeGroupsetQC.pm and re-run
+#genome_db_id 2714 has too many orphan genes (260/466) please investigate further.
+#genome_db_id 2788 has too many orphan genes (4118/7364)
+#commnent out if ( !$self->_is_above_orphan_ratio( $genome_db_id, $ncbi_taxon_adaptor ) ) { and re-run
+
+# then, clusterset_backup & backbone_fire_tree_building semaphores had to be unblocked
+
 ## final steps ###############################################################################
 
 # NOTE that the resulting db is called $compara_db_name  and should be renamed to

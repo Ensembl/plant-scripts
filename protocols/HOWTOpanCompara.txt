@@ -8,6 +8,9 @@
 
 # by Bruno Contreras Moreira EMBL-EBI 2019
 
+# recommended as this pipeline might take over a week to run
+screen -S compara-${USER}
+
 # NOTE: release version of core databases, not ensembl-compara's version
 ENS_VERSION=97
 EG_VERSION=$(echo $ENS_VERSION-53 | bc)
@@ -266,7 +269,7 @@ beekeeper.pl -url $url -reg_conf $REG_FILE -loop
 # This will fail; open guiHive, type $hive_url, 
 # in 'backbone_fire_clustering' and 'check_member_db_is_same_version' set 'manual_ok' to 1 and reset as READY
 beekeeper.pl -url $url -sync
-runWorker.pl -url $url -reg_conf $REG_FILE
+beekeeper.pl -url $url -reg_conf $REG_FILE -loop
 
 # trouble-shooting
 
@@ -310,7 +313,7 @@ exit
 
 beekeeper.pl -url $url -sync
 beekeeper.pl -url $url -reg_conf $REG_FILE --balance_semaphores
-runWorker.pl -url $url -reg_conf $REG_FILE
+runWorker.pl -url $url -reg_conf $REG_FILE --loop
 
 # 2 out of 187 per_genome_qc analyses failed:
 #genome_db_id 2714 has too many orphan genes -> cryptomonas_paramecium_gca_000194455

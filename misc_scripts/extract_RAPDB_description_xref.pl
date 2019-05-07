@@ -43,11 +43,13 @@ while(<GFF>){
 		}
 
 		if($col[8] =~ /RAP-DB Gene Symbol Synonym\(s\)=([^;\s]+)/){ 
-			$syn=URI2string($1); 
+			$syn=URI2string($1);
+			$syn=~s/;.*$//; 
 			$extdb = $external_db{'RAP-DB'};
 		}
 		elsif($col[8] =~ /Oryzabase Gene Symbol Synonym\(s\)=([^;\s]+)/){ 
 			$syn=URI2string($1);
+			$syn=~s/;.*$//;
 			$extdb = $external_db{'Oryzabase'};
 		}
 		else{ $syn=$extdb="NULL" }
@@ -76,9 +78,9 @@ sub URI2string {
 
 	$string =~ s/%([A-Fa-f\d]{2})/chr hex $1/eg;
 
-	# any HTML/XML special chars as well
+	# any HTML special chars as well
+	$string =~ s/&apos/'/g; # this actually XML
 	$string =~ s/&(\S+)?;/$1/eg;
-	$string =~ s/&apos/'/g;
 
 	return $string;
 }

@@ -44,12 +44,12 @@ while(<GFF>){
 
 		if($col[8] =~ /RAP-DB Gene Symbol Synonym\(s\)=([^;\s]+)/){ 
 			$syn=URI2string($1);
-			$syn=~s/;.*$//; 
+			$syn=clean_name($syn); 
 			$extdb = $external_db{'RAP-DB'};
 		}
 		elsif($col[8] =~ /Oryzabase Gene Symbol Synonym\(s\)=([^;\s]+)/){ 
 			$syn=URI2string($1);
-			$syn=~s/;.*$//;
+			$syn=clean_name($syn);
 			$extdb = $external_db{'Oryzabase'};
 		}
 		else{ $syn=$extdb="NULL" }
@@ -85,3 +85,13 @@ sub URI2string {
 	return $string;
 }
 
+# after reading https://github.com/Ensembl/ensj-healthcheck/blob/bf400cd6f87f542856bd73a5e38745b441bbbd07/src/org/ensembl/healthcheck/testcase/EnsTestCase.java
+sub clean_name {
+	my ($string) = @_;
+
+	$string =~ s/^[\[\\:\\;\n\r\t\~\]]//g;
+        $string =~ s/;.*$//; 
+	$string =~ s/[\[\\:\\;\n\r\t\~\]]$//g;
+        
+        return $string;
+}

@@ -23,10 +23,12 @@ HIVE_CMD=mysql-ens-hive-prod-2-ensrw
 HIVE_URL=$(${HIVE_CMD} details url)
 MEMBER_URL=${HIVE_URL}$MEMBER_DB
 
-# registry points to master in our prod server
+DIVISION=pan
 REG_FILE=$p2pancomparareg
+
+# registry points to master in our prod server
 MASTER_CMD=mysql-ens-plants-prod-2-ensrw
-MASTER_DB=pan_compara_master
+MASTER_DB=${DIVISION}_compara_master
 MASTER_URL=$($MASTER_CMD details url)$MASTER_DB
 
 PROD_CMD=mysql-eg-pan-prod
@@ -146,7 +148,7 @@ perl $COMPATH/update_genome.pl \
 $MASTER_CMD $MASTER_DB -e "select name from genome_db where last_release is NULL" | \
 	tail -n +2 | grep -v -f removed_species.txt > all_species.txt
 
-# creae a new pan collection of genomes
+# create a new pan collection of genomes
 perl $COMPATH/edit_collection.pl --reg_conf $REG_FILE --compara $MASTER_URL \
 	--collection pan --file all_species.txt --new --release 97
 
@@ -236,6 +238,7 @@ runWorker.pl -url $url -reg_conf $REG_FILE
 ## compute ProteinTrees ######################################################################
 
 # not used: -production_db_url $PROD_URL -curr_core_registry $REG_FILE -store_goc_capacity 100  
+# do_jaccard_index was added to avoid a failure when reuse_db is not set
 
 # member db created in previous step, should be removed after completion
 MEMBER_URL=${HIVE_URL}$hive_db_name
@@ -256,6 +259,7 @@ perl $HIVEPATH/init_pipeline.pl \
   -goc_threshold 25 \
   -cdhit_identity_threshold 0.99 \
   -blastp_capacity 420 \
+  -do_jaccard_index 0 \
   -hive_force_init 1
 
 echo $compara_url
@@ -294,8 +298,10 @@ beekeeper.pl -url $url -reg_conf $REG_FILE -loop
 # -> removed_species.txt
 
 # 1 out of 780 'blastp_unannotated_himem' analyses failed several times with diverse errors (seems to be a 2Gb_6_hour_job resource)
-# it is job_id 18911
+# NOTE: this happen to other tasks as well and after resetting all jobs were completed  
 beekeeper.pl -url $url -analyses_pattern blastp_unannotated_himem -reset_failed_jobs
+
+# it is job_id 18911
 #select * from resource_usage_stats where analysis rlike 'blastp_unannotated_himem'
 #select * from log_message where job_id = 18911
 #'GarbageCollector: The worker died because of RUNLIMIT', 'WORKER_ERROR'
@@ -304,7 +310,8 @@ beekeeper.pl -url $url -analyses_pattern blastp_unannotated_himem -reset_failed_
 # so I now run it interactively:
 bshell4 -> ebi6-283
 screen -S compara1
-runWorker.pl -url "mysql://ensrw:scr1b3hive@mysql-ens-hive-prod-2:4411/ensembl_compara_pan_hom_44_97;reconnect_when_lost=1" -job_id 18911 -no_cleanup
+runWorker.pl -url "mysql://ensrw:scr1b3hive@mysql-ens-hive-prod-2:4411/ensembl_compara_pan_hom_44_97;reconnect_when_lost=1" \
+	-job_id 18911 -no_cleanup
 #...
 #Use of uninitialized value in hash element at /nfs/panda/ensemblgenomes/development/bcontreras//compara/97/ensembl-compara/modules/Bio/EnsEMBL/Compara/DBSQL/PeptideAlignFeatureAdaptor.pm line 327.
 #Worker 5090 [ Role 5001 , blastp_unannotated_himem(53) ] Job 18911 : complete
@@ -313,7 +320,7 @@ exit
 
 beekeeper.pl -url $url -sync
 beekeeper.pl -url $url -reg_conf $REG_FILE --balance_semaphores
-runWorker.pl -url $url -reg_conf $REG_FILE --loop
+runWorker.pl -url $url -reg_conf $REG_FILE --loop --sleep 0.5
 
 # 2 out of 187 per_genome_qc analyses failed:
 #genome_db_id 2714 has too many orphan genes -> cryptomonas_paramecium_gca_000194455
@@ -324,10 +331,60 @@ runWorker.pl -url $url -reg_conf $REG_FILE --loop
 #commnent out if ( !$self->_is_above_orphan_ratio( $genome_db_id, $ncbi_taxon_adaptor ) ) { and re-run
 
 # then, clusterset_backup & backbone_fire_tree_building semaphores had to be unblocked
+# NOTE: balance_semaphores might be needed in others places for the pipeline to continue
+
+
+## merging dbs ##############################################################################
+
+# i) https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Creation+of+a+new+release+database
+# ii) https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Compara+Database+Merging
+
+# NOTE: temporary $compara_db_name is to be renamed to $full_compara_db_name
+full_compara_db_name=ensembl_compara_pan_homology_${EG_VERSION}_${ENS_VERSION}
+
+# edit custom registry
+# cp $COMPATH/production_reg_plants_conf.pl $COMPATH/production_reg_pan_conf.pl
+# set there $current_release and location of core dbs ($MASTER_URL)
+#
+# also set therein appropriate values (ptrees won't be used yet, )
+# 'compara_master' => [ 'mysql-ens-plants-prod-2', 'pan_compara_master' ],
+# 'compara_curr'   => [ 'mysql-ens-plants-prod-1', 'ensembl_compara_pan_homology_44_97' ],
+# 'compara_prev'   => [ 'mysql-ens-sta-3', 'ensembl_compara_pan_homology_44_97' ],
+#
+# homology dbs
+# 'compara_members' => [ 'mysql-ens-hive-prod-2', 'bcontreras_pan_load_members_97' ],
+# 'compara_ptrees'  => [ 'mysql-ens-hive-prod-2', 'ensembl_compara_pan_hom_44_97' ],
+#
+# finally edit sub add_compara_dbs to make sure correct user/pass are used 
+
+# temporary new pan compara db, in $HIVE_CMD
+#TMP_DB=$compara_db_name
+#TMP_URL=$($HIVE_CMD details url)$NEW_DB
+
+# new pan compara db, in $MASTER_CMD
+NEW_CMD=mysql-ens-plants-prod-1-ensrw
+NEW_DB=$full_compara_db_name
+#NEW_URL=$($NEW_CMD details url)$NEW_DB 
+ 
+$NEW_CMD <<< "CREATE DATABASE $NEW_DB;"
+$NEW_CMD $NEW_DB < $ENSEMBL_ROOT_DIR/ensembl-compara/sql/table.sql 
+
+perl $COMPATH/populate_new_database.pl \
+  --reg-conf $COMPATH/production_reg_${DIVISION}_conf.pl \
+  --master compara_master \
+  --old compara_prev \ 
+  --new compara_curr \
+  --intentions > populate_new_database.intentions
+
+time perl $COMPATH/populate_new_database.pl \
+  --reg-conf $COMPATH/production_reg_${DIVISION}_conf.pl \
+  --master compara_master \
+  --old compara_prev \
+  --new compara_curr > populate_new_database.out
+
 
 ## final steps ###############################################################################
 
-# NOTE that the resulting db is called $compara_db_name  and should be renamed to
-# ensembl_compara_pan_homology_<eg_release>_<ensembl_release>
+
 
 

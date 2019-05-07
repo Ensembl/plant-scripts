@@ -76,6 +76,10 @@ sub URI2string {
 
 	$string =~ s/%([A-Fa-f\d]{2})/chr hex $1/eg;
 
+	# any HTML/XML special chars as well
+	$string =~ s/&(\S+)?;/$1/eg;
+	$string =~ s/&apos/'/g;
+
 	return $string;
 }
 

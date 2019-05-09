@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# Protocol to run the Pan Compara pipeline, based on 
+# Protocol to run the Pan Compara pipeline
+# 
+# The supported Compara documentation is 
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Construction+of+the+release+database
+#
+# However, there is still less update EG documentation which cover Pan explicitely, 
+# which ocasionally suggest different recipes:
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Pan+Compara+production
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Peptide+Compara+pipeline
-# https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Updating+the+master+database
-# https://gist.github.com/gnaamati/e0bb87326293c3cd4e257fc326758044
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Merge+the+homology+pipelines
 
 # by Bruno Contreras Moreira EMBL-EBI 2019
 
@@ -15,6 +20,7 @@ screen -S compara-${USER}
 ENS_VERSION=97
 EG_VERSION=$(echo $ENS_VERSION-53 | bc)
 
+ensetup $ENS_VERSION
 comparasetup $ENS_VERSION
 
 export LSB_DEFAULTQUEUE=production-rh74
@@ -28,6 +34,9 @@ REG_FILE=$p2pancomparareg
 
 # registry points to master in our prod server
 MASTER_CMD=mysql-ens-plants-prod-2-ensrw
+MASTER_RO=mysql-ens-plants-prod-2
+details=($(${MASTER_RO} details))
+MASTER_RO_PORT=${details[6]}
 MASTER_DB=${DIVISION}_compara_master
 MASTER_URL=$($MASTER_CMD details url)$MASTER_DB
 
@@ -35,9 +44,31 @@ PROD_CMD=mysql-eg-pan-prod
 PROD_URL=$(${PROD_CMD} details url)ensembl_production
 NCBI_URL=$(${PROD_CMD} details url)ncbi_taxonomy
 
-COMPATH=$ENSEMBL_ROOT_DIR/ensembl-compara/scripts/pipeline/
+## new pan compara db (final outcome, same server as core dbs to facilitate HCs)
+NEW_CMD=$MASTER_CMD
+NEW_DB=ensembl_compara_pan_homology_${EG_VERSION}_${ENS_VERSION}
+NEW_URL=$($NEW_CMD details url)$NEW_DB
+
 PRODPATH=$ENSAPIPATH/ensembl-prodinf-core/ensembl_prodinf/
 HIVEPATH=$ENSEMBL_ROOT_DIR/ensembl-hive/scripts/
+
+COMPATH=$ENSEMBL_ROOT_DIR/ensembl-compara/scripts/pipeline/
+# edit custom registry
+# cp $COMPATH/production_reg_plants_conf.pl $COMPATH/production_reg_pan_conf.pl
+# set there $current_release and location of core dbs ($MASTER_URL)
+#
+# also set therein appropriate values (ptrees won't be used yet, )
+# 'compara_master' => [ 'mysql-ens-plants-prod-2', 'pan_compara_master' ],
+# 'compara_curr'   => [ 'mysql-ens-plants-prod-2', 'ensembl_compara_pan_homology_44_97' ],
+# 'compara_prev'   => [ 'mysql-ens-sta-3', 'ensembl_compara_pan_homology_44_97' ],
+#
+# homology dbs
+# 'compara_members' => [ 'mysql-ens-hive-prod-2', 'bcontreras_pan_load_members_97' ],
+# 'compara_ptrees'  => [ 'mysql-ens-hive-prod-2', 'ensembl_compara_pan_hom_44_97' ],
+#
+# finally edit sub add_compara_dbs to make sure correct user/pass are used 
+MERGEREG=$COMPATH/production_reg_${DIVISION}_conf.pl
+
 TMP_DIR=$comptmp
 
 ## current pan species ##############################################
@@ -333,58 +364,123 @@ runWorker.pl -url $url -reg_conf $REG_FILE --loop --sleep 0.5
 # then, clusterset_backup & backbone_fire_tree_building semaphores had to be unblocked
 # NOTE: balance_semaphores might be needed in others places for the pipeline to continue
 
+# call high-confidence orthologues according to GOC, WGA cover and %identity cutoffs defined at
+# https://github.com/Ensembl/ensembl-compara/blob/HEAD/modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/EG/HighConfidenceOrthologs_conf.pm
+#
+# best before merging, according to https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Merge+the+homology+pipelines
+# Mateus explained $compara_url is still a InnoDB db, which is much faster than the final db (MyISAM)
+#
+# Note: https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsGen&title=Ortholog+metrics+and+confidence+levels
+# says this task might struggle on a hive server, so you might want to try another one (MASTER)
+
+highconf_db_name=${USER}_high_confidence_orthologs_${ENS_VERSION}
+highconf_url=$($MASTER_CMD details url)$highconf_db_name
+
+perl $HIVEPATH/init_pipeline.pl \
+  Bio::EnsEMBL::Compara::PipeConfig::EBI::EG::HighConfidenceOrthologs_conf \
+  $($MASTER_CMD details hive) \
+  -compara_db $compara_url
+
+echo $highconf_url
+
+url="${highconf_url};reconnect_when_lost=1"
+
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+beekeeper.pl -url $url -reg_conf $REG_FILE -loop --sleep 0.5
+
+# increase hive capacity to 50, ave time per job 40s-1m13s-1m54s
 
 ## merging dbs ##############################################################################
 
-# i) https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Creation+of+a+new+release+database
-# ii) https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Compara+Database+Merging
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Compara+Database+Merging
+# see also the more comprehensive 
+# https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Creation+of+a+new+release+database
 
-# NOTE: temporary $compara_db_name is to be renamed to $full_compara_db_name
-full_compara_db_name=ensembl_compara_pan_homology_${EG_VERSION}_${ENS_VERSION}
-
-# edit custom registry
-# cp $COMPATH/production_reg_plants_conf.pl $COMPATH/production_reg_pan_conf.pl
-# set there $current_release and location of core dbs ($MASTER_URL)
-#
-# also set therein appropriate values (ptrees won't be used yet, )
-# 'compara_master' => [ 'mysql-ens-plants-prod-2', 'pan_compara_master' ],
-# 'compara_curr'   => [ 'mysql-ens-plants-prod-1', 'ensembl_compara_pan_homology_44_97' ],
-# 'compara_prev'   => [ 'mysql-ens-sta-3', 'ensembl_compara_pan_homology_44_97' ],
-#
-# homology dbs
-# 'compara_members' => [ 'mysql-ens-hive-prod-2', 'bcontreras_pan_load_members_97' ],
-# 'compara_ptrees'  => [ 'mysql-ens-hive-prod-2', 'ensembl_compara_pan_hom_44_97' ],
-#
-# finally edit sub add_compara_dbs to make sure correct user/pass are used 
-
-# temporary new pan compara db, in $HIVE_CMD
-#TMP_DB=$compara_db_name
-#TMP_URL=$($HIVE_CMD details url)$NEW_DB
-
-# new pan compara db, in $MASTER_CMD
-NEW_CMD=mysql-ens-plants-prod-1-ensrw
-NEW_DB=$full_compara_db_name
-#NEW_URL=$($NEW_CMD details url)$NEW_DB 
- 
 $NEW_CMD <<< "CREATE DATABASE $NEW_DB;"
 $NEW_CMD $NEW_DB < $ENSEMBL_ROOT_DIR/ensembl-compara/sql/table.sql 
 
 perl $COMPATH/populate_new_database.pl \
-  --reg-conf $COMPATH/production_reg_${DIVISION}_conf.pl \
+  --reg-conf $MERGEREG \
   --master compara_master \
   --old compara_prev \ 
   --new compara_curr \
   --intentions > populate_new_database.intentions
 
-time perl $COMPATH/populate_new_database.pl \
-  --reg-conf $COMPATH/production_reg_${DIVISION}_conf.pl \
+# takes a few minutes only
+perl $COMPATH/populate_new_database.pl \
+  --reg-conf $MERGEREG \
   --master compara_master \
   --old compara_prev \
   --new compara_curr > populate_new_database.out
 
+## add homology and peptide data   
 
-## final steps ###############################################################################
+merge_db_name=${USER}_pipeline_dbmerge_${ENS_VERSION}
+merge_url=$HIVE_URL$merge_db_name
+
+perl $HIVEPATH/init_pipeline.pl \
+  Bio::EnsEMBL::Compara::PipeConfig::EBI::EG::MergeDBsIntoRelease_conf \
+  $($HIVE_CMD details hive) \
+  -curr_rel_db $NEW_URL \
+  -src_db_aliases protein_db=$compara_url \
+  -src_db_aliases master_db=$MASTER_URL 
+
+# there 3 warnings from 
+# ~/devel/compara/97/ensembl-compara/modules/Bio/EnsEMBL/Compara/PipeConfig/MergeDBsIntoRelease_conf.pm
+
+echo $merge_url
+
+url="${merge_url};reconnect_when_lost=1"
+
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+beekeeper.pl -url $url -reg_conf $REG_FILE -loop
+
+## homology stats pipeline
+
+homstats_db_name=${USER}_gene_member_homology_stats_${ENS_VERSION}
+homstats_url=$HIVE_URL$homstats_db_name
+
+perl $HIVEPATH/init_pipeline.pl \
+  Bio::EnsEMBL::Compara::PipeConfig::EBI::EG::GeneMemberHomologyStats_conf \
+  $($HIVE_CMD details hive) \
+  -curr_rel_db $NEW_URL \
+  -collection $DIVISION
+ 
+echo $homstats_url
+
+url="${homstats_url};reconnect_when_lost=1"
+
+beekeeper.pl -url $url -sync
+runWorker.pl -url $url -reg_conf $REG_FILE
+beekeeper.pl -url $url -reg_conf $REG_FILE -loop
+
+## check schema and update if needed 
+$NEW_CMD $NEW_DB -e "select meta_value from meta where meta_key='schema_version'"
+# 96
+
+# apply sequentially patches from $EG_APIS/ensembl-97/ensembl-compara/sql/
+patch_96_97_a.sql
+
+$NEW_CMD $NEW_DB < $EG_APIS/ensembl-97/ensembl-compara/sql/patch_96_97_a.sql
+
+$NEW_CMD $NEW_DB -e "select meta_value from meta where meta_key='schema_version'"
+# 97
 
 
+## health checks
+
+# assumes core dbs are in the same server (MASTER)
+# reserve RAM as some tests, such as CheckHomology, can take a long time and maybe needs lots of memory
+bshell10
+
+#ebi6-040
+
+screen -S pan-hc
+
+cd /homes/bcontreras/devel/ensembl-97/ensj-healthcheck
+
+./run-configurable-testrunner.sh -d $NEW_DB --host $MASTER_RO --port $MASTER_RO_PORT -g EGComparaHandoverService --compara_master.database=pan_compara_master --output All > pan_EGComparaHandoverService.out &
 
 

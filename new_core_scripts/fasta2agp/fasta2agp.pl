@@ -19,7 +19,7 @@ use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2h
     my ($chr_header,$chunk_header,$count,$chunk_length,$chunk_count,$total_length);
     while (my $line = <IN>){
         chomp($line);
-        if ($line =~ />(\d+)_(\d+)/){
+        if ($line =~ />(\d+\w)_(\d+)/){
             if ($chunk_length){
                 
                 ##Get the coordinates for the start and end of the ASM part

@@ -23,8 +23,9 @@ use Sys::Hostname;
 my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version,$nogenes);
 my ($prod_server,$egserver,$config_file,$argsline,$GCA_core_acc,$GCA_version);
 my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$cmd);
+my ($species_display_name,$species_production_name) = ('','');
 
-getopts('hNs:d:G:v:p:c:e:', \%opts);
+getopts('hND:P:s:d:G:v:p:c:e:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -36,6 +37,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-p production db server, where data is loaded  (required, example: -p eg-p3-w)\n";
   print "-e EG production server for taxon/analysis     (required, example: -e \$egprodserver)\n";
   print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n";
+  print "-P species production_name                     (optional, example: -P marchantia_polymorpha)\n";
+  print "-D species display name                        (optional, example: -D 'Marchantia polymorpha')\n";
   print "-N don't load genes or any other features      (optional)\n\n";
   exit(0);
 }
@@ -80,13 +83,22 @@ else{ die "# EXIT : need a valid -e EG production server, such as -e \$egprodser
 if($opts{'c'}){ $config_file = $opts{'c'} }
 else{ die "# EXIT : need a valid -c file, such as -c \$enaconfigng\n" }
 
+if($opts{'P'}){
+	$species_production_name = $opts{'P'};
+}
+
+if($opts{'D'}){
+        $species_display_name = $opts{'D'};
+}
+
 if($opts{'N'}){ $nogenes = 1 }
 else{ $nogenes = 0 }
 
 
-$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -N %d",
+$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -D '%s' -P %s -N %d",
 	$0, $species, $division, $ensembl_version, $GCA_accession, 
-	$prod_server, $egserver, $config_file, $nogenes);
+	$prod_server, $egserver, $config_file, 
+	$species_display_name,$species_production_name, $nogenes);
 
 print "# $argsline\n\n";
 
@@ -129,6 +141,14 @@ $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
 	"$prod_db_args --dbname $db_name ".
 	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
 	"$analysis_db_args --prod_dbname ensembl_production ";
+
+if($species_display_name){
+	$cmd .= " --display_name '$species_display_name' ";
+}
+
+if($species_production_name){
+	$cmd .= " --production_name '$species_production_name' ";
+}
 
 if($nogenes){ 
 	$cmd .= " --nogenes ";

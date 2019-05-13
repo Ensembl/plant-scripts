@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
-use Bio::EnsEMBL::Registry;
 
 # This script submits a repeat pipeline job(s) to hive
 #
@@ -20,7 +19,7 @@ use Bio::EnsEMBL::Registry;
 ## check user arguments ######################################################
 ##############################################################################
 
-my $hive_db_cmd = 'mysql-eg-hive-ensrw';
+my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my ($rerun,$overwrite) = (0,0);
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
 my ($hive_args,$hive_url,$hive_db);      
@@ -85,6 +84,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::DNAFeature
     	"$hive_args ".
     	"--registry $reg_file ".
         "--pipeline_dir $pipeline_dir ".
+	"--redatrepeatmasker 1 ".
     	"$species_cmd ".
 	"--hive_force_init $overwrite";
 

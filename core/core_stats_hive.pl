@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use Bio::EnsEMBL::Registry;
 
 # This script submits a core stats job to hive
 #

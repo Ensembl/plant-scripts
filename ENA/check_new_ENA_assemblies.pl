@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 # checks ENA annotated assemblies not currently included in a give Ensembl division, 
 # EnsemblPlants by default 
-# 2018 Bruno Contreras Moreira EMBL-EBI
+# 2018-9 Bruno Contreras Moreira EMBL-EBI
 #
 # Example run, takes a few hours: 
 # $ ./check_new_ENA_assemblies.pl -t Viridiplantae 
@@ -25,7 +25,7 @@ my $GFFfolder = './GFFfiles/';
 my $used_saved_files = 0;
 
 # URLs and query paths, can change with time
-my $RESTURL    = 'http://rest.ensemblgenomes.org';
+my $RESTURL    = 'http://rest.ensembl.org';
 my $ENAURL     = 'https://www.ebi.ac.uk/ena/portal/api/search?result=assembly&query=tax_tree';
 my $ENAquery   = '&fields=assembly_level%2Cgenome_representation%2Cassembly_name'.
 			'%2Cassembly_title%2Cscientific_name%2Cstrain%2Cstudy_accession';
@@ -82,6 +82,7 @@ printf("# %s -t %s -d %s -s %s -r %s -f %s -S %d\n\n",
 
 
 ## 1) get taxon ID from REST ensemblgenomes
+print "# interrogating $RESTtaxonomy_query...\n";
 my $taxon_id = '';
 open(REST,"$WGETEXE -q --header='Content-type:application/json' $RESTtaxonomy_query -O- |") || 
 	die "ERROR: cannot connect to $RESTtaxonomy_query\n";

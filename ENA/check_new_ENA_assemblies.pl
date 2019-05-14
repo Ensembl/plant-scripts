@@ -82,7 +82,7 @@ printf("# %s -t %s -d %s -s %s -r %s -f %s -S %d\n\n",
 
 
 ## 1) get taxon ID from REST ensemblgenomes
-print "# interrogating $RESTtaxonomy_query...\n";
+print "# interrogating $RESTtaxonomy_query\n";
 my $taxon_id = '';
 open(REST,"$WGETEXE -q --header='Content-type:application/json' $RESTtaxonomy_query -O- |") || 
 	die "ERROR: cannot connect to $RESTtaxonomy_query\n";

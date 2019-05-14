@@ -11,7 +11,7 @@
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Peptide+Compara+pipeline
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Merge+the+homology+pipelines
 
-# by Bruno Contreras Moreira EMBL-EBI 2019
+# by Bruno Contreras Moreira EMBL-EBI 2019 with help from the Compara team
 
 # recommended as this pipeline might take over a week to run
 screen -S compara-${USER}
@@ -43,6 +43,14 @@ MASTER_URL=$($MASTER_CMD details url)$MASTER_DB
 PROD_CMD=mysql-eg-pan-prod
 PROD_URL=$(${PROD_CMD} details url)ensembl_production
 NCBI_URL=$(${PROD_CMD} details url)ncbi_taxonomy
+
+STA_CMD=mysql-ens-sta-3 
+
+OLD_ENS_VERSION=`expr $ENS_VERSION - 1`
+OLD_EG_VERSION=`expr $EG_VERSION - 1`
+OLD_CMD=mysql-ens-mirror-3
+OLD_DB=ensembl_compara_pan_homology_${OLD_EG_VERSION}_${OLD_ENS_VERSION}
+OLD_URL=$($OLD_CMD details url)$OLD_DB
 
 ## new pan compara db (final outcome, same server as core dbs to facilitate HCs)
 NEW_CMD=$MASTER_CMD
@@ -287,6 +295,7 @@ perl $HIVEPATH/init_pipeline.pl \
   -member_db $MEMBER_URL \
   -master_db $MASTER_URL \
   -ncbi_db $NCBI_URL \
+  -mapping_db $OLD_URL \
   -goc_threshold 25 \
   -cdhit_identity_threshold 0.99 \
   -blastp_capacity 420 \
@@ -351,7 +360,7 @@ exit
 
 beekeeper.pl -url $url -sync
 beekeeper.pl -url $url -reg_conf $REG_FILE --balance_semaphores
-runWorker.pl -url $url -reg_conf $REG_FILE --loop --sleep 0.5
+beekeeper.pl -url $url -reg_conf $REG_FILE --loop --sleep 0.5
 
 # 2 out of 187 per_genome_qc analyses failed:
 #genome_db_id 2714 has too many orphan genes -> cryptomonas_paramecium_gca_000194455
@@ -364,7 +373,15 @@ runWorker.pl -url $url -reg_conf $REG_FILE --loop --sleep 0.5
 # then, clusterset_backup & backbone_fire_tree_building semaphores had to be unblocked
 # NOTE: balance_semaphores might be needed in others places for the pipeline to continue
 
-# call high-confidence orthologues according to GOC, WGA cover and %identity cutoffs defined at
+# add mapping_db a posteriori as I forgot initially
+
+tweak_pipeline.pl -url $url -tweak "pipeline.param[mapping_db]=$OLD_URL"
+beekeeper.pl -url $url --reset_done_jobs --analyses_pattern stable_id_mapping
+beekeeper.pl -url $url -reg_conf $REG_FILE --loop
+
+
+
+## call high-confidence orthologues according to GOC, WGA cover and %identity cutoffs defined at
 # https://github.com/Ensembl/ensembl-compara/blob/HEAD/modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/EG/HighConfidenceOrthologs_conf.pm
 #
 # best before merging, according to https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Merge+the+homology+pipelines
@@ -456,12 +473,57 @@ beekeeper.pl -url $url -sync
 runWorker.pl -url $url -reg_conf $REG_FILE
 beekeeper.pl -url $url -reg_conf $REG_FILE -loop
 
+## delete not used method_links, if any (this is what hc ForeignKeyMasterTables checks)
+$NEW_CMD $NEW_DB -e \
+	'DELETE ml FROM method_link ml LEFT JOIN method_link_species_set mlss USING(method_link_id) WHERE mlss.method_link_id IS NULL;'
+
+## check (and uniformize) NCBI taxonomy if required
+
+$NEW_CMD -e "checksum table ${NEW_DB}.ncbi_taxa_name" # new release db 
+# 2919222514
+$NEW_CMD -e "checksum table ${NEW_DB}.ncbi_taxa_node"
+# 3008829925
+
+$NEW_CMD -e "checksum table ${MASTER_DB}.ncbi_taxa_name" # pan compara master
+# 2919222514
+$NEW_CMD -e "checksum table ${MASTER_DB}.ncbi_taxa_node"
+# 3008829925
+
+$STA_CMD -e "checksum table ncbi_taxonomy.ncbi_taxa_name" # db in staging
+# 1117405935
+$STA_CMD -e "checksum table ncbi_taxonomy.ncbi_taxa_node"
+# 2441659164
+
+# update these tables in $NEW_DB and $MASTER_DB with SQL
+
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE ncbi_taxa_name TO ncbi_taxa_name_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE ncbi_taxa_node TO ncbi_taxa_node_bk;"
+
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE ncbi_taxa_name TO ncbi_taxa_name_bk;"
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE ncbi_taxa_node TO ncbi_taxa_node_bk;"
+
+# copy ncbi_taxonomy from $STA_CMD (http://eg-prod-01.ebi.ac.uk:7000/#!/copy_result/2961)
+
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE ncbi_taxa_name LIKE ncbi_taxonomy.ncbi_taxa_name;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE ncbi_taxa_node LIKE ncbi_taxonomy.ncbi_taxa_node;"
+
+$NEW_CMD ${NEW_DB} -e "INSERT ncbi_taxa_name SELECT * FROM ncbi_taxonomy.ncbi_taxa_name;"
+$NEW_CMD ${NEW_DB} -e "INSERT ncbi_taxa_node SELECT * FROM ncbi_taxonomy.ncbi_taxa_node;"
+
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE ncbi_taxa_name LIKE ncbi_taxonomy.ncbi_taxa_name;"
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE ncbi_taxa_node LIKE ncbi_taxonomy.ncbi_taxa_node;"
+
+$NEW_CMD ${MASTER_DB} -e "INSERT ncbi_taxa_name SELECT * FROM ncbi_taxonomy.ncbi_taxa_name;"
+$NEW_CMD ${MASTER_DB} -e "INSERT ncbi_taxa_node SELECT * FROM ncbi_taxonomy.ncbi_taxa_node;"
+
+
+
 ## check schema and update if needed 
 $NEW_CMD $NEW_DB -e "select meta_value from meta where meta_key='schema_version'"
 # 96
 
 # apply sequentially patches from $EG_APIS/ensembl-97/ensembl-compara/sql/
-patch_96_97_a.sql
+# patch_96_97_a.sql
 
 $NEW_CMD $NEW_DB < $EG_APIS/ensembl-97/ensembl-compara/sql/patch_96_97_a.sql
 
@@ -481,6 +543,25 @@ screen -S pan-hc
 
 cd /homes/bcontreras/devel/ensembl-97/ensj-healthcheck
 
-./run-configurable-testrunner.sh -d $NEW_DB --host $MASTER_RO --port $MASTER_RO_PORT -g EGComparaHandoverService --compara_master.database=pan_compara_master --output All > pan_EGComparaHandoverService.out &
+./run-configurable-testrunner.sh -d $NEW_DB --host $MASTER_RO --port $MASTER_RO_PORT \
+	-g EGComparaHandoverService --compara_master.database=pan_compara_master \
+	--output All > pan_EGComparaHandoverService${ENS_VERSION}.out &
+
+# troubleshooting
+# https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsCom&title=Healthcheck+Knowledge+Base
+
+# 1) ForeignKeyMasterTables
+#$NEW_CMD $NEW_DB -e 'DELETE ml FROM method_link ml LEFT JOIN method_link_species_set mlss USING(method_link_id) WHERE mlss.method_link_id IS NULL;'
+
+# 2) EGCheckNoTreeStableIds -> for not using mapping_db, requires re-running this analysis (see above, thanks Matthieu!)
+# 60313 protein gene tree(s) lacked a stable ID. 
+# 'SELECT COUNT(*) FROM gene_tree_root WHERE member_type = 'protein' AND tree_type = 'tree' AND clusterset_id='default' AND stable_id IS NULL'
+
+# 3) ForeignKeySpeciesTreeTables 
+# species_tree_node.taxon_id 2283794 is not linked.
+# species_tree_node.taxon_id 2290931 is not linked.
+# 2 species_tree_node entries are not linked to ncbi_taxa_name
+# SELECT species_tree_node.taxon_id FROM species_tree_node LEFT JOIN ncbi_taxa_name ON species_tree_node.taxon_id = ncbi_taxa_name.taxon_id WHERE ncbi_taxa_name.taxon_id iS NULL AND species_tree_node.taxon_id IS NOT NULL
+
 
 

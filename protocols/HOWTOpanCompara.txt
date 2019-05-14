@@ -77,8 +77,6 @@ COMPATH=$ENSEMBL_ROOT_DIR/ensembl-compara/scripts/pipeline/
 # finally edit sub add_compara_dbs to make sure correct user/pass are used 
 MERGEREG=$COMPATH/production_reg_${DIVISION}_conf.pl
 
-TMP_DIR=$comptmp
-
 ## current pan species ##############################################
 
 $PROD_CMD $MASTER_DB -e 'select name from genome_db' | \

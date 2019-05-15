@@ -11,7 +11,7 @@
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Peptide+Compara+pipeline
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsCom/Merge+the+homology+pipelines
 
-# by Bruno Contreras Moreira EMBL-EBI 2019 with help from the Compara team
+# by Bruno Contreras Moreira EMBL-EBI 2019 with help from the Compara team and Nishadi
 
 # recommended as this pipeline might take over a week to run
 screen -S compara-${USER}
@@ -56,6 +56,9 @@ OLD_URL=$($OLD_CMD details url)$OLD_DB
 NEW_CMD=$MASTER_CMD
 NEW_DB=ensembl_compara_pan_homology_${EG_VERSION}_${ENS_VERSION}
 NEW_URL=$($NEW_CMD details url)$NEW_DB
+
+# note pan uses its own health check group
+HCGROUP=ComparaPanIntegrity
 
 PRODPATH=$ENSAPIPATH/ensembl-prodinf-core/ensembl_prodinf/
 HIVEPATH=$ENSEMBL_ROOT_DIR/ensembl-hive/scripts/
@@ -192,6 +195,11 @@ perl $COMPATH/edit_collection.pl --reg_conf $REG_FILE --compara $MASTER_URL \
 # ... there is a difference in the software release (97) and the database release (96)...
 # Stored: SpeciesSet dbID=701065 "collection-pan"', 190 genome_dbs [current] -> before excluding removed_species.txt
 # Stored: SpeciesSet dbID=702192 "collection-pan"', 187 genome_dbs [current]
+
+
+# if you remove some genomes you should also run
+# https://github.com/Ensembl/ensembl-compara/blob/release/96/scripts/pipeline/retire_genome.pl
+# as I found out later
 
 ## Gene tree and homology configuration ##############################################
 
@@ -406,6 +414,7 @@ beekeeper.pl -url $url -reg_conf $REG_FILE -loop --sleep 0.5
 
 # increase hive capacity to 50, ave time per job 40s-1m13s-1m54s
 
+
 ## merging dbs ##############################################################################
 
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Compara+Database+Merging
@@ -529,7 +538,7 @@ $NEW_CMD $NEW_DB -e "select meta_value from meta where meta_key='schema_version'
 # 97
 
 
-## health checks
+## health checks 
 
 # assumes core dbs are in the same server (MASTER)
 # reserve RAM as some tests, such as CheckHomology, can take a long time and maybe needs lots of memory
@@ -539,27 +548,147 @@ bshell10
 
 screen -S pan-hc
 
+# or wherever you have cloned this repo (https://github.com/Ensembl/ensj-healthcheck)
 cd /homes/bcontreras/devel/ensembl-97/ensj-healthcheck
 
 ./run-configurable-testrunner.sh -d $NEW_DB --host $MASTER_RO --port $MASTER_RO_PORT \
-	-g EGComparaHandoverService --compara_master.database=pan_compara_master \
-	--output All > pan_EGComparaHandoverService${ENS_VERSION}.out &
+	-g $HCGROUP --compara_master.database=$MASTER_DB --output All > ${HCGROUP}${ENS_VERSION}.out &
 
-# troubleshooting
+# if you run this at http://eg-prod-01.ebi.ac.uk:7000/#!/hc_submit make sure you select 
+# the appropriate Compara master URL: $MASTER_URL 
+
+
+# troubleshooting (thanks Mateus!)
 # https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsCom&title=Healthcheck+Knowledge+Base
 
-# 1) ForeignKeyMasterTables
+# ForeignKeyMasterTables
 #$NEW_CMD $NEW_DB -e 'DELETE ml FROM method_link ml LEFT JOIN method_link_species_set mlss USING(method_link_id) WHERE mlss.method_link_id IS NULL;'
 
-# 2) EGCheckNoTreeStableIds -> for not using mapping_db, requires re-running this analysis (see above, thanks Matthieu!)
+# EGCheckNoTreeStableIds -> for not using mapping_db, requires re-running this analysis (see above, thanks Matthieu!)
 # 60313 protein gene tree(s) lacked a stable ID. 
 # 'SELECT COUNT(*) FROM gene_tree_root WHERE member_type = 'protein' AND tree_type = 'tree' AND clusterset_id='default' AND stable_id IS NULL'
 
-# 3) ForeignKeySpeciesTreeTables 
+# ForeignKeySpeciesTreeTables 
 # species_tree_node.taxon_id 2283794 is not linked.
 # species_tree_node.taxon_id 2290931 is not linked.
 # 2 species_tree_node entries are not linked to ncbi_taxa_name
 # SELECT species_tree_node.taxon_id FROM species_tree_node LEFT JOIN ncbi_taxa_name ON species_tree_node.taxon_id = ncbi_taxa_name.taxon_id WHERE ncbi_taxa_name.taxon_id iS NULL AND species_tree_node.taxon_id IS NOT NULL
 
+# CheckSpeciesSetSizeByMethod 
+#** PROBLEM: The MLSS 'C.sav-B. orthologues' (ID 20036) doesn't follow the name nomemclature '^([A-Z]\.?[a-z0-9]{2,3}(\.?[A-Z])?)-([A-Z]\.?[a-z0-9]{2,3}(\.?[A-Z])?) '
+
+# ForeignKeyMLSSIdHomology  
+# INFO: method_link_species_set.method_link_species_set_id 21393 is not linked.
+# PROBLEM: FAILED method_link_species_set -> homology using FK method_link_species_set_id(method_link_species_set_id) relationships
+# PROBLEM: FAILURE DETAILS: 567 method_link_species_set entries are not linked to homology
+# SELECT method_link_species_set.method_link_species_set_id FROM method_link_species_set LEFT JOIN homology ON method_link_species_set.method_link_species_set_id = homology.method_link_species_set_id WHERE homology.method_link_species_set_id iS NULL AND method_link_species_set.method_link_id >= 201 and method_link_id < 300
+#
+# method_link_id > 200 is E! paralogues & orthologues
+#
+# select * FROM method_link_species_set where method_link_species_set_id = 20038
+# select * from species_set where species_set_id = 679372
+# select * from genome_db where genome_db_id = 1848
+#
+# which is 'synechocystis_sp_pcc_6803' one of three species in the old pan compara 
+# that had to be removed in 97: synechocystis_sp_pcc_6803, rhizobium_leguminosarum_bv_viciae_3841,
+# chondrus_crispus
+#
+# this is a problem caused by removing three species (1848,1923,2713) and not running
+# https://github.com/Ensembl/ensembl-compara/blob/release/96/scripts/pipeline/retire_genome.pl
+
+$NEW_CMD ${NEW_DB} -e "SELECT COUNT(DISTINCT species_set_id) FROM species_set WHERE genome_db_id IN (1848,1923,2713);"
+#567
+$NEW_CMD ${NEW_DB} -e "SELECT COUNT(*) FROM method_link_species_set WHERE species_set_id IN (SELECT species_set_id FROM species_set WHERE genome_db_id IN (1848,1923,2713));"
+#567
+
+# backup and prepare dbs before aplying fixes
+
+# $NEW_DB
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE species_set TO species_set_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE species_set_header TO species_set_header_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE species_set_tag TO species_set_tag_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE method_link_species_set TO method_link_species_set_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE method_link_species_set_attr TO method_link_species_set_attr_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE method_link_species_set_tag TO method_link_species_set_tag_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE genome_db TO genome_db_bk;"
+$NEW_CMD ${NEW_DB} -e "RENAME TABLE dnafrag TO dnafrag_bk;"
+
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE species_set LIKE species_set_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE species_set_header LIKE species_set_header_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE species_set_tag LIKE species_set_tag_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE method_link_species_set LIKE method_link_species_set_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE method_link_species_set_attr LIKE method_link_species_set_attr_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE method_link_species_set_tag LIKE method_link_species_set_tag_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE genome_db LIKE genome_db_bk;"
+$NEW_CMD ${NEW_DB} -e "CREATE TABLE dnafrag LIKE dnafrag_bk;"
+
+$NEW_CMD ${NEW_DB} -e "INSERT species_set SELECT * FROM species_set_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT species_set_header SELECT * FROM species_set_header_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT species_set_tag SELECT * FROM species_set_tag_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT method_link_species_set SELECT * FROM method_link_species_set_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT method_link_species_set_attr SELECT * FROM method_link_species_set_attr_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT method_link_species_set_tag SELECT * FROM method_link_species_set_tag_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT genome_db SELECT * FROM genome_db_bk;"
+$NEW_CMD ${NEW_DB} -e "INSERT dnafrag SELECT * FROM dnafrag_bk;"
+
+# $MASTER_DB
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE species_set TO species_set_bk;"
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE species_set_header TO species_set_header_bk;"
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE species_set_tag TO species_set_tag_bk;"
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE method_link_species_set TO method_link_species_set_bk;"
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE method_link_species_set_attr TO method_link_species_set_attr_bk;"
+$NEW_CMD ${MASTER_DB} -e "RENAME TABLE method_link_species_set_tag TO method_link_species_set_tag_bk;"
+
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE species_set LIKE species_set_bk;"
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE species_set_header LIKE species_set_header_bk;"
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE species_set_tag LIKE species_set_tag_bk;"
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE method_link_species_set LIKE method_link_species_set_bk;"
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE method_link_species_set_attr LIKE method_link_species_set_attr_bk;"
+$NEW_CMD ${MASTER_DB} -e "CREATE TABLE method_link_species_set_tag LIKE method_link_species_set_tag_bk;"
+
+$NEW_CMD ${MASTER_DB} -e "INSERT species_set SELECT * FROM species_set_bk;"
+$NEW_CMD ${MASTER_DB} -e "INSERT species_set_header SELECT * FROM species_set_header_bk;"
+$NEW_CMD ${MASTER_DB} -e "INSERT species_set_tag SELECT * FROM species_set_tag_bk;"
+$NEW_CMD ${MASTER_DB} -e "INSERT method_link_species_set SELECT * FROM method_link_species_set_bk;"
+$NEW_CMD ${MASTER_DB} -e "INSERT method_link_species_set_attr SELECT * FROM method_link_species_set_attr_bk;"
+$NEW_CMD ${MASTER_DB} -e "INSERT method_link_species_set_tag SELECT * FROM method_link_species_set_tag_bk;"
+
+# actual fixes
+
+# $NEW_DB
+CREATE TEMPORARY TABLE species_set_tmp SELECT * FROM species_set WHERE genome_db_id IN (1848,1923,2713);
+DELETE FROM species_set WHERE species_set_id IN (SELECT species_set_id FROM species_set_tmp);
+DELETE FROM species_set_header WHERE species_set_id IN (SELECT species_set_id FROM species_set WHERE genome_db_id IN (1848,1923,2713));
+DELETE FROM species_set_tag WHERE species_set_id IN (SELECT species_set_id FROM species_set WHERE genome_db_id IN (1848,1923,2713));
+DELETE FROM method_link_species_set WHERE species_set_id IN (SELECT species_set_id FROM species_set WHERE genome_db_id IN (1848,1923,2713));
+DELETE FROM method_link_species_set_attr WHERE method_link_species_set_id NOT IN (SELECT method_link_species_set_id FROM method_link_species_set);
+DELETE FROM method_link_species_set_tag WHERE method_link_species_set_id NOT IN (SELECT method_link_species_set_id FROM method_link_species_set);
+DELETE FROM genome_db WHERE genome_db_id IN (1848,1923,2713);
+DELETE FROM dnafrag WHERE genome_db_id IN (1848,1923,2713);
+
+
+# $MASTER_DB
+DELETE FROM species_set WHERE genome_db_id IN (1848,1923,2713);
+UPDATE species_set_header SET last_release=96 WHERE species_set_id IN (SELECT species_set_id FROM species_set WHERE genome_db_id IN (1848,1923,2713));
+# species_set_tag is empty
+
+UPDATE method_link_species_set SET last_release=96 WHERE species_set_id IN (SELECT species_set_id FROM species_set WHERE genome_db_id IN (1848,1923,2713));
+# method_link_species_set_attr is empty
+
+
+
+
+
+## remove _bk tables
+
+
+
+## handover http://eg-prod-01.ebi.ac.uk:7000/#!/database_handover_submit
+
+# this entails running $HCGROUP with the master db in $PROD_CMD:
+
+# i) backup ${MASTER_DB}_backup_20190514 in $PROD_CMD
+
+# ii) copy $MASTER_DB from $MASTER_CMD to $PROD_CMD
 
 

@@ -212,7 +212,7 @@ while(<LOCALENA>){
                 		print "# re-using $GFF_fileG\n";
                 	}
                 	else { 
-							print "# downloading $GFF_fileG\n"; 
+							print "# downloadingF $GFF_fileG\n"; 
 							$ftp->get($file,$local_file) ||
                      	die "# ERROR: cannot download $file ", $ftp->message;
 						}
@@ -251,17 +251,19 @@ while(<LOCALENA>){
 						$mod_time = $ftp->mdtm($file);
 
 						if($mod_time > $prev_mod_time){
-                                        		$prev_mod_time = $mod_time;
-                                        		$subfolderR = $subfolder;
-                                        		$GFF_fileR = $file;
-                                		}
+                  	$prev_mod_time = $mod_time;
+                     $subfolderR = $subfolder;
+                     $GFF_fileR = $file;
+                  }
 					}
 				}
 
 				$ftp->cwd($fullpath) ||
-                        		die "# ERROR: cannot return to working directory ", $ftp->message();
+            	die "# ERROR: cannot return to working directory ", $ftp->message();
 			}
 		}
+
+		next if($GFF_fileR eq 'NA');		
 
 		# actually download most recent GFF file
 		$local_file = "$GFFfolder/$GFF_fileR";

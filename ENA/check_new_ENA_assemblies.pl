@@ -110,16 +110,18 @@ my $http = HTTP::Tiny->new();
 my $response = $http->get($RESTdivision_query, {
 	headers => { 'Content-type' => 'application/json' }
 }); die "Failed!\n" unless $response->{success};
-          
+    
 if(length($response->{content})) {
 	my $array_ref = decode_json($response->{content});
+	#print Dumper($array_ref); # debug
+
 	foreach my $sp_hash (@$array_ref) {
-		if(defined($sp_hash->{assembly_id})){
-			$current_ensembl_assembly_ids{ $sp_hash->{assembly_id} } = 1;
+		if(defined($sp_hash->{assembly_accession})){
+			$current_ensembl_assembly_ids{ $sp_hash->{assembly_accession} } = 1;
 			#print "$sp_hash->{assembly_id}\n"; # debug
 		}
 	}
-}
+};
      
 ## 4) check ENA annotated assemblies which might not be currently supported in Ensembl division
 my ($assembly_id,$assembly_state,$genome_representation,$strain,$fullpath,$acc2path);
@@ -185,42 +187,42 @@ while(<LOCALENA>){
         else{ die "# EXIT : bad ENA accession: $full_assembly_id lacks .version\n"; }
 
 	# compose folder path based on ENA full assembly id
-        $fullpath = $GCAGENPATH . $acc2path;
+   $fullpath = $GCAGENPATH . $acc2path;
 
 	# find right folder for this assembly
-        # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_genomic.gff.gz
- 	$ftp->cwd($fullpath) ||
-                die "# ERROR: cannot change working directory ", $ftp->message();
+   # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_genomic.gff.gz
+ 	$ftp->cwd($fullpath) || die "# ERROR: cannot change working directory ", $ftp->message();
 
-        $GFF_fileG = 'NA';
+   $GFF_fileG = 'NA';
 	$n_of_genesG = 0;
 
-        foreach my $subfolder ( $ftp->ls() ){
-                if($subfolder =~ $full_assembly_id) {
+   foreach my $subfolder ( $ftp->ls() ){
+   	if($subfolder =~ $full_assembly_id) {
 
-                        $ftp->cwd($subfolder) ||
-                                die "# ERROR: cannot change working directory ", $ftp->message();
+      	$ftp->cwd($subfolder) ||
+         	die "# ERROR: cannot change working directory ", $ftp->message();
 
-                        foreach my $file ( $ftp->ls() ){
-                        	if($file =~ $full_assembly_id && $file =~ /_genomic.gff.gz/){
+            foreach my $file ( $ftp->ls() ){
+            	if($file =~ $full_assembly_id && $file =~ /_genomic.gff.gz/){
 
-					$GFF_fileG = $file;
-					$local_file = "$GFFfolder/$file";
+						$GFF_fileG = $file;
+						$local_file = "$GFFfolder/$file";
 
-                			if($used_saved_files && -s $local_file){
-                				print "# re-using $GFF_fileG\n";
-                			}
-                			else { 
-						print "# downloading $GFF_fileG\n"; 
-						$ftp->get($file,$local_file) ||
-                                                	die "# ERROR: cannot download $file ", $ftp->message;
+                	if($used_saved_files && -s $local_file){
+                		print "# re-using $GFF_fileG\n";
+                	}
+                	else { 
+							print "# downloading $GFF_fileG\n"; 
+							$ftp->get($file,$local_file) ||
+                     	die "# ERROR: cannot download $file ", $ftp->message;
+						}
+
+						$n_of_genesG = count_genes_GFF($local_file);
+						last;
 					}
-
-					$n_of_genesG = count_genes_GFF($local_file);
-					last;
 				}
-			}
-			last;
+				
+				last;
 		}	
 	}
 

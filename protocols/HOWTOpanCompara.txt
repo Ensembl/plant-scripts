@@ -557,8 +557,11 @@ cd /homes/bcontreras/devel/ensembl-97/ensj-healthcheck
 # if you run this at http://eg-prod-01.ebi.ac.uk:7000/#!/hc_submit make sure you select 
 # the appropriate Compara master URL: $MASTER_URL 
 
+# NOTE: org.ensembl.healthcheck.testcase.compara.CheckSpeciesSetSizeByMethod will fail, but that's harmless
+# according to James and Matthieu
 
-# troubleshooting (thanks Mateus!)
+
+# check this if you have failed checks (thanks Mateus!)
 # https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsCom&title=Healthcheck+Knowledge+Base
 
 # ForeignKeyMasterTables
@@ -676,10 +679,7 @@ UPDATE method_link_species_set SET last_release=96 WHERE species_set_id IN (SELE
 # method_link_species_set_attr is empty
 
 
-
-
-
-## remove _bk tables
+## remove _bk tables and hive dbs in $HIVE_CMD
 
 
 

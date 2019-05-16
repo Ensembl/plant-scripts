@@ -13,7 +13,7 @@
 
 # by Bruno Contreras Moreira EMBL-EBI 2019 with help from the Compara team and Nishadi
 
-# recommended as this pipeline might take over a week to run
+# recommended as this pipeline might weeks to run
 screen -S compara-${USER}
 
 # NOTE: release version of core databases, not ensembl-compara's version
@@ -557,9 +557,8 @@ cd /homes/bcontreras/devel/ensembl-97/ensj-healthcheck
 # if you run this at http://eg-prod-01.ebi.ac.uk:7000/#!/hc_submit make sure you select 
 # the appropriate Compara master URL: $MASTER_URL 
 
-# NOTE: org.ensembl.healthcheck.testcase.compara.CheckSpeciesSetSizeByMethod will fail, but that's harmless
-# according to James and Matthieu
-
+# NOTE: org.ensembl.healthcheck.testcase.compara.CheckSpeciesSetSizeByMethod will fail but that's harmless
+# NOTE: org.ensembl.healthcheck.testcase.compara.CheckGenomeDB : fails locally but passes online, pointing to some config issue 
 
 # check this if you have failed checks (thanks Mateus!)
 # https://www.ebi.ac.uk/seqdb/confluence/pages/viewpage.action?spaceKey=EnsCom&title=Healthcheck+Knowledge+Base

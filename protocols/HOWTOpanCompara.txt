@@ -680,7 +680,12 @@ UPDATE method_link_species_set SET last_release=96 WHERE species_set_id IN (SELE
 
 ## remove _bk tables and hive dbs in $HIVE_CMD
 
+## apply any pending staging patches
 
+# https://github.com/Ensembl/staging-patches/blob/master/releases/EG44/marchantia_polymorpha_core_44_97_1.sql
+
+UPDATE genome_db SET name = 'marchantia_polymorpha', display_name = 'Marchantia polymorpha', strain_name = 'Tak-1'
+  WHERE genome_db_id=2808;
 
 ## handover http://eg-prod-01.ebi.ac.uk:7000/#!/database_handover_submit
 

@@ -263,24 +263,24 @@ while(<LOCALENA>){
 			}
 		}
 
-		next if($GFF_fileR eq 'NA');		
+		if($GFF_fileR eq 'NA'){
 
-		# actually download most recent GFF file
-		$local_file = "$GFFfolder/$GFF_fileR";
+			# actually download most recent GFF file
+			$local_file = "$GFFfolder/$GFF_fileR";
 	
-		if($used_saved_files && -s $local_file){
+			if($used_saved_files && -s $local_file){
         		print "# re-using $GFF_fileR\n";
         	}
-		else{
-			print "# downloading $GFF_fileR\n"; 
+			else{
+				print "# downloading $GFF_fileR\n"; 
 
-			$ftp->cwd($subfolderR);
-			$ftp->get($GFF_fileR,$local_file) || 
-				die "# ERROR: cannot download $GFF_fileR ", $ftp->message;
+				$ftp->cwd($subfolderR);
+				$ftp->get($GFF_fileR,$local_file) || 
+					die "# ERROR: cannot download $GFF_fileR ", $ftp->message;
+			}
+
+			$n_of_genesR = count_genes_GFF($local_file);
 		}
-
-		$n_of_genesR = count_genes_GFF($local_file);
-
 	}
 
 	# incrementally add data to report

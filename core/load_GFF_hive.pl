@@ -8,6 +8,9 @@ use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::Utils::Slice qw(split_Slices);
 use Bio::Seq;
 
+# TO BE DONE: automatically extract a stable_gene_id\tdescription file to load descriptions
+
+
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
 # features on top of a previously loaded ENA genome assembly in hive.
 # This should be run after loading a genome from ENA 
@@ -511,3 +514,5 @@ system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file 
 print "# hive job URL: $hive_url\n\n";
 print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync\n\n";
 print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop\n\n";
+
+

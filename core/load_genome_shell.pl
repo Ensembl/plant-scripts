@@ -22,10 +22,10 @@ use Sys::Hostname;
 
 my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version,$nogenes);
 my ($prod_server,$egserver,$config_file,$argsline,$GCA_core_acc,$GCA_version);
-my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$cmd);
+my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$nointerpro,$cmd);
 my ($species_display_name,$species_production_name) = ('','');
 
-getopts('hND:P:s:d:G:v:p:c:e:', \%opts);
+getopts('hXND:P:s:d:G:v:p:c:e:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -35,10 +35,11 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-G GCA accession                               (required, example: -G GCA_000188115.3)\n";
   print "-p production db server, where data is loaded  (required, example: -p eg-p3-w)\n";
-  print "-e EG production server for taxon/analysis     (required, example: -e \$egprodserver)\n";
+  print "-e server with ensembl_production db           (required, example: -e \$egprodserver)\n";
   print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n";
   print "-P species production_name                     (optional, example: -P marchantia_polymorpha)\n";
   print "-D species display name                        (optional, example: -D 'Marchantia polymorpha')\n";
+  print "-X don't load InterPro mappings                (optional)\n";
   print "-N don't load genes or any other features      (optional)\n\n";
   exit(0);
 }
@@ -94,11 +95,13 @@ if($opts{'D'}){
 if($opts{'N'}){ $nogenes = 1 }
 else{ $nogenes = 0 }
 
+if($opts{'X'}){ $nointerpro = 1 }
+else{ $nointerpro = 0 }
 
-$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -D '%s' -P %s -N %d",
+$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -D '%s' -P %s -X %d -N %d",
 	$0, $species, $division, $ensembl_version, $GCA_accession, 
 	$prod_server, $egserver, $config_file, 
-	$species_display_name,$species_production_name, $nogenes);
+	$species_display_name,$species_production_name, $nointerpro, $nogenes);
 
 print "# $argsline\n\n";
 
@@ -129,7 +132,7 @@ system("./gradlew fatJar");
 chdir('..');
 
 # link config file
-symlink($config_file,'enagenome_config.xml');
+#symlink($config_file,'enagenome_config.xml');
 
 # actually call genome loader script
 
@@ -138,6 +141,7 @@ print "# loading $GCA_accession ($species) on database $db_name at $prod_server\
 $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
 	"-a $GCA_core_acc ".
 	"--division $division ".
+        "--config_file $config_file ".
 	"$prod_db_args --dbname $db_name ".
 	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
 	"$analysis_db_args --prod_dbname ensembl_production_$ensembl_version ";
@@ -150,7 +154,10 @@ if($species_production_name){
 	$cmd .= " --production_name '$species_production_name' ";
 }
 
-if($nogenes){ 
+if($nointerpro){
+        $cmd .= " --nointerpro ";
+}
+elsif($nogenes){ 
 	$cmd .= " --nogenes ";
 }
 

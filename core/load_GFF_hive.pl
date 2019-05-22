@@ -28,7 +28,7 @@ use Bio::Seq;
 ##############################################################################
 
 my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version);
-my ($pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
+my ($prodbname,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable,$otherfeats) = (0,0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file,%synonym) = ('','','');
@@ -37,7 +37,7 @@ my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 
 
-getopts('hNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:', \%opts);
+getopts('hNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -46,7 +46,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-f protein FASTA file                          (required, example: -f atha.pep.fasta)\n";
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-g GFF3 file                                   (required, example: -g atha.gff)\n";
-  print "-R registry file, can be env variable          (required, example: -R \$p2panreg)\n";
+  print "-R registry file, can be env variable          (required, example: -R \$p1panreg)\n";
+  print "-P ensembl_production db name                  (required, example: -D ensembl_production_97)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-m max genes to load                           (optional, default: all loaded)\n";
@@ -106,6 +107,9 @@ if($opts{'o'}){ $otherfeats = 1 }
 if($opts{'R'} && -e $opts{'R'}){ $reg_file = $opts{'R'} }
 else{ die "# EXIT : need a valid -R file, such as -R \$p2panreg\n" }
 
+if($opts{'D'}){ $prodbname = $opts{'D'} }
+else{ die "# EXIT : need a valid -D value, such as -D ensembl_production_97\n" }
+
 if($opts{'H'}){ $hive_db_cmd = $opts{'H'} }
 chomp( $hive_args = `$hive_db_cmd details script` );
 chomp( $hive_url  = `$hive_db_cmd --details url` );
@@ -136,10 +140,10 @@ if($opts{'n'}){
 }
 elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -H %s -P %s -m %d ".
-		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a % d-w %d -r %d",
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -D %s -H %s -P %s -m %d ".
+		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a %d -w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, $logicname, $otherfeats,
-  $ensembl_version, $reg_file, $hive_db_cmd, $pipeline_dir, $max_feats,
+  $ensembl_version, $reg_file, $prodbname, $hive_db_cmd, $pipeline_dir, $max_feats,
   $synonym_file, $sub_chr_names, $nonzero, $synonyms, 
   $check_chr_ends, $check_gff_CDS, $names_stable, 
   $add_to_previous, $overwrite, $rerun );
@@ -476,6 +480,7 @@ if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
 my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf ".
     	"$hive_args ".
     	"--registry $reg_file ".
+        "--production_db $prodbname ".
     	"--pipeline_dir $pipeline_dir ".
     	"--species $species ".
     	"--gff3_file $new_gff3file ".

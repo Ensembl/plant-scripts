@@ -31,13 +31,12 @@ my (%opts,$species,$protein_fasta_file,$gff3_file,$gene_source,$ensembl_version)
 my ($prodbname,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($skip_bad_types,$rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable,$otherfeats) = (0,0,0,0,0);
-my ($new_gff3file,$short_gff3file,$synonym_file,%synonym) = ('','','');
+my ($new_gff3file,$short_gff3file,$synonym_file,$gbkfile,%synonym) = ('','','','');
 my $logicname = '';
 my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 
-
-getopts('hTNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:', \%opts);
+getopts('hTNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:G:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -50,6 +49,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-P ensembl_production db name                  (required, example: -D ensembl_production_97)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
+  print "-G GenBank file to load sequence edits         (optional, example: -G atha.gbk)\n";
   print "-m max genes to load                           (optional, default: all loaded)\n";
   print "-a incrementally add GFF to prev annotation    (optional, default: delete previous)\n";
   print "-N take name instead of ID as stable_id        (optional, default: ID is stable_id)\n";
@@ -111,6 +111,13 @@ else{ die "# EXIT : need a valid -R file, such as -R \$p2panreg\n" }
 if($opts{'D'}){ $prodbname = $opts{'D'} }
 else{ die "# EXIT : need a valid -D value, such as -D ensembl_production_97\n" }
 
+if($opts{'G'}){ 
+	$gbkfile = $opts{'G'};
+	if(!-e $gbkfile){ 
+		die "# EXIT : need a valid -G file\n" 
+	}
+}
+
 if($opts{'H'}){ $hive_db_cmd = $opts{'H'} }
 chomp( $hive_args = `$hive_db_cmd details script` );
 chomp( $hive_url  = `$hive_db_cmd --details url` );
@@ -143,10 +150,10 @@ if($opts{'n'}){
 }
 elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
-$argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -D %s -H %s -P %s -m %d ".
+$argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -D %s -H %s -P %s -G %s -m %d ".
 		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a %d -T %d -w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, $logicname, $otherfeats,
-  $ensembl_version, $reg_file, $prodbname, $hive_db_cmd, $pipeline_dir, $max_feats,
+  $ensembl_version, $reg_file, $prodbname, $hive_db_cmd, $pipeline_dir, $gbkfile, $max_feats,
   $synonym_file, $sub_chr_names, $nonzero, $synonyms, 
   $check_chr_ends, $check_gff_CDS, $names_stable, 
   $add_to_previous, $skip_bad_types, $overwrite, $rerun );
@@ -500,6 +507,8 @@ if($names_stable){ $initcmd .= "-use_name_field stable_id " }
 if($logicname){ $initcmd .= "--logic_name $logicname " }
 
 if($otherfeats){ $initcmd .= "-db_type otherfeatures " }
+
+if($gbkfile){ $initcmd .= "-genbank_file $gbkfile " }
 
 print "# $initcmd\n\n";
 

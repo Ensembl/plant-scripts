@@ -2,14 +2,16 @@ use strict;
 use warnings;
 use Encode qw(from_to);
 
-# reads a RAP-DB GFF file and writes a 4-column TSV file with stable_id , gene name, external db and description
-# for hierarchical external dbs i) RAP-DB and ii) Oryzabase
-# Bruno Contreras Moreira May2019
+# Reads a GFF file and writes a 4-column TSV file with stable_id , gene name, external db and description
+# Made originally for RAP-DB and Oryzabase
+# Bruno Contreras Moreira 2019
 
-my $inGFFfile = $ARGV[0] || die "# usage: $0 <GFF file from RAP-DB>\n";
+my $inGFFfile = $ARGV[0] || die "# usage: $0 <GFF file>\n";
 
 # edit if needed
-my %external_db = ('Oryzabase'=>50851, 'RAP-DB'=>50852);
+my $descfield   = 'Note'; # default='Note'; sometimes is 'product'
+my %external_db_id = ('Oryzabase'=>50851, 'RAP-DB'=>50852);
+
 
 my ($id,$syn,$desc,$extdb);
 my (%seen);
@@ -33,27 +35,29 @@ while(<GFF>){
 	#chr01	irgsp1	mRNA	27143	28644	.	+	.	ID=Os01t0100700-01;Name=Os01t0100700-01;Parent=Os01g0100700;Oryzabase Gene Symbol Synonym(s)=RPS5;Oryzabase Gene Name Synonym(s)=ribosomal protein S5%2C ribosomal protein small subunit 5;Note=Similar to 40S ribosomal protein S5-1.
 	#chr01	irgsp1	mRNA	35623	41136	.	+	.	ID=Os01t0100900-01;Name=Os01t0100900-01;Parent=Os01g0100900;RAP-DB Gene Symbol Synonym(s)=SPL1%2C OsSPL1;RAP-DB Gene Name Synonym(s)=SPHINGOSINE-1-PHOSPHATE LYASE 1%2C Sphingosine-1-Phoshpate Lyase 1;Oryzabase Gene Symbol Synonym(s)=OsSPL%2C OsSPL1;Oryzabase Gene Name Synonym(s)=Sphingosine-1-phosphate lyase%2C sphingosine-1-phosphate lyase 1;Note=Sphingosine-1-phosphate lyase%2C Disease resistance response;
 
-	if($col[2] eq 'gene' || $col[2] eq 'mRNA'){
+	if($col[2] eq 'gene' || $col[2] eq 'mRNA' || $col[2] eq 'transcript'){
 
 		if($col[8] =~ /^ID=([^;]+)/){ $id=$1 }
 
 		next if(defined($seen{$id}{$col[2]}));
 
-		if($col[8] =~ /Note=([^;]+)/){ 
+		$desc='';
+		if($col[8] =~ /$descfield=([^;]+)/){ 
 			$desc=URI2string($1); 
 			$desc = (split(/. \(O/,$desc))[0];
 	
 		}
 
+		# edit as required by your particular GFF and externals dbs
 		if($col[8] =~ /RAP-DB Gene Symbol Synonym\(s\)=([^;\s]+)/){ 
 			$syn=URI2string($1);
 			$syn=clean_name($syn); 
-			$extdb = $external_db{'RAP-DB'};
+			$extdb = $external_db_id{'RAP-DB'};
 		}
 		elsif($col[8] =~ /Oryzabase Gene Symbol Synonym\(s\)=([^;\s]+)/){ 
 			$syn=URI2string($1);
 			$syn=clean_name($syn);
-			$extdb = $external_db{'Oryzabase'};
+			$extdb = $external_db_id{'Oryzabase'};
 		}
 		else{ $syn=$extdb="NULL" }
 

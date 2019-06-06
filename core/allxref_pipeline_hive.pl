@@ -13,7 +13,7 @@ use Bio::EnsEMBL::Registry;
 # $ENV{'USER'}."_all_xref_$ensembl_version";
 #
 # Adapted from Dan Bolser's run_the_xref_pipelines.sh
-# by B Contreras Moreira
+# by B Contreras Moreira 2019
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Combined+Xref+Pipeline
 #
@@ -23,7 +23,7 @@ use Bio::EnsEMBL::Registry;
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my ($rerun,$overwrite) = (0,0);
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
-my ($hive_args,$hive_url,$hive_db);      
+my ($hive_args,$hive_url,$hive_db,$prodbname);      
 
 GetOptions(	
 		"help|?"      => \$help,
@@ -34,6 +34,7 @@ GetOptions(
 		"hivecmd|H=s" => \$hive_db_cmd,    
 		"regfile|R=s" => \$reg_file,
 		"pipedir|P=s" => \$pipeline_dir,
+		"prodb|D=s"   => \$prodbname
 ) || help_message(); 
 
 if($help){ help_message() }
@@ -44,6 +45,7 @@ sub help_message {
 	"-v next Ensembl version                     (required, example: -v 95)\n".
 	"-R registry file, can be env variable       (required, example: -R \$p2panreg)\n".
         "-P folder to put pipeline files, can be env (required, example: -P \$reptmp)\n".
+	"-D ensembl_production db name               (required, example: -D ensembl_production_97)\n".
 	"-H hive database command                    (optional, default: $hive_db_cmd)\n".
 	"-w over-write db (hive_force_init)          (recommended, as hive job name does not include species)\n".
 	"-r re-run jump to beekeper.pl               (optional, default: run init script from scratch)\n\n";
@@ -69,6 +71,8 @@ if(!$reg_file || !-e $reg_file){ die "# EXIT : need a valid -R file, such as -R 
 
 if(!$pipeline_dir || !-e $pipeline_dir){ die "# EXIT : need a valid -P path, such as -P \$reptmp\n" }
 
+if(!$prodbname){ die "# EXIT : need a valid -D value, such as -D ensembl_production_97\n" }
+
 if($rerun && $overwrite){
 	die "# cannot take -r and -w. please choose one\n"
 }
@@ -85,6 +89,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::AllXref_co
     	"$hive_args ".
     	"--registry $reg_file ".
         "--pipeline_dir $pipeline_dir ".
+	"--production_db $prodbname ".
     	"$species_cmd ".
 	"--hive_force_init $overwrite";
 

@@ -22,6 +22,9 @@ open(MRNA,">",$mRNA_file) || die "# ERROR: cannot write to $mRNA_file\n";
 
 open(GFF,$inGFFfile) || die "# ERROR: cannot read $inGFFfile\n";
 while(<GFF>){
+
+	next if(/^#/);
+
 	chomp;
 	my @col = split(/\t/);
 
@@ -65,7 +68,7 @@ while(<GFF>){
         }
 
 	# take only first 
-	$seen{$id}{$col[2]} = 1;
+	if($id){ $seen{$id}{$col[2]} = 1 }
 
 	
 }

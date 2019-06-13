@@ -36,7 +36,7 @@ my ($raw_buffer, $raw_read, $ref_buffer, $test_buffer, $ref_read, $test_read);
 my ($ord_ref, $ord_test, $ref_lc, $test_lc, $raw_bs);
 my ($chr, $pos, $corrpos, $endpos, $off, $feat_overlap);
 my ($nb_chr,$N,$mism,$total,$tp,$tn,$fp,$fn) = (0,0,0,0,0,0,0,0);
-my ($ref_feat, $test_feat, $ref_mask, $test_mask) = (0,0,0,0);
+my ($total_feat,$ref_feat, $test_feat, $ref_mask, $test_mask) = (0,0,0,0,0);
 my (%int2chr,%chr2int,%offset);
 my $feat_set = Set::IntSpan::Fast::XS->new();
 
@@ -96,6 +96,9 @@ while(<BEDGFF>){
 	$feat_set->add_range( $pos, $endpos );
 }
 close(BEDGFF);
+
+# coompute total coor space of features
+$total_feat = $feat_set->cardinality();
 
 ## 3) convert FASTA files to single-line raw sequences and compute size in bytes
 
@@ -219,9 +222,9 @@ print "#N\tmismatch\tmatch\tfeat\tref_overlap\tref_overlap_perc\ttest_overlap\tt
 
 printf("%d\t%d\t%d\t%s\t", $N, $mism, $total, $FEATTYPE );
 
-printf("%d\t%1.2f\t", $ref_feat, 100*$ref_feat/$total);
+printf("%d\t%1.2f\t", $ref_feat, 100*$ref_feat/$total_feat);
 
-printf("%d\t%1.2f\t", $test_feat, 100*$test_feat/$total);
+printf("%d\t%1.2f\t", $test_feat, 100*$test_feat/$total_feat);
 
 printf("%d\t%1.2f\t", $ref_mask, 100*$ref_mask/$total);
 

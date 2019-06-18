@@ -1,0 +1,115 @@
+
+## 1) get Ensembl reference transcriptomes (cDNA), usually several transcripts.N per gene
+mkdir wheat
+cd wheat
+wget -c ftp://ftp.ensemblgenomes.org/pub/plants/release-43/fasta/triticum_aestivum/cdna/Triticum_aestivum.IWGSC.cdna.all.fa.gz
+cd ..
+
+mkdir barley
+cd barley
+wget -c ftp://ftp.ensemblgenomes.org/pub/plants/release-43/fasta/hordeum_vulgare/cdna/Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz
+cd ..
+
+
+# 2) download GenBank (gbk) files with CDS sequences from relevant species, barley and wheat here
+# check the search URLs at 
+#https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Loading+gene+name+synonyms+from+external+sources
+
+# 3) extract nucleotide CDS sequences from gbk files, producing FASTA headers such as 
+#    >3|AAA62698.1|mub1|[Hordeum vulgare subsp. vulgare] cultivar:"Bomi" or
+#    >12|AAV49992.1|grain softness protein|[Hordeum vulgare subsp. vulgare] cultivar:"Morex" chromosome:5HS
+
+perl extract_CDS.pl wheat.gbk
+gzip wheat_cds.fna
+mv wheat_cds.fna.gz wheat
+
+perl extract_CDS.pl barley.gbk
+gzip barley_cds.fna
+mv barley_cds.fna.gz barley
+
+
+# 4) cluster CDS sequences and reference transcripts using OMCL in GET_HOMOLOGUES-EST
+# first tried -S 98 and then -S 99 trying to split clusters containing more than 1 reference gene
+# this splits over 200 barley clusters
+~/ownCloud/codigo/cvs/get_homologues-est/get_homologues-est.pl -d barley -S 99 -M &> log.gethoms.barley &
+# number_of_clusters = 12111
+# number_of_clusters = 11599
+
+~/ownCloud/codigo/cvs/get_homologues-est/get_homologues-est.pl -d wheat -S 99 -M &> log.gethoms.wheat &
+# number_of_clusters = 2196
+# number_of_clusters = 2175
+
+perl extract_OMCL_synonyms.pl barley/barley_cds.fna.gz \
+	barley_est_homologues/Hordeumvulgare_alltaxa_algOMCL_e0_S99_ | wc
+#283
+
+perl extract_OMCL_synonyms.pl wheat/wheat_cds.fna.gz \
+	wheat_est_homologues/Triticumaestivum_alltaxa_algOMCL_e0_S99_/ | wc
+#1865	
+
+perl extract_OMCL_synonyms.pl barley/barley_cds.fna.gz \
+	barley_est_homologues/Hordeumvulgare_alltaxa_algOMCL_e0_S99_ > barley_synonyms.tsv
+
+perl extract_OMCL_synonyms.pl wheat/wheat_cds.fna.gz \
+   wheat_est_homologues/Triticumaestivum_alltaxa_algOMCL_e0_S99_ > wheat_synonyms.tsv
+
+These files contain rows such as:
+TraesCS6B02G044300	AAG01172.1	high affinity nitrate transporter TaNRT2
+TraesCS5A02G183200	AXF92404.1	RING finger ubiquitin E3 ligase
+TraesCS2A02G393700	AAS48876.1	expansin EXPA7
+TraesCS4A02G005500	AAX13281.1	EREB2
+
+Note the 2nd column corresponds to a NCBI Gene accession
+
+
+
+
+
+
+# 5) comparison to simple BLAST 
+
+# obtain non-redundant CDS sequences with more than 98% identity
+# https://www.frontiersin.org/articles/10.3389/fpls.2017.00184/full
+~/soft/cd-hit-v4.8.1-2019-0228/cd-hit-est -i barley_cds.fna -o barley_cds.nr.fna -c 0.98 -t 4
+~/soft/cd-hit-v4.8.1-2019-0228/cd-hit-est -i wheat_cds.fna -o wheat_cds.nr.fna -c 0.98 -t 4
+
+# format reference transcriptomes
+~/soft/ncbi-magicblast-1.4.0/bin/makeblastdb -dbtype nucl -parse_seqids -in Hordeum_vulgare.IBSC_v2.cdna.all.fa
+~/soft/ncbi-magicblast-1.4.0/bin/makeblastdb -dbtype nucl -parse_seqids -in Triticum_aestivum.IWGSC.cdna.all.fa
+
+# actually match CDS sequences to reference transcripts
+~/soft/ncbi-magicblast-1.4.0/bin/magicblast -db Hordeum_vulgare.IBSC_v2.cdna.all.fa \
+	-query barley_cds.nr.fna -perc_identity 98 -outfmt tabular -out barley_cds.nr.mblast \
+	-reftype transcriptome -num_threads 2 -no_unaligned -score 100
+
+~/soft/ncbi-magicblast-1.4.0/bin/magicblast -db Triticum_aestivum.IWGSC.cdna.all.fa \
+   -query wheat_cds.nr.fna -perc_identity 98 -outfmt tabular -out wheat_cds.nr.mblast \
+   -reftype transcriptome -num_threads 2 -no_unaligned -score 100
+
+# now with good old BLASTN
+~/soft/ncbi-blast-2.9.0+/bin/blastn -db Hordeum_vulgare.IBSC_v2.cdna.all.fa \
+   -query barley_cds.nr.fna -perc_identity 98 -outfmt 6 -out barley_cds.nr.blast 
+   
+~/soft/ncbi-blast-2.9.0+/bin/blastn -db Hordeum_vulgare.IBSC_v2.cdna.all.fa \
+   -query barley_cds.nr.fna -perc_identity 98 -outfmt 6 -out barley_cds.nr.blast 
+
+
+# extract high-confidence matches with blast_synonyms.pl.old
+
+This produces edge cases such as two CDS matching the same gene
+21316	ABN04107.1	Rpr1	HORVU4Hr1G016190	408.0	100.0
+21318	ABN04105.1	Rpr1	HORVU4Hr1G016190	336.0	100.0
+
+These are best resolved using the OMCL way:
+>HORVU4Hr1G016190.4 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-4538 (4538)
+>HORVU4Hr1G016190.6 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-4454 (4454)
+>HORVU4Hr1G016190.1 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:7-2342 (2343)
+>HORVU4Hr1G016190.5 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-2291 (2291)
+>HORVU4Hr1G016190.3 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-1809 (1809)
+>HORVU4Hr1G016190.2 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-1803 (1803)
+>HORVU4Hr1G016190.7 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-586 (608)
+>HORVU4Hr1G016190.8 [Hordeum_vulgare.IBSC_v2.cdna.all.fa.gz] | aligned:1-382 (491)
+>20264|ABN04095.1|Rpr1|[Hordeum [barley_cds.fna.gz] | aligned:1-453 (453)
+>21316|ABN04107.1|Rpr1|[Hordeum [barley_cds.fna.gz] | aligned:1-408 (408)
+
+

@@ -6,8 +6,9 @@ wget -c ftp://ftp.ensemblgenomes.org/pub/plants/release-43/fasta/triticum_aestiv
 cd ..
 
 # 2) download GenBank (gbk) files with CDS sequences from relevant species, barley and wheat here
-# check the search URLs at 
-#https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Loading+gene+name+synonyms+from+external+sources
+# check examples of search URL at https://www.ebi.ac.uk/seqdb/confluence/x/VZ_cBQ
+# For wheat it would be:
+# https://www.ncbi.nlm.nih.gov/nuccore/?term=(wheat+%22complete+cds%22)+AND+%22Triticum+aestivum%22%5Bporgn%3A__txid4565%5D
 
 # 3) extract nucleotide CDS sequences from gbk files, producing FASTA headers such as 
 

@@ -30,9 +30,19 @@ my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
 my $optsd = [ @{ $cli_helper->get_dba_opts() } ];
 push( @{$optsd}, "file:s" );
 push( @{$optsd}, "verbose" );
+push( @{$optsd}, "extdb:s" );
 
 my $opts = $cli_helper->process_args( $optsd, \&pod2usage );
-if ( $opts->{verbose} ) {
+
+if( !$opts->{'file'} ){
+  die "# need -file synonyms.tsv\n";
+}
+
+if( !$opts->{'extdb'} ){
+  die "# need -extdb arg, example -extdb EntrezGene\n";
+}
+
+if( $opts->{'verbose'} ) {
   Log::Log4perl->easy_init($DEBUG);
 }
 else {
@@ -40,16 +50,16 @@ else {
 }
 
 # connect to core db in indicated server
-$logger->info( "Loading " . $opts->{dbname} );
+$logger->info( "Loading " . $opts->{'dbname'} );
 my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
-                     -USER   => $opts->{user},
-                     -PASS   => $opts->{pass},
-                     -HOST   => $opts->{host},
-                     -PORT   => $opts->{port},
-                     -DBNAME => $opts->{dbname} );
+                     -USER   => $opts->{'user'},
+                     -PASS   => $opts->{'pass'},
+                     -HOST   => $opts->{'host'},
+                     -PORT   => $opts->{'port'},
+                     -DBNAME => $opts->{'dbname'} );
 
 # read TSV file with synonyms
-my $file = $opts->{file};
+my $file = $opts->{'file'};
 open(TSV,'<',$file) || die "#ERROR: cannot read $file: $!";
 
 my $gene_adaptor = $dba->get_GeneAdaptor;
@@ -58,7 +68,7 @@ my $dea = $dba->get_DBEntryAdaptor;
 my ($stableid, $acc, $synonym, $word);
 my (%syns);
 
-while ( my $line = <TSV> ) {
+LINE: while ( my $line = <TSV> ) {
 
     #TraesCS2D02G313000  AQY14665.1  FKBP53a-2DL
     #TraesCS7B02G232700  AHJ14572.1  spermidine synthase
@@ -72,7 +82,7 @@ while ( my $line = <TSV> ) {
     foreach $word (@BAD_ANNOT){	        
         if($synonym =~ m/$word/i) {
             $logger->info( "# skip $acc $synonym");        
-    	    next;
+    	    next LINE;
         }
     }
 
@@ -83,33 +93,52 @@ close(TSV);
 
 
 foreach $stableid (keys(%syns)) {
-    
+   
+    # check target gene exists 
     my $gene = $gene_adaptor->fetch_by_stable_id($stableid);
     if ( !$gene ) {
         $logger->info( "# cannot find $stableid, skip it");
         next;
     }
  	
-    # check whether there we    
+    # check whether gene already has display_xref  
     my $old_display_xref = $gene->display_xref();
     if( $old_display_xref ) {
         $logger->info( "# skip $stableid as it already has display_xref_id");
     }
 
+    # make a list with all synonyms
+    my @syn_accs = keys(%{$syns{$stableid}});
+
+    # create a new display_xref from acc of 1st synonym
     my $new_display_xref = Bio::EnsEMBL::DBEntry -> new (
-                -PRIMARY_ID  => $acc,
-                -DBNAME      => 'NCBI Gene',
-                -DISPLAY_ID  => ,
-                -DESCRIPTION => ,
+                -PRIMARY_ID  => $syn_accs[0],
+                -DBNAME      => $opts->{'extdb'},
                 -INFO_TYPE   => 'SEQUENCE_MATCH',
     );
     
-    #add other synonyms if required
-        
-    #my $dbRef = $dea->_check_external_db($new_display_xref,0);
-    #my $xref_id = $dea->_store_or_fetch_xref($new_display_xref,$dbRef);
-    #$new_display_xref->dbID($xref_id);
+    # add all synonyms
+    my %seen; 
+    foreach my $sacc (0 .. $#syn_accs) {
+	
+        # add unique string synonym
+        $word = $syns{$stableid}{ $syn_accs[$sacc] };
+        if(!$seen{$word}){
+            $new_display_xref->add_synonym( $syns{$stableid}{ $syn_accs[$sacc] } );
+            $logger->info( "# adding $stableid : $syns{$stableid}{ $syn_accs[$sacc] }");
+	    $seen{ $word }++;	
+        }
+
+        # add synonym accessions, should be all different
+        $new_display_xref->add_synonym( $syn_accs[$sacc] );
+        $logger->info( "# adding $stableid : $syn_accs[$sacc] ");
+    }        
+
+    my $dbRef = $dea->_check_external_db($new_display_xref,1);
+    my $xref_id = $dea->_store_or_fetch_xref($new_display_xref,$dbRef);
+    $new_display_xref->dbID($xref_id);
+           
+    # finally update this gene
     #$gene->display_xref($new_display_xref);
-            
     #$gene_adaptor->update($gene);
 }

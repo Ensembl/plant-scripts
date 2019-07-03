@@ -49,7 +49,7 @@ else {
   Log::Log4perl->easy_init($INFO);
 }
 
-# connect to core db in indicated server
+## 1) connect to core db in indicated server
 $logger->info( "Loading " . $opts->{'dbname'} );
 my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
                      -USER   => $opts->{'user'},
@@ -58,15 +58,17 @@ my $dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(
                      -PORT   => $opts->{'port'},
                      -DBNAME => $opts->{'dbname'} );
 
-# read TSV file with synonyms
-my $file = $opts->{'file'};
-open(TSV,'<',$file) || die "#ERROR: cannot read $file: $!";
 
 my $gene_adaptor = $dba->get_GeneAdaptor;
 my $dea = $dba->get_DBEntryAdaptor;
 
+## 2) read TSV file with synonyms
+my $file = $opts->{'file'};
+
 my ($stableid, $acc, $synonym, $word);
 my (%syns);
+
+open(TSV,'<',$file) || die "#ERROR: cannot read $file: $!";
 
 LINE: while ( my $line = <TSV> ) {
 
@@ -91,7 +93,9 @@ LINE: while ( my $line = <TSV> ) {
 }
 close(TSV);
 
+## 3) create display_xrefs linked to synonyms
 
+my $n_of_xrefs = 0;
 foreach $stableid (keys(%syns)) {
    
     # check target gene exists 
@@ -104,7 +108,7 @@ foreach $stableid (keys(%syns)) {
     # check whether gene already has display_xref  
     my $old_display_xref = $gene->display_xref();
     if( $old_display_xref ) {
-        $logger->info( "# skip $stableid as it already has display_xref_id");
+        $logger->info( "# $stableid has display_xref_id set, skip it");
     }
 
     # make a list with all synonyms
@@ -134,11 +138,17 @@ foreach $stableid (keys(%syns)) {
         $logger->info( "# adding $stableid : $syn_accs[$sacc] ");
     }        
 
+    # will complain if external db does not exist
     my $dbRef = $dea->_check_external_db($new_display_xref,1);
     my $xref_id = $dea->_store_or_fetch_xref($new_display_xref,$dbRef);
     $new_display_xref->dbID($xref_id);
            
     # finally update this gene
-    #$gene->display_xref($new_display_xref);
-    #$gene_adaptor->update($gene);
+    $gene->display_xref($new_display_xref);
+    $gene_adaptor->update($gene);
+    
+
+    $n_of_xrefs++;
 }
+
+print "# added $n_of_xrefs display_xrefs\n";

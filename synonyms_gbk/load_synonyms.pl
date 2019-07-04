@@ -68,7 +68,7 @@ my $file = $opts->{'file'};
 my ($stableid, $acc, $synonym, $word);
 my (%syns);
 
-open(TSV,'<',$file) || die "#ERROR: cannot read $file: $!";
+open(TSV,'<',$file) || die "# ERROR: cannot read $file: $!";
 
 LINE: while ( my $line = <TSV> ) {
 
@@ -83,7 +83,7 @@ LINE: while ( my $line = <TSV> ) {
     # skip synonyms with forbidded/bad words
     foreach $word (@BAD_ANNOT){	        
         if($synonym =~ m/$word/i) {
-            $logger->info( "# skip $acc $synonym");        
+            $logger->info( "Skip $acc $synonym");        
     	    next LINE;
         }
     }
@@ -101,14 +101,15 @@ foreach $stableid (keys(%syns)) {
     # check target gene exists 
     my $gene = $gene_adaptor->fetch_by_stable_id($stableid);
     if ( !$gene ) {
-        $logger->info( "# cannot find $stableid, skip it");
+        $logger->info( "Cannot find $stableid, skip it");
         next;
     }
  	
     # check whether gene already has display_xref  
     my $old_display_xref = $gene->display_xref();
     if( $old_display_xref ) {
-        $logger->info( "# $stableid has display_xref_id set, skip it");
+        $logger->info( "$stableid has display_xref_id set, skip it");
+        next;
     }
 
     # make a list with all synonyms
@@ -129,13 +130,13 @@ foreach $stableid (keys(%syns)) {
         $word = $syns{$stableid}{ $syn_accs[$sacc] };
         if(!$seen{$word}){
             $new_display_xref->add_synonym( $syns{$stableid}{ $syn_accs[$sacc] } );
-            $logger->info( "# adding $stableid : $syns{$stableid}{ $syn_accs[$sacc] }");
+            $logger->info( "Adding $stableid : $syns{$stableid}{ $syn_accs[$sacc] }");
 	    $seen{ $word }++;	
         }
 
         # add synonym accessions, should be all different
         $new_display_xref->add_synonym( $syn_accs[$sacc] );
-        $logger->info( "# adding $stableid : $syn_accs[$sacc] ");
+        $logger->info( "Adding $stableid : $syn_accs[$sacc] ");
     }        
 
     # will complain if external db does not exist

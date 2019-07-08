@@ -11,7 +11,8 @@ use Bio::EnsEMBL::Compara::Utils::SpeciesTree;
 # by querying the NCBITaxon facilities of the Compara database with production names
 # This is based on 
 # https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/species_buildSpeciesTree.pl
-# NOTE: some production names are not valid such as oryza_indica or panicum_hallii_fil2
+# NOTE1: some production names are not valid such as oryza_indica or panicum_hallii_fil2
+# NOTE2: requires the previous release of ensembl-compara; it use relase/97 to query Ensembl Plants 98
 # Bruno Contreras Moreira 2019
 
 my $NCBICLADE = 33090; # NCBI Taxonomy id, Viridiplantae

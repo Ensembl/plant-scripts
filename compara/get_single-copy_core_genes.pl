@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
-use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
+use Bio::AlignIO;
 
 # Script to retrieve all single-copy genes shared by all (plant) species in clade 
 # Queries the Compara db at the public Ensembl Genomes server by default
@@ -21,7 +21,7 @@ my $REFGENOME = 'arabidopsis_thaliana'; # should be included in $NCBICLADE
 my $OUTGENOME = ''; # in case you need an outgroup
 my $ONE2ONE   = 1; # set to 1 to take only single-copy genes in diploid species
 
-my $VERBOSE   = 1;
+my $VERBOSE   = 0;
 
 # http://ensemblgenomes.org/info/access/mysql
 my $DBSERVER  = 'mysql-eg-publicsql.ebi.ac.uk';
@@ -35,10 +35,12 @@ $registry->load_registry_from_db(
   -port    => $DBPORT,
 );
 
+my $stdout_alignio = Bio::AlignIO->newFh(-format => 'fasta');
+
 ## 1) check species in clade ####################################################################
 
 my (@supported_species, %polyploid);
-my ($sp, $tree, $tree_newick, $leaf, $treeOK);
+my ($sp, $tree, $tree_newick, $leaf, $treeOK, $tree_stable_id);
 
 # get a metadata adaptor
 my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
@@ -91,9 +93,14 @@ foreach $tree (@$all_protein_trees){
 	my (%included);
 	$treeOK = 1;
 
-	$tree_newick = $tree->newick_format("species");
-  	
+	# find out stable if for this tree, as in toString()
+	next if(!$tree->stable_id());
+	$tree_stable_id = sprintf("%s%s\n", 
+		$tree->stable_id(), ($tree->version() ? '.'.$tree->version() : ''));                        
+
 	# find clade species in this tree
+	$tree_newick = $tree->newick_format("species");
+
 	foreach $sp (@supported_species){
 		if($tree_newick =~ /$sp/ig){
 			$included{$sp}++;
@@ -114,7 +121,15 @@ foreach $tree (@$all_protein_trees){
    
    next if($treeOK == 0);
 
-		
+	# check GOC if required
+	# TO DO
+
+	# remove unwanted sequences from tree
+	
+
+	# print MSA , no taxon in header
+	#my $protein_align = $tree->get_SimpleAlign(-seq_type => 'cds');
+	#print $stdout_alignio $protein_align;
 
 	exit;
 }

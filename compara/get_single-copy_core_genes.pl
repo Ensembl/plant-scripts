@@ -40,7 +40,7 @@ my $stdout_alignio = Bio::AlignIO->newFh(-format => 'fasta');
 ## 1) check species in clade ####################################################################
 
 my (@supported_species, %polyploid);
-my ($sp, $tree, $tree_newick, $leaf, $treeOK, $tree_stable_id);
+my ($sp, $tree, $leaf, $treeOK, $tree_stable_id, $align, $align_string );
 
 # get a metadata adaptor
 my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
@@ -90,7 +90,7 @@ my $all_protein_trees = $gene_tree_adaptor->fetch_all(
 
 foreach $tree (@$all_protein_trees){
 
-	my (%included);
+	my (%included, %taxon, $align);
 	$treeOK = 1;
 
 	# find out stable if for this tree, as in toString()
@@ -98,13 +98,18 @@ foreach $tree (@$all_protein_trees){
 	$tree_stable_id = sprintf("%s%s\n", 
 		$tree->stable_id(), ($tree->version() ? '.'.$tree->version() : ''));                        
 
-	# find clade species in this tree
-	$tree_newick = $tree->newick_format("species");
+	# find clade species, and the corresponding stable ids, in this tree
+	
+	#$tree_newick = $tree->newick_format("species");
+	#foreach $sp (@supported_species){ if($tree_newick =~ /$sp/ig){ $included{$sp}{'total'}++ } }							
+   foreach $leaf (@{$tree->get_all_leaves}){
+		
+		$sp = $leaf->gene_member->genome_db->name();
 
-	foreach $sp (@supported_species){
-		if($tree_newick =~ /$sp/ig){
+		if(grep(/$sp/,@supported_species)){
 			$included{$sp}++;
-		}
+			$taxon{ $leaf->gene_member->stable_id() } = $sp;
+		} 
 	}
 
    # check this tree
@@ -116,20 +121,22 @@ foreach $tree (@$all_protein_trees){
 		}
 
 		printf("%s %s seqs=%d\n",
-			$tree->root_id(),$sp,$included{$sp} || 0) if($VERBOSE)
+			$tree->root_id(), $sp, $included{$sp} || 0) if($VERBOSE)
 	}
    
    next if($treeOK == 0);
 
 	# check GOC if required
+	# check Pfan/Panther/InterPRO domains if required
 	# TO DO
 
-	# remove unwanted sequences from tree
-	
+	# extract clade sequences from complete alignment
+	#$align = $tree->get_SimpleAlign(-seq_type => 'cds');
+	#$align_string = sprintf $stdout_alignio $align;
+	# TODO: print to string and extract only the clade sequences, their stable_id and taxon
 
-	# print MSA , no taxon in header
-	#my $protein_align = $tree->get_SimpleAlign(-seq_type => 'cds');
-	#print $stdout_alignio $protein_align;
+
+
 
 	exit;
 }

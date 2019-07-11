@@ -43,8 +43,9 @@ $registry->load_registry_from_db(
 ## 1) check species in clade ##################################################################
 
 my (@supported_species, %polyploid, %supported, %core_genes );
-my ($ftp, $compara_file, $stored_compara_file );
+my ($ftp, $compara_file, $stored_compara_file);
 
+# columns of TSV file 
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
    $hom_protein_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
 	   $high_confidence,$homology_id);
@@ -169,8 +170,19 @@ foreach $gene_stable_id (@sorted_genes){
 
 	next if(scalar(keys(%{ $core_genes{ $gene_stable_id } })) < $#supported_species); 
 
-	#printf("%s %d\n",$gene_stable_id,$total_core_genes);
+	print "$gene_stable_id";
+
+	foreach $hom_species (@supported_species){ 
+		next if($hom_species eq $REFGENOME);
+
+		printf("\t%s", join(',',@{ $core_genes{ $gene_stable_id }{ $hom_species } }) );
+	}
+
+	print "\n";
+
 	$total_core_genes++;
+
+	last if($total_core_genes > 9);
 }
 
 print "# total single-copy core genes : $total_core_genes\n";

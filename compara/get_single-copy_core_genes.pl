@@ -45,7 +45,9 @@ $registry->load_registry_from_db(
 my (@supported_species, %polyploid, %supported, %core_genes );
 my ($ftp, $compara_file, $stored_compara_file );
 
-my ($sp, $tree, $leaf, $treeOK, $tree_stable_id, $align, $align_string );
+my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
+   $hom_protein_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
+	   $high_confidence,$homology_id);
 
 # get a metadata adaptor
 my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
@@ -134,10 +136,7 @@ if($ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
 } else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
 
 # parse TSV file 
-my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
-	$hom_protein_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
-	$high_confidence,$homology_id);
-
+my (@sorted_genes);
 open(TSV,"gzip -dc $stored_compara_file |") || 
 	die "# ERROR: cannot open $stored_compara_file\n";
 while(<TSV>){
@@ -148,11 +147,30 @@ while(<TSV>){
 
 	next if(!$supported{ $hom_species } || $hom_species eq $REFGENOME);
 
+	#https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html#wga
+	next if($wga_coverage eq 'NULL' || $wga_coverage < 100);
+
+	#https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html#gic
+	next if($goc_score eq 'NULL' || $goc_score < 100);
+
 	if($homology_type eq 'ortholog_one2one' || 
 		$polyploid{ $hom_species } && $homology_type eq 'ortholog_one2many'){
-	
-		print;
+
+		if(!$core_genes{$gene_stable_id}){ push(@sorted_genes, $gene_stable_id) }
+
+		push(@{ $core_genes{ $gene_stable_id }{ $hom_species } }, $hom_gene_stable_id );
 	}
 }
 close(TSV);
 
+# summarize single-copy / core genes
+my $total_core_genes = 0;
+foreach $gene_stable_id (@sorted_genes){
+
+	next if(scalar(keys(%{ $core_genes{ $gene_stable_id } })) < $#supported_species); 
+
+	#printf("%s %d\n",$gene_stable_id,$total_core_genes);
+	$total_core_genes++;
+}
+
+print "# total single-copy core genes : $total_core_genes\n";

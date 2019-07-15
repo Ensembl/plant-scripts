@@ -98,7 +98,12 @@ if($outfolder){
 	}
 }	
 
-print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome -f $outfolder -t $seqtype\n\n";
+if($show_supported){ 
+	print "# $0 -l\n"; 
+}
+else {
+	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome -f $outfolder -t $seqtype\n\n";
+}
 
 ## 0) check supported species in division ##################################################
 
@@ -114,15 +119,17 @@ unless ($response->{success}) {
 my $infodump = decode_json($response->{content});
 
 foreach $sp (@{ $infodump }) {
-
 	if($sp->{'has_peptide_compara'}){
 		$division_supported{ $sp->{'name'} } = 1;
-
-		if($verbose){
-			printf("# division: %s %d %d %d\n",
-				$sp->{'name'},$sp->{'has_peptide_compara'},$sp->{'is_reference'},$sp->{'has_synteny'});
-		}
 	}	
+}
+
+if($show_supported){
+
+	foreach $sp (sort(keys(%division_supported))){
+		print "$sp\n";
+	}
+	exit;
 }
 
 # check outgroup is supported
@@ -287,50 +294,55 @@ foreach $gene_stable_id (@sorted_ids){
 		}
 	} print "\n";
 
-	# retrieve cluster sequences
-	$response = $http->get( "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species", 
+
+	if(!$outfolder){
+
+		# retrieve cluster sequences
+		$response = $http->get( "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species", 
 			{ headers => { 'Content-type' => 'application/json' } });
 
-	unless ($response->{success}) {
-		die "# ERROR: failed REST request $TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species\n"; 
-	}
+		unless ($response->{success}) {
+			die "# ERROR: failed REST request $TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species\n"; 
+		}
 
-	if(length($response->{content})){
-		my $treedump = Dumper( decode_json($response->{content}) ); 
+		if(length($response->{content})){
+			my $treedump = Dumper( decode_json($response->{content}) ); 
 
-		foreach $line (split(/\n/, $treedump ) ){
-			if($line =~ m/'sequence' =>/){
-				($seq,$acc) = ('','');
-			}
-			elsif($line =~ m/'seq' => '([^']+)'/){
-				$seq = $1;
-			}
-			elsif($line =~ m/'accession' => '([^']+)'/ && $acc eq ''){
-				$acc = $1;
+			foreach $line (split(/\n/, $treedump ) ){
+				if($line =~ m/'sequence' =>/){
+					($seq,$acc) = ('','');
+				}
+				elsif($line =~ m/'seq' => '([^']+)'/){
+					$seq = $1;
+				}
+				elsif($line =~ m/'accession' => '([^']+)'/ && $acc eq ''){
+					$acc = $1;
 
-				if($valid_prots{ $acc } ){
-					$align{ $valid_prots{$acc} }{ $acc } = $seq;
+					if($valid_prots{ $acc } ){
+						$align{ $valid_prots{$acc} }{ $acc } = $seq;
+					}
 				}
 			}
 		}
+
+		# save cluster to file
+		if(scalar(keys(%align)) == $n_of_species){
+
+			foreach $hom_species (@supported_species){
+				foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
+					print ">$hom_species $hom_prot_stable_id\n$align{ $hom_species }{ $hom_prot_stable_id }\n";
+				}
+			}	
+
+		} else {
+			die "# ERROR: cannot retrieve sequences for $gene_stable_id\n";
+		}
+
 	}
-
-	# save cluster to file
-	if(scalar(keys(%align)) == $n_of_species){
-
-		foreach $hom_species (@supported_species){
-			foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
-				print ">$hom_species $hom_prot_stable_id\n$align{ $hom_species }{ $hom_prot_stable_id }\n";
-			}
-		}	
-
-	} else {
-		die "# ERROR: cannot retrieve sequences for $gene_stable_id\n";
-	}
-
+	
 	$total_core_clusters++;
 
-	last if($total_core_clusters == 1);
+	#last if($total_core_clusters == 1);
 }
 
 print "# total single-copy core clusters : $total_core_clusters\n";

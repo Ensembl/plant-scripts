@@ -1,12 +1,14 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+
 use Getopt::Long qw(:config no_ignore_case);
 use Net::FTP;
-use HTTP::Tiny;
 use JSON;
 use Data::Dumper;
+use Benchmark;
 
+use HTTP::Tiny;
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 
@@ -42,7 +44,10 @@ my $division   = 'Plants';
 my $taxonid    = 3700; # NCBI Taxonomy id, Viridiplantae=33090, Arabidopsis=3701
 my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
-my ($help,$out_genome,$outfolder,$sp,$show_supported,$response);
+my $outfolder  = '';
+my $out_genome = '';
+
+my ($help,$sp,$show_supported,$request,$response,$request_time,$last_request_time);
 my (@poly_species, %polyploid, %division_supported);
 
 GetOptions(	
@@ -79,11 +84,9 @@ if($division && !grep(/$division/,@divisions)){
 }
 
 if(@poly_species){
-
 	foreach my $sp (@poly_species){
 		$polyploid{ $sp } = 1;
 	}
-
 	printf("# polyploid species : %d\n\n",scalar(keys(%polyploid)));
 }
 
@@ -98,22 +101,22 @@ if($outfolder){
 	}
 }	
 
-if($show_supported){ 
-	print "# $0 -l\n"; 
-}
+if($show_supported){ print "# $0 -l \n\n" }
 else {
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome -f $outfolder -t $seqtype\n\n";
 }
 
 ## 0) check supported species in division ##################################################
 
+my $start_time = new Benchmark();
+
 my $http = HTTP::Tiny->new();
 
-$response = $http->get( $INFOPOINT."Ensembl$division?",
-	{ headers => { 'Content-type' => 'application/json' } });
+$request = $INFOPOINT."Ensembl$division?";
+$response = $http->get( $request, { headers => { 'Content-type' => 'application/json' } });
 
 unless ($response->{success}) {
-	die "# ERROR: failed REST request $INFOPOINT Ensembl$division\n";
+	die "# ERROR: failed REST request $request\n";
 }
 
 my $infodump = decode_json($response->{content});
@@ -154,12 +157,12 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
 my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
 
 # find and iterate over all species supported Ensembl Plants within $taxonid
-for my $genome (@{$e_gdba->fetch_all_by_taxonomy_branch($taxonid)}) {
+for $sp (@{$e_gdba->fetch_all_by_taxonomy_branch($taxonid)}) {
 
-	if($division_supported{ $genome->name() }){
-		push(@supported_species, $genome->name());
-		$supported{ $genome->name() } = 1;
-		print "# ".$genome->name()."\n" if($verbose);
+	if($division_supported{ $sp->name() }){
+		push(@supported_species, $sp->name());
+		$supported{ $sp->name() } = 1;
+		print "# ".$sp->name()."\n" if($verbose);
 	}
 }
 
@@ -263,7 +266,7 @@ close(TSV);
 ## 3) print summary matrix of single-copy / core genes and compile sequence clusters #################
 
 my $total_core_clusters = 0;
-my ($pruned_species,$acc,$seq,$line);
+my ($pruned_species,$acc,$seq,$line,$filename);
 
 # prepare param to prune species in REST requests
 foreach $hom_species (@supported_species){
@@ -282,8 +285,14 @@ foreach $gene_stable_id (@sorted_ids){
 
 	my (%valid_prots, %align);
 
+	$filename = $gene_stable_id;
+	if($outfolder){
+		if($seqtype eq 'protein'){ $filename .= '.faa' }
+		else{ $filename .= '.fna' }
+	}
+
 	# matrix
-	print "$gene_stable_id";
+	print $filename;
 	foreach $hom_species (@supported_species){ 
 
 		printf("\t%s", join(',',@{ $core{ $gene_stable_id }{ $hom_species } }) );
@@ -295,14 +304,14 @@ foreach $gene_stable_id (@sorted_ids){
 	} print "\n";
 
 
-	if(!$outfolder){
+	if($outfolder){
 
 		# retrieve cluster sequences
-		$response = $http->get( "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species", 
-			{ headers => { 'Content-type' => 'application/json' } });
+		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
+		$response = $http->get( $request, { headers => { 'Content-type' => 'application/json' } });
 
 		unless ($response->{success}) {
-			die "# ERROR: failed REST request $TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species\n"; 
+			die "# ERROR: failed REST request $request\n"; 
 		}
 
 		if(length($response->{content})){
@@ -328,21 +337,23 @@ foreach $gene_stable_id (@sorted_ids){
 		# save cluster to file
 		if(scalar(keys(%align)) == $n_of_species){
 
+			open(FASTA,">","$outfolder/$filename") || 
+				die "# ERROR: cannot create $outfolder/$filename\n";
+
 			foreach $hom_species (@supported_species){
 				foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
-					print ">$hom_species $hom_prot_stable_id\n$align{ $hom_species }{ $hom_prot_stable_id }\n";
+					print FASTA ">$hom_species $hom_prot_stable_id\n$align{ $hom_species }{ $hom_prot_stable_id }\n";
 				}
 			}	
 
-		} else {
-			die "# ERROR: cannot retrieve sequences for $gene_stable_id\n";
-		}
-
+			close(FASTA);
+		} else { die "# ERROR: cannot retrieve sequences for $gene_stable_id\n" }
 	}
 	
-	$total_core_clusters++;
-
-	#last if($total_core_clusters == 1);
+	$total_core_clusters++; #last if($total_core_clusters == 1); # debug
 }
 
-print "# total single-copy core clusters : $total_core_clusters\n";
+print "\n# total single-copy core clusters : $total_core_clusters\n\n";
+
+my $end_time = new Benchmark();
+print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";

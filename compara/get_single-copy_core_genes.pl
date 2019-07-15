@@ -303,10 +303,13 @@ foreach $gene_stable_id (@sorted_ids){
 		}
 	} print "\n";
 
-
+	# retrieve cluster sequences
 	if($outfolder){
+	
+		# check whether this cluster already exists
+		next if(-s "$outfolder/$filename");
 
-		# retrieve cluster sequences
+		# make REST request
 		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
 		$response = $http->get( $request, { headers => { 'Content-type' => 'application/json' } });
 

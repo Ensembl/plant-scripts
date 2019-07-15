@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use Getopt::Long qw(:config no_ignore_case);
 use Net::FTP;
 use HTTP::Tiny;
 use JSON;
@@ -20,39 +21,119 @@ use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 #
 # Bruno Contreras Moreira 2019
 
-my $DIVISION  = 'Plants';
-my $NCBICLADE = 3700; # NCBI Taxonomy id, Viridiplantae=33090, Arabidopsis=3701
-my $REFGENOME = 'arabidopsis_thaliana'; # should be diploid and contained in $NCBICLADE
-my $OUTGENOME = ''; # in case you need an outgroup
-my $SEQTYPE   = 'cdna'; # cdna, protein
-
-my $VERBOSE   = 1;
-
 # Ensembl Genomes 
+my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
 my $FTPURL     = 'ftp.ensemblgenomes.org'; 
 my $COMPARADIR = '/pub/plants/current/tsv/ensembl-compara/homologies';
 my $RESTURL    = 'http://rest.ensembl.org';
+my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
-
 # http://ensemblgenomes.org/info/access/mysql
-my $DBSERVER  = 'mysql-eg-publicsql.ebi.ac.uk';
-my $DBUSER    = 'anonymous';
-my $DBPORT    = 4157;
-
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_registry_from_db(
-   -host    => $DBSERVER,
-   -user    => $DBUSER,
-   -port    => $DBPORT,
+   -host    => 'mysql-eg-publicsql.ebi.ac.uk',
+   -user    => 'anonymous',
+   -port    => 4157,
 );
 
+my $verbose    = 0;
+my $division   = 'Plants';
+my $taxonid    = 3700; # NCBI Taxonomy id, Viridiplantae=33090, Arabidopsis=3701
+my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
+my $seqtype    = 'protein'; 
+my ($help,$out_genome,$outfolder,$sp,$show_supported,$response);
+my (@poly_species, %polyploid, %division_supported);
+
+GetOptions(	
+	"help|?"       => \$help,
+	"verbose|v"    => \$verbose,
+	"supported|l"  => \$show_supported,
+	"division|d=s" => \$division, 
+	"clade|c=i"    => \$taxonid,
+	"reference|r=s"=> \$ref_genome,
+	"outgroup|o=s" => \$out_genome,
+	"polyploid|p=s"=> \@poly_species,
+	"type|t=s"     => \$seqtype,
+	"folder|f=s"   => \$outfolder
+) || help_message(); 
+
+sub help_message {
+	print "\nusage: $0 [options]\n\n".
+		"-l list supported species_names       (optional, example: -l)\n".
+		"-d Ensembl division                   (optional, default: -d $division)\n".
+		"-c NCBI Taxonomy clade of interest    (optional, default: -c $taxonid)\n".
+		"-r reference species_name             (optional, default: -r $ref_genome)\n".
+		"-o outgroup species_name              (optional, example: -o brachypodium_distachyon)\n".
+		"-p polyploid species_name(s)          (optional, example: -p triticum_aestivum -s triticum_turgidum)\n".
+		"-f folder to output FASTA files       (optional, example: -f myfolder)\n".
+		"-t sequence type [protein|cdna]       (optional, requires -f, default: -t protein)\n".
+		"-v verbose                            (optional, example: -v\n\n";
+		exit(0);
+}
+
+if($help){ help_message() }
+
+if($division && !grep(/$division/,@divisions)){
+	die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
+}
+
+if(@poly_species){
+
+	foreach my $sp (@poly_species){
+		$polyploid{ $sp } = 1;
+	}
+
+	printf("# polyploid species : %d\n\n",scalar(keys(%polyploid)));
+}
+
+if($outfolder){
+	if(-e $outfolder){ print "# WARNING : folder $outfolder exists, files might be overwritten\n" }
+	else { 
+		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
+	}
+
+	if($seqtype ne 'protein' && $seqtype ne 'cdna'){
+		die "# ERROR: accepted values for seqtype are: protein|cdna\n"
+	}
+}	
+
+print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome -f $outfolder -t $seqtype\n\n";
+
+## 0) check supported species in division ##################################################
+
 my $http = HTTP::Tiny->new();
+
+$response = $http->get( $INFOPOINT."Ensembl$division?",
+	{ headers => { 'Content-type' => 'application/json' } });
+
+unless ($response->{success}) {
+	die "# ERROR: failed REST request $INFOPOINT Ensembl$division\n";
+}
+
+my $infodump = decode_json($response->{content});
+
+foreach $sp (@{ $infodump }) {
+
+	if($sp->{'has_peptide_compara'}){
+		$division_supported{ $sp->{'name'} } = 1;
+
+		if($verbose){
+			printf("# division: %s %d %d %d\n",
+				$sp->{'name'},$sp->{'has_peptide_compara'},$sp->{'is_reference'},$sp->{'has_synteny'});
+		}
+	}	
+}
+
+# check outgroup is supported
+if($out_genome && !$division_supported{ $out_genome }){
+	die "# ERROR: genome $out_genome is not supported\n";
+}
 
 ## 1) check species in clade ##################################################################
 
 my $n_of_species = 0;
-my (@supported_species, %polyploid, %supported, %core );
+my (@supported_species, %supported, %core );
 my ($ftp, $compara_file, $stored_compara_file);
 
 # columns of TSV file 
@@ -65,53 +146,37 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
 # get a metadata adaptor
 my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
 
-# find and iterate over all species suupported Ensembl Plants within $NCBICLADE
-for my $genome (@{$e_gdba->fetch_all_by_taxonomy_branch($NCBICLADE)}) {
-	push(@supported_species, $genome->name());
-	$supported{ $genome->name() } = 1;
-	print "# ".$genome->name()."\n" if($VERBOSE);
+# find and iterate over all species supported Ensembl Plants within $taxonid
+for my $genome (@{$e_gdba->fetch_all_by_taxonomy_branch($taxonid)}) {
+
+	if($division_supported{ $genome->name() }){
+		push(@supported_species, $genome->name());
+		$supported{ $genome->name() } = 1;
+		print "# ".$genome->name()."\n" if($verbose);
+	}
 }
 
-printf("# supported species in NCBICLADE %d : %d\n\n", $NCBICLADE, scalar(@supported_species));
+printf("# supported species in NCBI taxon %d : %d\n\n", $taxonid, scalar(@supported_species));
 
-# check reference genome is supported
-if(!grep(/$REFGENOME/,@supported_species)){
-	die "# ERROR: cannot find 'arabidopsis_thaliana' in \$NCBICLADE=$NCBICLADE\n";
+# check reference genome is supported and is not polyploid
+if(!grep(/$ref_genome/,@supported_species)){
+	die "# ERROR: cannot find $ref_genome in \$taxonid=$taxonid\n";
+}
+elsif($polyploid{ $ref_genome }){
+	   die "# ERROR: $ref_genome is polyploid; reference genome must be diploid\n";
 }
 
 # add outgroup if required
-if($OUTGENOME){
-	push(@supported_species,$OUTGENOME);
-	$supported{ $OUTGENOME } = 1;
-	print "# outgenome: $OUTGENOME\n";
+if($out_genome){
+	push(@supported_species,$out_genome);
+	$supported{ $out_genome } = 1;
+	print "# outgenome: $out_genome\n";
 }
 
 $n_of_species = scalar( @supported_species );
 print "# total selected species : $n_of_species\n\n";
 
-# check for polyploid species and find reference genome index
-my $genome_db_adaptor = $registry->get_adaptor('Plants', 'compara', 'GenomeDB');
-
-#list of supported species, assembly_level 
-#https://rest.ensembl.org/info/genomes/division/EnsemblPlants?content-type=application/json
-
-my @gdbs = @{ $genome_db_adaptor->fetch_all_by_mixed_ref_lists(
-	-SPECIES_LIST => \@supported_species ) };
-
-foreach my $sp (@gdbs){
-	if($sp->is_polyploid()){	
-		$polyploid{$sp->name()} = 1;
-		printf("%s is polyploid\n",$sp->name()) if($VERBOSE);
-	}
-}
-
-if($polyploid{$REFGENOME}){
-	die "# ERROR: $REFGENOME is polyploid; \$REFGENOME must be diploid\n";
-}
-
-printf("# polyploid species : %d\n\n",scalar(keys(%polyploid)));
-
-## 2) get orthologous (plant) genes shared by $REFGENOME and other clade species ################
+## 2) get orthologous (plant) genes shared by $ref_genome and other species ####################
 
 print "# connecting to $FTPURL ...\n";
 
@@ -120,17 +185,17 @@ if($ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
 		die "# cannot login ". $ftp->message();
 	$ftp->cwd($COMPARADIR) || 
 		die "# ERROR: cannot change working directory to $COMPARADIR ". $ftp->message();
-	$ftp->cwd($REFGENOME) || 
-		die "# ERROR: cannot find $REFGENOME in $COMPARADIR ". $ftp->message();
+	$ftp->cwd($ref_genome) || 
+		die "# ERROR: cannot find $ref_genome in $COMPARADIR ". $ftp->message();
 
 	# find out which file is to be downloaded and 
-	# work out its final name with $REFGENOME in it
+	# work out its final name with $ref_genome in it
 	$compara_file = '';
 	foreach my $file ( $ftp->ls() ){
 		if($file =~ m/protein_default.homologies.tsv.gz/){
 			$compara_file = $file;
 			$stored_compara_file = $compara_file;
-			$stored_compara_file =~ s/tsv.gz/$REFGENOME.tsv.gz/;
+			$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
 			last;
 		}
 	}
@@ -164,7 +229,7 @@ while(<TSV>){
 	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
 	$high_confidence,$homology_id) = split(/\t/);
 
-	next if(!$supported{ $hom_species } || $hom_species eq $REFGENOME);
+	next if(!$supported{ $hom_species } || $hom_species eq $ref_genome);
 
 	#https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html#wga
 	#next if($wga_coverage eq 'NULL' || $wga_coverage < 100);
@@ -175,10 +240,10 @@ while(<TSV>){
 	if($homology_type eq 'ortholog_one2one' || 
 		$polyploid{ $hom_species } && $homology_type eq 'ortholog_one2many'){
 
-		# add $REFGENOME protein 
+		# add $ref_genome protein 
 		if(!$core{ $gene_stable_id }){ 
 
-			push(@{ $core{ $gene_stable_id }{ $REFGENOME } }, $prot_stable_id );
+			push(@{ $core{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
 
 			push(@sorted_ids, $gene_stable_id); # save cluster order
 		}
@@ -223,10 +288,12 @@ foreach $gene_stable_id (@sorted_ids){
 	} print "\n";
 
 	# retrieve cluster sequences
-	my $response = $http->get( "$TREEPOINT$gene_stable_id?compara=$DIVISION;aligned=1;sequence=$SEQTYPE;$pruned_species", 
-		{ headers => { 'Content-type' => 'application/json' } });
-			 
-	die "Failed!\n" unless $response->{success};
+	$response = $http->get( "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species", 
+			{ headers => { 'Content-type' => 'application/json' } });
+
+	unless ($response->{success}) {
+		die "# ERROR: failed REST request $TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species\n"; 
+	}
 
 	if(length($response->{content})){
 		my $treedump = Dumper( decode_json($response->{content}) ); 

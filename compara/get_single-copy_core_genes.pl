@@ -41,14 +41,16 @@ $registry->load_registry_from_db(
 
 my $verbose    = 0;
 my $division   = 'Plants';
-my $taxonid    = 3700; # NCBI Taxonomy id, Viridiplantae=33090, Arabidopsis=3701
+my $taxonid    = 3700; # NCBI Taxonomy id, Brassicaceae=370, Asterids=71274
 my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
 my $outfolder  = '';
 my $out_genome = '';
 
-my ($help,$sp,$show_supported,$request,$response,$request_time,$last_request_time);
-my (@poly_species, %polyploid, %division_supported);
+my ($help,$sp,$show_supported);
+my ($GOC,$WGA) = (0,0);
+my ($request,$response,$request_time,$last_request_time);
+my (@multi_species, %polyploid, %division_supported);
 
 GetOptions(	
 	"help|?"       => \$help,
@@ -58,22 +60,30 @@ GetOptions(
 	"clade|c=i"    => \$taxonid,
 	"reference|r=s"=> \$ref_genome,
 	"outgroup|o=s" => \$out_genome,
-	"polyploid|p=s"=> \@poly_species,
+	"multicopy|m=s"=> \@multi_species,
 	"type|t=s"     => \$seqtype,
+	"GOC|G=i"      => \$GOC,
+	"WGA|W=i"      => \$WGA,
 	"folder|f=s"   => \$outfolder
 ) || help_message(); 
 
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
-		"-l list supported species_names       (optional, example: -l)\n".
-		"-d Ensembl division                   (optional, default: -d $division)\n".
-		"-c NCBI Taxonomy clade of interest    (optional, default: -c $taxonid)\n".
-		"-r reference species_name             (optional, default: -r $ref_genome)\n".
-		"-o outgroup species_name              (optional, example: -o brachypodium_distachyon)\n".
-		"-p polyploid species_name(s)          (optional, example: -p triticum_aestivum -s triticum_turgidum)\n".
-		"-f folder to output FASTA files       (optional, example: -f myfolder)\n".
-		"-t sequence type [protein|cdna]       (optional, requires -f, default: -t protein)\n".
+		"-l list supported species_names         (optional, example: -l)\n".
+		"-d Ensembl division                     (optional, default: -d $division)\n".
+		"-c NCBI Taxonomy clade of interest      (optional, default: -c $taxonid)\n".
+		"-r reference species_name               (optional, default: -r $ref_genome)\n".
+		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
+		"-m multi-copy species_name(s)           (optional, example: -m brassica_napus -m ...)\n".
+		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
+		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
+		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
+		"-W min Whole Genome Align score [0:100] (optional, example: -W 75)\n".
 		"-v verbose                            (optional, example: -v\n\n";
+
+	print "NOTE: read about GOC and WGA at:\n".
+		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
+
 		exit(0);
 }
 
@@ -83,11 +93,13 @@ if($division && !grep(/$division/,@divisions)){
 	die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
 }
 
-if(@poly_species){
-	foreach my $sp (@poly_species){
+# species for which one2mant orths are allowed, typically polyploid species
+# with scaffold level assemblies
+if(@multi_species){
+	foreach my $sp (@multi_species){
 		$polyploid{ $sp } = 1;
 	}
-	printf("# polyploid species : %d\n\n",scalar(keys(%polyploid)));
+	printf("# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
 }
 
 if($outfolder){
@@ -103,7 +115,8 @@ if($outfolder){
 
 if($show_supported){ print "# $0 -l \n\n" }
 else {
-	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome -f $outfolder -t $seqtype\n\n";
+	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
+		"-f $outfolder -t $seqtype -G $GOC -W $WGA\n\n";
 }
 
 ## 0) check supported species in division ##################################################
@@ -170,7 +183,7 @@ printf("# supported species in NCBI taxon %d : %d\n\n", $taxonid, scalar(@suppor
 
 # check reference genome is supported and is not polyploid
 if(!grep(/$ref_genome/,@supported_species)){
-	die "# ERROR: cannot find $ref_genome in \$taxonid=$taxonid\n";
+	die "# ERROR: cannot find $ref_genome within NCBI taxon $taxonid\n";
 }
 elsif($polyploid{ $ref_genome }){
 	   die "# ERROR: $ref_genome is polyploid; reference genome must be diploid\n";
@@ -241,11 +254,9 @@ while(<TSV>){
 
 	next if(!$supported{ $hom_species } || $hom_species eq $ref_genome);
 
-	#https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html#wga
-	#next if($wga_coverage eq 'NULL' || $wga_coverage < 100);
+	next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 
-	#https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html#gic
-	#next if($goc_score eq 'NULL' || $goc_score < 100);
+	next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
 
 	if($homology_type eq 'ortholog_one2one' || 
 		$polyploid{ $hom_species } && $homology_type eq 'ortholog_one2many'){
@@ -307,7 +318,10 @@ foreach $gene_stable_id (@sorted_ids){
 	if($outfolder){
 	
 		# check whether this cluster already exists
-		next if(-s "$outfolder/$filename");
+		if(-s "$outfolder/$filename"){
+			$total_core_clusters++;
+			next;
+		}
 
 		# make REST request
 		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
@@ -357,6 +371,11 @@ foreach $gene_stable_id (@sorted_ids){
 }
 
 print "\n# total single-copy core clusters : $total_core_clusters\n\n";
+
+# print diagnostics
+if($total_core_clusters == 0){
+
+}
 
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";

@@ -15,7 +15,7 @@ use HTTP::Tiny;
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 
-# Retrieves all single-copy orthologous genes/proteins shared by (plant) species in clade 
+# Retrieves high-confidence single-copy orthologous genes/proteins shared by (plant) species in clade 
 # by querying pre-computed data from Ensembl Genomes Compara with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
@@ -51,7 +51,7 @@ my $outfolder  = '';
 my $out_genome = '';
 
 my ($help,$sp,$show_supported);
-my ($GOC,$WGA,$one2many) = (0,0,0);
+my ($GOC,$WGA,$one2many,$LOWCONF) = (0,0,0,0);
 my ($request,$response,$request_time,$last_request_time);
 my (@multi_species, @ignore_species, %ignore, %polyploid, %division_supported);
 
@@ -68,6 +68,7 @@ GetOptions(
 	"type|t=s"     => \$seqtype,
 	"GOC|G=i"      => \$GOC,
 	"WGA|W=i"      => \$WGA,
+	"LC|L"         => \$LOWCONF,
 	"folder|f=s"   => \$outfolder
 ) || help_message(); 
 
@@ -84,6 +85,7 @@ sub help_message {
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
 		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
 		"-W min Whole Genome Align score [0:100] (optional, example: -W 75)\n".
+		"-L allow low-confidence orthologues     (optional, by default these are skipped)\n".
 		"-v verbose                              (optional, example: -v\n\n";
 
 	print "NOTE: read about GOC and WGA at:\n".
@@ -139,7 +141,7 @@ if($outfolder){
 if($show_supported){ print "# $0 -l \n\n" }
 else {
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
-		"-f $outfolder -t $seqtype -G $GOC -W $WGA\n\n";
+		"-f $outfolder -t $seqtype -G $GOC -W $WGA -L $LOWCONF\n\n";
 }
 
 my $start_time = new Benchmark();
@@ -281,6 +283,8 @@ while(<TSV>){
 
 	next if(!$supported{ $hom_species } || $hom_species eq $ref_genome);
 
+	next if($LOWCONF == 0 && $high_confidence == 0);
+
 	next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 
 	next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
@@ -376,12 +380,13 @@ foreach $gene_stable_id (@sorted_ids){
 				$acc = $1;
 				if($valid_prots{ $acc } ){
 					$align{ $valid_prots{$acc} }{ $acc } = $seq;
+					$valid_prots{$acc} .= " found";
 				}
 			}
 		}
 
 		# save cluster to file
-		if(scalar(keys(%align)) == $n_of_species){
+		if(scalar(keys(%align)) == $n_of_species){ 
 
 			open(FASTA,">","$outfolder/$filename") || 
 				die "# ERROR: cannot create $outfolder/$filename\n";
@@ -393,7 +398,16 @@ foreach $gene_stable_id (@sorted_ids){
 			}	
 
 			close(FASTA);
-		} else { die "# ERROR: cannot retrieve sequences for $gene_stable_id\n" }
+		} 
+		else { # might occur with low-confidence orths in split trees and same supertree
+			if($verbose){
+				print "# WARNING: cannot retrieve aligned sequences for $gene_stable_id : ";
+				foreach $acc (keys(%valid_prots)){
+					next if($valid_prots{$acc} =~ m/ found/);
+					print "$acc $valid_prots{$acc},";
+				} print "\n";
+			}
+		}
 	}
 	
 	$total_core_clusters++; #last if($total_core_clusters == 1); # debug

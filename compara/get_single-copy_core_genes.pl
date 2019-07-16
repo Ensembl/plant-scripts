@@ -193,7 +193,6 @@ if($out_genome && !$division_supported{ $out_genome }){
 
 my $n_of_species = 0;
 my (@supported_species, %supported, %core, %present);
-my ($ftp, $compara_file, $stored_compara_file);
 
 # columns of TSV file 
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
@@ -241,51 +240,10 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) get orthologous (plant) genes shared by $ref_genome and other species ####################
 
-print "# connecting to $FTPURL ...\n";
-
-if($ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
-	$ftp->login("anonymous",'-anonymous@') || 
-		die "# cannot login ". $ftp->message();
-	$ftp->cwd($COMPARADIR) || 
-		die "# ERROR: cannot change working directory to $COMPARADIR ". $ftp->message();
-	$ftp->cwd($ref_genome) || 
-		die "# ERROR: cannot find $ref_genome in $COMPARADIR ". $ftp->message();
-
-	# find out which file is to be downloaded and 
-	# work out its final name with $ref_genome in it
-	$compara_file = '';
-	foreach my $file ( $ftp->ls() ){
-		if($file =~ m/protein_default.homologies.tsv.gz/){
-			$compara_file = $file;
-			$stored_compara_file = $compara_file;
-			$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
-			last;
-		}
-	}
-
-	# download that TSV file
-	unless(-s $stored_compara_file){
-		$ftp->binary();
-		my $downsize = $ftp->size($compara_file);
-		$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
-		printf("# downloading %s (%1.1fMb) ...\n",$compara_file,$downsize/(1024*1024));
-		print "# [        50%       ]\n# ";
-		if(!$ftp->get($compara_file)){
-			die "# ERROR: failed downloading $compara_file\n";
-		}
-	
-		# rename file to final name
-		rename($compara_file, $stored_compara_file);
-		print "# using $stored_compara_file\n\n";
-	} else {
-		print "# re-using $stored_compara_file\n\n";
-	}
-} else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
-
-# parse TSV file 
+# get and parse TSV file
 my (@sorted_ids);
-open(TSV,"gzip -dc $stored_compara_file |") || 
-	die "# ERROR: cannot open $stored_compara_file\n";
+my $stored_compara_file = download_TSV_file( $ref_genome );
+open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
 while(<TSV>){
 	
 	($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
@@ -301,8 +259,7 @@ while(<TSV>){
 	next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
 
 	if($homology_type eq 'ortholog_one2one' || 
-		(($one2many || $polyploid{ $hom_species } ) && $homology_type eq 'ortholog_one2many') 
-	) {
+		(($one2many || $polyploid{ $hom_species } ) && $homology_type eq 'ortholog_one2many') ) {
 
 		# add $ref_genome protein 
 		if(!$core{ $gene_stable_id }){ 
@@ -453,10 +410,60 @@ if($total_core_clusters == 0){
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 
+###################################################################################################
+
+# download compressed TSV file from FTP site, renames it 
+# and saves it in current folder; uses FTP globals defined above
+sub download_TSV_file {
+
+	my ($ref_genome) = @_;
+	my ($compara_file,$stored_compara_file) = ('','');
+
+	print "# connecting to $FTPURL ...\n";
+
+	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
+		$ftp->login("anonymous",'-anonymous@') ||
+			die "# cannot login ". $ftp->message();
+		$ftp->cwd($COMPARADIR) ||
+		   die "# ERROR: cannot change working directory to $COMPARADIR ". $ftp->message();
+		$ftp->cwd($ref_genome) ||
+			die "# ERROR: cannot find $ref_genome in $COMPARADIR ". $ftp->message();
+
+		# find out which file is to be downloaded and 
+		# work out its final name with $ref_genome in it
+		foreach my $file ( $ftp->ls() ){
+			if($file =~ m/protein_default.homologies.tsv.gz/){
+				$compara_file = $file;
+				$stored_compara_file = $compara_file;
+				$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
+				last;
+			}
+		}
+		
+		# download that TSV file
+		unless(-s $stored_compara_file){
+			$ftp->binary();
+			my $downsize = $ftp->size($compara_file);
+			$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
+			printf("# downloading %s (%1.1fMb) ...\n",$compara_file,$downsize/(1024*1024));
+			print "# [        50%       ]\n# ";
+			if(!$ftp->get($compara_file)){
+				die "# ERROR: failed downloading $compara_file\n";
+			}
+
+			# rename file to final name
+			rename($compara_file, $stored_compara_file);
+			print "# using $stored_compara_file\n\n";
+		} else {
+			print "# re-using $stored_compara_file\n\n";
+		}
+	} else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
+
+	return $stored_compara_file;
+}
 
 
-
-
+# uses global $request_count
 sub perform_rest_action {
 	my ($url, $headers) = @_;
 	$headers ||= {};

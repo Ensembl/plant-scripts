@@ -321,6 +321,16 @@ while(<TSV>){
 }
 close(TSV);
 
+# check GOC / WGA availability
+foreach $hom_species (@supported_species){
+	if(!defined( $present{ $hom_species } )&& $WGA){
+		print "# WGA not available: $hom_species\n";
+	} elsif(!defined( $present{ $hom_species } ) && $GOC){
+		print "# GOC not available: $hom_species\n";
+	}
+}
+
+
 ## 3) print summary matrix of single-copy / core genes and compile sequence clusters #################
 
 my $total_core_clusters = 0;

@@ -23,6 +23,8 @@ use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 # https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/
 # https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
 #
+# TODO: minimize multiple alignments 
+#
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes 

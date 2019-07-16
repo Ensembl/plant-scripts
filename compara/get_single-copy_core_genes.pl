@@ -382,7 +382,7 @@ foreach $gene_stable_id (@sorted_ids){
 				print "# WARNING: cannot retrieve aligned sequences for $gene_stable_id : ";
 				foreach $acc (keys(%valid_prots)){
 					next if($valid_prots{$acc} =~ m/ found/);
-					print "$acc $valid_prots{$acc},";
+					print "# $acc $valid_prots{$acc},";
 				} print "\n";
 			}
 		}
@@ -396,9 +396,7 @@ print "\n# total single-copy core clusters : $total_core_clusters\n\n";
 # print diagnostics
 if($total_core_clusters == 0){
 
-	print "# diagnostic stats\n\n";
-
-	print "species\tclusters\n";
+	print "# diagnostic stats (species\tclusters)\n\n";
 
 	foreach $hom_species (@supported_species){ $present{ $hom_species } = 0 unless($present{ $hom_species }) }
 

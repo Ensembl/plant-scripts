@@ -4,22 +4,24 @@ use warnings;
 
 use Getopt::Long qw(:config no_ignore_case);
 use Net::FTP;
-use JSON;
+use JSON qw(decode_json);
 use Data::Dumper;
 use Benchmark;
+use Time::HiRes;
 
 use HTTP::Tiny;
+
+# will disappear soon
 use Bio::EnsEMBL::Registry;
 use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 
 # Retrieves all single-copy orthologous genes/proteins shared by (plant) species in clade 
-# by querying pre-computed data from Ensembl Genomes Compara. 
-# Multiple copies are allowed only in polyploid species.
+# by querying pre-computed data from Ensembl Genomes Compara with a reference genome.
+# Multiple copies are optionally allowed for selected or all species.
 #
 # Based on scripts at
 # https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/
-#
-# NOTE: use previous release of ensembl-compara, ie relase/97 to query Ensembl Plants 98
+# https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
 #
 # Bruno Contreras Moreira 2019
 
@@ -64,7 +66,6 @@ GetOptions(
 	"multicopy|m=s"=> \@multi_species,
 	"ignore|i=s"   => \@ignore_species,
 	"type|t=s"     => \$seqtype,
-	"allmulti|a"   => \$one2many,
 	"GOC|G=i"      => \$GOC,
 	"WGA|W=i"      => \$WGA,
 	"folder|f=s"   => \$outfolder
@@ -77,8 +78,7 @@ sub help_message {
 		"-c NCBI Taxonomy clade of interest      (optional, default: -c $taxonid)\n".
 		"-r reference species_name               (optional, default: -r $ref_genome)\n".
 		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
-		"-m multi-copy species_name(s)           (optional, example: -m brassica_napus -m ...)\n".
-		"-a allow one2many orths for all         (optional)\n".
+		"-m multi-copy species_name(s)           (optional, example: -m brassica_napus -m ... -m all)\n".
 		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
 		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
@@ -105,13 +105,24 @@ if(@ignore_species){
 	printf("# ignored species : %d\n\n",scalar(keys(%ignore)));
 }
 
-# species for which one2mant orths are allowed, typically polyploid species
-# with scaffold level assemblies
+# species for which one2many orths are allowed, such as polyploid species
+# with scaffold level assemblies or species with ancestral genome duplications
 if(@multi_species){
 	foreach my $sp (@multi_species){
-		$polyploid{ $sp } = 1;
+		if($sp eq 'all'){
+			$one2many = 1;
+			%polyploid = ();
+			$polyploid{ $sp } = 1;
+			last;
+		} else{ 
+			$polyploid{ $sp } = 1;
+		}
 	}
-	printf("# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
+
+	if($one2many){ print "# multi-copy species : all\n" }
+	else{
+		printf("# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
+	}
 }
 
 if($outfolder){
@@ -128,23 +139,22 @@ if($outfolder){
 if($show_supported){ print "# $0 -l \n\n" }
 else {
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
-		"-f $outfolder -t $seqtype -a $one2many -G $GOC -W $WGA\n\n";
+		"-f $outfolder -t $seqtype -G $GOC -W $WGA\n\n";
 }
-
-## 0) check supported species in division ##################################################
 
 my $start_time = new Benchmark();
 
+# new object for REST requests
 my $http = HTTP::Tiny->new();
+my $global_headers = { 'Content-Type' => 'application/json' };
+my $request_count = 0; # global counter to avoid overload
+
+## 0) check supported species in division ##################################################
 
 $request = $INFOPOINT."Ensembl$division?";
-$response = $http->get( $request, { headers => { 'Content-type' => 'application/json' } });
 
-unless ($response->{success}) {
-	die "# ERROR: failed REST request $request\n";
-}
-
-my $infodump = decode_json($response->{content});
+$response = perform_rest_action( $request, $global_headers );
+my $infodump = decode_json($response);
 
 foreach $sp (@{ $infodump }) {
 	if($sp->{'has_peptide_compara'}){
@@ -299,7 +309,7 @@ close(TSV);
 ## 3) print summary matrix of single-copy / core genes and compile sequence clusters #################
 
 my $total_core_clusters = 0;
-my ($pruned_species,$acc,$seq,$line,$filename);
+my ($pruned_species,$treedump,$acc,$seq,$line,$filename);
 
 # prepare param to prune species in REST requests
 if($outfolder){
@@ -350,30 +360,22 @@ foreach $gene_stable_id (@sorted_ids){
 			next;
 		}
 
-		# make REST request
+		# make REST request and parse dumped JSON
 		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
-		$response = $http->get( $request, { headers => { 'Content-type' => 'application/json' } });
+		$response = perform_rest_action( $request, $global_headers );
+		$treedump = Dumper( decode_json($response->{content}) ); 
 
-		unless ($response->{success}) {
-			die "# ERROR: failed REST request $request\n"; 
-		}
-
-		if(length($response->{content})){
-			my $treedump = Dumper( decode_json($response->{content}) ); 
-
-			foreach $line (split(/\n/, $treedump ) ){
-				if($line =~ m/'sequence' =>/){
-					($seq,$acc) = ('','');
-				}
-				elsif($line =~ m/'seq' => '([^']+)'/){
-					$seq = $1;
-				}
-				elsif($line =~ m/'accession' => '([^']+)'/ && $acc eq ''){
-					$acc = $1;
-
-					if($valid_prots{ $acc } ){
-						$align{ $valid_prots{$acc} }{ $acc } = $seq;
-					}
+		foreach $line (split(/\n/, $treedump ) ){
+			if($line =~ m/'sequence' =>/){
+				($seq,$acc) = ('','');
+			}
+			elsif($line =~ m/'seq' => '([^']+)'/){
+				$seq = $1;
+			}
+			elsif($line =~ m/'accession' => '([^']+)'/ && $acc eq ''){
+				$acc = $1;
+				if($valid_prots{ $acc } ){
+					$align{ $valid_prots{$acc} }{ $acc } = $seq;
 				}
 			}
 		}
@@ -402,6 +404,8 @@ print "\n# total single-copy core clusters : $total_core_clusters\n\n";
 # print diagnostics
 if($total_core_clusters == 0){
 
+	print "# diagnostic stats\n\n";
+
 	print "species\tclusters\n";
 	foreach $hom_species (sort {$present{$a}<=>$present{$b}} (@supported_species)){
 		printf("%s %d\n",	$hom_species, $present{ $hom_species } );
@@ -410,3 +414,52 @@ if($total_core_clusters == 0){
 
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
+
+
+
+
+
+sub perform_rest_action {
+	my ($url, $headers) = @_;
+	$headers ||= {};
+	$headers->{'Content-Type'} = 'application/json' unless exists $headers->{'Content-Type'};
+
+	if($request_count == 15) { # check every 15
+		my $current_time = Time::HiRes::time();
+		my $diff = $current_time - $last_request_time;
+
+		# if less than a second then sleep for the remainder of the second
+		if($diff < 1) {
+			Time::HiRes::sleep(1-$diff);
+		}
+		# reset
+		$last_request_time = Time::HiRes::time();
+		$request_count = 0;
+	}
+
+	my $response = $http->get($url, {headers => $headers});
+	my $status = $response->{status};
+	
+	if(!$response->{success}) {
+		# check for rate limit exceeded & Retry-After (lowercase due to our client)
+		if($status == 429 && exists $response->{headers}->{'retry-after'}) {
+			my $retry = $response->{headers}->{'retry-after'};
+			Time::HiRes::sleep($retry);
+			# afterr sleeping see that we re-request
+			return perform_rest_action($url, $headers);
+		}
+		else {
+			my ($status, $reason) = ($response->{status}, $response->{reason});
+			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}";
+		}
+	}
+
+	$request_count++;
+
+	if(length($response->{content})) {
+		return $response->{content};
+	} else{	
+		return '';
+	}	
+}
+

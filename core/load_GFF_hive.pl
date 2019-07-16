@@ -46,7 +46,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-g GFF3 file                                   (required, example: -g atha.gff)\n";
   print "-R registry file, can be env variable          (required, example: -R \$p1panreg)\n";
-  print "-P ensembl_production db name                  (required, example: -D ensembl_production_97)\n";
+  print "-D ensembl_production db name                  (required, example: -D ensembl_production_97)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-G GenBank file to load sequence edits         (optional, example: -G atha.gbk)\n";
@@ -496,6 +496,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_c
     	"--gff3_file $new_gff3file ".
     	"--protein_fasta_file $protein_fasta_file ".
     	"--gene_source '$gene_source' ".
+	#"-fix_models 0 ".
 	"--hive_force_init $overwrite ";
 
 if($add_to_previous){ $initcmd .= "-delete_existing 0 " }

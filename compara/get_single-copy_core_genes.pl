@@ -42,16 +42,16 @@ $registry->load_registry_from_db(
 
 my $verbose    = 0;
 my $division   = 'Plants';
-my $taxonid    = 3700; # NCBI Taxonomy id, Brassicaceae=370, Asterids=71274
+my $taxonid    = 3700; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
 my $outfolder  = '';
 my $out_genome = '';
 
 my ($help,$sp,$show_supported);
-my ($GOC,$WGA) = (0,0);
+my ($GOC,$WGA,$one2many) = (0,0,0);
 my ($request,$response,$request_time,$last_request_time);
-my (@multi_species, %polyploid, %division_supported);
+my (@multi_species, @ignore_species, %ignore, %polyploid, %division_supported);
 
 GetOptions(	
 	"help|?"       => \$help,
@@ -62,7 +62,9 @@ GetOptions(
 	"reference|r=s"=> \$ref_genome,
 	"outgroup|o=s" => \$out_genome,
 	"multicopy|m=s"=> \@multi_species,
+	"ignore|i=s"   => \@ignore_species,
 	"type|t=s"     => \$seqtype,
+	"allmulti|a"   => \$one2many,
 	"GOC|G=i"      => \$GOC,
 	"WGA|W=i"      => \$WGA,
 	"folder|f=s"   => \$outfolder
@@ -76,6 +78,8 @@ sub help_message {
 		"-r reference species_name               (optional, default: -r $ref_genome)\n".
 		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
 		"-m multi-copy species_name(s)           (optional, example: -m brassica_napus -m ...)\n".
+		"-a allow one2many orths for all         (optional)\n".
+		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
 		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
 		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
@@ -94,6 +98,13 @@ if($division && !grep(/$division/,@divisions)){
 	die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
 }
 
+if(@ignore_species){
+	foreach my $sp (@ignore_species){
+		$ignore{ $sp } = 1;
+	}
+	printf("# ignored species : %d\n\n",scalar(keys(%ignore)));
+}
+
 # species for which one2mant orths are allowed, typically polyploid species
 # with scaffold level assemblies
 if(@multi_species){
@@ -104,7 +115,7 @@ if(@multi_species){
 }
 
 if($outfolder){
-	if(-e $outfolder){ print "# WARNING : folder $outfolder exists, files might be overwritten\n" }
+	if(-e $outfolder){ print "# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
 	else { 
 		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
 	}
@@ -117,7 +128,7 @@ if($outfolder){
 if($show_supported){ print "# $0 -l \n\n" }
 else {
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
-		"-f $outfolder -t $seqtype -G $GOC -W $WGA\n\n";
+		"-f $outfolder -t $seqtype -a $one2many -G $GOC -W $WGA\n\n";
 }
 
 ## 0) check supported species in division ##################################################
@@ -141,6 +152,7 @@ foreach $sp (@{ $infodump }) {
 	}	
 }
 
+# list supported species and exit
 if($show_supported){
 
 	foreach $sp (sort(keys(%division_supported))){
@@ -157,7 +169,7 @@ if($out_genome && !$division_supported{ $out_genome }){
 ## 1) check species in clade ##################################################################
 
 my $n_of_species = 0;
-my (@supported_species, %supported, %core );
+my (@supported_species, %supported, %core, %present);
 my ($ftp, $compara_file, $stored_compara_file);
 
 # columns of TSV file 
@@ -171,9 +183,13 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
 my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
 
 # find and iterate over all species supported Ensembl Plants within $taxonid
+# ERROR: does not pick marchantia_polymorpha
 for $sp (@{$e_gdba->fetch_all_by_taxonomy_branch($taxonid)}) {
 
 	if($division_supported{ $sp->name() }){
+
+		next if($ignore{ $sp->name() });
+
 		push(@supported_species, $sp->name());
 		$supported{ $sp->name() } = 1;
 		print "# ".$sp->name()."\n" if($verbose);
@@ -260,17 +276,22 @@ while(<TSV>){
 	next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
 
 	if($homology_type eq 'ortholog_one2one' || 
-		$polyploid{ $hom_species } && $homology_type eq 'ortholog_one2many'){
+		(($one2many || $polyploid{ $hom_species } ) && $homology_type eq 'ortholog_one2many') 
+	) {
 
 		# add $ref_genome protein 
 		if(!$core{ $gene_stable_id }){ 
 
 			push(@{ $core{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
 
+			$present{ $ref_genome }++;
+
 			push(@sorted_ids, $gene_stable_id); # save cluster order
 		}
 
 		push(@{ $core{ $gene_stable_id }{ $hom_species } }, $hom_prot_stable_id );
+
+		$present{ $hom_species }++;
 	}
 }
 close(TSV);
@@ -281,15 +302,11 @@ my $total_core_clusters = 0;
 my ($pruned_species,$acc,$seq,$line,$filename);
 
 # prepare param to prune species in REST requests
-foreach $hom_species (@supported_species){
-	$pruned_species .= "prune_species=$hom_species;";
-} 
-
-# print header
-print "cluster";
-foreach $hom_species (@supported_species){ 
-	print "\t$hom_species";
-} print "\n";
+if($outfolder){
+	foreach $hom_species (@supported_species){
+		$pruned_species .= "prune_species=$hom_species;";
+	}
+}	
 
 foreach $gene_stable_id (@sorted_ids){
 
@@ -303,7 +320,16 @@ foreach $gene_stable_id (@sorted_ids){
 		else{ $filename .= '.fna' }
 	}
 
-	# matrix
+	# print matrix header
+	if($total_core_clusters == 0){
+		print "cluster";
+		foreach $hom_species (@supported_species){
+			print "\t$hom_species";
+		} 
+		print "\n";
+	}
+	
+	# print a matrix row in TSV format
 	print $filename;
 	foreach $hom_species (@supported_species){ 
 
@@ -375,13 +401,11 @@ print "\n# total single-copy core clusters : $total_core_clusters\n\n";
 
 # print diagnostics
 if($total_core_clusters == 0){
-	print "# orths per species:\n";
-	foreach $gene_stable_id (@sorted_ids){
-		foreach $hom_species (@supported_species){
-			printf("%s %d\n",	$hom_species, 
-				scalar(@{ $core{ $gene_stable_id }{ $hom_species } }));
-		}
-	}	
+
+	print "species\tclusters\n";
+	foreach $hom_species (sort {$present{$a}<=>$present{$b}} (@supported_species)){
+		printf("%s %d\n",	$hom_species, $present{ $hom_species } );
+	}
 }
 
 my $end_time = new Benchmark();

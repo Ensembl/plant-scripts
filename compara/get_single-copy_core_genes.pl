@@ -91,6 +91,11 @@ sub help_message {
 	print "NOTE: read about GOC and WGA at:\n".
 		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
 
+	print "Example calls:\n\n".
+		" ./get_single-copy_core_genes.pl -f Brassicaceae\n".
+		" perl get_single-copy_core_genes.pl -f Brassicaceae -t cdna -o theobroma_cacao\n".
+		" perl get_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -GOC 75 -WGA 75\n".
+		" perl get_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens\n";
 		exit(0);
 }
 
@@ -128,7 +133,7 @@ if(@multi_species){
 }
 
 if($outfolder){
-	if(-e $outfolder){ print "# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
+	if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
 	else { 
 		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
 	}
@@ -421,6 +426,9 @@ if($total_core_clusters == 0){
 	print "# diagnostic stats\n\n";
 
 	print "species\tclusters\n";
+
+	foreach $hom_species (@supported_species){ $present{ $hom_species } = 0 unless($present{ $hom_species }) }
+
 	foreach $hom_species (sort {$present{$a}<=>$present{$b}} (@supported_species)){
 		printf("%s %d\n",	$hom_species, $present{ $hom_species } );
 	}

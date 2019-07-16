@@ -368,6 +368,8 @@ foreach $gene_stable_id (@sorted_ids){
 		# save cluster to file
 		if(scalar(keys(%align)) == $n_of_species){ 
 
+			# TODO : minimize MSA
+
 			open(FASTA,">","$outfolder/$filename") || 
 				die "# ERROR: cannot create $outfolder/$filename\n";
 

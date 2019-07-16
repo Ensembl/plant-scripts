@@ -35,6 +35,7 @@ my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
 # http://ensemblgenomes.org/info/access/mysql
 # this connection might be slow
+$| = 1;
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_registry_from_db(
    -host    => 'mysql-eg-publicsql.ebi.ac.uk',
@@ -83,18 +84,23 @@ sub help_message {
 		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
 		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
-		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
-		"-W min Whole Genome Align score [0:100] (optional, example: -W 75)\n".
 		"-L allow low-confidence orthologues     (optional, by default these are skipped)\n".
-		"-v verbose                              (optional, example: -v\n\n";
+		"-v verbose                              (optional, example: -v\n";
 
-	print "NOTE: read about GOC and WGA at:\n".
+	print "\nThe following options are only available for some clades:\n\n".
+		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
+		"   see modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/Plants/ProteinTrees_conf.pm\n".
+		"   at https://github.com/Ensembl/ensembl-compara\n\n".
+		"-W min Whole Genome Align score [0:100] (optional, example: -W 75)\n".
+		"   see ensembl-compara/scripts/pipeline/compara_plants.xml\n".
+		"   at https://github.com/Ensembl/ensembl-compara\n\n";
+	print "Read about GOC and WGA at:\n".
 		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
 
 	print "Example calls:\n\n".
 		" ./get_single-copy_core_genes.pl -f Brassicaceae\n".
 		" perl get_single-copy_core_genes.pl -f Brassicaceae -t cdna -o theobroma_cacao\n".
-		" perl get_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -GOC 75 -WGA 75\n".
+		" perl get_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75\n".
 		" perl get_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens\n";
 		exit(0);
 }
@@ -472,16 +478,13 @@ sub perform_rest_action {
 		}
 		else {
 			my ($status, $reason) = ($response->{status}, $response->{reason});
-			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}\n# Please try and re-run";
+			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}\n# Please re-run";
 		}
 	}
 
 	$request_count++;
 
-	if(length($response->{content})) {
-		return $response->{content};
-	} else{	
-		return '';
-	}	
+	if(length($response->{content})) { return $response->{content} } 
+	else { return '' }	
 }
 

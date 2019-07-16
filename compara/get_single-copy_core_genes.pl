@@ -32,6 +32,7 @@ my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
 # http://ensemblgenomes.org/info/access/mysql
+# this connection might be slow
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_registry_from_db(
    -host    => 'mysql-eg-publicsql.ebi.ac.uk',
@@ -79,7 +80,7 @@ sub help_message {
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
 		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
 		"-W min Whole Genome Align score [0:100] (optional, example: -W 75)\n".
-		"-v verbose                            (optional, example: -v\n\n";
+		"-v verbose                              (optional, example: -v\n\n";
 
 	print "NOTE: read about GOC and WGA at:\n".
 		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
@@ -374,7 +375,13 @@ print "\n# total single-copy core clusters : $total_core_clusters\n\n";
 
 # print diagnostics
 if($total_core_clusters == 0){
-
+	print "# orths per species:\n";
+	foreach $gene_stable_id (@sorted_ids){
+		foreach $hom_species (@supported_species){
+			printf("%s %d\n",	$hom_species, 
+				scalar(@{ $core{ $gene_stable_id }{ $hom_species } }));
+		}
+	}	
 }
 
 my $end_time = new Benchmark();

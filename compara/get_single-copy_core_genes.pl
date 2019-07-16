@@ -464,7 +464,7 @@ sub perform_rest_action {
 	
 	if(!$response->{success}) {
 		# check for rate limit exceeded & Retry-After (lowercase due to our client)
-		if($status == 429 && exists $response->{headers}->{'retry-after'}) {
+		if(($status == 429 || $status == 599) && exists $response->{headers}->{'retry-after'}) {
 			my $retry = $response->{headers}->{'retry-after'};
 			Time::HiRes::sleep($retry);
 			# afterr sleeping see that we re-request
@@ -472,7 +472,7 @@ sub perform_rest_action {
 		}
 		else {
 			my ($status, $reason) = ($response->{status}, $response->{reason});
-			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}";
+			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}\n# Please try and re-run";
 		}
 	}
 

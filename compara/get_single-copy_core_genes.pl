@@ -363,7 +363,7 @@ foreach $gene_stable_id (@sorted_ids){
 		# make REST request and parse dumped JSON
 		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
 		$response = perform_rest_action( $request, $global_headers );
-		$treedump = Dumper( decode_json($response->{content}) ); 
+		$treedump = Dumper( decode_json($response) ); 
 
 		foreach $line (split(/\n/, $treedump ) ){
 			if($line =~ m/'sequence' =>/){

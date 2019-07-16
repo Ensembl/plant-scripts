@@ -102,7 +102,7 @@ if(@ignore_species){
 	foreach my $sp (@ignore_species){
 		$ignore{ $sp } = 1;
 	}
-	printf("# ignored species : %d\n\n",scalar(keys(%ignore)));
+	printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
 }
 
 # species for which one2many orths are allowed, such as polyploid species
@@ -119,9 +119,9 @@ if(@multi_species){
 		}
 	}
 
-	if($one2many){ print "# multi-copy species : all\n" }
+	if($one2many){ print "\n# multi-copy species : all\n\n" }
 	else{
-		printf("# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
+		printf("\n# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
 	}
 }
 

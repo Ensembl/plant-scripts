@@ -90,7 +90,7 @@ if($opts{'P'}){
 }
 
 if($opts{'D'}){
-        $species_display_name = $opts{'D'};
+   $species_display_name = $opts{'D'};
 }
 
 if($opts{'N'}){ $nogenes = 1 }
@@ -149,7 +149,7 @@ $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
         "--config_file $config_file ".
 	"$prod_db_args --dbname $db_name ".
 	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
-	"$analysis_db_args --prod_dbname ensembl_production_$ensembl_version ";
+	"$analysis_db_args --prod_dbname ensembl_production "; #_$ensembl_version ";
 
 if($species_display_name){
 	$cmd .= " --display_name '$species_display_name' ";

@@ -15,6 +15,7 @@ use POSIX qw(strftime);
 use Getopt::Std;
 use HTTP::Tiny;
 use JSON;
+use Data::Dumper;
 use Net::FTP;
 
 # hard-coded default parameters
@@ -84,15 +85,17 @@ printf("# %s -t %s -d %s -s %s -r %s -f %s -S %d\n\n",
 ## 1) get taxon ID from REST ensemblgenomes
 print "# interrogating $RESTtaxonomy_query\n";
 my $taxon_id = '';
-open(REST,"$WGETEXE -q --header='Content-type:application/json' $RESTtaxonomy_query -O- |") || 
-	die "ERROR: cannot connect to $RESTtaxonomy_query\n";
-while(<REST>) {
-	# ids are listed from ancestor (Eukarya) to actual taxon of interest
-	while(/"id":"(\d+)"/g) {
-		$taxon_id = $1
-	}
-}
-close(REST);
+
+my $http = HTTP::Tiny->new(); 
+my $response = $http->get($RESTtaxonomy_query, {
+   headers => { 'Content-type' => 'application/json' }
+}); die "Failed!\n" unless $response->{success};
+
+if(length($response->{content})) {
+   my $array_ref = decode_json($response->{content});
+	$taxon_id = $array_ref->[0]->{'id'};
+	#print Dumper($array_ref); # debug
+};
 print "# taxon '$taxon_name' corresponds to taxonomy_id=$taxon_id\n\n"; 
 
 # compose output filenames
@@ -106,8 +109,8 @@ system("$WGETEXE -q '$ENAURL($taxon_id)$ENAquery' -O $ENAcurrent_file -o $ENAlog
 
 ## 3) check currently supported assemblies in Ensembl division  
 my %current_ensembl_assembly_ids;
-my $http = HTTP::Tiny->new();
-my $response = $http->get($RESTdivision_query, {
+
+$response = $http->get($RESTdivision_query, {
 	headers => { 'Content-type' => 'application/json' }
 }); die "Failed!\n" unless $response->{success};
     

@@ -180,58 +180,58 @@ while(<LOCALENA>){
 		$genome_representation ne $required_genome_representation ||
 		defined($current_ensembl_assembly_ids{$full_assembly_id}) );
 
+	$GFF_fileG = 'NA';
+   $n_of_genesG = 0;
+
 	## check whether GenBank provides GFF for this assembly
 	if($full_assembly_id =~ /GCA_(\d+)\.\d+$/){
-
-                $acc2path = $1;
-                $assembly_id = 'GCF_'.$acc2path;
-                $acc2path =~ s/...\K(?=.)/\//sg;
-        }
-        else{ die "# EXIT : bad ENA accession: $full_assembly_id lacks .version\n"; }
+		$acc2path = $1;
+      $assembly_id = 'GCF_'.$acc2path;
+      $acc2path =~ s/...\K(?=.)/\//sg;
+   }
+   else{ die "# EXIT : bad ENA accession: $full_assembly_id lacks .version\n"; }
 
 	# compose folder path based on ENA full assembly id
    $fullpath = $GCAGENPATH . $acc2path;
 
 	# find right folder for this assembly
    # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/188/115/GCA_000188115.3_SL3.0/GCA_000188115.3_SL3.0_genomic.gff.gz
- 	$ftp->cwd($fullpath) || die "# ERROR: cannot change working directory ", $ftp->message();
+ 	if($ftp->cwd($fullpath)){
 
-   $GFF_fileG = 'NA';
-	$n_of_genesG = 0;
+	   foreach my $subfolder ( $ftp->ls() ){
+   		if($subfolder =~ $full_assembly_id) {
 
-   foreach my $subfolder ( $ftp->ls() ){
-   	if($subfolder =~ $full_assembly_id) {
+      		$ftp->cwd($subfolder) ||
+         		die "# ERROR: cannot change working directory ", $ftp->message();
 
-      	$ftp->cwd($subfolder) ||
-         	die "# ERROR: cannot change working directory ", $ftp->message();
+            	foreach my $file ( $ftp->ls() ){
+            		if($file =~ $full_assembly_id && $file =~ /_genomic.gff.gz/){
 
-            foreach my $file ( $ftp->ls() ){
-            	if($file =~ $full_assembly_id && $file =~ /_genomic.gff.gz/){
+							$GFF_fileG = $file;
+							$local_file = "$GFFfolder/$file";
 
-						$GFF_fileG = $file;
-						$local_file = "$GFFfolder/$file";
+   	             	if($used_saved_files && -s $local_file){
+     		           		print "# re-using $GFF_fileG\n";
+     	   	        	}
+            	    	else { 
+								print "# downloadingF $GFF_fileG\n"; 
+								$ftp->get($file,$local_file) ||
+                     		die "# ERROR: cannot download $file ", $ftp->message;
+							}
 
-                	if($used_saved_files && -s $local_file){
-                		print "# re-using $GFF_fileG\n";
-                	}
-                	else { 
-							print "# downloadingF $GFF_fileG\n"; 
-							$ftp->get($file,$local_file) ||
-                     	die "# ERROR: cannot download $file ", $ftp->message;
+							$n_of_genesG = count_genes_GFF($local_file);
+							last;
 						}
-
-						$n_of_genesG = count_genes_GFF($local_file);
-						last;
 					}
-				}
 				
-				last;
-		}	
-	}
+					last;
+			}	
+		}
+	} else { print "# WARNING: cannot find directory ", $ftp->message() }
 
 	## now check whether RefSeq provides GFF for this assembly
 	($subfolderR,$GFF_fileR) = ('NA','NA');
-        ($prev_mod_time,$mod_time,$n_of_genesR)  = (0, 0, 0);
+   ($prev_mod_time,$mod_time,$n_of_genesR)  = (0, 0, 0);
 
 	# check assembly is in RefSeq
 	$fullpath = $GCFGENPATH . $acc2path;

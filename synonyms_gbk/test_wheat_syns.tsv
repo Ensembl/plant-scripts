@@ -1,0 +1,7 @@
+# perl load_synonyms.pl -dbname triticum_aestivum_core_43_96_4 --host hh \
+#   --port pp --user yy --pass xx --file test_wheat_syns.tsv
+TraesCS2D02G313000	AQY14665.1 	FKBP53a-2DL
+TraesCS7B02G232700	AHJ14572.1	spermidine synthase
+TraesCS7B02G232700	AHJ14573.1	spermidine synthase
+TraesCS7B02G232700	AHJ14574.1	spermidine synthase
+TraesCS7D02G411200	AIM18727.1	unknown protein

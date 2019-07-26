@@ -22,10 +22,10 @@ use Sys::Hostname;
 
 my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version,$nogenes);
 my ($prod_server,$egserver,$config_file,$argsline,$GCA_core_acc,$GCA_version);
-my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$nointerpro,$cmd);
-my ($species_display_name,$species_production_name) = ('','');
+my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$interpro,$jsonpath);
+my ($species_display_name,$species_production_name,$cmd) = ('','');
 
-getopts('hXND:P:s:d:G:v:p:c:e:', \%opts);
+getopts('hXNJ:D:P:s:d:G:v:p:c:e:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -39,8 +39,9 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n";
   print "-P species production_name                     (optional, example: -P marchantia_polymorpha)\n";
   print "-D species display name                        (optional, example: -D 'Marchantia polymorpha')\n";
-  print "-X don't load InterPro mappings                (optional)\n";
-  print "-N don't load genes or any other features      (optional)\n\n";
+  print "-N don't load genes or any other features      (optional)\n";
+  print "-J save JSON dump                              (optional, example: -J ./)\n";
+  print "-X load InterPro mappings                      (optional)\n\n";
   exit(0);
 }
 
@@ -89,19 +90,23 @@ if($opts{'P'}){
 }
 
 if($opts{'D'}){
-        $species_display_name = $opts{'D'};
+   $species_display_name = $opts{'D'};
 }
 
 if($opts{'N'}){ $nogenes = 1 }
 else{ $nogenes = 0 }
 
-if($opts{'X'}){ $nointerpro = 1 }
-else{ $nointerpro = 0 }
+if($opts{'X'}){ $interpro = 1 }
+else{ $interpro = 0 }
 
-$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -D '%s' -P %s -X %d -N %d",
+if($opts{'J'}){ $jsonpath = $opts{'J'} }
+else{ $jsonpath = '' }
+
+$argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -D '%s' -P %s -X %d -N %d -J %s",
 	$0, $species, $division, $ensembl_version, $GCA_accession, 
 	$prod_server, $egserver, $config_file, 
-	$species_display_name,$species_production_name, $nointerpro, $nogenes);
+	$species_display_name,$species_production_name, $interpro, $nogenes, 
+	$jsonpath );
 
 print "# $argsline\n\n";
 
@@ -144,7 +149,7 @@ $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
         "--config_file $config_file ".
 	"$prod_db_args --dbname $db_name ".
 	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
-	"$analysis_db_args --prod_dbname ensembl_production_$ensembl_version ";
+	"$analysis_db_args --prod_dbname ensembl_production "; #_$ensembl_version ";
 
 if($species_display_name){
 	$cmd .= " --display_name '$species_display_name' ";
@@ -154,12 +159,18 @@ if($species_production_name){
 	$cmd .= " --production_name '$species_production_name' ";
 }
 
-if($nointerpro){
-        $cmd .= " --nointerpro ";
+if($jsonpath){
+	$cmd .= " --save_json $jsonpath";
 }
-elsif($nogenes){ 
+
+if($nogenes){ 
 	$cmd .= " --nogenes ";
 }
+elsif($interpro){
+        $cmd .= " --load_interpro ";
+}
+
+
 
 print "$cmd\n\n";
 

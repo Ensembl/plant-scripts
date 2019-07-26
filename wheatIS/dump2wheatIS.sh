@@ -74,8 +74,6 @@ while read -r db; do
     $MIRRSERVER $db -Ne "$SQL"
 done < $PLANTCOREDBLIST >> $WHEATISCOREFILE
 
-exit
-
 while read -r db; do
     >&2 echo $db
     $MIRRSERVER $db -Ne "$SQL"

@@ -20,6 +20,7 @@ my %tricky_names = (
 	'oryza_sativa_japonica_group' => 'oryza_sativa',
 );
 
+my $prodbname = 'ensembl_production_';
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $overwrite = 0;
 my ($help,$reg_file,$sp,$species_cmd,$ensembl_version,$stats_only);
@@ -37,7 +38,8 @@ GetOptions(
 	"pathways=s" => \$xref_path_file,
 	"pipelinedir|P=s" => \$pipeline_dir,
 	"statsonly|S" => \$stats_only,
-	"species|s=s" => \@species
+	"species|s=s" => \@species,
+	"prodb|D=s"   => \$prodbname
 ) || help_message(); 
 
 if($help){ help_message() }
@@ -50,6 +52,7 @@ sub help_message {
 	"-v next Ensembl version                (required, example: -v 95)\n".
 	"-R registry file, can be env variable  (required, example: -R \$p1panreg)\n".
 	"-P pipeline dir, can be env variable   (required, example: -P \$dumptmp)\n".
+        "-D ensembl_production db name          (optional, default: -D ensembl_production_Ensembl_version)\n".
 	"-H hive database command               (optional, default: $hive_db_cmd)\n".
 	"-w over-write db (hive_force_init)     (optional, useful when a previous run failed)\n".
 	"-S check stats only                    (optional, does not load new data)\n\n";
@@ -61,6 +64,7 @@ if($ensembl_version){
 	if(!grep(/ensembl-$ensembl_version\/ensembl-hive\/modules/,@INC)){
                 die "# EXIT : cannot find ensembl-$ensembl_version/ensembl-hive/modules in \$PERL5LIB / \@INC\n"
         }
+	$prodbname .= $ensembl_version;
 }
 else{ die "# EXIT : need a valid -v version, such as -v 95\n" } 
 
@@ -152,6 +156,7 @@ if(!$stats_only){
 	my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::Xref_GPR_conf ".
     		"$hive_args ".
     		"-registry $reg_file ".
+		"-production_db $prodbname ".
 		"-pipeline_dir $pipeline_dir ".
     		"$species_cmd ".
 		"-xref_reac_file $xref_reac_file ".

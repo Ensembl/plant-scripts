@@ -6,6 +6,7 @@ use Data::Dumper;
 use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
 use Getopt::Long;
 use Pod::Usage;
+use DBI;
 my $core;
 my $file2;
 my $param_file;
@@ -34,11 +35,14 @@ my $param_file;
     ##Loading AGP data
     load_agp($h);
 
-    ##updating top level attrib
-    set_top_level($h);
-
-    ##updating meta table (will also needs manuall tweaking)
+    ##updating meta table (will also needs manual tweaking)
     copy_meta($h, $dbh);
+    
+    ##Add seq region attribs
+    add_seq_region_attribs($h, $dbh);
+
+
+
     
 }
 
@@ -83,7 +87,7 @@ sub set_top_level {
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ";
     say $cmd;
-    #system($cmd);
+    system($cmd);
 }
 
 #======================================== 
@@ -135,10 +139,12 @@ sub copy_meta {
     my ($h, $dbh) = @_;
     my ($sql, $sth);
     
+    ##Deleting current meta
     $sql = "delete from $h->{'core'}.meta";
     $sth = $dbh->prepare($sql);
     $sth->execute();
 
+    ##Copying meta from other source
     $sql = qq{
     insert into $h->{'core'}.meta
     (select * from $h->{'meta_source'}.meta)
@@ -146,7 +152,94 @@ sub copy_meta {
     $sth = $dbh->prepare($sql);
     $sth->execute();
 
+    ##Add test regarding the version
+
+    ##Cleaning up meta table (repeats and patches)
+    $sql = "delete from $h->{'core'}.meta where meta_key rlike ";
+    my @keys = qw/patch repeat/;
+    for my $key (@keys){
+        my $sql_to_run = $sql."'$key'";
+        $sth = $dbh->prepare($sql_to_run);
+        $sth->execute();
+    }
+
 }
+
+#======================================== 
+sub add_seq_region_attribs { 
+#======================================== 
+    my ($h, $dbh) = @_;
+    my ($sql, $sth);
+
+    print Dumper $dbh;
+
+    my $seq_region_file = $h->{seq_region_file};
+    my $core = $h->{core};
+    
+    ##Get the seq_regions
+    $sql = "select seq_region_id, name from $core.seq_region where coord_system_id=2 order by name asc;";
+    $sth = $dbh->prepare($sql);
+    $sth->execute();
+
+    my $rank = 1;
+    while (my $ref = $sth->fetchrow_hashref()) {
+        my ($seq_region_id, $name) = ($ref->{seq_region_id},$ref->{name});
+
+        my $comp;
+        if ($name =~ /\d(\w)/){
+            $comp = $1;
+        }
+        elsif ($name = 'Un'){
+            $comp = 'U';
+        }
+        else{
+            say "no $comp for $name";
+        }
+
+        ##Insert polyploid value
+        my $sql = qq{
+            insert into $core.seq_region_attrib
+                (seq_region_id, attrib_type_id, value)
+            values
+                ($seq_region_id, 425, '$comp');
+        };
+        run_sql($dbh,$sql,$core);
+
+        ##Insert top level
+        $sql = qq{
+            insert into $core.seq_region_attrib
+                (seq_region_id, attrib_type_id, value)
+            values
+                ($seq_region_id, 6, '1');
+        };
+        run_sql($dbh,$sql,$core);
+
+
+        ##Insert karyotype rank
+        $sql = qq{
+            insert into $core.seq_region_attrib
+                (seq_region_id, attrib_type_id, value)
+            values
+                ($seq_region_id, 367, $rank);
+        };
+        run_sql($dbh,$sql,$core);
+        $rank++;
+    }
+
+    $sth->finish();
+}
+
+#======================================== 
+sub run_sql {
+#======================================== 
+    my ($dbh, $sql, $core) = @_;
+    
+    say "running:\n $sql";
+    my $sth = $dbh->prepare($sql);
+    $sth->execute();
+    $sth->finish();
+}
+
 
 #======================================== 
 sub get_params {

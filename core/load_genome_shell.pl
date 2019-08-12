@@ -148,7 +148,7 @@ print "# loading $GCA_accession ($species) on database $db_name at $prod_server\
 $cmd = "perl -I ./modules ./scripts/load_genome.pl ".
 	"-a $GCA_core_acc ".
 	"--division $division ".
-        "--config_file $config_file ".
+   "--config_file $config_file ".
 	"$prod_db_args --dbname $db_name ".
 	"$taxonomy_db_args --tax_dbname ncbi_taxonomy ".
 	"$analysis_db_args --prod_dbname ensembl_production "; #_$ensembl_version ";

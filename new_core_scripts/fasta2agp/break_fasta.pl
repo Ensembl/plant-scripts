@@ -18,8 +18,8 @@ use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab
         chomp($line);
         
         ##Create a new chunk each time there is a header
-        ##This needs to be chhaned according to the header
-        if ($line =~ /chromosome (\d)\,/){
+        ##This needs to be changed according to the header
+        if ($line =~ />(\d\w)/ or $line =~ />(Un)/){
             
             ##Header is <chrom number>_<chunk count>
             $header = ">$1";

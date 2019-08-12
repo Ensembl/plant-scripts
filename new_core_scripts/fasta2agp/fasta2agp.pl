@@ -19,7 +19,8 @@ use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2h
     my ($chr_header,$chunk_header,$count,$chunk_length,$chunk_count,$total_length);
     while (my $line = <IN>){
         chomp($line);
-        if ($line =~ />(\d+\w)_(\d+)/){
+        #if ($line =~ />(\d+\w)_(\d+)/){
+        if ($line =~ />(\w+)_(\d+)/){
             if ($chunk_length){
                 
                 ##Get the coordinates for the start and end of the ASM part
@@ -36,7 +37,7 @@ use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2h
             $chunk_count  = $2;
             
             ##If the chrom header changes, reset the total length
-            if ($chr_header != $current_chr_header){
+            if ($chr_header ne $current_chr_header){
                 $total_length = 0;
                 $current_chr_header = $chr_header;
             }

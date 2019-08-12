@@ -133,6 +133,8 @@ else {
 }
 
 chdir($GCA_accession.'/genome_materializer');
+$ENV{'GRADLE_OPTS'} = "-Djava.io.tmpdir=/scratch"; 
+# /scratch typically larger than /tmp, to avoid "java.io.IOException: No space left on device"
 system("./gradlew fatJar");
 chdir('..');
 

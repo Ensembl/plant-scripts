@@ -29,11 +29,11 @@ GetOptions(
 		"overwrite|w" => \$overwrite, 
 		"rerun|r"     => \$rerun,
 		"version|v=s" => \$ensembl_version,
-                "species|s=s" => \@species,
+      "species|s=s" => \@species,
 		"hivecmd|H=s" => \$hive_db_cmd,    
 		"regfile|R=s" => \$reg_file,
 		"pipedir|P=s" => \$pipeline_dir,
-                "prodb|D=s"   => \$prodbname
+      "prodb|D=s"   => \$prodbname
 ) || help_message(); 
 
 if($help){ help_message() }
@@ -43,8 +43,8 @@ sub help_message {
 	"-s species_name(s)                          (required, example: -s arabidopsis_thaliana -s brachypodium_distachyon)\n".
 	"-v next Ensembl version                     (required, example: -v 95)\n".
 	"-R registry file, can be env variable       (required, example: -R \$p2panreg)\n".
-        "-P folder to put pipeline files, can be env (required, example: -P \$reptmp)\n".
-        "-D ensembl_production db name               (required, example: -D ensembl_production_97)\n".	
+   "-P folder to put pipeline files, can be env (required, example: -P \$reptmp)\n".
+   "-D ensembl_production db name               (required, example: -D ensembl_production_97)\n".	
 	"-H hive database command                    (optional, default: $hive_db_cmd)\n".
 	"-w over-write db (hive_force_init)          (optional, useful when a previous run failed)\n".
 	"-r re-run jump to beekeper.pl               (optional, default: run init script from scratch)\n\n";

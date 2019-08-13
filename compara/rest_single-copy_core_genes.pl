@@ -8,12 +8,7 @@ use JSON qw(decode_json);
 use Data::Dumper;
 use Benchmark;
 use Time::HiRes;
-
 use HTTP::Tiny;
-
-# will disappear soon
-use Bio::EnsEMBL::Registry;
-use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 
 # Retrieves high-confidence single-copy orthologous genes/proteins shared by (plant) species in clade 
 # by querying pre-computed data from Ensembl Genomes Compara with a reference genome.
@@ -30,28 +25,21 @@ use Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor;
 # Ensembl Genomes 
 my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
 my $FTPURL     = 'ftp.ensemblgenomes.org'; 
-my $COMPARADIR = '/pub/plants/current/tsv/ensembl-compara/homologies';
+my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
+my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
-
-# http://ensemblgenomes.org/info/access/mysql
-# this connection might be slow
-$| = 1;
-my $registry = 'Bio::EnsEMBL::Registry';
-$registry->load_registry_from_db(
-   -host    => 'mysql-eg-publicsql.ebi.ac.uk',
-   -user    => 'anonymous',
-   -port    => 4157,
-);
 
 my $verbose    = 0;
 my $division   = 'Plants';
 my $taxonid    = 3700; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
+my $comparadir = '';
 my $outfolder  = '';
 my $out_genome = '';
+
 
 my ($help,$sp,$show_supported);
 my ($GOC,$WGA,$one2many,$LOWCONF) = (0,0,0,0);
@@ -109,8 +97,14 @@ sub help_message {
 
 if($help){ help_message() }
 
-if($division && !grep(/$division/,@divisions)){
-	die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
+if($division){
+	if(!grep(/$division/,@divisions)){
+		die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
+	} else {
+		$comparadir = $COMPARADIR;
+		my $lcdiv = lc($division);
+		$comparadir =~ s/xxx/$lcdiv/;
+	}
 }
 
 if(@ignore_species){
@@ -196,28 +190,20 @@ if($out_genome && !$division_supported{ $out_genome }){
 my $n_of_species = 0;
 my (@supported_species, %supported, %core, %present);
 
-# columns of TSV file 
-my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
-   $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
-	   $high_confidence,$homology_id);
+$request = $TAXOPOINT."$taxonid?";
 
-# https://rest.ensembl.org/info/genomes/taxonomy/Homo%20sapiens?content-type=application/json
+$response = perform_rest_action( $request, $global_headers );
+$infodump = decode_json($response);
 
-# get a metadata adaptor
-my $e_gdba = Bio::EnsEMBL::MetaData::DBSQL::GenomeInfoAdaptor->build_ensembl_genomes_adaptor();
+foreach $sp (@{ $infodump }) {
+   if($sp->{'name'} && $division_supported{ $sp->{'name'} }){
 
-# find and iterate over all species supported Ensembl Plants within $taxonid
-# ERROR: does not pick marchantia_polymorpha
-for $sp (@{$e_gdba->fetch_all_by_taxonomy_branch($taxonid)}) {
+		next if($ignore{ $sp->{'name'} });
 
-	if($division_supported{ $sp->name() }){
-
-		next if($ignore{ $sp->name() });
-
-		push(@supported_species, $sp->name());
-		$supported{ $sp->name() } = 1;
-		print "# ".$sp->name()."\n" if($verbose);
-	}
+		push(@supported_species, $sp->{'name'});
+		$supported{ $sp->{'name'} } = 1;
+		print "# ".$sp->{'name'}."\n" if($verbose);
+   }
 }
 
 printf("# supported species in NCBI taxon %d : %d\n\n", $taxonid, scalar(@supported_species));
@@ -242,9 +228,14 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) get orthologous (plant) genes shared by $ref_genome and other species ####################
 
+# columns of TSV file 
+my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
+   $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
+	$high_confidence,$homology_id);
+
 # get and parse TSV file
 my (@sorted_ids);
-my $stored_compara_file = download_TSV_file( $ref_genome );
+my $stored_compara_file = download_TSV_file( $comparadir, $ref_genome );
 open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
 while(<TSV>){
 	
@@ -418,7 +409,7 @@ print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 # and saves it in current folder; uses FTP globals defined above
 sub download_TSV_file {
 
-	my ($ref_genome) = @_;
+	my ($dir,$ref_genome) = @_;
 	my ($compara_file,$stored_compara_file) = ('','');
 
 	print "# connecting to $FTPURL ...\n";
@@ -426,10 +417,10 @@ sub download_TSV_file {
 	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
 		$ftp->login("anonymous",'-anonymous@') ||
 			die "# cannot login ". $ftp->message();
-		$ftp->cwd($COMPARADIR) ||
-		   die "# ERROR: cannot change working directory to $COMPARADIR ". $ftp->message();
+		$ftp->cwd($dir) ||
+		   die "# ERROR: cannot change working directory to $dir ". $ftp->message();
 		$ftp->cwd($ref_genome) ||
-			die "# ERROR: cannot find $ref_genome in $COMPARADIR ". $ftp->message();
+			die "# ERROR: cannot find $ref_genome in $dir ". $ftp->message();
 
 		# find out which file is to be downloaded and 
 		# work out its final name with $ref_genome in it

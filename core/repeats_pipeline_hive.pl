@@ -90,6 +90,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::DNAFeature
 	"--pipeline_dir $pipeline_dir ".
 	"--redatrepeatmasker 1 ".
 	"--production_db $prodbname ".
+   "--pipeline_name dna_features_$ensembl_version ".
 	"$species_cmd ".
 	"--hive_force_init $overwrite";
 

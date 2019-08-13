@@ -16,6 +16,11 @@ use Getopt::Long qw(:config no_ignore_case);
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/DNA+Features+Pipeline
 #
+# Common problems & solutions:
+#
+# i) pipeline_db created by init_pipeline does not match -v => git checkout release/XX in ensembl repo
+# ii) AnalysisSetup fails while connecting to ensembl_production => fix registry 
+#
 ## check user arguments ######################################################
 ##############################################################################
 
@@ -90,7 +95,6 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::DNAFeature
 	"--pipeline_dir $pipeline_dir ".
 	"--redatrepeatmasker 1 ".
 	"--production_db $prodbname ".
-   #"--pipeline_name dna_features_$ensembl_version ". 
 	"$species_cmd ".
 	"--hive_force_init $overwrite";
 

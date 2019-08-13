@@ -41,9 +41,9 @@ my $outfolder  = '';
 my $out_genome = '';
 
 
-my ($help,$sp,$show_supported);
+my ($help,$sp,$show_supported,$request,$response);
 my ($GOC,$WGA,$one2many,$LOWCONF) = (0,0,0,0);
-my ($request,$response,$request_time,$last_request_time);
+my ($request_time,$last_request_time) = (0,0);
 my (@multi_species, @ignore_species, %ignore, %polyploid, %division_supported);
 
 GetOptions(	
@@ -96,6 +96,11 @@ sub help_message {
 }
 
 if($help){ help_message() }
+
+if($taxonid eq ''){
+	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n";
+	exit;
+}
 
 if($division){
 	if(!grep(/$division/,@divisions)){

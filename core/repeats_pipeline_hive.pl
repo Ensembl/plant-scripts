@@ -77,7 +77,7 @@ if($rerun && $overwrite){
 }
 
 chomp( $hive_args = `$hive_db_cmd details script` );
-$hive_db = $ENV{'USER'}."_dna_features_$ensembl_version";
+$hive_db = $ENV{'USER'}."_dna_features_$ensembl_version"; 
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 
@@ -85,12 +85,12 @@ $hive_url .= $hive_db;
 #########################################################################
 
 my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::DNAFeatures_conf ".
-    	"$hive_args ".
-    	"--registry $reg_file ".
-        "--pipeline_dir $pipeline_dir ".
+	"$hive_args ".
+	"--registry $reg_file ".
+	"--pipeline_dir $pipeline_dir ".
 	"--redatrepeatmasker 1 ".
-        "--production_db $prodbname ".
-    	"$species_cmd ".
+	"--production_db $prodbname ".
+	"$species_cmd ".
 	"--hive_force_init $overwrite";
 
 if($rerun == 0){

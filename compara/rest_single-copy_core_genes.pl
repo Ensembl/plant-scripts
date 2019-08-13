@@ -18,8 +18,6 @@ use HTTP::Tiny;
 # https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/
 # https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
 #
-# TODO: minimize multiple alignments 
-#
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes 
@@ -98,7 +96,8 @@ sub help_message {
 if($help){ help_message() }
 
 if($taxonid eq ''){
-	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n";
+	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
+	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
 	exit;
 }
 
@@ -128,9 +127,7 @@ if(@multi_species){
 			%polyploid = ();
 			$polyploid{ $sp } = 1;
 			last;
-		} else{ 
-			$polyploid{ $sp } = 1;
-		}
+		} else{ $polyploid{ $sp } = 1 }
 	}
 
 	if($one2many){ print "\n# multi-copy species : all\n\n" }

@@ -33,7 +33,7 @@ my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
 my $verbose    = 0;
 my $division   = 'Plants';
-my $taxonid    = 3700; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
+my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
 my $comparadir = '';
@@ -51,7 +51,7 @@ GetOptions(
 	"verbose|v"    => \$verbose,
 	"supported|l"  => \$show_supported,
 	"division|d=s" => \$division, 
-	"clade|c=i"    => \$taxonid,
+	"clade|c=s"    => \$taxonid,
 	"reference|r=s"=> \$ref_genome,
 	"outgroup|o=s" => \$out_genome,
 	"multicopy|m=s"=> \@multi_species,
@@ -65,9 +65,9 @@ GetOptions(
 
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
+      "-c NCBI Taxonomy clade of interest      (required, example: -c Brassicaceae or -c 3700)\n".
 		"-l list supported species_names         (optional, example: -l)\n".
 		"-d Ensembl division                     (optional, default: -d $division)\n".
-		"-c NCBI Taxonomy clade of interest      (optional, default: -c $taxonid)\n".
 		"-r reference species_name               (optional, default: -r $ref_genome)\n".
 		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
 		"-m multi-copy species_name(s)           (optional, example: -m brassica_napus -m ... -m all)\n".
@@ -88,10 +88,10 @@ sub help_message {
 		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
 
 	print "Example calls:\n\n".
-		" ./get_single-copy_core_genes.pl -f Brassicaceae\n".
-		" perl get_single-copy_core_genes.pl -f Brassicaceae -t cdna -o theobroma_cacao\n".
-		" perl get_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75\n".
-		" perl get_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens\n";
+		" perl $0 -c Brassicaceae -f Brassicaceae\n".
+		" perl $0 -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao\n".
+		" perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75\n".
+		" perl $0 -f all -c 33090 -m all -r physcomitrella_patens\n";
 		exit(0);
 }
 
@@ -206,7 +206,7 @@ foreach $sp (@{ $infodump }) {
    }
 }
 
-printf("# supported species in NCBI taxon %d : %d\n\n", $taxonid, scalar(@supported_species));
+printf("# supported species in NCBI taxon %s : %d\n\n", $taxonid, scalar(@supported_species));
 
 # check reference genome is supported and is not polyploid
 if(!grep(/$ref_genome/,@supported_species)){

@@ -1,6 +1,6 @@
 # plant_tools
 
-These are a scripts and protocols used during the release cycle of Ensembl Plants.
+These are scripts and protocols used during the release cycle of Ensembl Plants.
 
 This is the usual order in which they are run:
 

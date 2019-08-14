@@ -10,8 +10,8 @@ use Benchmark;
 use Time::HiRes;
 use HTTP::Tiny;
 
-# Retrieves high-confidence single-copy orthologous genes/proteins shared by (plant) species in clade 
-# by querying pre-computed data from Ensembl Genomes Compara with a reference genome.
+# Retrieves single-copy orthologous genes/proteins shared by (plant) species in clade 
+# by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
 # Based on scripts at

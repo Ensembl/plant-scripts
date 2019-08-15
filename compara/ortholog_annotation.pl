@@ -13,7 +13,7 @@ use HTTP::Tiny;
 # Ensembl Genomes 
 my $RESTURL    = 'http://rest.ensembl.org';
 my $HOMOLPOINT = $RESTURL.'/homology/id/';
-my $XREFPOINT  = $RESTURL.'/xrefs/name/';
+my $XREFPOINT  = $RESTURL.'/xrefs/';
 
 my ($help,$xref,$orth,$orth_id,$orth_sp,$request,$response,$dump);
 my ($id,$nondirect,$request_time,$last_request_time) = ('',0,0,0);
@@ -60,17 +60,30 @@ foreach $orth (@orths) {
 	$orth_id = $orth->{'target'}->{'id'};
 	
 	# check annotations of this ortholog
-	$request = $XREFPOINT."$orth_sp/$orth_id?";
+	$request = $XREFPOINT."id/$orth_id?";
 	$response = perform_rest_action( $request, $global_headers );
 	my $xref_dump = decode_json($response);
 	
 	foreach $xref (@{ $xref_dump }) {
 
-		next if(!$xref->{'description'} || 
-			($nondirect == 0 && $xref->{'info_type'} ne "DIRECT") ||
-			$annot{$orth_sp}{$orth_id} );
+		next if($nondirect == 0 && $xref->{'info_type'} ne "DIRECT");
 
-		$annot{$orth_sp}{$orth_id} = $xref->{'description'};
+		# pick reactome annotations only once
+		if($xref->{'dbname'} eq "Plant_Reactome_Pathway" && 
+				$xref->{'primary_id'} =~ m/R-\w+-(\d+)/){
+			$orth_sp = $xref->{'dbname'};
+			$orth_id = $1; 
+		} elsif($xref->{'dbname'} eq "Plant_Reactome_Reaction"){
+			next;
+		}
+
+
+		if($xref->{'description'} && $xref->{'description'} ne '~'){
+			$annot{$orth_sp}{$orth_id}{$xref->{'description'}}++;
+		}
+		elsif($xref->{'display_id'} && $xref->{'display_id'} ne $orth_id){
+         $annot{$orth_sp}{$orth_id}{$xref->{'display_id'}}++;
+      }
 	}
 }
 
@@ -80,7 +93,9 @@ if(scalar(keys(%annot)) == 0){
 else{
 	foreach $orth_sp (keys(%annot)){
 		foreach $orth_id (keys(%{ $annot{$orth_sp} })){
-			printf("%s\t%s\t%s\t%s\n",$id,$orth_sp,$orth_id,$annot{$orth_sp}{$orth_id});
+			foreach $xref (keys(%{ $annot{$orth_sp}{$orth_id} })){
+				printf("%s\t%s\t%s\t%s\n",$id,$orth_sp,$orth_id,$xref);
+			}
 		}
 	}
 }

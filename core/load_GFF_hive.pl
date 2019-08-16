@@ -278,7 +278,7 @@ if($synonym_file ne '' && -s $synonym_file){
 	print "# adding synonyms from $synonym_file\n";
 
 	# connect to production db
-	my ($orig_gff,$synonym,$contig_slice,$regtype);
+	my ($orig_gff,$syn,$contig_slice,$regtype);
 	my $registry = 'Bio::EnsEMBL::Registry';
 	$registry->load_all($reg_file); 
 	my $slice_adaptor = $registry->get_adaptor($species, "core", "slice");
@@ -289,19 +289,19 @@ if($synonym_file ne '' && -s $synonym_file){
 		die "# ERROR: cannot read $synonym_file\n";
 	while(<TSV>){
 		chomp;
-		($orig_gff,$synonym) = split(/\s+/,$_); 
+		($orig_gff,$syn) = split(/\s+/,$_); 
 		foreach $regtype (@seqregion_types){
-			$contig_slice = $slice_adaptor->fetch_by_region( $regtype, $synonym );
+			$contig_slice = $slice_adaptor->fetch_by_region( $regtype, $syn );
 			last if(defined($contig_slice));
 		}
 
 		if(defined($contig_slice)){
-	                #print "# adding synonym $orig_gff ($synonym)\n";
-			$synonym{$orig_gff} = $synonym;
-                	$contig_slice->add_synonym( $orig_gff );
+	      #print "# adding synonym $orig_gff ($synonym)\n";
+			$synonym{$orig_gff} = $syn;
+        	$contig_slice->add_synonym( $orig_gff );
 			$n_of_synonyms++;
 		} else {
-			print "# cannot add unmatched synonym $orig_gff ($synonym)\n";
+			print "# cannot add unmatched synonym $orig_gff ($syn)\n";
 		}
 	}
 	close(TSV);	
@@ -319,10 +319,10 @@ if($synonym_file ne '' && -s $synonym_file){
 	open(FILTERGFF,">",$filter_gff3file) || die "# ERROR: cannot create $filter_gff3file\n";
 
 	open(GFF,'<',$new_gff3file) || die "# ERROR: cannot read $new_gff3file\n";
-        while(<GFF>){
+   while(<GFF>){
 		if(/^#/){ print FILTERGFF $_ }
-                else{
-                        my @gffdata = split(/\t/,$_);
+      else{
+			my @gffdata = split(/\t/,$_);
 
 			if(!defined($synonym{$gffdata[0]})){
 
@@ -334,10 +334,15 @@ if($synonym_file ne '' && -s $synonym_file){
 						$filter_scaffolds{$gffdata[0]} = 1;
 					}	
 				}
+
 				next;
+
+			} else {
+				$syn = $synonym{$gffdata[0]};
+				shift(@gffdata);
+
+				print FILTERGFF "$syn\t".join("\t",@gffdata)."\n";
 			}
-			
-			print FILTERGFF;
 		}
 	}
 	close(GFF);
@@ -374,7 +379,7 @@ if($max_feats > 0){
 		if(/^#/){ print SHORTGFF $_ }
 		else{
 			my @gffdata = split(/\t/,$_);
-                        if($gffdata[2] eq 'gene'){ $num_of_features++ }
+         if($gffdata[2] eq 'gene'){ $num_of_features++ }
 			elsif($check_gff_CDS && $gffdata[2] =~ m/mRNA/i){ 
 				if(defined($CDS_seq) && $CDS_seq ne ''){ # print previous CDS
 					print ">$CDS_strand|$CDS_name";

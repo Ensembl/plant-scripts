@@ -303,7 +303,6 @@ if($synonym_file ne '' && -s $synonym_file){
 		} else {
 			print "# cannot add unmatched synonym $orig_gff ($synonym)\n";
 		}
-		exit;
 	}
 	close(TSV);	
 

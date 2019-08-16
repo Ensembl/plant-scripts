@@ -1,13 +1,14 @@
 
 # Compara
 
-These are scripts that interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org).
+These scripts interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org) and 
+the FTP site.
 
 The scripts in folder API/ use directly the [Perl API](https://www.ensembl.org/info/docs/api/index.html).
 
 ## Documentation and examples
 
-Please run any of these scripts with argument -h to get instructions and examples.
+Run any of the scripts with argument -h to get instructions and examples.
 
 For example, single-copy_core_genes.pl can be used to obtain single-copy core genes present within a clade. 
 If you run ./single-copy_core_genes.pl you'll get:

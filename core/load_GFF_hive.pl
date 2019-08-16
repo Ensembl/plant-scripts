@@ -148,10 +148,10 @@ if($opts{'n'}){
 }
 elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
-if($opts{'O'}){ $other_params = $opts{'0'} }
+if($opts{'O'}){ $other_params = $opts{'O'} }
 
 $argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -D %s -H %s -P %s -G %s -m %d ".
-		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -a %d -O %s -w %d -r %d",
+		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -O '%s' -a %d -w %d -r %d",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, $logicname, $otherfeats,
   $ensembl_version, $reg_file, $prodbname, $hive_db_cmd, $pipeline_dir, $gbkfile, $max_feats,
   $synonym_file, $sub_chr_names, $nonzero, $synonyms, 

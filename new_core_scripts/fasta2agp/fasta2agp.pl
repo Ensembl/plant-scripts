@@ -1,10 +1,10 @@
-##Gets as input a fasta file and parses it into an AGPa file
-##The fasta file is expected to have headers in this format: <chrom_num>_<chunk_num>
+#!/usr/bin/env perl
+## Gets as input a fasta file with chunks and parses it into a virtual AGP file
+## The fasta file is expected to have headers in this format: <chrom_num>_<chunk_num>
+
 use 5.14.0;
+use strict;
 use warnings;
-use Data::Dumper;
-use lib '/nfs/production/panda/ensemblgenomes/development/gnaamati/lib';
-use FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
 
 {
     my ($file) = @ARGV;

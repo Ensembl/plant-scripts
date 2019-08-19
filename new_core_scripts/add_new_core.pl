@@ -27,12 +27,12 @@ my $param_file;
         usage();
     }
 
+    ## read param file
     my $h   = file2hash_tab($param_file);
-    my $dbh = get_dbh($h);
 
+    ## check db server connection details
     if($h->{'host'}){
-
-    	if(!$h->{'user'}){ # try to guess server connection details
+    	if(!$h->{'user'}){ 
     		my $server_args;
     		chomp( $server_args = `$h->{'host'} details` );
     		if($server_args =~ m/--host=\S+ --port=(\S+) --user=(\S+) --pass=(\S+)/){
@@ -47,28 +47,34 @@ my $param_file;
     	die "# ERROR: please set host=... in param_file\n";
 	 }
 
-    ##creating db and adding tables
-    create_db($h);
+	foreach my $par (keys(%$h)){
+		print "$par $h->{$par}\n";
+	}
 
-    ##Adding controlled vocab
-    add_cv($h);
+   ##connect to db server 
+   my $dbh = get_dbh($h);
 
-    ##Loading Fasta data
-    load_fasta($h);
+   ##creating db and adding tables
+   #create_db($h);
 
-    ##Loading AGP data
-    load_agp($h);
+   ##Adding controlled vocab
+   #add_cv($h);
 
-    ##updating meta table
-	 if($h->{'meta_source'}){
-    	copy_meta($h, $dbh); # might need manual tweaking
-    } else {
-    	workout_meta($h, $dbh);	
-	 }
+   ##Loading Fasta data
+   #load_fasta($h);
 
+   ##Loading AGP data
+   #load_agp($h);
 
-    ##Add seq region attribs
-    add_seq_region_attribs($h, $dbh);
+   ##updating meta table
+   if($h->{'meta_source'}){
+   	#copy_meta($h, $dbh); # might need manual tweaking
+   } else {
+   	workout_meta($h, $dbh);	
+   }
+
+   ##Add seq region attribs
+   #add_seq_region_attribs($h, $dbh);
 }
 
 #======================================== 
@@ -192,17 +198,22 @@ sub copy_meta {
 
 #========================================
 sub workout_meta {
+
+# Work out the key meta data for this core db.
+# Requires three params: production_name, display_name, taxonomy_id 
+# Others are optional, such as biomart_dataset, strain, etc
+
 #======================================== 
 
 	my ($h, $dbh) = @_;
 	my ($sql, $sth);
 
-	$sql = qq{
-	insert into $h->{'core'}.meta
-	(select * from $h->{'meta_source'}.meta)
-	};
-	$sth = $dbh->prepare($sql);
-	$sth->execute();
+	#$sql = qq{
+	#insert into $h->{'core'}.meta
+	#(select * from $h->{'meta_source'}.meta)
+	#};
+	#$sth = $dbh->prepare($sql);
+	#$sth->execute();
 
 #production_name	saccharum_spontaneum
 #display_name	Saccharum spontaneum

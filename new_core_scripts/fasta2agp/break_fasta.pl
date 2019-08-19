@@ -1,9 +1,9 @@
+#!/user/bin/env perl
 ##Breaks a chrom only fasta file into smaller chunks
 ##Parsing is dependant on the fasta headers and chunk size
 use 5.14.0;
 use warnings;
 use Data::Dumper;
-use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
 
 {
     my ($file) = @ARGV;
@@ -13,6 +13,7 @@ use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab
     my $header;
     my $header_count;
     my $count;
+
     open IN, "<", $file or die "can't open $file\n";
     while (my $line = <IN>){
         chomp($line);

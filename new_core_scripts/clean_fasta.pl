@@ -1,16 +1,10 @@
-##Parses a fasta file for various purposes
+#!/usr/bin/env perl
+## Cleans headers in fasta file leaving only chr number or name
+## NOTE: edit the regex below if needed
+
 use strict;
 use warnings;
 use feature qw/say/;
-use Data::Dumper;
-use lib '/nfs/production/panda/ensemblgenomes/development/gnaamati/lib';
-use FileReader qw(slurp read_file file2hash file2hash_tab);
-use constant {
-    TRUE  => 1,
-    FALSE => 2,
-};
-
-#my $fasta_dir = '/nfs/nobackup/ensemblgenomes/grabmuel/ensgen-sequences/ftp';
 
 {
     my ($fasta_file) = @ARGV;
@@ -20,7 +14,9 @@ use constant {
     open IN, "<", $fasta_file or die "can't open $fasta_file\n";
     while (my $line = <IN>){
         chomp($line);
-        if ($line =~ /^>chr(.*?)__/){
+        if ($line =~ /^>chr(.*?)__/ || # wheat
+			  $line =~ /^>Chr(\S+)/ || $line =~ /^>chromosome\s*(\S+)/ #generic
+			  ){
             $line = ">$1";
         }
         say $line;

@@ -18,9 +18,10 @@ my $file2;
 my $param_file;
 
 {
-    GetOptions ("param_file=s" => \$param_file,
-                "file2=s" => \$file2) 
-    or die("Incorrect Usage");
+    GetOptions (
+	 	"param_file=s" => \$param_file,
+
+      ) or die("Incorrect Usage");
 
     if (!$param_file){
         usage();
@@ -28,6 +29,23 @@ my $param_file;
 
     my $h   = file2hash_tab($param_file);
     my $dbh = get_dbh($h);
+
+    if($h->{'host'}){
+
+    	if(!$h->{'user'}){ # try to guess server connection details
+    		my $server_args;
+    		chomp( $server_args = `$h->{'host'} details` );
+    		if($server_args =~ m/--host=\S+ --port=(\S+) --user=(\S+) --pass=(\S+)/){
+    			$h->{'port'} = $1;
+				$h->{'user'} = $2;
+				$h->{'pass'} = $3;
+      	} else {
+    			die "# ERROR: please set port, user & password in param_file\n";
+    		}
+    	}
+    } else {
+    	die "# ERROR: please set host=... in param_file\n";
+	 }
 
     ##creating db and adding tables
     create_db($h);
@@ -41,15 +59,16 @@ my $param_file;
     ##Loading AGP data
     load_agp($h);
 
-    ##updating meta table (will also needs manual tweaking)
-    copy_meta($h, $dbh);
-    
+    ##updating meta table
+	 if($h->{'meta_source'}){
+    	copy_meta($h, $dbh); # might need manual tweaking
+    } else {
+    	workout_meta($h, $dbh);	
+	 }
+
+
     ##Add seq region attribs
     add_seq_region_attribs($h, $dbh);
-
-
-
-    
 }
 
 #======================================== 
@@ -168,6 +187,28 @@ sub copy_meta {
         $sth = $dbh->prepare($sql_to_run);
         $sth->execute();
     }
+
+}
+
+#========================================
+sub workout_meta {
+#======================================== 
+
+	my ($h, $dbh) = @_;
+	my ($sql, $sth);
+
+	$sql = qq{
+	insert into $h->{'core'}.meta
+	(select * from $h->{'meta_source'}.meta)
+	};
+	$sth = $dbh->prepare($sql);
+	$sth->execute();
+
+#production_name	saccharum_spontaneum
+#display_name	Saccharum spontaneum
+#biomart_dataset	sspontaneum_eg
+#taxonomy_id	62335
+#strain	AP85-441
 
 }
 

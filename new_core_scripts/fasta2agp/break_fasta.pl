@@ -5,6 +5,8 @@ use 5.14.0;
 use warnings;
 use Data::Dumper;
 
+my $CHUNKSIZE = 10_000; # actually #lines of FASTA sequence
+
 {
     my ($file) = @ARGV;
     if (@ARGV < 1){
@@ -20,7 +22,7 @@ use Data::Dumper;
         
         ##Create a new chunk each time there is a header
         ##This needs to be changed according to the header
-        if ($line =~ />(\d\w)/ or $line =~ />(Un)/){
+        if ($line =~ /^>(\d+\w*)/ || $line =~ /^>(Un)/){
             
             ##Header is <chrom number>_<chunk count>
             $header = ">$1";
@@ -32,8 +34,8 @@ use Data::Dumper;
         say $line;
         $count++;
 
-        ##Make each chunk 600,000 bases long
-        if ($count % 10_000 == 0){
+        ##Make chunk
+        if ($count % $CHUNKSIZE == 0){
             $header_count++;
             say $header."_$header_count";
         }

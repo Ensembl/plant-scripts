@@ -5,7 +5,7 @@ use 5.14.0;
 use warnings;
 use Data::Dumper;
 
-my $CHUNKSIZE = 10_000; # actually #lines of FASTA sequence
+my $CHUNKSIZE = 10_000; # actually #lines of FASTA sequence; if lines are 60-wide, then chunks are of 600_000 bp
 
 {
     my ($file) = @ARGV;

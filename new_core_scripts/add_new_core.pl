@@ -1,7 +1,13 @@
 #!/usr/bin/env perl
 
 ## To run: perl add_new_core --param_file=[PARAM_FILE]
-## you can find param files in param_file_examples dir
+## You can find param files in param_file_examples dir
+#
+## NOTE: this scripts uses $ENV{ENSEMBL_ROOT_DIR} to find ensembl-pipeline
+#
+# TODO : also EG API
+#
+## Guy Gnaamati, Bruno Contreras Moreira 2019
 
 use 5.14.0;
 use warnings;
@@ -12,6 +18,11 @@ use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 use DBI;
+use JSON qw(decode_json);
+use HTTP::Tiny;
+
+my $RESTURL    = 'http://rest.ensembl.org';
+my $TAXOPOINT  = $RESTURL.'/taxonomy/classification/';
 
 my $core;
 my $file2;
@@ -35,10 +46,11 @@ my $param_file;
     	if(!$h->{'user'}){ 
     		my $server_args;
     		chomp( $server_args = `$h->{'host'} details` );
-    		if($server_args =~ m/--host=\S+ --port=(\S+) --user=(\S+) --pass=(\S+)/){
-    			$h->{'port'} = $1;
-				$h->{'user'} = $2;
-				$h->{'pass'} = $3;
+    		if($server_args =~ m/--host=(\S+) --port=(\S+) --user=(\S+) --pass=(\S+)/){
+				$h->{'host'} = $1;
+    			$h->{'port'} = $2;
+				$h->{'user'} = $3;
+				$h->{'pass'} = $4;
       	} else {
     			die "# ERROR: please set port, user & password in param_file\n";
     		}
@@ -47,18 +59,14 @@ my $param_file;
     	die "# ERROR: please set host=... in param_file\n";
 	 }
 
-	foreach my $par (keys(%$h)){
-		print "$par $h->{$par}\n";
-	}
-
    ##connect to db server 
    my $dbh = get_dbh($h);
 
    ##creating db and adding tables
-   #create_db($h);
+   create_db($h);
 
    ##Adding controlled vocab
-   #add_cv($h);
+   add_cv($h);
 
    ##Loading Fasta data
    #load_fasta($h);
@@ -70,7 +78,7 @@ my $param_file;
    if($h->{'meta_source'}){
    	#copy_meta($h, $dbh); # might need manual tweaking
    } else {
-   	workout_meta($h, $dbh);	
+   	workout_meta($h, $dbh, $TAXOPOINT);	
    }
 
    ##Add seq region attribs
@@ -97,7 +105,7 @@ sub create_db {
 sub add_cv {
 #======================================== 
     my ($h) = @_;
-    warn "Adding controlled vocabulary for $core\n";
+    warn "Adding controlled vocabulary for $h->{'core'}\n";
     
     my $path = '/nfs/panda/ensemblgenomes/apis/ensembl/master/ensembl-production/scripts/production_database';    
     system("mkdir /tmp/prod_db_tables");
@@ -205,15 +213,31 @@ sub workout_meta {
 
 #======================================== 
 
-	my ($h, $dbh) = @_;
+	my ($h, $dbh, $rest_entry_point) = @_;
 	my ($sql, $sth);
 
-	#$sql = qq{
-	#insert into $h->{'core'}.meta
-	#(select * from $h->{'meta_source'}.meta)
-	#};
-	#$sth = $dbh->prepare($sql);
-	#$sth->execute();
+	# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
+	if($h->{'taxonomy_id'}){
+		my $http = HTTP::Tiny->new();
+		my $request = $rest_entry_point.$h->{'taxonomy_id'};
+		my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});
+		if($response->{success} && $response->{content}){
+
+			my $taxondump = decode_json($response->{content});
+			foreach my $taxon (@{ $taxondump }) {
+				if($taxon->{'name'}){ 
+					$sql = qq{ 
+						INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', $taxon->{'name'});
+					};
+					$sth->execute();
+				}
+			}	
+		} else {
+			die "# ERROR (workout_meta) : $request request failed, try again\n";
+		}
+	} else {
+		die "# ERROR (workout_meta) : please set param 'taxonomy_id'\n";
+	}
 
 #production_name	saccharum_spontaneum
 #display_name	Saccharum spontaneum

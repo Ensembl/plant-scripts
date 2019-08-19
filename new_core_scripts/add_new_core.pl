@@ -1,12 +1,18 @@
-##To run: perl add_new_core --param_file=[PARAM_FILE]
-##you can find param files in param_file_examples dir
+#!/usr/bin/env perl
+
+## To run: perl add_new_core --param_file=[PARAM_FILE]
+## you can find param files in param_file_examples dir
+
 use 5.14.0;
 use warnings;
+use FindBin '$Bin';
+use lib "$Bin/..";
+use Tools::FileReader qw( file2hash_tab );
 use Data::Dumper;
-use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
 use Getopt::Long;
 use Pod::Usage;
 use DBI;
+
 my $core;
 my $file2;
 my $param_file;

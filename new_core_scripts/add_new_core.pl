@@ -173,7 +173,9 @@ sub set_top_level {
 }
 
 #======================================== 
-sub load_fasta {	
+sub load_fasta {
+
+# loads chunks as virtual scaffolds	
 #======================================== 
     my ($h) = @_;
     my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";

@@ -21,6 +21,9 @@ use HTTP::Tiny;
 # should contain ensembl, ensembl-production, ensembl-pipelines
 my $ENSEMBLPATH = $ENV{ENSEMBL_ROOT_DIR}; 
 
+# alias for pan production db server
+my $PANPRODSERVER = 'mysql-eg-pan-prod-ensrw';
+
 # REST configuration, used to get taxonomy
 my $RESTURL     = 'http://rest.ensembl.org';
 my $TAXOPOINT   = $RESTURL.'/taxonomy/classification/';
@@ -95,7 +98,12 @@ sub create_db {
     ##Creating the DB and adding tables
     warn "# create_db: creating and populating new core for $h->{core}\n";
     my $cmd = "mysqladmin -h $h->{host} -P $h->{port} -u$h->{user} -p$h->{pass} CREATE $h->{core}";
-    system($cmd);
+    open(SQL,"$cmd 2>&1 |") || die "# ERROR(create_db): cannot run $cmd\n";
+    while(<SQL>){
+    	if(/mysqladmin: CREATE DATABASE failed/){
+    		die "# ERROR(create_db): $h->{core} already exists, remove it and re-run\n";
+    	}
+    }
     
     ##Adding tables
     $cmd = "mysql -h$h->{host} -P$h->{port} -u$h->{user} -p$h->{pass} $h->{core} < $ENSEMBLPATH/ensembl/sql/table.sql";
@@ -113,10 +121,12 @@ sub add_cv {
 	 my $tmpdir = tempdir( CLEANUP => 1 );
     my $cmd = "perl $path/populate_production_db_tables.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
-              '$(mysql-pan-prod-ensrw details prefix_m) '.
+              "\$($PANPRODSERVER details prefix_m) ".
               "--database $h->{core} ".
               "--dumppath $tmpdir --dropbaks";
     system($cmd);
+
+	 warn "# add_cv: done\n\n";
 }
 
 #======================================== 

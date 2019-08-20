@@ -223,7 +223,7 @@ sub workout_meta {
 
 # Work out the key meta data for this core db.
 # Mandatory params: accession, version, production_name, display_name, taxonomy_id 
-# Others are optional, such as biomart_dataset, strain, etc
+# Optional params: biomart_dataset, species.strain
 
 #======================================== 
 
@@ -231,32 +231,57 @@ sub workout_meta {
 	my ($sql, $sth);
 
 	if($h->{'accession'}){
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
-		            $sth = $dbh->prepare($sql);
-						            $sth->execute();
-
+		warn "# workout_meta: assembly.accession, $h->{'accession'}\n" if($VERBOSE);
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'assembly.accession', '$h->{'accession'}');};
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
 	} else {
 		die "# ERROR (workout_meta) : please set param 'accession'\n";
 	}
 
-
-   assembly.default', 'PhalliiHAL_v2.1'
-	'assembly.accession', 'GCA_003061485.1'
-	'assembly.name', 'PhalliiHAL_v2.1'
-
+	if($h->{'version'}){
+		warn "# workout_meta: assembly.name, $h->{'version'}\n" if($VERBOSE);
+      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'assembly.name', '$h->{'version'}');};
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+		warn "# workout_meta: assembly.default, $h->{'version'}\n" if($VERBOSE);
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'assembly.default', '$h->{'version'}');};
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+	} else {
+		die "# ERROR (workout_meta) : please set param 'version'\n";
+	}
 
 	if($h->{'production_name'}){
+		warn "# workout_meta: species.production_name, $h->{'production_name'}\n" if($VERBOSE);
+      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.production_name', '$h->{'production_name'}');};
+      $sth = $dbh->prepare($sql);
+	   $sth->execute();
 
+		
+	} else {
+		die "# ERROR (workout_meta) : please set param 'production_name''\n";
 	}
 
 	if($h->{'display_name'}){
 
 	}
 
+#'species.production_name', 'panicum_hallii_hal2'
+#'species.url', 'Panicum_hallii_hal2'
+#'species.scientific_name', 'Panicum hallii var. hallii str. HAL2'
+#'species.display_name', 'Panicum hallii HAL2'
+#'species.db_name', 'panicum_hallii_hal2'
+#'species.species_name', 'Panicum hallii'
+#'species.wikipedia_url', 'http://en.wikipedia.org/wiki/Panicum_hallii'
+#'species.wikipedia_name', 'Panicum hallii'
+
 	if($h->{'taxonomy_id'}){
 
 		# set taxonomy ids
-		
+		#'species.taxonomy_id', '1504633'
+		#'species.species_taxonomy_id', '206008'
+		#
 
 		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
 		my $http = HTTP::Tiny->new();
@@ -266,7 +291,7 @@ sub workout_meta {
 			my $taxondump = decode_json($response->{content});
 			foreach my $taxon (@{ $taxondump }) {
 				next if(!$taxon->{'name'});
-				warn "# workout_meta: species.classification, $taxon->{'name'}\n";
+				warn "# workout_meta: species.classification, $taxon->{'name'}\n" if($VERBOSE);
 				$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
 				$sth = $dbh->prepare($sql);
 				$sth->execute();

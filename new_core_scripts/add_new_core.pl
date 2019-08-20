@@ -100,10 +100,10 @@ my $param_file;
    add_cv($h);
 
    ##Loading Fasta data
-   #load_fasta($h);
+   load_fasta($h);
 
    ##Loading AGP data
-   #load_agp($h);
+   load_agp($h);
 
    ##updating meta table
    if($h->{'meta_source'}){
@@ -113,7 +113,7 @@ my $param_file;
    }
 
    ##Add seq region attribs
-   #add_seq_region_attribs($h, $dbh);
+   add_seq_region_attribs($h, $dbh);
 }
 
 #======================================== 
@@ -284,7 +284,7 @@ sub workout_meta {
 		}	
 	
 		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
-		if($metakey eq 'taxonomy_id'){
+		if($metakey eq 'species.taxonomy_id'){
 			my $http = HTTP::Tiny->new();
 			my $request = $rest_entry_point.$h->{$metakey};
 			my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});

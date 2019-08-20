@@ -222,13 +222,31 @@ sub copy_meta {
 sub workout_meta {
 
 # Work out the key meta data for this core db.
-# Mandatory params: accession, version, production_name, display_name, taxonomy_id, division, provider_name, provider_url 
-# Optional params: strain
+# Mandatory params: accession, version, production_name, display_name, taxonomy_id, division, provider_name
+# Optional params: strain, provider_url
 
 #======================================== 
 
 	my ($h, $dbh, $rest_entry_point) = @_;
 	my ($sql, $sth);
+
+	if($h->{'division'}){
+	   warn "# workout_meta: species.division, $h->{'division'}\n" if($VERBOSE);
+	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.division', '$h->{'division'}');};
+	   $sth = $dbh->prepare($sql);
+	   $sth->execute();
+	} else {
+		die "# ERROR (workout_meta) : please set param 'division'\n";
+	}
+
+	if($h->{'provider_name'}){
+	   warn "# workout_meta: species.division, $h->{'division'}\n" if($VERBOSE);
+	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.division', '$h->{'division'}');};
+	   $sth = $dbh->prepare($sql);
+	   $sth->execute();
+	} else {
+		die "# ERROR (workout_meta) : please set param 'division'\n";
+	}
 
 	if($h->{'accession'}){
 		warn "# workout_meta: assembly.accession, $h->{'accession'}\n" if($VERBOSE);

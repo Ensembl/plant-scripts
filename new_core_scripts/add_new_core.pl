@@ -30,6 +30,24 @@ my $TAXOPOINT   = $RESTURL.'/taxonomy/classification/';
 
 my $VERBOSE = 1;
 
+# only required if meta table is to be created from scratch, not copied over
+my @REQUIRED_METAKEYS = qw( 
+    provider.name
+    assembly.accession assembly.name 
+    species.production_name species.display_name species.taxonomy_id species.division
+);
+
+my %DERIVED_METAKEYS = (
+	'assembly.name' => ['assembly.default'],
+	'species.production_name' => ['species.db_name'],
+	'species.display_name' => ['species.scientific_name','species.species_name','species.wikipedia_name','species.url','species.wikipedia_url'],
+	'species.taxonomy_id' => ['species.species_taxonomy_id']
+);
+
+my @OPTIONAL_METAKEYS = qw( species.strain provider.url );
+
+############################################################################
+
 my $core;
 my $file2;
 my $param_file;
@@ -144,14 +162,14 @@ sub set_top_level {
 }
 
 #======================================== 
-sub load_fasta {
+sub load_fasta {	
 #======================================== 
     my ($h) = @_;
     my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";
     my $cmd = "perl $path/load_seq_region.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ".
-              "--coord_system_name scaffold --coord_system_version $h->{version} ".
+              "--coord_system_name scaffold --coord_system_version $h->{'assembly.name'} ".
               "--rank 2 -default_version -sequence_level ".
               "--fasta_file $h->{fasta_file}";
     say $cmd,"\n";
@@ -168,7 +186,7 @@ sub load_agp {
     my $cmd = "perl $path/load_seq_region.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ".
-              "--coord_system_name chromosome --coord_system_version $h->{version} ".
+              "--coord_system_name chromosome --coord_system_version $h->{'assembly.name'} ".
               "--rank 1 --default_version ".
               "-agp_file $h->{agp_file}";
     say $cmd,"\n";
@@ -178,7 +196,7 @@ sub load_agp {
     $cmd = "perl $path/load_agp.pl ".
             "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
             "--dbname $h->{core} ".
-            "--assembled_name chromosome -assembled_version $h->{version} ".
+            "--assembled_name chromosome -assembled_version $h->{'assembly.name'} ".
             "--component_name scaffold ".
             "-agp_file $h->{agp_file}";
     say $cmd,"\n";
@@ -240,12 +258,12 @@ sub workout_meta {
 	}
 
 	if($h->{'provider_name'}){
-	   warn "# workout_meta: species.division, $h->{'division'}\n" if($VERBOSE);
+	   warn "# workout_meta: species.division, $h->{'provider_name'}\n" if($VERBOSE);
 	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.division', '$h->{'division'}');};
 	   $sth = $dbh->prepare($sql);
 	   $sth->execute();
 	} else {
-		die "# ERROR (workout_meta) : please set param 'division'\n";
+		die "# ERROR (workout_meta) : please set param 'provider_name'\n";
 	}
 
 	if($h->{'accession'}){

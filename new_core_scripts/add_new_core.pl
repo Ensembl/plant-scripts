@@ -100,6 +100,10 @@ my $param_file;
    add_cv($h);
 
    ##Loading Fasta data
+	# will issue harmless warnings:
+	# -------------------- WARNING ----------------------
+	# MSG: Name 2C_43 does not look like a valid accession - are you sure this is what you want?
+	# FILE: ensembl-pipeline/scripts/load_seq_region.pl LINE: 258
    load_fasta($h);
 
    ##Loading AGP data

@@ -21,12 +21,14 @@ use HTTP::Tiny;
 # should contain ensembl, ensembl-production, ensembl-pipelines
 my $ENSEMBLPATH = $ENV{ENSEMBL_ROOT_DIR}; 
 
-# alias for pan production db server
+# alias for pan production db server with rw permissions
 my $PANPRODSERVER = 'mysql-eg-pan-prod-ensrw';
 
 # REST configuration, used to get taxonomy
 my $RESTURL     = 'http://rest.ensembl.org';
 my $TAXOPOINT   = $RESTURL.'/taxonomy/classification/';
+
+my $VERBOSE = 1;
 
 my $core;
 my $file2;
@@ -101,7 +103,7 @@ sub create_db {
     open(SQL,"$cmd 2>&1 |") || die "# ERROR(create_db): cannot run $cmd\n";
     while(<SQL>){
     	if(/mysqladmin: CREATE DATABASE failed/){
-    		die "# ERROR(create_db): $h->{core} already exists, remove it and re-run\n";
+    		die "# ERROR (create_db): $h->{core} already exists, remove it and re-run\n";
     	}
     }
     
@@ -220,7 +222,7 @@ sub copy_meta {
 sub workout_meta {
 
 # Work out the key meta data for this core db.
-# Requires three params: production_name, display_name, taxonomy_id 
+# Mandatory params: accession, version, production_name, display_name, taxonomy_id 
 # Others are optional, such as biomart_dataset, strain, etc
 
 #======================================== 
@@ -228,22 +230,50 @@ sub workout_meta {
 	my ($h, $dbh, $rest_entry_point) = @_;
 	my ($sql, $sth);
 
-	# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
+	if($h->{'accession'}){
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
+		            $sth = $dbh->prepare($sql);
+						            $sth->execute();
+
+	} else {
+		die "# ERROR (workout_meta) : please set param 'accession'\n";
+	}
+
+
+   assembly.default', 'PhalliiHAL_v2.1'
+	'assembly.accession', 'GCA_003061485.1'
+	'assembly.name', 'PhalliiHAL_v2.1'
+
+
+	if($h->{'production_name'}){
+
+	}
+
+	if($h->{'display_name'}){
+
+	}
+
 	if($h->{'taxonomy_id'}){
+
+		# set taxonomy ids
+		
+
+		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
 		my $http = HTTP::Tiny->new();
 		my $request = $rest_entry_point.$h->{'taxonomy_id'};
 		my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});
 		if($response->{success} && $response->{content}){
-
 			my $taxondump = decode_json($response->{content});
 			foreach my $taxon (@{ $taxondump }) {
-				if($taxon->{'name'}){ 
-					$sql = qq{ 
-						INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', $taxon->{'name'});
-					};
-					$sth->execute();
-				}
-			}	
+				next if(!$taxon->{'name'});
+				warn "# workout_meta: species.classification, $taxon->{'name'}\n";
+				$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
+				$sth = $dbh->prepare($sql);
+				$sth->execute();
+			}
+
+			# add 
+
 		} else {
 			die "# ERROR (workout_meta) : $request request failed, try again\n";
 		}
@@ -251,10 +281,8 @@ sub workout_meta {
 		die "# ERROR (workout_meta) : please set param 'taxonomy_id'\n";
 	}
 
-#production_name	saccharum_spontaneum
-#display_name	Saccharum spontaneum
+	#if(i
 #biomart_dataset	sspontaneum_eg
-#taxonomy_id	62335
 #strain	AP85-441
 
 }

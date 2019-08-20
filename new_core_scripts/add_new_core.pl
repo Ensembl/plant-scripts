@@ -87,8 +87,13 @@ my $param_file;
     		}
     	}
     } else {
-    	die "# ERROR: please set host=... in param_file\n";
+    	die "# ERROR: please set host in param_file\n";
 	 }
+
+   ## check assembly.name is set
+   if(!$h->{'assembly.name'}){
+   	die "# ERROR: please set assembly.name in param_file\n";
+   }
 
    ##connect to db server 
    my $dbh = get_dbh($h);
@@ -111,7 +116,7 @@ my $param_file;
 
    ##updating meta table
    if($h->{'meta_source'}){
-   	#copy_meta($h, $dbh); # might need manual tweaking
+   	copy_meta($h, $dbh); # requires manual tweaking
    } else {
    	workout_meta($h, $dbh, $TAXOPOINT);	
    }

@@ -222,8 +222,8 @@ sub copy_meta {
 sub workout_meta {
 
 # Work out the key meta data for this core db.
-# Mandatory params: accession, version, production_name, display_name, taxonomy_id 
-# Optional params: biomart_dataset, species.strain
+# Mandatory params: accession, version, production_name, display_name, taxonomy_id, division, provider_name, provider_url 
+# Optional params: strain
 
 #======================================== 
 
@@ -258,30 +258,55 @@ sub workout_meta {
       $sth = $dbh->prepare($sql);
 	   $sth->execute();
 
-		
+		# now add derived meta keys
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.db_name', '$h->{'production_name'}');};
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+
 	} else {
 		die "# ERROR (workout_meta) : please set param 'production_name''\n";
 	}
 
 	if($h->{'display_name'}){
+		warn "# workout_meta: species.display_name, $h->{'display_name'}\n" if($VERBOSE);
+      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.display_name', '$h->{'display_name'}');};
+      $sth = $dbh->prepare($sql);
+      $sth->execute();
 
+		# now add derived meta keys
+      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.scientific_name', '$h->{'display_name'}');};
+      $sth = $dbh->prepare($sql);
+      $sth->execute();
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.species_name', '$h->{'display_name'}');};
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.wikipedia_name', '$h->{'display_name'}');};
+	   $sth = $dbh->prepare($sql);
+	   $sth->execute();
+
+		my $url_name = $h->{'display_name'};
+		$url_name =~ s/\s/_/g;
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.url', '$url_name');};
+	   $sth = $dbh->prepare($sql);
+	   $sth->execute();
+	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.wikipedia_url', '$url_name');};
+	   $sth = $dbh->prepare($sql);
+	   $sth->execute();
+
+	} else {
+		die "# ERROR (workout_meta) : please set param 'display_name''\n";
 	}
-
-#'species.production_name', 'panicum_hallii_hal2'
-#'species.url', 'Panicum_hallii_hal2'
-#'species.scientific_name', 'Panicum hallii var. hallii str. HAL2'
-#'species.display_name', 'Panicum hallii HAL2'
-#'species.db_name', 'panicum_hallii_hal2'
-#'species.species_name', 'Panicum hallii'
-#'species.wikipedia_url', 'http://en.wikipedia.org/wiki/Panicum_hallii'
-#'species.wikipedia_name', 'Panicum hallii'
 
 	if($h->{'taxonomy_id'}){
 
 		# set taxonomy ids
-		#'species.taxonomy_id', '1504633'
-		#'species.species_taxonomy_id', '206008'
-		#
+		warn "# workout_meta: species.taxonomy_id, $h->{'taxonomy_id'}\n" if($VERBOSE);
+      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.taxonomy_id', '$h->{'taxonomy_id'}');};
+      $sth = $dbh->prepare($sql);
+      $sth->execute();
+      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.species_taxonomy_id', '$h->{'taxonomy_id'}');};
+      $sth = $dbh->prepare($sql);
+      $sth->execute();
 
 		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
 		my $http = HTTP::Tiny->new();
@@ -296,9 +321,6 @@ sub workout_meta {
 				$sth = $dbh->prepare($sql);
 				$sth->execute();
 			}
-
-			# add 
-
 		} else {
 			die "# ERROR (workout_meta) : $request request failed, try again\n";
 		}
@@ -306,7 +328,12 @@ sub workout_meta {
 		die "# ERROR (workout_meta) : please set param 'taxonomy_id'\n";
 	}
 
-	#if(i
+	if($h->{'strain'}){
+		warn "# workout_meta: species.straintaxonomy_id, $h->{'taxonomy_id'}\n" if($VERBOSE);
+		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.taxonomy_id', '$h->{'taxonomy_id'}');};
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+	}
 #biomart_dataset	sspontaneum_eg
 #strain	AP85-441
 

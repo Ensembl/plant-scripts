@@ -3,10 +3,6 @@
 ## To run: perl add_new_core --param_file=[PARAM_FILE]
 ## You can find param files in param_file_examples dir
 #
-## NOTE: this scripts uses $ENV{ENSEMBL_ROOT_DIR} to find ensembl-pipeline
-#
-# TODO : also EG API
-#
 ## Guy Gnaamati, Bruno Contreras Moreira 2019
 
 use 5.14.0;
@@ -14,15 +10,20 @@ use warnings;
 use FindBin '$Bin';
 use lib "$Bin/..";
 use Tools::FileReader qw( file2hash_tab );
+use File::Temp qw( tempdir );
 use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 use DBI;
-use JSON qw(decode_json);
+use JSON qw( decode_json );
 use HTTP::Tiny;
 
-my $RESTURL    = 'http://rest.ensembl.org';
-my $TAXOPOINT  = $RESTURL.'/taxonomy/classification/';
+# should contain ensembl, ensembl-production, ensembl-pipelines
+my $ENSEMBLPATH = $ENV{ENSEMBL_ROOT_DIR}; 
+
+# REST configuration, used to get taxonomy
+my $RESTURL     = 'http://rest.ensembl.org';
+my $TAXOPOINT   = $RESTURL.'/taxonomy/classification/';
 
 my $core;
 my $file2;
@@ -87,16 +88,17 @@ my $param_file;
 
 #======================================== 
 sub create_db {
+
 #======================================== 
     my ($h) = @_;
 
     ##Creating the DB and adding tables
-    warn "Creating and populating new core for $h->{core}\n";
+    warn "# create_db: creating and populating new core for $h->{core}\n";
     my $cmd = "mysqladmin -h $h->{host} -P $h->{port} -u$h->{user} -p$h->{pass} CREATE $h->{core}";
     system($cmd);
     
     ##Adding tables
-    $cmd = "mysql -h$h->{host} -P$h->{port} -u$h->{user} -p$h->{pass} $h->{core} < $ENV{ENSEMBL_ROOT_DIR}/ensembl/sql/table.sql";
+    $cmd = "mysql -h$h->{host} -P$h->{port} -u$h->{user} -p$h->{pass} $h->{core} < $ENSEMBLPATH/ensembl/sql/table.sql";
     system($cmd);
 }
 
@@ -105,15 +107,15 @@ sub create_db {
 sub add_cv {
 #======================================== 
     my ($h) = @_;
-    warn "Adding controlled vocabulary for $h->{'core'}\n";
+    warn "# add_cv : adding controlled vocabulary for $h->{'core'}\n";
     
-    my $path = '/nfs/panda/ensemblgenomes/apis/ensembl/master/ensembl-production/scripts/production_database';    
-    system("mkdir /tmp/prod_db_tables");
+    my $path = "$ENSEMBLPATH/ensembl-production/scripts/production_database";    
+	 my $tmpdir = tempdir( CLEANUP => 1 );
     my $cmd = "perl $path/populate_production_db_tables.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               '$(mysql-pan-prod-ensrw details prefix_m) '.
               "--database $h->{core} ".
-              "--dumppath /tmp/prod_db_tables --dropbaks";
+              "--dumppath $tmpdir --dropbaks";
     system($cmd);
 }
 
@@ -121,7 +123,7 @@ sub add_cv {
 sub set_top_level {
 #======================================== 
     my ($h) = @_;
-    my $path = "$ENV{ENSEMBL_ROOT_DIR}/ensembl-pipeline/scripts";
+    my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";
     my $cmd = "perl $path/set_toplevel.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ";
@@ -133,7 +135,7 @@ sub set_top_level {
 sub load_fasta {
 #======================================== 
     my ($h) = @_;
-    my $path = "$ENV{ENSEMBL_ROOT_DIR}/ensembl-pipeline/scripts";
+    my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";
     my $cmd = "perl $path/load_seq_region.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ".
@@ -148,7 +150,7 @@ sub load_fasta {
 sub load_agp {
 #======================================== 
     my ($h) = @_;
-    my $path = "$ENV{ENSEMBL_ROOT_DIR}/ensembl-pipeline/scripts";
+    my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";
     
     ##Load AGP part 1
     my $cmd = "perl $path/load_seq_region.pl ".

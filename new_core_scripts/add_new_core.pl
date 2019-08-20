@@ -31,20 +31,27 @@ my $TAXOPOINT   = $RESTURL.'/taxonomy/classification/';
 my $VERBOSE = 1;
 
 # only required if meta table is to be created from scratch, not copied over
-my @REQUIRED_METAKEYS = qw( 
-    provider.name
+my @METAKEYS = qw( 
+    provider.name provider.url
     assembly.accession assembly.name 
-    species.production_name species.display_name species.taxonomy_id species.division
+    species.division species.production_name species.display_name species.taxonomy_id species.strain
 );
 
 my %DERIVED_METAKEYS = (
-	'assembly.name' => ['assembly.default'],
-	'species.production_name' => ['species.db_name'],
-	'species.display_name' => ['species.scientific_name','species.species_name','species.wikipedia_name','species.url','species.wikipedia_url'],
-	'species.taxonomy_id' => ['species.species_taxonomy_id']
+	'assembly.name' => 
+		['assembly.default'],
+	'species.production_name' => 
+		['species.db_name'],
+	'species.display_name' => 
+		['species.scientific_name','species.species_name','species.wikipedia_name','species.url','species.wikipedia_url'],
+	'species.taxonomy_id' => 
+		['species.species_taxonomy_id']
 );
 
-my @OPTIONAL_METAKEYS = qw( species.strain provider.url );
+my %OPTIONAL_METAKEYS = ( 
+	'species.strain' => 1,
+	'provider.url' => 1 
+);
 
 ############################################################################
 
@@ -246,133 +253,55 @@ sub workout_meta {
 #======================================== 
 
 	my ($h, $dbh, $rest_entry_point) = @_;
-	my ($sql, $sth);
+	my ($sql, $sth, $metakey, $derived_key, $derived_value);
 
-	if($h->{'division'}){
-	   warn "# workout_meta: species.division, $h->{'division'}\n" if($VERBOSE);
-	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.division', '$h->{'division'}');};
-	   $sth = $dbh->prepare($sql);
-	   $sth->execute();
-	} else {
-		die "# ERROR (workout_meta) : please set param 'division'\n";
-	}
+	foreach $metakey (@METAKEYS) {
 
-	if($h->{'provider_name'}){
-	   warn "# workout_meta: species.division, $h->{'provider_name'}\n" if($VERBOSE);
-	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.division', '$h->{'division'}');};
-	   $sth = $dbh->prepare($sql);
-	   $sth->execute();
-	} else {
-		die "# ERROR (workout_meta) : please set param 'provider_name'\n";
-	}
+		if(!$h->{$metakey}){
+			if($OPTIONAL_METAKEYS{$metakey}){ 
+				next 
+			} else{
+				die "# ERROR (workout_meta) : please set param '$metakey' in param_file\n";
+			}
+		}
 
-	if($h->{'accession'}){
-		warn "# workout_meta: assembly.accession, $h->{'accession'}\n" if($VERBOSE);
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'assembly.accession', '$h->{'accession'}');};
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-	} else {
-		die "# ERROR (workout_meta) : please set param 'accession'\n";
-	}
-
-	if($h->{'version'}){
-		warn "# workout_meta: assembly.name, $h->{'version'}\n" if($VERBOSE);
-      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'assembly.name', '$h->{'version'}');};
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		warn "# workout_meta: assembly.default, $h->{'version'}\n" if($VERBOSE);
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'assembly.default', '$h->{'version'}');};
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-	} else {
-		die "# ERROR (workout_meta) : please set param 'version'\n";
-	}
-
-	if($h->{'production_name'}){
-		warn "# workout_meta: species.production_name, $h->{'production_name'}\n" if($VERBOSE);
-      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.production_name', '$h->{'production_name'}');};
-      $sth = $dbh->prepare($sql);
-	   $sth->execute();
-
-		# now add derived meta keys
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.db_name', '$h->{'production_name'}');};
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-
-	} else {
-		die "# ERROR (workout_meta) : please set param 'production_name''\n";
-	}
-
-	if($h->{'display_name'}){
-		warn "# workout_meta: species.display_name, $h->{'display_name'}\n" if($VERBOSE);
-      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.display_name', '$h->{'display_name'}');};
-      $sth = $dbh->prepare($sql);
-      $sth->execute();
-
-		# now add derived meta keys
-      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.scientific_name', '$h->{'display_name'}');};
-      $sth = $dbh->prepare($sql);
-      $sth->execute();
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.species_name', '$h->{'display_name'}');};
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.wikipedia_name', '$h->{'display_name'}');};
+	   warn "# workout_meta: $metakey=$h->{$metakey}\n" if($VERBOSE);
+	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, '$metakey', '$h->{$metakey}');};
 	   $sth = $dbh->prepare($sql);
 	   $sth->execute();
 
-		my $url_name = $h->{'display_name'};
-		$url_name =~ s/\s/_/g;
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.url', '$url_name');};
-	   $sth = $dbh->prepare($sql);
-	   $sth->execute();
-	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.wikipedia_url', '$url_name');};
-	   $sth = $dbh->prepare($sql);
-	   $sth->execute();
+		# check derived meta keys
+		if($DERIVED_METAKEYS{$metakey}){
+			foreach $derived_key (@{ $DERIVED_METAKEYS{$metakey}  }){
 
-	} else {
-		die "# ERROR (workout_meta) : please set param 'display_name''\n";
-	}
+				$derived_value = $h->{$metakey};
+				if($derived_key =~ m/url/){ $derived_value =~ s/\s/_/g }
 
-	if($h->{'taxonomy_id'}){
-
-		# set taxonomy ids
-		warn "# workout_meta: species.taxonomy_id, $h->{'taxonomy_id'}\n" if($VERBOSE);
-      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.taxonomy_id', '$h->{'taxonomy_id'}');};
-      $sth = $dbh->prepare($sql);
-      $sth->execute();
-      $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.species_taxonomy_id', '$h->{'taxonomy_id'}');};
-      $sth = $dbh->prepare($sql);
-      $sth->execute();
-
-		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
-		my $http = HTTP::Tiny->new();
-		my $request = $rest_entry_point.$h->{'taxonomy_id'};
-		my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});
-		if($response->{success} && $response->{content}){
-			my $taxondump = decode_json($response->{content});
-			foreach my $taxon (@{ $taxondump }) {
-				next if(!$taxon->{'name'});
-				warn "# workout_meta: species.classification, $taxon->{'name'}\n" if($VERBOSE);
-				$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
+				$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, '$derived_key', '$derived_value');};
 				$sth = $dbh->prepare($sql);
 				$sth->execute();
 			}
-		} else {
-			die "# ERROR (workout_meta) : $request request failed, try again\n";
-		}
-	} else {
-		die "# ERROR (workout_meta) : please set param 'taxonomy_id'\n";
+		}	
+	
+		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
+		if($metakey eq 'taxonomy_id'){
+			my $http = HTTP::Tiny->new();
+			my $request = $rest_entry_point.$h->{$metakey};
+			my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});
+			if($response->{success} && $response->{content}){
+				my $taxondump = decode_json($response->{content});
+				foreach my $taxon (@{ $taxondump }) {
+					next if(!$taxon->{'name'});
+					warn "# workout_meta: species.classification, $taxon->{'name'}\n" if($VERBOSE);
+					$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
+					$sth = $dbh->prepare($sql);
+					$sth->execute();
+				}
+			} else {
+				warn "# ERROR (workout_meta) : $request request failed, please re-run\n";
+			}
+		} 
 	}
-
-	if($h->{'strain'}){
-		warn "# workout_meta: species.straintaxonomy_id, $h->{'taxonomy_id'}\n" if($VERBOSE);
-		$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.taxonomy_id', '$h->{'taxonomy_id'}');};
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-	}
-#biomart_dataset	sspontaneum_eg
-#strain	AP85-441
-
 }
 
 #======================================== 

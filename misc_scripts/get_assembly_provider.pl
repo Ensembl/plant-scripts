@@ -6,6 +6,8 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $GETDBSEXE = $ENV{'ENSAPIPATH'}."/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl"; # see .bashrc
 my $METASQL   = "SELECT meta_value FROM meta WHERE meta_key='assembly.accession' OR meta_key='provider.name' OR meta_key='genebuild.version'";
+my $VERSIONSQL= "SELECT distinct(version) from coord_system";
+
 
 my $prod_db_cmd  = 'mysql-ens-meta-prod-1';
 my $stag_db_cmd  = 'mysql-ens-sta-3';
@@ -41,7 +43,7 @@ while(<GETDBS>){
 	$schema_name = (split)[0]; 
 	next if($schema_name !~ /core/);
 	
-	# query this schema to find out assembly provider and accession
+	# query this schema to find out assembly provider, accession and genebuild.version
 	my (@values);
 	open(SQL,"$stag_db_cmd $schema_name -e \"$METASQL\" |") ||
 		die "# ERROR: cannot query $stag_db_cmd $schema_name\n\n";
@@ -53,7 +55,22 @@ while(<GETDBS>){
 	}
 	close(SQL);
 
+	# find out also different supported assemblies
+	my @assemblies;
+	open(SQL,"$stag_db_cmd $schema_name -e \"$VERSIONSQL\" |") ||
+		die "# ERROR: cannot query $stag_db_cmd $schema_name\n\n";
+	while(<SQL>){
+		chomp;
+		$value = $_;
+		next if($value eq 'version' || $value eq 'NULL');
+		push(@assemblies,$value); 
+	}
+	close(SQL);
+
 	# print all
-	print "$schema_name\t".join("\t",@values)."\n";
+	printf("%s\t%s\t%d\t%s\n", 
+		$schema_name, 
+		join("\t",@values), 
+		scalar(@assemblies), join(",",@assemblies));
 }
 close(GETDBS);

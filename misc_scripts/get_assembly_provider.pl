@@ -5,7 +5,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 
 my $GETDBSEXE = $ENV{'ENSAPIPATH'}."/ensembl-metadata/misc_scripts/get_list_databases_for_division.pl"; # see .bashrc
-my $METASQL   = "SELECT meta_value FROM meta WHERE meta_key='assembly.accession' OR meta_key='provider.name'";
+my $METASQL   = "SELECT meta_value FROM meta WHERE meta_key='assembly.accession' OR meta_key='provider.name' OR meta_key='genebuild.version'";
 
 my $prod_db_cmd  = 'mysql-ens-meta-prod-1';
 my $stag_db_cmd  = 'mysql-ens-sta-3';
@@ -54,6 +54,6 @@ while(<GETDBS>){
 	close(SQL);
 
 	# print all
-	print "$schema_name\t$values[0]\t$values[1]\n";
+	print "$schema_name\t".join("\t",@values)."\n";
 }
 close(GETDBS);

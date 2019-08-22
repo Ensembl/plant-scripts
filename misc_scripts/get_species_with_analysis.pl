@@ -67,6 +67,6 @@ while(<GETDBS>){
 	# print all
 	printf("%s\t%s\n", 
 		$schema_name, 
-		join("\t",@values)) if(@values);
+		join("\t",@values));
 }
 close(GETDBS);

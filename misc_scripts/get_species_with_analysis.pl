@@ -50,7 +50,7 @@ open(GETDBS,"perl $GETDBSEXE \$($prod_db_cmd details script) -release $ensembl_v
 	die "# ERROR: cannot run $GETDBSEXE \$($prod_db_cmd details script) -release $ensembl_version -division $division\n";
 while(<GETDBS>){
 	$schema_name = (split)[0]; 
-	next if($schema_name !~ /core/);
+	next if($schema_name !~ /core/ && $schema_name !~ /otherfeat/);
 	
 	# query this schema to find out assembly provider, accession and genebuild.version
 	my (@values);

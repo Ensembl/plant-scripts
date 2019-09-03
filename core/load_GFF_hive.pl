@@ -66,6 +66,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-O other params for Load GFF3 Pipeline         (optional, example: '-mrna_types primary_transcript' or '-types_complete 0'\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
   print "-r re-run jump to beekeper.pl                  (optional, default: run init script from scratch)\n\n";
+  print "NOTE: won't load gene descriptions by default  \n\n";
   exit(0);
 }
 

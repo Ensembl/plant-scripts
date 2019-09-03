@@ -25,13 +25,13 @@ while(<GFF>){
 		# copy gene as a seed for a new transcript
 		$transcript = $_;
 		
-		if($col[8] =~ m/ID=([^;]+)/){
+		if($col[8] =~ m/ID=([^;\n]+)/){
 
 			# create a new transcript from copied gene
 			$tparent = $1;
 			$tname = $tparent . ':mrna';
 			$transcript =~ s/\tgene\t/\ttranscript\t/;
-			$transcript =~ s/ID=[^;]+;/ID=$tname;Parent=$tparent;/;
+			$transcript =~ s/ID=[^;\n]+/ID=$tname;Parent=$tparent/;
 			print $transcript;
 		}
 	} elsif(defined($col[2]) && ($col[2] eq 'exon' || $col[2] eq 'CDS')){

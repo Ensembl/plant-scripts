@@ -15,6 +15,7 @@ use Bio::Seq;
 # features on top of a previously loaded ENA genome assembly in hive.
 # This should be run after loading a genome from ENA 
 # NOTE: it will update meta.genebuild dates and version
+# NOTE: it won't load gene descriptions by default
 # NOTE: hive pipelines must be run in eb-cli nodes
 #
 # It uses env $USER to create hive job names and assumes Ensembl-version API
@@ -46,7 +47,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-g GFF3 file                                   (required, example: -g atha.gff)\n";
   print "-R registry file, can be env variable          (required, example: -R \$p1panreg)\n";
-  print "-D ensembl_production db name                  (required, example: -D ensembl_production_97)\n";
+  print "-D ensembl_production db name                  (required, example: -D ensembl_production)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-G GenBank file to load sequence edits         (optional, example: -G atha.gbk)\n";

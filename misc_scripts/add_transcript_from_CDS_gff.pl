@@ -2,8 +2,8 @@
 use strict;
 use warnings;
 
-# fix a GFF with no transcripts, only with gene and CDS features
-# by Bruno Contreras Moreira EMBL-EBI 2018
+# add transcripts to a GFF file containing only gene and CDS features (no exons)
+# by Bruno Contreras Moreira EMBL-EBI 2019
 
 if(!$ARGV[0]){ die "# usage: $0 <GFF>\n" }
 

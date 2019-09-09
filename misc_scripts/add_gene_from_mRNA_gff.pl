@@ -7,7 +7,7 @@ use warnings;
 
 if(!$ARGV[0]){ die "# usage: $0 <GFF>\n" }
 
-my ($tparent, $tname, $gene, $transcript);
+my ($tparent, $tname, $gene, $transcript, %seen);
 
 open(GFF,"<",$ARGV[0]) || die "# ERROR: cannot read $ARGV[0]\n";
 while(<GFF>){
@@ -41,7 +41,10 @@ while(<GFF>){
 			$gene =~ s/ID=[^;]+;.*/ID=$tparent/;
 	
 			# first print the new gene feature
-			print $gene;
+			if(!$seen{$tparent}){
+				print $gene;
+				$seen{$tparent}++;
+			}
 
 			# now print transcript
 			print $transcript;

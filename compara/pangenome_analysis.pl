@@ -19,7 +19,12 @@ use HTTP::Tiny;
 #
 # Bruno Contreras Moreira 2019
 
-# Ensembl Genomes 
+# Ensembl Genomes
+# only if you need singletons and/or peptide sequences
+# ftp://ftp.ensemblgenomes.org/pub/release-44/plants/fasta/actinidia_chinensis/pep/Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa.gz
+#>PSR83604 pep supercontig:Red5_PS1_1.69.0:ps1sf1427:11608:20559:-1 gene:CEY00_Acc33586 transcript:...
+#MGTSIFLILVSYII...
+#ATLHLDSDNTLYAL...
 my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
 my $FTPURL     = 'ftp.ensemblgenomes.org'; 
 my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
@@ -40,7 +45,7 @@ my $out_genome = '';
 my ($help,$sp,$show_supported,$request,$response);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
 my ($request_time,$last_request_time) = (0,0);
-my (@ignore_species, %ignore, %polyploid, %division_supported);
+my (@ignore_species, %ignore, %division_supported);
 
 GetOptions(	
 	"help|?"       => \$help,
@@ -175,8 +180,8 @@ if($out_genome && !$division_supported{ $out_genome }){
 
 ## 1) check species in clade ##################################################################
 
-my $n_of_species = 0;
-my (@supported_species, %supported, %core, %present);
+my ($n_of_species, $cluster_id) = ( 0, '' );
+my (@supported_species, %supported, %present, %incluster, %cluster, @cluster_ids);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -230,7 +235,6 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
 
 # iteratively get and parse TSV files, starting with reference
 # NOTE: these files are bulky and might take some time to download
-my (@sorted_ids);
 
 foreach $sp ( @supported_species ){
 	
@@ -252,28 +256,44 @@ foreach $sp ( @supported_species ){
 
 		if($homology_type =~ m/ortholog/) {
 
-			# add $ref_genome protein 
-			if(!$core{ $gene_stable_id }){ 
+			# add $species protein to cluster only if not clustered yet
+			if(!$incluster{ $prot_stable_id }){
 
-				push(@{ $core{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
+				if($incluster{ $hom_prot_stable_id }){
 
-				$present{ $ref_genome }++;
+					# use existing cluster_id from other species ortholog
+					$cluster_id = $incluster{ $hom_prot_stable_id };
+				} else {
 
-				push(@sorted_ids, $gene_stable_id); # save cluster order
+					# otherwise create a new one 
+					$cluster_id = $prot_stable_id;
+					push(@cluster_ids, $cluster_id);
+				}
+
+				# record to which cluster this protein belongs
+				$incluster{ $prot_stable_id } = $cluster_id;
+			
+				push(@{ $cluster{ $cluster_id }{ $species } }, $prot_stable_id );
+				$present{ $species }++;
+
+			} else {
+				# set cluster from $hom_species anyway 
+				$cluster_id = $incluster{ $prot_stable_id };
 			}
+			
+			# now add $hom_species protein to previously defined cluster
+         if(!$incluster{ $hom_prot_stable_id }){
 
-			push(@{ $core{ $gene_stable_id }{ $hom_species } }, $hom_prot_stable_id );
+				# record to which cluster this protein belongs
+            $incluster{ $hom_prot_stable_id } = $cluster_id;
 
-			$present{ $hom_species }++;
-
-		} elsif($homology_type =~ m/within_species_paralog/) {
-		
-		}
+            push(@{ $cluster{ $cluster_id }{ $hom_species } }, $hom_prot_stable_id );
+            $present{ $hom_species }++;
+         } 
+		} 
 	}
 	close(TSV);
 }
-
-exit;
 
 # check GOC / WGA availability
 foreach $hom_species (@supported_species){
@@ -285,67 +305,37 @@ foreach $hom_species (@supported_species){
 }
 
 
-## 3) print summary matrix of single-copy / core genes and compile sequence clusters #################
+## 3) print genome composition matrix and compile sequence clusters #################
 
-my $total_core_clusters = 0;
-my ($pruned_species,$treedump,$acc,$seq,$line,$filename);
+foreach $cluster_id (@cluster_ids){
 
-# prepare param to prune species in REST requests
-if($outfolder){
-	foreach $hom_species (@supported_species){
-		$pruned_species .= "prune_species=$hom_species;";
-	}
-}	
+	# debugging
+	next if(scalar(keys(%{ $cluster{ $cluster_id } })) < $n_of_species || 
+		scalar(@{ $cluster{ $cluster_id }{ $ref_genome } }) < 2);
 
-foreach $gene_stable_id (@sorted_ids){
-
-	next if(scalar(keys(%{ $core{ $gene_stable_id } })) < $n_of_species); 
-
-	my (%valid_prots, %align);
-
-	$filename = $gene_stable_id;
-	if($outfolder){
-		if($seqtype eq 'protein'){ $filename .= '.faa' }
-		else{ $filename .= '.fna' }
-	}
+	#my (%valid_prots, %align);
+	#$filename = $gene_stable_id;
+	#if($outfolder){
+	#	if($seqtype eq 'protein'){ $filename .= '.faa' }
+	#	else{ $filename .= '.fna' }
+	#}
 
 	# print matrix header
-	if($total_core_clusters == 0){
-		print "cluster";
-		foreach $hom_species (@supported_species){
-			print "\t$hom_species";
-		} 
-		print "\n";
-	}
+	#if($total_core_clusters == 0){
+	#	print "cluster";
+	#	foreach $hom_species (@supported_species){
+	#		print "\t$hom_species";
+	#	} 
+	#	print "\n";
+	#}
 	
 	# print a matrix row in TSV format
-	print $filename;
-	foreach $hom_species (@supported_species){ 
-
-		printf("\t%s", join(',',@{ $core{ $gene_stable_id }{ $hom_species } }) );
-
-		# store which prots come from each species
-		foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
-			$valid_prots{ $hom_prot_stable_id } = $hom_species;
-		}
+	print $cluster_id;;
+	foreach $species (@supported_species){ 
+		printf("\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
 	} print "\n";
-
-	$total_core_clusters++; #last if($total_core_clusters == 1); # debug
 }
 
-print "\n# total single-copy core clusters : $total_core_clusters\n\n";
-
-# print diagnostics
-if($total_core_clusters == 0){
-
-	print "# diagnostic stats (species\tclusters)\n\n";
-
-	foreach $hom_species (@supported_species){ $present{ $hom_species } = 0 unless($present{ $hom_species }) }
-
-	foreach $hom_species (sort {$present{$a}<=>$present{$b}} (@supported_species)){
-		printf("%s %d\n",	$hom_species, $present{ $hom_species } );
-	}
-}
 
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";

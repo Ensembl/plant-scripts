@@ -26,7 +26,6 @@ my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
-my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
 my $verbose    = 0;
 my $division   = 'Plants';
@@ -39,9 +38,9 @@ my $out_genome = '';
 
 
 my ($help,$sp,$show_supported,$request,$response);
-my ($GOC,$WGA,$one2many,$LOWCONF) = (0,0,0,0);
+my ($GOC,$WGA,$LOWCONF) = (0,0,0);
 my ($request_time,$last_request_time) = (0,0);
-my (@multi_species, @ignore_species, %ignore, %polyploid, %division_supported);
+my (@ignore_species, %ignore, %polyploid, %division_supported);
 
 GetOptions(	
 	"help|?"       => \$help,
@@ -51,7 +50,6 @@ GetOptions(
 	"clade|c=s"    => \$taxonid,
 	"reference|r=s"=> \$ref_genome,
 	"outgroup|o=s" => \$out_genome,
-	"multicopy|m=s"=> \@multi_species,
 	"ignore|i=s"   => \@ignore_species,
 	"type|t=s"     => \$seqtype,
 	"GOC|G=i"      => \$GOC,
@@ -63,13 +61,12 @@ GetOptions(
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
       "-c NCBI Taxonomy clade of interest      (required, example: -c Brassicaceae or -c 3700)\n".
+		"-f output folder                        (required, example: -f myfolder)\n".
 		"-l list supported species_names         (optional, example: -l)\n".
 		"-d Ensembl division                     (optional, default: -d $division)\n".
 		"-r reference species_name               (optional, default: -r $ref_genome)\n".
 		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
-		"-m multi-copy species_name(s)           (optional, example: -m brassica_napus -m ... -m all)\n".
 		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
-		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
 		"-L allow low-confidence orthologues     (optional, by default these are skipped)\n".
 		"-v verbose                              (optional, example: -v\n";
@@ -88,7 +85,6 @@ sub help_message {
 		" perl $0 -c Brassicaceae -f Brassicaceae\n".
 		" perl $0 -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao\n".
 		" perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75\n".
-		" perl $0 -f all -c 33090 -m all -r physcomitrella_patens\n";
 		exit(0);
 }
 
@@ -117,24 +113,6 @@ if(@ignore_species){
 	printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
 }
 
-# species for which one2many orths are allowed, such as polyploid species
-# with scaffold level assemblies or species with ancestral genome duplications
-if(@multi_species){
-	foreach my $sp (@multi_species){
-		if($sp eq 'all'){
-			$one2many = 1;
-			%polyploid = ();
-			$polyploid{ $sp } = 1;
-			last;
-		} else{ $polyploid{ $sp } = 1 }
-	}
-
-	if($one2many){ print "\n# multi-copy species : all\n\n" }
-	else{
-		printf("\n# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
-	}
-}
-
 if($outfolder){
 	if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
 	else { 
@@ -144,7 +122,10 @@ if($outfolder){
 	if($seqtype ne 'protein' && $seqtype ne 'cdna'){
 		die "# ERROR: accepted values for seqtype are: protein|cdna\n"
 	}
-}	
+} else {
+	print "# ERROR: need a valid output folder, such as -f Brassicaceae\n\n";
+   exit;
+}
 
 if($show_supported){ print "# $0 -l \n\n" }
 else {
@@ -252,8 +233,7 @@ while(<TSV>){
 
 	next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
 
-	if($homology_type eq 'ortholog_one2one' || 
-		(($one2many || $polyploid{ $hom_species } ) && $homology_type eq 'ortholog_one2many') ) {
+	if($homology_type =~ m/ortholog_/) {
 
 		# add $ref_genome protein 
 		if(!$core{ $gene_stable_id }){ 
@@ -327,63 +307,6 @@ foreach $gene_stable_id (@sorted_ids){
 		}
 	} print "\n";
 
-	# retrieve cluster sequences
-	if($outfolder){
-	
-		# check whether this cluster already exists
-		if(-s "$outfolder/$filename"){
-			$total_core_clusters++;
-			next;
-		}
-
-		# make REST request and parse dumped JSON
-		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
-		$response = perform_rest_action( $request, $global_headers );
-		$treedump = Dumper( decode_json($response) ); 
-
-		foreach $line (split(/\n/, $treedump ) ){
-			if($line =~ m/'sequence' =>/){
-				($seq,$acc) = ('','');
-			}
-			elsif($line =~ m/'seq' => '([^']+)'/){
-				$seq = $1;
-			}
-			elsif($line =~ m/'accession' => '([^']+)'/ && $acc eq ''){
-				$acc = $1;
-				if($valid_prots{ $acc } ){
-					$align{ $valid_prots{$acc} }{ $acc } = $seq;
-					$valid_prots{$acc} .= " found";
-				}
-			}
-		}
-
-		# save cluster to file
-		if(scalar(keys(%align)) == $n_of_species){ 
-
-			# TODO : minimize MSA
-
-			open(FASTA,">","$outfolder/$filename") || 
-				die "# ERROR: cannot create $outfolder/$filename\n";
-
-			foreach $hom_species (@supported_species){
-				foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
-					print FASTA ">$hom_species $hom_prot_stable_id\n$align{ $hom_species }{ $hom_prot_stable_id }\n";
-				}
-			}	
-
-			close(FASTA);
-		} 
-		else { # might occur with low-confidence orths in split trees and same supertree
-			if($verbose){
-				print "# WARNING: cannot retrieve aligned sequences for $gene_stable_id : ";
-				foreach $acc (keys(%valid_prots)){
-					next if($valid_prots{$acc} =~ m/ found/);
-					print "# $acc $valid_prots{$acc},";
-				} print "\n";
-			}
-		}
-	}
-	
 	$total_core_clusters++; #last if($total_core_clusters == 1); # debug
 }
 

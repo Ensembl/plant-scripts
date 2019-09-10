@@ -11,7 +11,7 @@ use Time::HiRes;
 use HTTP::Tiny;
 
 # Simulates pangenome growth by counting clusters of orthologous genes shared by (plant) species in clade 
-# by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
+# by querying pre-computed Compara data from Ensembl Genomes
 #
 # Based on scripts at
 # https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/
@@ -30,7 +30,7 @@ my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 my $verbose    = 0;
 my $division   = 'Plants';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
-my $ref_genome = 'arabidopsis_thaliana'; # should be diploid and contained in $taxonid;
+my $ref_genome = ''; # should be contained in $taxonid;
 my $seqtype    = 'protein'; 
 my $comparadir = '';
 my $outfolder  = '';
@@ -60,16 +60,17 @@ GetOptions(
 
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
-      "-c NCBI Taxonomy clade of interest      (required, example: -c Brassicaceae or -c 3700)\n".
-		"-f output folder                        (required, example: -f myfolder)\n".
-		"-l list supported species_names         (optional, example: -l)\n".
-		"-d Ensembl division                     (optional, default: -d $division)\n".
-		"-r reference species_name               (optional, default: -r $ref_genome)\n".
-		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
-		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
-		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
-		"-L allow low-confidence orthologues     (optional, by default these are skipped)\n".
-		"-v verbose                              (optional, example: -v\n";
+      "-c NCBI Taxonomy clade of interest         (required, example: -c Brassicaceae or -c 3700)\n".
+		"-f output folder                           (required, example: -f myfolder)\n".
+		"-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n".
+		"-l list supported species_names            (optional, example: -l)\n".
+		"-d Ensembl division                        (optional, default: -d $division)\n".
+		"-r reference species_name                  (optional, default: -r $ref_genome)\n".
+		"-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n".
+		"-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n".
+		"-t sequence type [protein|cdna]            (optional, requires -f, default: -t protein)\n".
+		"-L allow low-confidence orthologues        (optional, by default these are skipped)\n".
+		"-v verbose                                 (optional, example: -v\n";
 
 	print "\nThe following options are only available for some clades:\n\n".
 		"-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n".
@@ -94,6 +95,11 @@ if($taxonid eq ''){
 	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
 	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
 	exit;
+}
+
+if($ref_genome eq ''){
+   print "# ERROR: need a valid reference species_name, such as -r arabidopsis_thaliana)\n\n";
+   exit;
 }
 
 if($division){
@@ -182,21 +188,28 @@ foreach $sp (@{ $infodump }) {
 
 		next if($ignore{ $sp->{'name'} });
 
-		push(@supported_species, $sp->{'name'});
+		# add sorted clade species except reference
 		$supported{ $sp->{'name'} } = 1;
-		print "# ".$sp->{'name'}."\n" if($verbose);
+		if( $sp->{'name'} ne $ref_genome ){
+			push(@supported_species, $sp->{'name'});
+		}
    }
 }
 
-printf("# supported species in NCBI taxon %s : %d\n\n", $taxonid, scalar(@supported_species));
-
-# check reference genome is supported and is not polyploid
-if(!grep(/$ref_genome/,@supported_species)){
+# check reference genome is supported 
+if(!$supported{ $ref_genome }){
 	die "# ERROR: cannot find $ref_genome within NCBI taxon $taxonid\n";
+} else {
+	unshift(@supported_species, $ref_genome);
+
+	if($verbose){
+		foreach $sp (@supported_species){
+			print "# $sp\n";
+		}
+	}
 }
-elsif($polyploid{ $ref_genome }){
-	   die "# ERROR: $ref_genome is polyploid; reference genome must be diploid\n";
-}
+
+printf("# supported species in NCBI taxon %s : %d\n\n", $taxonid, scalar(@supported_species));
 
 # add outgroup if required
 if($out_genome){
@@ -208,49 +221,59 @@ if($out_genome){
 $n_of_species = scalar( @supported_species );
 print "# total selected species : $n_of_species\n\n";
 
-## 2) get orthologous (plant) genes shared by $ref_genome and other species ####################
+## 2) get orthologous (plant) genes shared by selected species ####################
 
 # columns of TSV file 
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
 	$high_confidence,$homology_id);
 
-# get and parse TSV file
+# iteratively get and parse TSV files, starting with reference
+# NOTE: these files are bulky and might take some time to download
 my (@sorted_ids);
-my $stored_compara_file = download_TSV_file( $comparadir, $ref_genome );
-open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
-while(<TSV>){
+
+foreach $sp ( @supported_species ){
 	
-	($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
-	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
-	$high_confidence,$homology_id) = split(/\t/);
+	my $stored_compara_file = download_TSV_file( $comparadir, $sp );
+	open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
+	while(<TSV>){
+	
+		($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
+		$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
+		$high_confidence,$homology_id) = split(/\t/);
 
-	next if(!$supported{ $hom_species } || $hom_species eq $ref_genome);
+		next if(!$supported{ $hom_species });
 
-	next if($LOWCONF == 0 && $high_confidence == 0);
+		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
 
-	next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
+		next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 
-	next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
+		next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
 
-	if($homology_type =~ m/ortholog_/) {
+		if($homology_type =~ m/ortholog/) {
 
-		# add $ref_genome protein 
-		if(!$core{ $gene_stable_id }){ 
+			# add $ref_genome protein 
+			if(!$core{ $gene_stable_id }){ 
 
-			push(@{ $core{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
+				push(@{ $core{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
 
-			$present{ $ref_genome }++;
+				$present{ $ref_genome }++;
 
-			push(@sorted_ids, $gene_stable_id); # save cluster order
+				push(@sorted_ids, $gene_stable_id); # save cluster order
+			}
+
+			push(@{ $core{ $gene_stable_id }{ $hom_species } }, $hom_prot_stable_id );
+
+			$present{ $hom_species }++;
+
+		} elsif($homology_type =~ m/within_species_paralog/) {
+		
 		}
-
-		push(@{ $core{ $gene_stable_id }{ $hom_species } }, $hom_prot_stable_id );
-
-		$present{ $hom_species }++;
 	}
+	close(TSV);
 }
-close(TSV);
+
+exit;
 
 # check GOC / WGA availability
 foreach $hom_species (@supported_species){
@@ -336,7 +359,7 @@ sub download_TSV_file {
 	my ($dir,$ref_genome) = @_;
 	my ($compara_file,$stored_compara_file) = ('','');
 
-	print "# connecting to $FTPURL ...\n";
+	#print "# connecting to $FTPURL ...\n";
 
 	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
 		$ftp->login("anonymous",'-anonymous@') ||
@@ -362,7 +385,7 @@ sub download_TSV_file {
 			$ftp->binary();
 			my $downsize = $ftp->size($compara_file);
 			$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
-			printf("# downloading %s (%1.1fMb) ...\n",$compara_file,$downsize/(1024*1024));
+			printf("# downloading %s (%1.1fMb) ...\n",$stored_compara_file,$downsize/(1024*1024));
 			print "# [        50%       ]\n# ";
 			if(!$ftp->get($compara_file)){
 				die "# ERROR: failed downloading $compara_file\n";

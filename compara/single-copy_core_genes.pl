@@ -440,7 +440,7 @@ sub download_TSV_file {
 			$ftp->binary();
 			my $downsize = $ftp->size($compara_file);
 			$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
-			printf("# downloading %s (%1.1fMb) ...\n",$compara_file,$downsize/(1024*1024));
+			printf("# downloading %s (%1.1fMb) ...\n",$stored_compara_file,$downsize/(1024*1024));
 			print "# [        50%       ]\n# ";
 			if(!$ftp->get($compara_file)){
 				die "# ERROR: failed downloading $compara_file\n";

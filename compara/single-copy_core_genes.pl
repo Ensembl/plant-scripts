@@ -247,7 +247,7 @@ while(<TSV>){
 
 	next if(!$supported{ $hom_species } || $hom_species eq $ref_genome);
 
-	next if($LOWCONF == 0 && $high_confidence == 0);
+	next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
 
 	next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 

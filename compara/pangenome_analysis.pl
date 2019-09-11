@@ -20,9 +20,6 @@ use HTTP::Tiny;
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes
-#>PSR83604 pep supercontig:Red5_PS1_1.69.0:ps1sf1427:11608:20559:-1 gene:CEY00_Acc33586 transcript:...
-#MGTSIFLILVSYII...
-#ATLHLDSDNTLYAL...
 my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
 my $FTPURL     = 'ftp.ensemblgenomes.org'; 
 my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
@@ -38,7 +35,7 @@ my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poac
 my $ref_genome = ''; # should be contained in $taxonid;
 my ($comparadir,$fastadir,$outfolder,$out_genome) = ('','','','');
 
-my ($help,$sp,$show_supported,$request,$response);
+my ($help,$sp,$show_supported,$request,$response,$spfolder,$seq);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
 my ($request_time,$last_request_time) = (0,0);
 my (@ignore_species, %ignore, %division_supported);
@@ -114,8 +111,6 @@ if($division){
 		
 		$fastadir   = $FASTADIR;		
 		$fastadir =~ s/xxx/$lcdiv/;
-		if($seqtype eq 'protein'){ $fastadir .= '/pep/' }
-		else{ $fastadir .= '/cdna/' }
 	}
 }
 
@@ -183,7 +178,7 @@ if($out_genome && !$division_supported{ $out_genome }){
 ## 1) check species in clade ##################################################################
 
 my ($n_of_species, $cluster_id) = ( 0, '' );
-my (@supported_species, %supported, %present, %incluster, %cluster, @cluster_ids);
+my (@supported_species, %supported, %present, %incluster, %cluster, @cluster_ids, %sequence);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -241,11 +236,11 @@ foreach $sp ( @supported_species ){
 	# get TSV file; these files are bulky and might take some time to download
 	my $stored_compara_file = download_compara_TSV_file( $comparadir, $sp );
 	open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
-	while(<TSV>){
+	while(my $line = <TSV>){
 	
 		($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
 		$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
-		$high_confidence,$homology_id) = split(/\t/);
+		$high_confidence,$homology_id) = split(/\t/,$line);
 
 		next if(!$supported{ $hom_species });
 
@@ -296,11 +291,20 @@ foreach $sp ( @supported_species ){
 	close(TSV);
 
 	# now get FASTA file and parse it
-   my $stored_sequence_file = download_sequence_file( $fastadir, $sp );
+	$spfolder = $sp;
+	if($seqtype eq 'protein'){ $spfolder .= '/pep/' }
+   else{ $spfolder .= '/cdna/' }
+   my $stored_sequence_file = download_FASTA_file( $fastadir, $spfolder  );
    open(FASTA,"gzip -dc $stored_sequence_file |") || die "# ERROR: cannot open $stored_sequence_file\n";
-   while(<FASTA>){
-		print;
-		exit;
+   while(my $line = <FASTA>){
+		#>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
+		if($line =~ m/^>(\S+)/){
+			$prot_stable_id = $1;
+		}
+		elsif($line =~ m/^(\S+)/){
+			$seq = $1;
+			$sequence{ $sp }{ $prot_stable_id } .= $seq;
+		}
 	}
 	close(FASTA);
 }
@@ -401,6 +405,51 @@ sub download_compara_TSV_file {
 }
 
 # //ftp.ensemblgenomes.org/pub/release-44/plants/fasta/actinidia_chinensis/pep/Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa.gz
+# download compressed FASTA file from FTP site, and saves it in current folder; 
+# uses FTP globals defined above
+sub download_FASTA_file {
+
+   my ($dir,$genome_folder) = @_;
+   my ($fasta_file) = ('');
+
+   if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
+      $ftp->login("anonymous",'-anonymous@') ||
+         die "# cannot login ". $ftp->message();
+      $ftp->cwd($dir) ||
+         die "# ERROR: cannot change working directory to $dir ". $ftp->message();
+      $ftp->cwd($genome_folder) ||
+         die "# ERROR: cannot find $genome_folder in $dir ". $ftp->message();
+
+      # find out which file is to be downloaded and 
+      # work out its final name
+      foreach my $file ( $ftp->ls() ){
+         if($file =~ m/all.fa.gz/){
+            $fasta_file = $file;
+            last;
+         }
+      }
+
+		# download that FASTA file
+      unless(-s $fasta_file){
+         $ftp->binary();
+         my $downsize = $ftp->size($fasta_file);
+         $ftp->hash(\*STDOUT,$downsize/20) if($downsize);
+         printf("# downloading %s (%1.1fMb) ...\n",$fasta_file,$downsize/(1024*1024));
+         print "# [        50%       ]\n# ";
+         if(!$ftp->get($fasta_file)){
+            die "# ERROR: failed downloading $fasta_file\n";
+         }
+
+         print "# using $fasta_file\n\n";
+      } else {
+         print "# re-using $fasta_file\n\n";
+      }
+   } else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
+
+   return $fasta_file;
+}
+
+
 
 # uses global $request_count
 sub perform_rest_action {

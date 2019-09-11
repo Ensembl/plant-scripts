@@ -137,8 +137,9 @@ if($outfolder){
 
 	# create $clusterdir with $params
 	$clusterdir .= $params;
-	if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
-
+	if(!-e "$outfolder/$clusterdir"){
+		if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
+	}
 } else {
 	print "# ERROR: need a valid output folder, such as -f Brassicaceae\n\n";
    exit;

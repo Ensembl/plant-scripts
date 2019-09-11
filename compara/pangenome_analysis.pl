@@ -213,7 +213,8 @@ if($out_genome && !$division_supported{ $out_genome }){
 ## 1) check species in clade ##################################################################
 
 my ($n_of_species, $cluster_id) = ( 0, '' );
-my (@supported_species, @cluster_ids, %supported, %present, %incluster, %cluster, %sequence);
+my (@supported_species, @cluster_ids, %supported, %present);
+my (%incluster, %cluster, %sequence, %totalseq);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -279,7 +280,10 @@ foreach $sp ( @supported_species ){
 
 		next if(!$supported{ $hom_species });
 
-		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
+		if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0)){
+			print "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n" if($verbose);
+			next; 
+		}
 
 		next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 
@@ -332,6 +336,7 @@ foreach $sp ( @supported_species ){
 		#>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
 		if($line =~ m/^>(\S+)/){
 			$prot_stable_id = $1;
+			$totalseq{ $sp }++;
 		}
 		elsif($line =~ m/^(\S+)/){
 			$seq = $1;
@@ -341,9 +346,23 @@ foreach $sp ( @supported_species ){
 	close(FASTA);
 }
 
-# TODO: add unclustered sequences as singletons
+# add unclustered sequences as singletons
+foreach $sp (@supported_species){
 
+	my $singletons = 0;
+	foreach $prot_stable_id (sort keys(%{ $sequence{ $sp } })){
+		next if($incluster{ $prot_stable_id });
 
+		# create new cluster
+		$cluster_id = $prot_stable_id;
+		push(@cluster_ids, $cluster_id);
+		$incluster{ $prot_stable_id } = $cluster_id;
+      push(@{ $cluster{ $cluster_id }{ $sp } }, $prot_stable_id );
+		$singletons++;
+	}
+
+	printf("# %s : singletons=%d / %d\n",$sp,$singletons,$totalseq{$sp});
+}
 
 ## 3) compute Percent Conserved Sequences (POCP) matrix #################
 
@@ -398,7 +417,7 @@ foreach $cluster_id (@cluster_ids){
 
 close(CLUSTER_LIST);
 
-printf("# number_of_clusters = %d (core = %d)\n\n",scalar(@cluster_ids),$n_core_clusters);
+printf("\n# number_of_clusters = %d (core = %d)\n\n",scalar(@cluster_ids),$n_core_clusters);
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
 print "# cluster_directory = $outfolder/$clusterdir\n\n";
 

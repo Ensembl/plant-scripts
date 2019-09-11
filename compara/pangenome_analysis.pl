@@ -30,11 +30,13 @@ my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 my $verbose    = 0;
 my $division   = 'Plants';
 my $seqtype    = 'protein';
+my $clusterdir = 'clusters';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = ''; # should be contained in $taxonid;
 my ($comparadir,$fastadir,$outfolder,$out_genome) = ('','','','');
 
-my ($help,$sp,$show_supported,$request,$response,$spfolder,$seq);
+my ($help,$sp,$show_supported,$request,$response);
+my ($filename,$dnafile,$pepfile,$spfolder,$seq,$n_cluster_sp,$n_cluster_seqs);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
 my ($request_time,$last_request_time) = (0,0);
 my (@ignore_species, %ignore, %division_supported);
@@ -124,6 +126,7 @@ if($outfolder){
 	if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
 	else { 
 		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
+		if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
 	}
 
 	if($seqtype ne 'protein' && $seqtype ne 'cdna'){
@@ -317,8 +320,14 @@ foreach $hom_species (@supported_species){
 	}
 }
 
+## 3) compute Percent Conserved Sequences (POCP) matrix #################
 
-## 3) print genome composition matrix and compile sequence clusters #################
+
+## 4) write sequence clusters and pangenome matrices in output folder #################
+
+# open file to save cluster summary
+open(CLUSTER_LIST,">","$outfolder/clusters.cluster_list") || 
+      die "# ERROR: cannot create $outfolder/clusters.cluster_list\n";
 
 foreach $cluster_id (@cluster_ids){
 
@@ -326,12 +335,42 @@ foreach $cluster_id (@cluster_ids){
 	#next if(scalar(keys(%{ $cluster{ $cluster_id } })) < $n_of_species || 
 	#	scalar(@{ $cluster{ $cluster_id }{ $ref_genome } }) < 2);
 
-	#my (%valid_prots, %align);
-	#$filename = $gene_stable_id;
-	#if($outfolder){
-	#	if($seqtype eq 'protein'){ $filename .= '.faa' }
-	#	else{ $filename .= '.fna' }
-	#}
+	# sequence cluster
+	$n_cluster_sp=$n_cluster_seqs=0;
+	$filename = $cluster_id;
+
+	# for summary, in case this was run twice (cdna & prot)
+   $dnafile = $filename . '.fna';
+   $pepfile = $filename . '.faa';
+
+	# defines which one is being written in this run
+	if($seqtype eq 'protein'){ $filename .= '.faa' }
+   else{ $filename .= '.fna' }
+
+	# write sequences
+	open(CLUSTER,">","$outfolder/$clusterdir/$filename") || 
+		die "# ERROR: cannot create $outfolder/$clusterdir/$filename\n";
+	foreach $species (@supported_species){ 
+      next if(! $cluster{ $cluster_id }{ $species } );
+		$n_cluster_sp++;
+		foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
+			print CLUSTER ">$prot_stable_id [$species]\n$sequence{$species}{$prot_stable_id}\n";
+			$n_cluster_seqs++;
+		}
+   }
+	close(CLUSTER);
+
+	# write summary
+	if(!-s "$outfolder/$clusterdir/$dnafile"){ $dnafile = 'void' }
+   if(!-s "$outfolder/$clusterdir/$pepfile"){ $pepfile = 'void' }
+   print CLUSTER_LIST "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp file: $dnafile aminofile: $pepfile\n";
+	foreach $species (@supported_species){
+      next if(! $cluster{ $cluster_id }{ $species } );
+      foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
+         print CLUSTER_LIST ": $species\n";
+      }
+      #print CLUSTER ">("\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
+   }
 
 	# print matrix header
 	#if($total_core_clusters == 0){
@@ -348,6 +387,15 @@ foreach $cluster_id (@cluster_ids){
 		printf("\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
 	} print "\n";
 }
+
+close(CLUSTER_LIST);
+
+printf("# number_of_clusters = %d\n",scalar(@cluster_ids));
+print "# cluster_list = $outfolder/clusters.cluster_list\n";
+print "# cluster_directory = $outfolder/$clusterdir\n";
+
+## 5) make genome composition analysis to simulate pangenome growth
+
 
 
 my $end_time = new Benchmark();

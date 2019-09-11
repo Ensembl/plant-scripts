@@ -30,10 +30,9 @@ my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 my $verbose    = 0;
 my $division   = 'Plants';
 my $seqtype    = 'protein';
-my $clusterdir = 'clusters';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = ''; # should be contained in $taxonid;
-my ($comparadir,$fastadir,$outfolder,$out_genome) = ('','','','');
+my ($clusterdir,$comparadir,$fastadir,$outfolder,$out_genome,$params) = ('','','','','','');
 
 my ($help,$sp,$show_supported,$request,$response);
 my ($filename,$dnafile,$pepfile,$spfolder,$seq,$n_cluster_sp,$n_cluster_seqs);
@@ -64,10 +63,9 @@ sub help_message {
 		"-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n".
 		"-l list supported species_names            (optional, example: -l)\n".
 		"-d Ensembl division                        (optional, default: -d $division)\n".
-		"-r reference species_name                  (optional, default: -r $ref_genome)\n".
 		"-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n".
 		"-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n".
-		"-t sequence type [protein|cdna]            (optional, requires -f, default: -t protein)\n".
+		"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
 		"-L allow low-confidence orthologues        (optional, by default these are skipped)\n".
 		"-v verbose                                 (optional, example: -v\n";
 
@@ -90,15 +88,20 @@ sub help_message {
 
 if($help){ help_message() }
 
+if($ref_genome eq ''){
+   print "# ERROR: need a valid reference species_name, such as -r arabidopsis_thaliana)\n\n";
+   exit;
+} else {
+   $clusterdir = $ref_genome;
+	$clusterdir =~ s/_//g;
+}
+
 if($taxonid eq ''){
 	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
 	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
 	exit;
-}
-
-if($ref_genome eq ''){
-   print "# ERROR: need a valid reference species_name, such as -r arabidopsis_thaliana)\n\n";
-   exit;
+} else { 
+	$params = "_$taxonid\_algEnsemblCompara";
 }
 
 if($division){
@@ -122,16 +125,20 @@ if(@ignore_species){
 	printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
 }
 
+if($seqtype ne 'protein' && $seqtype ne 'cdna'){
+	die "# ERROR: accepted values for seqtype are: protein|cdna\n"
+}
+
 if($outfolder){
 	if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
-	else { 
+	else{ 	 
 		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
-		if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
 	}
 
-	if($seqtype ne 'protein' && $seqtype ne 'cdna'){
-		die "# ERROR: accepted values for seqtype are: protein|cdna\n"
-	}
+	# create $clusterdir with $params
+	$clusterdir .= $params;
+	if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
+
 } else {
 	print "# ERROR: need a valid output folder, such as -f Brassicaceae\n\n";
    exit;
@@ -325,9 +332,16 @@ foreach $hom_species (@supported_species){
 
 ## 4) write sequence clusters and pangenome matrices in output folder #################
 
-# open file to save cluster summary
-open(CLUSTER_LIST,">","$outfolder/clusters.cluster_list") || 
-      die "# ERROR: cannot create $outfolder/clusters.cluster_list\n";
+my $cluster_summary_file  = "$outfolder/clusters.cluster_list";
+my $pangenome_phylip_file = "$outfolder/pangenome_matrix$params\.phylip";
+my $pangenome_fasta_file  = "$outfolder/pangenome_matrix$params\.fasta";
+my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
+my $pangenome_csv_tr_file = "$outfolder/pangenome_matrix$params\.tr.csv"; # tr = transposed
+my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab"; 
+
+open(CLUSTER_LIST,">",$cluster_summary_file) || die "# ERROR: cannot create $cluster_summary_file\n";
+
+
 
 foreach $cluster_id (@cluster_ids){
 

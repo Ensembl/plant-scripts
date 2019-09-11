@@ -10,12 +10,11 @@ use Benchmark;
 use Time::HiRes;
 use HTTP::Tiny;
 
-# Simulates pangenome growth by counting clusters of orthologous genes shared by (plant) species in clade 
+# Produces pangenome analysis based on clusters of orthologous genes shared by (plant) species in clade 
 # by querying pre-computed Compara data from Ensembl Genomes
 #
-# Based on scripts at
-# https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/
-# https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
+# Produces output compatible with scripts at 
+# https://github.com/eead-csic-compbio/get_homologues
 #
 # Bruno Contreras Moreira 2019
 
@@ -178,7 +177,7 @@ if($out_genome && !$division_supported{ $out_genome }){
 ## 1) check species in clade ##################################################################
 
 my ($n_of_species, $cluster_id) = ( 0, '' );
-my (@supported_species, %supported, %present, %incluster, %cluster, @cluster_ids, %sequence);
+my (@supported_species, @cluster_ids, %supported, %present, %incluster, %cluster, %sequence);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -404,7 +403,6 @@ sub download_compara_TSV_file {
 	return $stored_compara_file;
 }
 
-# //ftp.ensemblgenomes.org/pub/release-44/plants/fasta/actinidia_chinensis/pep/Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa.gz
 # download compressed FASTA file from FTP site, and saves it in current folder; 
 # uses FTP globals defined above
 sub download_FASTA_file {
@@ -449,9 +447,8 @@ sub download_FASTA_file {
    return $fasta_file;
 }
 
-
-
 # uses global $request_count
+# based on examples at https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
 sub perform_rest_action {
 	my ($url, $headers) = @_;
 	$headers ||= {};

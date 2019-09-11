@@ -20,27 +20,23 @@ use HTTP::Tiny;
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes
-# only if you need singletons and/or peptide sequences
-# ftp://ftp.ensemblgenomes.org/pub/release-44/plants/fasta/actinidia_chinensis/pep/Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa.gz
 #>PSR83604 pep supercontig:Red5_PS1_1.69.0:ps1sf1427:11608:20559:-1 gene:CEY00_Acc33586 transcript:...
 #MGTSIFLILVSYII...
 #ATLHLDSDNTLYAL...
 my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
 my $FTPURL     = 'ftp.ensemblgenomes.org'; 
 my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
+my $FASTADIR   = '/pub/current/xxx/fasta';
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 
 my $verbose    = 0;
 my $division   = 'Plants';
+my $seqtype    = 'protein';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = ''; # should be contained in $taxonid;
-my $seqtype    = 'protein'; 
-my $comparadir = '';
-my $outfolder  = '';
-my $out_genome = '';
-
+my ($comparadir,$fastadir,$outfolder,$out_genome) = ('','','','');
 
 my ($help,$sp,$show_supported,$request,$response);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
@@ -111,9 +107,15 @@ if($division){
 	if(!grep(/$division/,@divisions)){
 		die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
 	} else {
-		$comparadir = $COMPARADIR;
 		my $lcdiv = lc($division);
+
+		$comparadir = $COMPARADIR;
 		$comparadir =~ s/xxx/$lcdiv/;
+		
+		$fastadir   = $FASTADIR;		
+		$fastadir =~ s/xxx/$lcdiv/;
+		if($seqtype eq 'protein'){ $fastadir .= '/pep/' }
+		else{ $fastadir .= '/cdna/' }
 	}
 }
 
@@ -233,12 +235,11 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
 	$high_confidence,$homology_id);
 
-# iteratively get and parse TSV files, starting with reference
-# NOTE: these files are bulky and might take some time to download
-
+# iteratively get and parse TSV & FASTA files, starting with reference
 foreach $sp ( @supported_species ){
-	
-	my $stored_compara_file = download_TSV_file( $comparadir, $sp );
+
+	# get TSV file; these files are bulky and might take some time to download
+	my $stored_compara_file = download_compara_TSV_file( $comparadir, $sp );
 	open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
 	while(<TSV>){
 	
@@ -293,6 +294,15 @@ foreach $sp ( @supported_species ){
 		} 
 	}
 	close(TSV);
+
+	# now get FASTA file and parse it
+   my $stored_sequence_file = download_sequence_file( $fastadir, $sp );
+   open(FASTA,"gzip -dc $stored_sequence_file |") || die "# ERROR: cannot open $stored_sequence_file\n";
+   while(<FASTA>){
+		print;
+		exit;
+	}
+	close(FASTA);
 }
 
 # check GOC / WGA availability
@@ -310,8 +320,8 @@ foreach $hom_species (@supported_species){
 foreach $cluster_id (@cluster_ids){
 
 	# debugging
-	next if(scalar(keys(%{ $cluster{ $cluster_id } })) < $n_of_species || 
-		scalar(@{ $cluster{ $cluster_id }{ $ref_genome } }) < 2);
+	#next if(scalar(keys(%{ $cluster{ $cluster_id } })) < $n_of_species || 
+	#	scalar(@{ $cluster{ $cluster_id }{ $ref_genome } }) < 2);
 
 	#my (%valid_prots, %align);
 	#$filename = $gene_stable_id;
@@ -329,9 +339,9 @@ foreach $cluster_id (@cluster_ids){
 	#	print "\n";
 	#}
 	
-	# print a matrix row in TSV format
-	print $cluster_id;;
+	printf("%s\t%d",$cluster_id,scalar(keys(%{ $cluster{ $cluster_id } })));
 	foreach $species (@supported_species){ 
+		if(! $cluster{ $cluster_id }{ $species } ){ $cluster{ $cluster_id }{ $species } = [] }
 		printf("\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
 	} print "\n";
 }
@@ -344,12 +354,10 @@ print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 
 # download compressed TSV file from FTP site, renames it 
 # and saves it in current folder; uses FTP globals defined above
-sub download_TSV_file {
+sub download_compara_TSV_file {
 
 	my ($dir,$ref_genome) = @_;
 	my ($compara_file,$stored_compara_file) = ('','');
-
-	#print "# connecting to $FTPURL ...\n";
 
 	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
 		$ftp->login("anonymous",'-anonymous@') ||
@@ -392,6 +400,7 @@ sub download_TSV_file {
 	return $stored_compara_file;
 }
 
+# //ftp.ensemblgenomes.org/pub/release-44/plants/fasta/actinidia_chinensis/pep/Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa.gz
 
 # uses global $request_count
 sub perform_rest_action {

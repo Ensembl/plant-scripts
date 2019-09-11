@@ -35,7 +35,8 @@ my $ref_genome = ''; # should be contained in $taxonid;
 my ($clusterdir,$comparadir,$fastadir,$outfolder,$out_genome,$params) = ('','','','','','');
 
 my ($help,$sp,$show_supported,$request,$response);
-my ($filename,$dnafile,$pepfile,$spfolder,$seq,$n_cluster_sp,$n_cluster_seqs);
+my ($filename,$dnafile,$pepfile,$seq,$seqfolder,$ext);
+my ($n_core_clusters,$n_cluster_sp,$n_cluster_seqs) = (0,0,0);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
 my ($request_time,$last_request_time) = (0,0);
 my (@ignore_species, %ignore, %division_supported);
@@ -94,6 +95,9 @@ if($ref_genome eq ''){
 } else {
    $clusterdir = $ref_genome;
 	$clusterdir =~ s/_//g;
+	if($out_genome){
+		$clusterdir .= "_plus_".$out_genome;
+	}
 }
 
 if($taxonid eq ''){
@@ -139,6 +143,15 @@ if(@ignore_species){
 
 if($seqtype ne 'protein' && $seqtype ne 'cdna'){
 	die "# ERROR: accepted values for seqtype are: protein|cdna\n"
+} else {
+	if($seqtype eq 'protein'){ 
+		$ext = '.faa';
+		$seqfolder = 'pep';
+	}
+   else{ 
+		$ext = '.fna'; 
+		$seqfolder = 'cdna';
+	}
 }
 
 if($outfolder){
@@ -313,10 +326,7 @@ foreach $sp ( @supported_species ){
 	close(TSV);
 
 	# now get FASTA file and parse it
-	$spfolder = $sp;
-	if($seqtype eq 'protein'){ $spfolder .= '/pep/' }
-   else{ $spfolder .= '/cdna/' }
-   my $stored_sequence_file = download_FASTA_file( $fastadir, $spfolder  );
+   my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder"  );
    open(FASTA,"gzip -dc $stored_sequence_file |") || die "# ERROR: cannot open $stored_sequence_file\n";
    while(my $line = <FASTA>){
 		#>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
@@ -331,117 +341,129 @@ foreach $sp ( @supported_species ){
 	close(FASTA);
 }
 
-# check GOC / WGA availability
-foreach $hom_species (@supported_species){
-	if(!defined( $present{ $hom_species } )&& $WGA){
-		print "# WGA not available: $hom_species\n";
-	} elsif(!defined( $present{ $hom_species } ) && $GOC){
-		print "# GOC not available: $hom_species\n";
-	}
-}
+# TODO: add unclustered sequences as singletons
+
+
 
 ## 3) compute Percent Conserved Sequences (POCP) matrix #################
 
 
-## 4) write sequence clusters and pangenome matrices in output folder #################
+## 4) write sequence clusters and summary text file #################
 
 my $cluster_summary_file  = "$outfolder/$clusterdir.cluster_list";
-my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
-my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab";
-my $pangenome_phylip_file = "$outfolder/pangenome_matrix$params\.phylip";
-my $pangenome_fasta_file  = "$outfolder/pangenome_matrix$params\.fasta";
 
 open(CLUSTER_LIST,">",$cluster_summary_file) || 
 	die "# ERROR: cannot create $cluster_summary_file\n";
 
-open(PANGEMATRIX,">$pangenome_matrix_file") ||
-	die "# EXIT: cannot create $pangenome_matrix_file\n";
-    
-open(PANGENEMATRIX,">$pangenome_gene_file") || 
-	die "# EXIT: cannot create $pangenome_gene_file\n";
-
-open(PANGEMATRIX,">$pangenome_phylip_file") || 
-	die "# EXIT: cannot create $pangenome_phylip_file\n";
-
-open(PANGEMATRIX2,">$pangenome_fasta_file") || 
-	die "# EXIT: cannot create $pangenome_fasta_file\n";
+$n_core_clusters = 0;
 
 foreach $cluster_id (@cluster_ids){
 
-	# debugging
-	#next if(scalar(keys(%{ $cluster{ $cluster_id } })) < $n_of_species || 
-	#	scalar(@{ $cluster{ $cluster_id }{ $ref_genome } }) < 2);
+   if(scalar(keys(%{ $cluster{ $cluster_id } })) == $n_of_species){
+		$n_core_clusters++;
+	}
 
-	# sequence cluster
-	$n_cluster_sp=$n_cluster_seqs=0;
-	$filename = $cluster_id;
+   # sequence cluster
+   $n_cluster_sp=$n_cluster_seqs=0;
+   $filename = $cluster_id;
 
-	# for summary, in case this was run twice (cdna & prot)
+   # for summary, in case this was run twice (cdna & prot)
    $dnafile = $filename . '.fna';
    $pepfile = $filename . '.faa';
 
-	# defines which one is being written in this run
-	if($seqtype eq 'protein'){ $filename .= '.faa' }
-   else{ $filename .= '.fna' }
-
-	# write sequences
-	open(CLUSTER,">","$outfolder/$clusterdir/$filename") || 
-		die "# ERROR: cannot create $outfolder/$clusterdir/$filename\n";
-	foreach $species (@supported_species){ 
+   # write sequences
+   open(CLUSTER,">","$outfolder/$clusterdir/$filename$ext") ||
+      die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
+   foreach $species (@supported_species){
       next if(! $cluster{ $cluster_id }{ $species } );
-		$n_cluster_sp++;
-		foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
-			print CLUSTER ">$prot_stable_id [$species]\n$sequence{$species}{$prot_stable_id}\n";
-			$n_cluster_seqs++;
-		}
+      $n_cluster_sp++;
+      foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
+         print CLUSTER ">$prot_stable_id [$species]\n$sequence{$species}{$prot_stable_id}\n";
+         $n_cluster_seqs++;
+      }
    }
-	close(CLUSTER);
+   close(CLUSTER);
 
-	# write summary
-	if(!-s "$outfolder/$clusterdir/$dnafile"){ $dnafile = 'void' }
+   # write summary
+   if(!-s "$outfolder/$clusterdir/$dnafile"){ $dnafile = 'void' }
    if(!-s "$outfolder/$clusterdir/$pepfile"){ $pepfile = 'void' }
    print CLUSTER_LIST "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp file: $dnafile aminofile: $pepfile\n";
-	foreach $species (@supported_species){
+   foreach $species (@supported_species){
       next if(! $cluster{ $cluster_id }{ $species } );
       foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
          print CLUSTER_LIST ": $species\n";
       }
-      #print CLUSTER ">("\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
    }
-
-	# print matrix header
-	#if($total_core_clusters == 0){
-	#	print "cluster";
-	#	foreach $hom_species (@supported_species){
-	#		print "\t$hom_species";
-	#	} 
-	#	print "\n";
-	#}
-	
-	printf("%s\t%d",$cluster_id,scalar(keys(%{ $cluster{ $cluster_id } })));
-	foreach $species (@supported_species){ 
-		if(! $cluster{ $cluster_id }{ $species } ){ $cluster{ $cluster_id }{ $species } = [] }
-		printf("\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
-	} print "\n";
 }
 
 close(CLUSTER_LIST);
-close(PANGEMATRIX);
-close(PANGENEMATRIX);
-close(PANGEMATRIX);
-close(PANGEMATRIX2);
 
-printf("# number_of_clusters = %d\n\n",scalar(@cluster_ids));
+printf("# number_of_clusters = %d (core = %d)\n\n",scalar(@cluster_ids),$n_core_clusters);
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
 print "# cluster_directory = $outfolder/$clusterdir\n\n";
 
+## 5)  write pangenome matrices in output folder ####################
+
+# set matrix filenames and write headers if needed
+my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
+my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab";
+my $pangenome_fasta_file  = "$outfolder/pangenome_matrix$params\.fasta";
+
+open(PANGEMATRIX,">$pangenome_matrix_file") ||
+	die "# EXIT: cannot create $pangenome_matrix_file\n";
+
+open(PANGENEMATRIX,">$pangenome_gene_file") || 
+   die "# EXIT: cannot create $pangenome_gene_file\n";
+
+print PANGEMATRIX "source:$outfolder/$clusterdir";
+foreach $cluster_id (@cluster_ids){ print PANGEMATRIX "\t$cluster_id$ext"; }
+print PANGEMATRIX "\n";
+  
+print PANGENEMATRIX "source:$outfolder/$clusterdir";
+foreach $cluster_id (@cluster_ids){ print PANGENEMATRIX "\t$cluster_id$ext"; }
+print PANGENEMATRIX "\n";
+
+open(PANGEMATRIF,">$pangenome_fasta_file") || 
+	die "# EXIT: cannot create $pangenome_fasta_file\n";
+
+foreach $species (@supported_species){
+
+	print PANGEMATRIX "$species";
+	print PANGENEMATRIX "$species";
+	print PANGEMATRIF ">$species\n";
+
+	foreach $cluster_id (@cluster_ids){
+
+		if($cluster{ $cluster_id }{ $species }){
+			printf(PANGEMATRIX "%d\t", scalar(@{ $cluster{ $cluster_id }{ $species } }));
+			printf(PANGENEMATRIX "%s\t", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
+			print PANGENEMATRIX "1";
+		} else { # absent genes
+			print PANGEMATRIX "0\t"; 
+			print PANGENEMATRIX "-\t"; 
+			print PANGEMATRIF "0";
+		}
+	}
+
+	print PANGEMATRIX "\n";
+	print PANGENEMATRIX "\n";
+	print PANGEMATRIF "\n";
+}
+
+close(PANGEMATRIX);
+close(PANGENEMATRIX);
+close(PANGEMATRIF);
+
 print "# pangenome_file = $pangenome_matrix_file\n";
 print "# pangenome_genes = $pangenome_gene_file\n";
-print "# pangenome_phylip file = $pangenome_phylip_file\n";
-print "# pangenome_FASTA file = $pangenome_fasta_file\n";
+print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 
-## 5) make genome composition analysis to simulate pangenome growth
+## 6) make genome composition analysis to simulate pangenome growth
+
+
+
+
 
 
 

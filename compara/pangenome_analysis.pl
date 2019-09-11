@@ -104,6 +104,18 @@ if($taxonid eq ''){
 	$params = "_$taxonid\_algEnsemblCompara";
 }
 
+if($GOC){
+	$params .= "_GOC$GOC";	
+}
+
+if($WGA){
+	$params .= "_WGA$WGA";	
+}
+
+if($LOWCONF){
+	$params .= "_LC";
+}
+
 if($division){
 	if(!grep(/$division/,@divisions)){
 		die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
@@ -406,7 +418,7 @@ foreach $cluster_id (@cluster_ids){
 close(CLUSTER_LIST);
 
 printf("# number_of_clusters = %d\n",scalar(@cluster_ids));
-print "# cluster_list = $outfolder/clusters.cluster_list\n";
+print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
 print "# cluster_directory = $outfolder/$clusterdir\n";
 
 ## 5) make genome composition analysis to simulate pangenome growth

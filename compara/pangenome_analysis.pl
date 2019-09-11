@@ -101,7 +101,7 @@ if($taxonid eq ''){
 	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
 	exit;
 } else { 
-	$params = "_$taxonid\_algEnsemblCompara";
+	$clusterdir .= "_$taxonid\_algEnsemblCompara";
 }
 
 if($GOC){
@@ -345,16 +345,26 @@ foreach $hom_species (@supported_species){
 
 ## 4) write sequence clusters and pangenome matrices in output folder #################
 
-my $cluster_summary_file  = "$outfolder/clusters.cluster_list";
+my $cluster_summary_file  = "$outfolder/$clusterdir.cluster_list";
+my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
+my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab";
 my $pangenome_phylip_file = "$outfolder/pangenome_matrix$params\.phylip";
 my $pangenome_fasta_file  = "$outfolder/pangenome_matrix$params\.fasta";
-my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
-my $pangenome_csv_tr_file = "$outfolder/pangenome_matrix$params\.tr.csv"; # tr = transposed
-my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab"; 
 
-open(CLUSTER_LIST,">",$cluster_summary_file) || die "# ERROR: cannot create $cluster_summary_file\n";
+open(CLUSTER_LIST,">",$cluster_summary_file) || 
+	die "# ERROR: cannot create $cluster_summary_file\n";
 
+open(PANGEMATRIX,">$pangenome_matrix_file") ||
+	die "# EXIT: cannot create $pangenome_matrix_file\n";
+    
+open(PANGENEMATRIX,">$pangenome_gene_file") || 
+	die "# EXIT: cannot create $pangenome_gene_file\n";
 
+open(PANGEMATRIX,">$pangenome_phylip_file") || 
+	die "# EXIT: cannot create $pangenome_phylip_file\n";
+
+open(PANGEMATRIX2,">$pangenome_fasta_file") || 
+	die "# EXIT: cannot create $pangenome_fasta_file\n";
 
 foreach $cluster_id (@cluster_ids){
 
@@ -416,10 +426,20 @@ foreach $cluster_id (@cluster_ids){
 }
 
 close(CLUSTER_LIST);
+close(PANGEMATRIX);
+close(PANGENEMATRIX);
+close(PANGEMATRIX);
+close(PANGEMATRIX2);
 
-printf("# number_of_clusters = %d\n",scalar(@cluster_ids));
+printf("# number_of_clusters = %d\n\n",scalar(@cluster_ids));
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
-print "# cluster_directory = $outfolder/$clusterdir\n";
+print "# cluster_directory = $outfolder/$clusterdir\n\n";
+
+print "# pangenome_file = $pangenome_matrix_file\n";
+print "# pangenome_genes = $pangenome_gene_file\n";
+print "# pangenome_phylip file = $pangenome_phylip_file\n";
+print "# pangenome_FASTA file = $pangenome_fasta_file\n";
+
 
 ## 5) make genome composition analysis to simulate pangenome growth
 

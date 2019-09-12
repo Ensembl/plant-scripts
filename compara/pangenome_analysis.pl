@@ -372,7 +372,7 @@ foreach $sp (@supported_species){
 		$singletons++;
 	}
 
-	printf("# %s : total sequences=%d singletons=%d\n",$sp,$totalgenes{$sp},$singletons);
+	printf("# %s : sequences = %d singletons = %d\n",$sp,$totalgenes{$sp},$singletons);
 }
 
 ## 3) compute Percent Conserved Sequences (POCP) matrix #################
@@ -467,7 +467,7 @@ foreach $species (@supported_species){
 		if($cluster{ $cluster_id }{ $species }){
 			printf(PANGEMATRIX "%d\t", scalar(@{ $cluster{ $cluster_id }{ $species } }));
 			printf(PANGENEMATRIX "%s\t", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
-			print PANGENEMATRIX "1";
+			print PANGEMATRIF "1";
 		} else { # absent genes
 			print PANGEMATRIX "0\t"; 
 			print PANGENEMATRIX "-\t"; 

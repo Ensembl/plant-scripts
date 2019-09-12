@@ -27,6 +27,8 @@ my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 
+my $TRANSPOSEXE= 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
+
 my $verbose    = 0;
 my $division   = 'Plants';
 my $seqtype    = 'protein';
@@ -378,6 +380,8 @@ foreach $sp (@supported_species){
 ## 3) compute Percent Conserved Sequences (POCP) matrix #################
 
 
+
+
 ## 4) write sequence clusters and summary text file #################
 
 my $cluster_summary_file  = "$outfolder/$clusterdir.cluster_list";
@@ -437,6 +441,8 @@ print "# cluster_directory = $outfolder/$clusterdir\n\n";
 # set matrix filenames and write headers if needed
 my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
 my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab";
+my $pangenome_matrix_tr   = "$outfolder/pangenome_matrix$params\.tr.tab";
+my $pangenome_gene_tr   = "$outfolder/pangenome_matrix_genes$params\.tr.tab";
 my $pangenome_fasta_file  = "$outfolder/pangenome_matrix$params\.fasta";
 
 open(PANGEMATRIX,">$pangenome_matrix_file") ||
@@ -465,12 +471,12 @@ foreach $species (@supported_species){
 	foreach $cluster_id (@cluster_ids){
 
 		if($cluster{ $cluster_id }{ $species }){
-			printf(PANGEMATRIX "%d\t", scalar(@{ $cluster{ $cluster_id }{ $species } }));
-			printf(PANGENEMATRIX "%s\t", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
+			printf(PANGEMATRIX "\t%d", scalar(@{ $cluster{ $cluster_id }{ $species } }));
+			printf(PANGENEMATRIX "\t%s", join(',',@{ $cluster{ $cluster_id }{ $species } }) );
 			print PANGEMATRIF "1";
 		} else { # absent genes
-			print PANGEMATRIX "0\t"; 
-			print PANGENEMATRIX "-\t"; 
+			print PANGEMATRIX "\t0"; 
+			print PANGENEMATRIX "\t-"; 
 			print PANGEMATRIF "0";
 		}
 	}
@@ -484,8 +490,11 @@ close(PANGEMATRIX);
 close(PANGENEMATRIX);
 close(PANGEMATRIF);
 
-print "# pangenome_file = $pangenome_matrix_file\n";
-print "# pangenome_genes = $pangenome_gene_file\n";
+system("$TRANSPOSEXE $pangenome_matrix_file > $pangenome_matrix_tr");
+system("$TRANSPOSEXE $pangenome_gene_file > $pangenome_gene_tr");
+
+print "# pangenome_file = $pangenome_matrix_file tranposed = $pangenome_matrix_tr\n";
+print "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\n";
 print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 

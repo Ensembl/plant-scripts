@@ -36,7 +36,7 @@ my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poac
 my $ref_genome = ''; # should be contained in $taxonid;
 my ($clusterdir,$comparadir,$fastadir,$outfolder,$out_genome,$params) = ('','','','','','');
 
-my ($help,$sp,$show_supported,$request,$response);
+my ($help,$sp,$sp2,$show_supported,$request,$response);
 my ($filename,$dnafile,$pepfile,$seqfolder,$ext);
 my ($n_core_clusters,$n_cluster_sp,$n_cluster_seqs) = (0,0,0);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
@@ -215,8 +215,8 @@ if($out_genome && !$division_supported{ $out_genome }){
 ## 1) check species in clade ##################################################################
 
 my ($n_of_species, $cluster_id) = ( 0, '' );
-my (@supported_species, @cluster_ids, %supported, %present);
-my (%incluster, %cluster, %sequence, %totalgenes);
+my (@supported_species, @cluster_ids, %supported);
+my (%incluster, %cluster, %sequence, %totalgenes, %POCP_matrix);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -319,7 +319,6 @@ foreach $sp ( @supported_species ){
 				$incluster{ $prot_stable_id } = $cluster_id;
 			
 				push(@{ $cluster{ $cluster_id }{ $species } }, $prot_stable_id );
-				$present{ $species }++;
 
 			} else {
 				# set cluster for $hom_species anyway 
@@ -333,7 +332,6 @@ foreach $sp ( @supported_species ){
             $incluster{ $hom_prot_stable_id } = $cluster_id;
 
             push(@{ $cluster{ $cluster_id }{ $hom_species } }, $hom_prot_stable_id );
-            $present{ $hom_species }++;
          } 
 
 			# save isoforms used in compara
@@ -377,12 +375,10 @@ foreach $sp (@supported_species){
 	printf("# %s : sequences = %d singletons = %d\n",$sp,$totalgenes{$sp},$singletons);
 }
 
-## 3) compute Percent Conserved Sequences (POCP) matrix #################
+## 3) write sequence clusters, summary text file and POCP matrix #################
 
-
-
-
-## 4) write sequence clusters and summary text file #################
+# POCP=Percent Conserved Sequences (POCP) matrix 
+my $POCP_matrix_file = "$outfolder/POCP.matrix$params\.tab";
 
 my $cluster_summary_file  = "$outfolder/$clusterdir.cluster_list";
 
@@ -405,7 +401,8 @@ foreach $cluster_id (@cluster_ids){
    $dnafile = $filename . '.fna';
    $pepfile = $filename . '.faa';
 
-   # write sequences
+   # write sequences and count sequences
+	my (%cluster_stats,@cluster_species);
    open(CLUSTER,">","$outfolder/$clusterdir/$filename$ext") ||
       die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
    foreach $species (@supported_species){
@@ -414,31 +411,76 @@ foreach $cluster_id (@cluster_ids){
       foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
          print CLUSTER ">$prot_stable_id [$species]\n$sequence{$species}{$prot_stable_id}\n";
          $n_cluster_seqs++;
+			$cluster_stats{$species}++;
       }
    }
    close(CLUSTER);
 
-   # write summary
+   # cluster summary 
+	@cluster_species = keys(%cluster_stats);
    if(!-s "$outfolder/$clusterdir/$dnafile"){ $dnafile = 'void' }
    if(!-s "$outfolder/$clusterdir/$pepfile"){ $pepfile = 'void' }
    print CLUSTER_LIST "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp file: $dnafile aminofile: $pepfile\n";
-   foreach $species (@supported_species){
-      next if(! $cluster{ $cluster_id }{ $species } );
+   foreach $species (@cluster_species){
       foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
          print CLUSTER_LIST ": $species\n";
       }
    }
+
+	# update PCOP data
+	foreach $sp (0 .. $#cluster_species-1){
+		foreach $sp2 ($sp+1 .. $#cluster_species){
+
+			# add the number of sequences in this cluster from a pair of species/taxa
+			$POCP_matrix{$cluster_species[$sp]}{$cluster_species[$sp2]} += $cluster_stats{$cluster_species[$sp]};
+			$POCP_matrix{$cluster_species[$sp]}{$cluster_species[$sp2]} += $cluster_stats{$cluster_species[$sp2]};
+
+			# now in reverse order to make sure it all adds up
+			$POCP_matrix{$cluster_species[$sp2]}{$cluster_species[$sp]} += $cluster_stats{$cluster_species[$sp]};
+         $POCP_matrix{$cluster_species[$sp2]}{$cluster_species[$sp]} += $cluster_stats{$cluster_species[$sp2]};
+		}
+	}
 }
 
 close(CLUSTER_LIST);
 
 printf("\n# number_of_clusters = %d (core = %d)\n\n",scalar(@cluster_ids),$n_core_clusters);
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
-print "# cluster_directory = $outfolder/$clusterdir\n\n";
+print "# cluster_directory = $outfolder/$clusterdir\n";
 
-## 5)  write pangenome matrices in output folder ####################
+# print POCP matrix
+open(POCPMATRIX,">$POCP_matrix_file") || 
+	die "# EXIT: cannot create $POCP_matrix_file\n";
 
-# set matrix filenames and write headers if needed
+print POCPMATRIX "genomes";
+foreach $sp (0 .. $#supported_species){
+	print POCPMATRIX "\t$supported_species[$sp]";
+} print POCPMATRIX "\n";
+
+foreach $sp (0 .. $#supported_species){
+	print POCPMATRIX "$supported_species[$sp]";
+	foreach $sp2 (0 .. $#supported_species){
+
+		if($sp == $sp2){ print POCPMATRIX "\t100" }
+		else{
+			if($POCP_matrix{$supported_species[$sp]}{$supported_species[$sp2]}){
+				printf(POCPMATRIX "\t%1.2f",
+					(100*$POCP_matrix{$supported_species[$sp]}{$supported_species[$sp2]}) /
+					($totalgenes{$supported_species[$sp]} + $totalgenes{$supported_species[$sp2]}));
+			} else {	
+				print POCPMATRIX "\tNA";
+			}
+		}
+	}
+	print POCPMATRIX "\n";
+}
+close(POCPMATRIX);
+
+print "\n# percent_conserved_proteins_file = $POCP_matrix_file\n\n";
+
+## 4)  write pangenome matrices in output folder ####################
+
+# set matrix filenames and write headers
 my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
 my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab";
 my $pangenome_matrix_tr   = "$outfolder/pangenome_matrix$params\.tr.tab";
@@ -498,7 +540,7 @@ print "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\
 print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 
-## 6) make genome composition analysis to simulate pangenome growth
+## 5) make genome composition analysis to simulate pangenome growth
 
 
 

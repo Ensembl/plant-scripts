@@ -35,7 +35,7 @@ my $ref_genome = ''; # should be contained in $taxonid;
 my ($clusterdir,$comparadir,$fastadir,$outfolder,$out_genome,$params) = ('','','','','','');
 
 my ($help,$sp,$show_supported,$request,$response);
-my ($filename,$dnafile,$pepfile,$seq,$seqfolder,$ext);
+my ($filename,$dnafile,$pepfile,$seqfolder,$ext);
 my ($n_core_clusters,$n_cluster_sp,$n_cluster_seqs) = (0,0,0);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
 my ($request_time,$last_request_time) = (0,0);
@@ -214,7 +214,7 @@ if($out_genome && !$division_supported{ $out_genome }){
 
 my ($n_of_species, $cluster_id) = ( 0, '' );
 my (@supported_species, @cluster_ids, %supported, %present);
-my (%incluster, %cluster, %sequence, %totalseq);
+my (%incluster, %cluster, %sequence, %totalgenes);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -266,14 +266,22 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
 	$high_confidence,$homology_id);
 
-# iteratively get and parse TSV & FASTA files, starting with reference
+# iteratively get and parse TSV & FASTA files, starting with reference, to compile clusters
+# of sequences made by Ensembl Compara
 foreach $sp ( @supported_species ){
 
 	# get TSV file; these files are bulky and might take some time to download
 	my $stored_compara_file = download_compara_TSV_file( $comparadir, $sp );
+
+	# uncompress on the fly and parse
+	my %compara_isoform;
 	open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
 	while(my $line = <TSV>){
-	
+
+		#ATMG00030       ATMG00030.1     arabidopsis_thaliana    52.3364 ortholog_one2many       \
+		#Tp57577_TGAC_v2_gene25507       Tp57577_TGAC_v2_mRNA26377       trifolium_pratense      \
+		#16.8675 NULL    NULL    NULL    NULL    0       84344678
+
 		($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
 		$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
 		$high_confidence,$homology_id) = split(/\t/,$line);
@@ -300,7 +308,7 @@ foreach $sp ( @supported_species ){
 					$cluster_id = $incluster{ $hom_prot_stable_id };
 				} else {
 
-					# otherwise create a new one 
+					# otherwise create a new one
 					$cluster_id = $prot_stable_id;
 					push(@cluster_ids, $cluster_id);
 				}
@@ -312,7 +320,7 @@ foreach $sp ( @supported_species ){
 				$present{ $species }++;
 
 			} else {
-				# set cluster from $hom_species anyway 
+				# set cluster for $hom_species anyway 
 				$cluster_id = $incluster{ $prot_stable_id };
 			}
 			
@@ -325,43 +333,46 @@ foreach $sp ( @supported_species ){
             push(@{ $cluster{ $cluster_id }{ $hom_species } }, $hom_prot_stable_id );
             $present{ $hom_species }++;
          } 
+
+			# save isoforms used in compara
+			$compara_isoform{$prot_stable_id} = 1;
 		} 
 	}
 	close(TSV);
 
-	# now get FASTA file and parse it
+	# now get FASTA file and parse it, selected/longest isoforms are read
    my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder"  );
-   open(FASTA,"gzip -dc $stored_sequence_file |") || die "# ERROR: cannot open $stored_sequence_file\n";
-   while(my $line = <FASTA>){
-		#>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
-		if($line =~ m/^>(\S+)/){
-			$prot_stable_id = $1;
-			$totalseq{ $sp }++;
-		}
-		elsif($line =~ m/^(\S+)/){
-			$seq = $1;
-			$sequence{ $sp }{ $prot_stable_id } .= $seq;
-		}
+	my $ref_sequence = parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
+
+	# count number of genes/selected isoforms in this species
+	$totalgenes{ $sp } = scalar(keys(%$ref_sequence));
+
+	# save these sequences
+	foreach $prot_stable_id (keys(%$ref_sequence)){
+		$sequence{$species}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};		
 	}
-	close(FASTA);
 }
 
 # add unclustered sequences as singletons
 foreach $sp (@supported_species){
 
 	my $singletons = 0;
+	
 	foreach $prot_stable_id (sort keys(%{ $sequence{ $sp } })){
-		next if($incluster{ $prot_stable_id });
+
+		next if($incluster{ $prot_stable_id }); # skip
 
 		# create new cluster
 		$cluster_id = $prot_stable_id;
-		push(@cluster_ids, $cluster_id);
 		$incluster{ $prot_stable_id } = $cluster_id;
+
       push(@{ $cluster{ $cluster_id }{ $sp } }, $prot_stable_id );
+		push(@cluster_ids, $cluster_id);
+
 		$singletons++;
 	}
 
-	printf("# %s : singletons=%d / %d\n",$sp,$singletons,$totalseq{$sp});
+	printf("# %s : total sequences=%d singletons=%d\n",$sp,$totalgenes{$sp},$singletons);
 }
 
 ## 3) compute Percent Conserved Sequences (POCP) matrix #################
@@ -490,6 +501,59 @@ my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 
 ###################################################################################################
+
+# parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file
+# returns a isoform=>sequence hash with the (optionally) selected or (default) longest peptide/transcript per gene
+sub parse_isoform_FASTA_file {
+
+	my ($FASTA_filename, $ref_isoforms2keep) = @_;
+
+	my ($stable_id, $gene_stable_id, $max, $len);
+	my ($iso_selected, $len_selected);
+	my (%sequence, %sequence4gene);
+
+   open(FASTA,"gzip -dc $FASTA_filename |") || die "# ERROR: cannot open $FASTA_filename\n";
+   while(my $line = <FASTA>){
+      #>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
+      if($line =~ m/^>(\S+).*?gene:(\S+)/){
+         $stable_id = $1; # might pep or cdna id
+         $gene_stable_id = $2;
+      } elsif($line =~ m/^(\S+)/){
+         $sequence{ $gene_stable_id }{ $stable_id } .= $1;
+      }
+   }
+   close(FASTA);
+
+	foreach $gene_stable_id (keys(%sequence)){
+
+		# work out which isoform should be kept for this gene
+		($max,$iso_selected,$len_selected) = (0,'','');
+		foreach $stable_id (keys(%{ $sequence{$gene_stable_id} })){
+
+			# find longest isoform (default), note that key order is random
+			$len = length($sequence{ $gene_stable_id }{ $stable_id });
+			if($len > $max){ 
+				$max = $len;
+				$len_selected = $stable_id;
+			}
+
+			if($ref_isoforms2keep->{ $stable_id }){
+				$iso_selected = $stable_id;
+			}
+		}
+
+		if($iso_selected){
+			$sequence4gene{ $iso_selected } = $sequence{ $gene_stable_id }{ $iso_selected };
+		} elsif($len_selected){
+			$sequence4gene{ $len_selected } = $sequence{ $gene_stable_id }{ $len_selected };
+		} else {
+			print "# ERROR: cannot select an isoform for gene $gene_stable_id\n";
+		}
+	}
+
+	return \%sequence4gene;
+}
+
 
 # download compressed TSV file from FTP site, renames it 
 # and saves it in current folder; uses FTP globals defined above

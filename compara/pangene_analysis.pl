@@ -29,6 +29,10 @@ my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 
 my $TRANSPOSEXE= 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
+# genome composition report
+my $RNDSEED = 12345;
+my $NOFSAMPLESREPORT = 10;
+
 my $verbose    = 0;
 my $division   = 'Plants';
 my $seqtype    = 'protein';
@@ -542,24 +546,17 @@ print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 ## 5) make genome composition analysis to simulate pangenome growth
 
-  my ($s,$t,$t2,@pangenome,@coregenome,@softcore,$n_of_permutations,$soft_taxa); #$s = sample, $t=taxon to be added, $t2=taxon to compare
-  my ($mean,$sd,$data_file,$sort,%previous_sorts,%inparalogues,%homol_registry,@sample,@clusters);
-  my @tmptaxa = @taxa;
-  my $n_of_taxa = scalar(@tmptaxa);
+my ($s,@pangenome,@coregenome); #$s = sample
+my ($mean,$sd,$data_file,$sort,%previous_sorts,%homol_registry,@sample,@clusters);
+my @tmptaxa = @supported_species;
+my $n_of_taxa = scalar(@tmptaxa);
 
-  if($include_file) # add 0 && if you wish $NOFSAMPLESREPORT samples even if using a -I include file
-  {
-    $NOFSAMPLESREPORT = 1;
-    print "\n# genome composition report (samples=1, using sequence order implicit in -I file: $include_file)\n";
-  }
-  else
-  {
-    $n_of_permutations = sprintf("%g",factorial($n_of_taxa));
-    if($n_of_permutations < $NOFSAMPLESREPORT){ $NOFSAMPLESREPORT = $n_of_permutations; }
-    print "\n# genome composition report (samples=$NOFSAMPLESREPORT,permutations=$n_of_permutations,seed=$random_number_generator_seed)\n";
-  }
+my $n_of_permutations = sprintf("%g",factorial($n_of_taxa));
+if($n_of_permutations < $NOFSAMPLESREPORT){ $NOFSAMPLESREPORT = $n_of_permutations; }
+print "\n# genome composition report (samples=$NOFSAMPLESREPORT,permutations=$n_of_permutations,seed=$RNDSEED)\n";
 
-  for($s=0;$s<$NOFSAMPLESREPORT;$s++) # random-sort the list of taxa $NOFSAMPLESREPORT times
+# random-sort the list of taxa $NOFSAMPLESREPORT times
+for($s=0;$s<$NOFSAMPLESREPORT;$s++){ 
   { 
     #if($s) # in case you wish $NOFSAMPLESREPORT samples even if using a -I include file
     if(!$include_file && $s) # reshuffle until a new permutation is obtained, conserve input order in first sample
@@ -965,3 +962,10 @@ sub perform_rest_action {
 	else { return '' }	
 }
 
+sub factorial
+{
+	my $max = int($_[0]);
+	my $f = 1;
+	for (2 .. $max) { $f *= $_ }
+	return $f;
+}

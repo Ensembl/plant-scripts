@@ -616,19 +616,6 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 					$pangenome[$s][$sp]++;
 				}
 			}
-			
-			# core clusters must contain sequences from reference species
-			#next if($sp == 1 && !$cluster{ $cluster_id }{ $tmptaxa[0] });
-          
-			#foreach $species (keys(%{$cluster{$cluster_id}})){
-			#	if($species eq $tmptaxa[$sp]){
-			#		$n_of_taxa_in_cluster{$cluster_id}++; # species added since $sp=1
-			#		if($cluster{$cluster_id}{$tmptaxa[0]} && $n_of_taxa_in_cluster{$cluster_id} == $sp){
-			#			$coregenome[$s][$sp]++;  # update core totals
-			#		}
-         #      next CLUSTER;
-			#	}
-			#}
 		}
 
       print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n";

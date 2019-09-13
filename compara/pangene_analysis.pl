@@ -544,225 +544,140 @@ print "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\
 print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 
-## 5) make genome composition analysis to simulate pangenome growth
+## 5) make genome composition analysis to simulate pangenome growth 
+## NOTE: this is measured in genes added/missed per genome
 
 my ($s,@pangenome,@coregenome); #$s = sample
-my ($mean,$sd,$data_file,$sort,%previous_sorts,%homol_registry,@sample,@clusters);
-my @tmptaxa = @supported_species;
-my $n_of_taxa = scalar(@tmptaxa);
+my ($mean,$sd,$data_file,$sort);
+my (%previous_sorts,@sample,@clusters);
+my @taxa = @supported_species;
+my @tmptaxa = @taxa;
 
-my $n_of_permutations = sprintf("%g",factorial($n_of_taxa));
+my $n_of_permutations = sprintf("%g",factorial($n_of_species));
 if($n_of_permutations < $NOFSAMPLESREPORT){ $NOFSAMPLESREPORT = $n_of_permutations; }
 print "\n# genome composition report (samples=$NOFSAMPLESREPORT,permutations=$n_of_permutations,seed=$RNDSEED)\n";
 
 # random-sort the list of taxa $NOFSAMPLESREPORT times
 for($s=0;$s<$NOFSAMPLESREPORT;$s++){ 
-  { 
-    #if($s) # in case you wish $NOFSAMPLESREPORT samples even if using a -I include file
-    if(!$include_file && $s) # reshuffle until a new permutation is obtained, conserve input order in first sample
-    {
-      $sort = fisher_yates_shuffle( \@tmptaxa );
-      while($previous_sorts{$sort}){ $sort = fisher_yates_shuffle( \@tmptaxa ); }
-      $previous_sorts{$sort} = 1;
-    }
-    push(@{$sample[$s]},@tmptaxa);
-  }
+	if($s>0){ # reshuffle until a new permutation is obtained
+   	$sort = fisher_yates_shuffle( \@tmptaxa );
+   	while($previous_sorts{$sort}){ $sort = fisher_yates_shuffle( \@tmptaxa ); }
+   	$previous_sorts{$sort} = 1;
+	}
+	push(@{$sample[$s]},@tmptaxa);
+}
 
+# sample taxa in random order
+for($s=0;$s<$NOFSAMPLESREPORT;$s++)
+{
+	my (%n_of_taxa_in_cluster,%n_of_homs_in_genomes,$sample);
+	@tmptaxa = @{$sample[$s]};
 
-  for($t=0;$t<$n_of_taxa;$t++){ print "# $t $taxa[$t]\n"; } print "\n";
+	$sample = "## sample $s ($tmptaxa[0] | ";
+	for($sp=0;$sp<$n_of_species;$sp++){
+		$sp2=0;
+		while($tmptaxa[$sp] ne $taxa[$sp2]){ $sp2++ }
+      $sample .= "$sp2,";
+      if(length($sample)>70){ $sample .= '...'; last } # trim it
+	}
+	$sample .= ')';
+	print "$sample\n";
 
-  # 3.0.1) sample taxa in random order
-  for($s=0;$s<$NOFSAMPLESREPORT;$s++)
-  {
-    my (%n_of_taxa_in_cluster,%n_of_homs_in_genomes,$sample);
-    @tmptaxa = @{$sample[$s]};
+	# calculate pan/core-genome size adding genomes one-by-one
+	$coregenome[$s][0] = $totalgenes{$tmptaxa[0]};
+	$pangenome[$s][0]  = $coregenome[$s][0];
+	print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n";
 
-    $sample = "## sample $s ($tmptaxa[0] | ";
-    for($t=0;$t<$n_of_taxa;$t++)
-    {
-      $t2=0;
-      while($tmptaxa[$t] ne $taxa[$t2]){ $t2++ }
-      $sample .= "$t2,";
-
-      # arbitrary trimming
-      if(length($sample)>70){ $sample .= '...'; last }
-    }
-    $sample .= ')';
-    print "$sample\n";
-
-    # 3.0.2) calculate pan/core-genome size adding genomes one-by-one
-      my $n_of_inparalogues = 0;
-      foreach $cluster (@clusters)
-      {
-        foreach $taxon (keys(%{$orth_taxa{$cluster}}))
-        {
-          next if($taxon ne $tmptaxa[0]);
-          $n_of_inparalogues += ($orth_taxa{$cluster}{$taxon}-1);
-          last;
-        }
-      }
-      $coregenome[$s][0] = $gindex{$tmptaxa[0]}[2] - $n_of_inparalogues;
-      if($do_soft){ $softcore[$s][0] = $coregenome[$s][0] }
-      $pangenome[$s][0]  = $coregenome[$s][0];
-      print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n";
-
-   for($t=1;$t<$n_of_taxa;$t++)
-    {
-      $coregenome[$s][$t] = 0;
-      $pangenome[$s][$t] = $pangenome[$s][$t-1];
+	for($sp=1;$sp<$n_of_species;$sp++){
+		$coregenome[$s][$sp] = 0;
+		$pangenome[$s][$sp] = $pangenome[$s][$sp-1];
 
       # core genome
-      if($doMCL || $doPARANOID || $doCOG)
-      {
-        CLUSTER: foreach $cluster (@clusters)
-        {
-          # potential core clusters must contain sequences from reference taxon $tmptaxa[0]
-          # this check is done only once ($t=1)
-          next if($t == 1 && !$do_soft && !$orth_taxa{$cluster}{$tmptaxa[0]});
+      CLUSTER: foreach $cluster_id (@cluster_ids){
+
+			# core clusters must contain sequences from reference species
+			next if($sp == 1 && !$cluster{ $cluster_id }{ $tmptaxa[0] });
           
-          foreach $taxon (keys(%{$orth_taxa{$cluster}}))
-          {
-            if($taxon eq $tmptaxa[$t])
-            {
-              $n_of_taxa_in_cluster{$cluster}++; # taxa added starting from $t=1
-              
-              if($orth_taxa{$cluster}{$tmptaxa[0]} && $n_of_taxa_in_cluster{$cluster} == $t)
-              {
-                $coregenome[$s][$t]++;  # update core totals
-                if($do_soft){ $softcore[$s][$t]++ }
-              }
-              elsif($do_soft) 
-              {
-                $soft_taxa = $n_of_taxa_in_cluster{$cluster} || 0;
-                if($orth_taxa{$cluster}{$tmptaxa[0]}){ $soft_taxa++ }
-                
-                if($soft_taxa >= int(($t+1)*$SOFTCOREFRACTION))
-                {
-                  $softcore[$s][$t]++;  
-                }
-              }
-                     
-              next CLUSTER;
-            }
-          }
-        }
-        #print "# adding $tmptaxa[$t]: core=$coregenome[$s][$t] pan=$pangenome[$s][$t]\n";
+			foreach $species (keys(%{$cluster{$cluster_id}})){
+				if($species eq $tmptaxa[$sp]){
+					$n_of_taxa_in_cluster{$cluster_id}++; # species added since $sp=1
+					if($cluster{$cluster_id}{$tmptaxa[0]} && $n_of_taxa_in_cluster{$cluster_id} == $sp){
+						$coregenome[$s][$sp]++;  # update core totals
+					}
+               next CLUSTER;
+				}
+			}
+		}
 
-		  # pan genome (unique genes) : those without hits in last added genome when compared to all previous
-      for($t2=$t-1;$t2>=0;$t2--)
-      {
-        $label = $tmptaxa[$t].' '.$tmptaxa[$t2];
-        if(!$homol_registry{$label} && ($runmode eq 'cluster' &&
-            !-e get_makeHomolog_outfilename($tmptaxa[$t],$tmptaxa[$t2])))
-        {
-          $redo_orth = $diff_HOM_params;
-          $homol_registry{$label} = 1;
-        }
-        elsif($runmode eq 'local')
-        {
-          $redo_orth = $diff_HOM_params;
-        }
-        else{ $redo_orth = 0 }
+      # update pan total by adding unclustered sequences
+      #foreach $gene ($gindex{$tmptaxa[$t]}[0] .. $gindex{$tmptaxa[$t]}[1]){
+      #  next if($n_of_homs_in_genomes{$gene} || $inparalogues{$gene});
+      #  $pangenome[$s][$t]++;
+      #}
 
-        print "# finding homologs between $tmptaxa[$t] and $tmptaxa[$t2]\n";
-        my $ref_homol = makeHomolog($saveRAM,$tmptaxa[$t],$tmptaxa[$t2],$evalue_cutoff,
-          $MIN_PERSEQID_HOM,$MIN_COVERAGE_HOM,$redo_orth);
-
-        foreach $gene ($gindex{$tmptaxa[$t]}[0] .. $gindex{$tmptaxa[$t]}[1])
-        {
-          if($ref_homol->{$gene}){ $n_of_homs_in_genomes{$gene}++; }
-        }
-      }
-
-		# label inparalogues in OMCL,PRND,COGS clusters to avoid over-estimating pangenome
-      if($doMCL || $doPARANOID || $doCOG)
-      {
-        %inparalogues = ();
-        foreach $cluster (@clusters)
-        {
-          # skip clusters with <2 $t sequences
-          next if(!$orth_taxa{$cluster}{$tmptaxa[$t]} ||
-            $orth_taxa{$cluster}{$tmptaxa[$t]} < 2);
-
-          foreach $gene (@{$orthologues{$cluster}})
-          {
-            next if($gindex2[$gene] ne $tmptaxa[$t]);
-            $inparalogues{$gene} = 1;
-          }
-        }
-      }
-
-      # update pan total
-      foreach $gene ($gindex{$tmptaxa[$t]}[0] .. $gindex{$tmptaxa[$t]}[1])
-      {
-        next if($n_of_homs_in_genomes{$gene} || $inparalogues{$gene});
-
-        $pangenome[$s][$t]++;
-      }
-
-      print "# adding $tmptaxa[$t]: core=$coregenome[$s][$t] pan=$pangenome[$s][$t]\n";
-    }
-  }
+      print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n";
+	}
+}
 
   # 3.0.3) print pan-genome composition stats
-  $data_file = $newDIR ."/pan_genome".$pancore_mask.".tab";
-  print "\n# pan-genome (number of genes, can be plotted with plot_pancore_matrix.pl)\n# file=".
-    short_path($data_file,$pwd)."\n";
-  print "genomes\tmean\tstddev\t|\tsamples\n";
-  for($t=0;$t<$n_of_taxa;$t++)
-  {
-    my @data;
-    for($s=0;$s<$NOFSAMPLESREPORT;$s++){ push(@data,$pangenome[$s][$t]) }
-    $mean = sprintf("%1.0f",calc_mean(\@data));
-    $sd = sprintf("%1.0f",calc_std_deviation(\@data));
-    print "$t\t$mean\t$sd\t|\t";
-    for($s=0;$s<$NOFSAMPLESREPORT;$s++){ print "$pangenome[$s][$t]\t"; } print "\n";
-  }
+  #$data_file = $newDIR ."/pan_genome".$pancore_mask.".tab";
+  #print "\n# pan-genome (number of genes, can be plotted with plot_pancore_matrix.pl)\n# file=".
+  #  short_path($data_file,$pwd)."\n";
+  #print "genomes\tmean\tstddev\t|\tsamples\n";
+  #for($t=0;$t<$n_of_taxa;$t++)
+  #{
+  #  my @data;
+  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ push(@data,$pangenome[$s][$t]) }
+  #  $mean = sprintf("%1.0f",calc_mean(\@data));
+  #  $sd = sprintf("%1.0f",calc_std_deviation(\@data));
+  #  print "$t\t$mean\t$sd\t|\t";
+  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ print "$pangenome[$s][$t]\t"; } print "\n";
+  #}
 
   # 3.0.4) create input file for pan-genome composition boxplot
-  open(BOXDATA,">$data_file") || die "# EXIT: cannot create $data_file\n";
-  for($t=0;$t<$n_of_taxa;$t++)
-  {
-    $label = 'g'.($t+1);
-    print BOXDATA "$label\t";
-  } print BOXDATA "\n";
+  #open(BOXDATA,">$data_file") || die "# EXIT: cannot create $data_file\n";
+  #for($t=0;$t<$n_of_taxa;$t++)
+  #{
+  #  $label = 'g'.($t+1);
+  #  print BOXDATA "$label\t";
+  #} print BOXDATA "\n";
 
-  for($s=0;$s<$NOFSAMPLESREPORT;$s++)
-  {
-    for($t=0;$t<$n_of_taxa;$t++){ print BOXDATA "$pangenome[$s][$t]\t";}
-    print BOXDATA "\n";
-  }
-  close(BOXDATA);
+  #for($s=0;$s<$NOFSAMPLESREPORT;$s++)
+  #{
+  #  for($t=0;$t<$n_of_taxa;$t++){ print BOXDATA "$pangenome[$s][$t]\t";}
+  #  print BOXDATA "\n";
+  #}
+  #close(BOXDATA);
 
   # 3.0.5) print core-genome composition stats
-  $data_file = $newDIR ."/core_genome".$pancore_mask.".tab";
-  print "\n# core-genome (number of genes, can be plotted with plot_pancore_matrix.pl)\n# file=".
-    short_path($data_file,$pwd)."\n";
-  print "genomes\tmean\tstddev\t|\tsamples\n";
-  for($t=0;$t<$n_of_taxa;$t++)
-  {
-    my @data;
-    for($s=0;$s<$NOFSAMPLESREPORT;$s++){ push(@data,$coregenome[$s][$t]) }
-    $mean = sprintf("%1.0f",calc_mean(\@data));
-    $sd = sprintf("%1.0f",calc_std_deviation(\@data));
-    print "$t\t$mean\t$sd\t|\t";
-    for($s=0;$s<$NOFSAMPLESREPORT;$s++){ print "$coregenome[$s][$t]\t"; } print "\n";
-  }
+  #$data_file = $newDIR ."/core_genome".$pancore_mask.".tab";
+  #print "\n# core-genome (number of genes, can be plotted with plot_pancore_matrix.pl)\n# file=".
+  #  short_path($data_file,$pwd)."\n";
+  #print "genomes\tmean\tstddev\t|\tsamples\n";
+  #for($t=0;$t<$n_of_taxa;$t++)
+  #{
+  #  my @data;
+  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ push(@data,$coregenome[$s][$t]) }
+  #  $mean = sprintf("%1.0f",calc_mean(\@data));
+  #  $sd = sprintf("%1.0f",calc_std_deviation(\@data));
+  #  print "$t\t$mean\t$sd\t|\t";
+  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ print "$coregenome[$s][$t]\t"; } print "\n";
+  #}
 
   # 3.0.6) create input file for core-genome composition boxplot
-  open(BOXDATA,">$data_file") || die "# EXIT : cannot create $data_file\n";
-  for($t=0;$t<$n_of_taxa;$t++)
-  {
-    $label = 'g'.($t+1);
-    print BOXDATA "$label\t";
-  } print BOXDATA "\n";
+  #open(BOXDATA,">$data_file") || die "# EXIT : cannot create $data_file\n";
+  #for($t=0;$t<$n_of_taxa;$t++)
+  #{
+  #  $label = 'g'.($t+1);
+  #  print BOXDATA "$label\t";
+  #} print BOXDATA "\n";
 
-  for($s=0;$s<$NOFSAMPLESREPORT;$s++)
-  {
-    for($t=0;$t<$n_of_taxa;$t++){ print BOXDATA "$coregenome[$s][$t]\t";}
-    print BOXDATA "\n";
-  }
-  close(BOXDATA);
+  #for($s=0;$s<$NOFSAMPLESREPORT;$s++)
+  #{
+  #  for($t=0;$t<$n_of_taxa;$t++){ print BOXDATA "$coregenome[$s][$t]\t";}
+  #  print BOXDATA "\n";
+  #}
+  #close(BOXDATA);
 
 
     
@@ -968,4 +883,21 @@ sub factorial
 	my $f = 1;
 	for (2 .. $max) { $f *= $_ }
 	return $f;
+}
+
+# based on http://www.unix.org.ua/orelly/perl/cookbook/ch04_18.htm
+# generates a random permutation of @array in place
+sub fisher_yates_shuffle
+{
+  my $array = shift;
+  my ($i,$j,$array_string);
+
+  for ($i = @$array; --$i; )
+  {
+    $j = int(rand($i+1));
+    next if $i == $j;
+    @$array[$i,$j] = @$array[$j,$i];
+  }
+
+  return join('',@$array);
 }

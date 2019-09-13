@@ -570,7 +570,7 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++){
 # sample taxa in random order
 for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 {
-	my (%n_of_taxa_in_cluster,%n_of_homs_in_genomes,$sample);
+	my (%n_of_taxa_in_cluster,$sample);
 	@tmptaxa = @{$sample[$s]};
 
 	$sample = "## sample $s ($tmptaxa[0] | ";
@@ -592,28 +592,44 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 		$coregenome[$s][$sp] = 0;
 		$pangenome[$s][$sp] = $pangenome[$s][$sp-1];
 
-      # core genome
       CLUSTER: foreach $cluster_id (@cluster_ids){
 
-			# core clusters must contain sequences from reference species
-			next if($sp == 1 && !$cluster{ $cluster_id }{ $tmptaxa[0] });
-          
-			foreach $species (keys(%{$cluster{$cluster_id}})){
-				if($species eq $tmptaxa[$sp]){
-					$n_of_taxa_in_cluster{$cluster_id}++; # species added since $sp=1
-					if($cluster{$cluster_id}{$tmptaxa[0]} && $n_of_taxa_in_cluster{$cluster_id} == $sp){
-						$coregenome[$s][$sp]++;  # update core totals
-					}
-               next CLUSTER;
+			# check reference species is in this cluster
+			if($sp==1 && $cluster{ $cluster_id }{ $tmptaxa[0] }){
+				$n_of_taxa_in_cluster{$cluster_id}++;
+			}
+			
+			# check $sp is in this cluster
+			if($cluster{ $cluster_id }{ $tmptaxa[$sp] }){
+				$n_of_taxa_in_cluster{$cluster_id}++;
+         }
+	
+			# this is a core cluster
+			if($n_of_taxa_in_cluster{$cluster_id}){
+
+				# core genes must contain all previously seen species
+				if($n_of_taxa_in_cluster{$cluster_id} == $sp+1){
+					$coregenome[$s][$sp]++;
+
+				} # pan genes must be novel to this species 
+				elsif($n_of_taxa_in_cluster{$cluster_id} == 1){ 
+					$pangenome[$s][$sp]++;
 				}
 			}
+			
+			# core clusters must contain sequences from reference species
+			#next if($sp == 1 && !$cluster{ $cluster_id }{ $tmptaxa[0] });
+          
+			#foreach $species (keys(%{$cluster{$cluster_id}})){
+			#	if($species eq $tmptaxa[$sp]){
+			#		$n_of_taxa_in_cluster{$cluster_id}++; # species added since $sp=1
+			#		if($cluster{$cluster_id}{$tmptaxa[0]} && $n_of_taxa_in_cluster{$cluster_id} == $sp){
+			#			$coregenome[$s][$sp]++;  # update core totals
+			#		}
+         #      next CLUSTER;
+			#	}
+			#}
 		}
-
-      # update pan total by adding unclustered sequences
-      #foreach $gene ($gindex{$tmptaxa[$t]}[0] .. $gindex{$tmptaxa[$t]}[1]){
-      #  next if($n_of_homs_in_genomes{$gene} || $inparalogues{$gene});
-      #  $pangenome[$s][$t]++;
-      #}
 
       print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n";
 	}

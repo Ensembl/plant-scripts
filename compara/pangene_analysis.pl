@@ -360,7 +360,6 @@ foreach $sp ( @supported_species ){
 # count how many clusters include each species
 foreach $cluster_id (@cluster_ids){
 	foreach $species (@supported_species){
-		
 		if($cluster{ $cluster_id }{ $species }){
       	$totalclusters{$species}++;
    	}
@@ -368,6 +367,7 @@ foreach $cluster_id (@cluster_ids){
 }
 
 # add unclustered sequences as singletons
+my $total_seqs = 0;
 foreach $sp (@supported_species){
 
 	my $singletons = 0;
@@ -383,12 +383,19 @@ foreach $sp (@supported_species){
       push(@{ $cluster{ $cluster_id }{ $sp } }, $prot_stable_id );
 		push(@cluster_ids, $cluster_id);
 
+		# add this singleton to total clusters
+		$totalclusters{$sp}++;
+
 		$singletons++;
 	}
 
-	printf("# %s : sequences = %d clusters = %d singletons = %d\n",
+	$total_seqs += $totalgenes{$sp};
+
+	printf("# %s : sequences = %d clusters = %d (singletons = %d)\n",
 		$sp,$totalgenes{$sp},$totalclusters{$sp},$singletons);
 }
+
+printf("\n# total sequences = %d\n",$total_seqs);
 
 ## 3) write sequence clusters, summary text file and POCP matrix #################
 
@@ -556,10 +563,10 @@ print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 
 ## 5) make genome composition analysis to simulate pangenome growth 
-## NOTE: this is measured in genes added/missed per genome
+## NOTE: this is measured in clusters added/missed per genome
 
 my ($s,@pangenome,@coregenome); #$s = sample
-my ($mean,$sd,$data_file,$sort);
+my ($core_occup,$mean,$sd,$data_file,$sort);
 my (%previous_sorts,@sample,@clusters);
 my @taxa = @supported_species;
 my @tmptaxa = @taxa;
@@ -589,23 +596,27 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 		$sp2=0;
 		while($tmptaxa[$sp] ne $taxa[$sp2]){ $sp2++ }
       $sample .= "$sp2,";
-      if(length($sample)>70){ $sample .= '...'; last } # trim it
+      if(length($sample)>70){ 
+			$sample .= '...'; # trim it
+			last;
+		}
 	}
 	$sample .= ')';
 	print "$sample\n";
 
 	# calculate pan/core-genome size adding genomes one-by-one
-	$coregenome[$s][0] = $totalgenes{$tmptaxa[0]};
+	$coregenome[$s][0] = $totalclusters{$tmptaxa[0]};
 	$pangenome[$s][0]  = $coregenome[$s][0];
-	print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n";
+	print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n" if($verbose);
 
 	for($sp=1;$sp<$n_of_species;$sp++){
 		$coregenome[$s][$sp] = 0;
 		$pangenome[$s][$sp] = $pangenome[$s][$sp-1];
+		$core_occup = $sp + 1;
 
-      CLUSTER: foreach $cluster_id (@cluster_ids){
+      foreach $cluster_id (@cluster_ids){
 
-			# check reference species is in this cluster
+			# check reference species is in this cluster (1st iteration only)
 			if($sp==1 && $cluster{ $cluster_id }{ $tmptaxa[0] }){
 				$n_of_taxa_in_cluster{$cluster_id}++;
 			}
@@ -615,11 +626,12 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 				$n_of_taxa_in_cluster{$cluster_id}++;
          }
 	
-			# this is a core cluster
-			if($n_of_taxa_in_cluster{$cluster_id}){
+			# check cluster occupancy
+			if($n_of_taxa_in_cluster{$cluster_id} && 
+				$cluster{$cluster_id}{$tmptaxa[$sp]}){
 
 				# core genes must contain all previously seen species
-				if($n_of_taxa_in_cluster{$cluster_id} == $sp+1){
+				if($n_of_taxa_in_cluster{$cluster_id} == $core_occup){
 					$coregenome[$s][$sp]++;
 
 				} # pan genes must be novel to this species 
@@ -629,7 +641,7 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 			}
 		}
 
-      print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n";
+      print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n" if($verbose);
 	}
 }
 

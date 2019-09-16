@@ -432,7 +432,13 @@ foreach $cluster_id (@cluster_ids){
       next if(! $cluster{ $cluster_id }{ $species } );
       $n_cluster_sp++;
       foreach $prot_stable_id (@{ $cluster{ $cluster_id }{ $species } }){
-         print CLUSTER ">$prot_stable_id [$species]\n$sequence{$species}{$prot_stable_id}\n";
+         print CLUSTER ">$prot_stable_id [$species]\n";
+			if($sequence{$species}{$prot_stable_id}){
+				print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
+			} else {
+				print "# cannot find peptide $prot_stable_id ($species)\n" if($verbose);
+			}
+
          $n_cluster_seqs++;
 			$cluster_stats{$species}++;
       }

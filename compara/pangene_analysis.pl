@@ -72,7 +72,8 @@ sub help_message {
 		"-d Ensembl division                        (optional, default: -d $division)\n".
 		"-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n".
 		"-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n".
-		"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
+		# commented until I find of matching protein ids to transcript ids
+		#"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
 		"-L allow low-confidence orthologues        (optional, by default these are skipped)\n".
 		"-v verbose                                 (optional, example: -v\n";
 
@@ -87,8 +88,7 @@ sub help_message {
 		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
 
 	print "Example calls:\n\n".
-		" perl $0 -c Brassicaceae -f Brassicaceae\n".
-		" perl $0 -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao\n".
+		" perl $0 -c Brassicaceae -f Brassicaceae -o theobroma_cacao\n".
 		" perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75\n".
 		exit(0);
 }
@@ -157,6 +157,7 @@ if($seqtype ne 'protein' && $seqtype ne 'cdna'){
    else{ 
 		$ext = '.fna'; 
 		$seqfolder = 'cdna';
+		die "# ERROR: currently cannot accept seqtype = cdna\n"
 	}
 }
 

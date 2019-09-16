@@ -220,7 +220,7 @@ if($out_genome && !$division_supported{ $out_genome }){
 
 my ($n_of_species, $cluster_id) = ( 0, '' );
 my (@supported_species, @cluster_ids, %supported);
-my (%incluster, %cluster, %sequence, %totalgenes, %POCP_matrix);
+my (%incluster, %cluster, %sequence, %totalgenes, %totalclusters, %POCP_matrix);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -357,6 +357,16 @@ foreach $sp ( @supported_species ){
 	}
 }
 
+# count how many clusters include each species
+foreach $cluster_id (@cluster_ids){
+	foreach $species (@supported_species){
+		
+		if($cluster{ $cluster_id }{ $species }){
+      	$totalclusters{$species}++;
+   	}
+	}
+}
+
 # add unclustered sequences as singletons
 foreach $sp (@supported_species){
 
@@ -376,7 +386,8 @@ foreach $sp (@supported_species){
 		$singletons++;
 	}
 
-	printf("# %s : sequences = %d singletons = %d\n",$sp,$totalgenes{$sp},$singletons);
+	printf("# %s : sequences = %d clusters = %d singletons = %d\n",
+		$sp,$totalgenes{$sp},$totalclusters{$sp},$singletons);
 }
 
 ## 3) write sequence clusters, summary text file and POCP matrix #################

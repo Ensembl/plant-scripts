@@ -562,7 +562,7 @@ print "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\
 print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
 
-## 5) make genome composition analysis to simulate pangenome growth 
+## 5) make genome composition analysis to simulate pangene growth 
 ## NOTE: this is measured in clusters added/missed per genome
 
 my ($s,@pangenome,@coregenome); #$s = sample
@@ -604,7 +604,7 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 	$sample .= ')';
 	print "$sample\n";
 
-	# calculate pan/core-genome size adding genomes one-by-one
+	# calculate pan/core-gene size adding genomes one-by-one
 	$coregenome[$s][0] = $totalclusters{$tmptaxa[0]};
 	$pangenome[$s][0]  = $coregenome[$s][0];
 	print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n" if($verbose);
@@ -645,71 +645,17 @@ for($s=0;$s<$NOFSAMPLESREPORT;$s++)
 	}
 }
 
-  # 3.0.3) print pan-genome composition stats
-  #$data_file = $newDIR ."/pan_genome".$pancore_mask.".tab";
-  #print "\n# pan-genome (number of genes, can be plotted with plot_pancore_matrix.pl)\n# file=".
-  #  short_path($data_file,$pwd)."\n";
-  #print "genomes\tmean\tstddev\t|\tsamples\n";
-  #for($t=0;$t<$n_of_taxa;$t++)
-  #{
-  #  my @data;
-  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ push(@data,$pangenome[$s][$t]) }
-  #  $mean = sprintf("%1.0f",calc_mean(\@data));
-  #  $sd = sprintf("%1.0f",calc_std_deviation(\@data));
-  #  print "$t\t$mean\t$sd\t|\t";
-  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ print "$pangenome[$s][$t]\t"; } print "\n";
-  #}
+# write genome composition stats to boxplot files
+my $pan_file  = "$outfolder/pan_gene$params\.tab";
+my $core_file = "$outfolder/core_gene$params\.tab";
 
-  # 3.0.4) create input file for pan-genome composition boxplot
-  #open(BOXDATA,">$data_file") || die "# EXIT: cannot create $data_file\n";
-  #for($t=0;$t<$n_of_taxa;$t++)
-  #{
-  #  $label = 'g'.($t+1);
-  #  print BOXDATA "$label\t";
-  #} print BOXDATA "\n";
+write_boxplot_file( $pan_file, $n_of_species, $NOFSAMPLESREPORT, \@pangenome );
+print "\n# pan-gene (number of clusters) = $pan_file\n";
 
-  #for($s=0;$s<$NOFSAMPLESREPORT;$s++)
-  #{
-  #  for($t=0;$t<$n_of_taxa;$t++){ print BOXDATA "$pangenome[$s][$t]\t";}
-  #  print BOXDATA "\n";
-  #}
-  #close(BOXDATA);
+write_boxplot_file( $core_file, $n_of_species, $NOFSAMPLESREPORT, \@coregenome );
+print "# core-gene (number of clusters) = $core_file\n";
 
-  # 3.0.5) print core-genome composition stats
-  #$data_file = $newDIR ."/core_genome".$pancore_mask.".tab";
-  #print "\n# core-genome (number of genes, can be plotted with plot_pancore_matrix.pl)\n# file=".
-  #  short_path($data_file,$pwd)."\n";
-  #print "genomes\tmean\tstddev\t|\tsamples\n";
-  #for($t=0;$t<$n_of_taxa;$t++)
-  #{
-  #  my @data;
-  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ push(@data,$coregenome[$s][$t]) }
-  #  $mean = sprintf("%1.0f",calc_mean(\@data));
-  #  $sd = sprintf("%1.0f",calc_std_deviation(\@data));
-  #  print "$t\t$mean\t$sd\t|\t";
-  #  for($s=0;$s<$NOFSAMPLESREPORT;$s++){ print "$coregenome[$s][$t]\t"; } print "\n";
-  #}
-
-  # 3.0.6) create input file for core-genome composition boxplot
-  #open(BOXDATA,">$data_file") || die "# EXIT : cannot create $data_file\n";
-  #for($t=0;$t<$n_of_taxa;$t++)
-  #{
-  #  $label = 'g'.($t+1);
-  #  print BOXDATA "$label\t";
-  #} print BOXDATA "\n";
-
-  #for($s=0;$s<$NOFSAMPLESREPORT;$s++)
-  #{
-  #  for($t=0;$t<$n_of_taxa;$t++){ print BOXDATA "$coregenome[$s][$t]\t";}
-  #  print BOXDATA "\n";
-  #}
-  #close(BOXDATA);
-
-
-    
-
-
-
+   
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 
@@ -903,6 +849,29 @@ sub perform_rest_action {
 	else { return '' }	
 }
 
+sub write_boxplot_file {
+
+	my ($outfile, $n_genomes, $n_samples, $ref_data) = @_;
+
+	my ($s,$sp);
+
+	open(BOXDATA,">",$outfile) || 
+		die "# ERROR(write_boxplot_file): cannot create $outfile\n";
+	for($sp=0;$sp<$n_genomes;$sp++){
+   	printf(BOXDATA "g%d\t",$sp+1); #g = genome
+	} print BOXDATA "\n";
+
+	for($s=0;$s<$n_samples;$s++){
+   	for($sp=0;$sp<$n_of_species;$sp++){
+      	print BOXDATA "$ref_data->[$s][$sp]\t"
+   	}
+   	print BOXDATA "\n";
+	}
+	close(BOXDATA);
+
+	return $outfile;
+}
+
 sub factorial
 {
 	my $max = int($_[0]);
@@ -927,3 +896,4 @@ sub fisher_yates_shuffle
 
   return join('',@$array);
 }
+

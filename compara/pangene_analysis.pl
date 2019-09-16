@@ -573,7 +573,7 @@ my @tmptaxa = @taxa;
 
 my $n_of_permutations = sprintf("%g",factorial($n_of_species));
 if($n_of_permutations < $NOFSAMPLESREPORT){ $NOFSAMPLESREPORT = $n_of_permutations; }
-print "\n# genome composition report (samples=$NOFSAMPLESREPORT,permutations=$n_of_permutations,seed=$RNDSEED)\n";
+printf("\n# genome composition report (samples=%d,seed=%d)\n",$NOFSAMPLESREPORT,$RNDSEED);
 
 # random-sort the list of taxa $NOFSAMPLESREPORT times
 for($s=0;$s<$NOFSAMPLESREPORT;$s++){ 

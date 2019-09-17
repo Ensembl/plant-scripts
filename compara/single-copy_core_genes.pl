@@ -11,7 +11,7 @@ use FindBin '$Bin';
 use lib $Bin;
 use ComparaUtils qw(
 	download_compara_TSV_file perform_rest_action  
-   $REQUEST_COUNT $COMPARADIR 
+   $REQUEST_COUNT $COMPARADIR @DIVISIONS 
 );
 
 # Retrieves single-copy orthologous genes/proteins shared by (plant) species in clade 
@@ -21,7 +21,7 @@ use ComparaUtils qw(
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes 
-my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
+my @divisions  = $ComparaUtils::DIVISIONS;
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
@@ -245,7 +245,9 @@ while(<TSV>){
 	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
 	$high_confidence,$homology_id) = split(/\t/);
 
-	next if(!$supported{ $hom_species } || $hom_species eq $ref_genome);
+	next if($species ne $ref_genome || # in case all-vs-all file is used
+		$hom_species eq $ref_genome || # no inparalogues wanted
+		!$supported{ $hom_species });
 
 	next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
 

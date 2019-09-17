@@ -233,7 +233,7 @@ print "# total selected species : $n_of_species\n\n";
 # columns of TSV file 
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
-	$high_confidence,$homology_id);
+	$high_confidence);
 
 # get TSV file
 my $stored_compara_file = download_compara_TSV_file( $comparadir, $ref_genome, $downloadir );
@@ -245,13 +245,15 @@ while(<TSV>){
 	
 	($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
 	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
-	$high_confidence,$homology_id) = split(/\t/);
+	$high_confidence) = split(/\t/);
 
 	next if($species ne $ref_genome || # in case all-vs-all file is used
 		$hom_species eq $ref_genome || # no inparalogues wanted
 		!$supported{ $hom_species });
 
-	next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
+	if($high_confidence){
+		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
+	}
 
 	next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 

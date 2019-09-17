@@ -271,7 +271,8 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) get orthologous (plant) genes shared by selected species ####################
 
-# columns of TSV file, note high_conf might not be available for some divisions
+# columns of TSV file
+# NOTE: high_conf might not be available for some divisions
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
 	$high_confidence);

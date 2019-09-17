@@ -13,8 +13,6 @@ require Exporter;
 use strict;
 use warnings;
 use Net::FTP;
-use JSON qw(decode_json);
-use Data::Dumper;
 use Time::HiRes;
 use HTTP::Tiny;
 
@@ -178,6 +176,7 @@ sub download_FASTA_file {
 }
 
 # uses global $REQUEST_COUNT
+# takes a HTTP::Tiny object as first param
 # based on examples at https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
 sub perform_rest_action {
 	my ($http, $url, $headers) = @_;
@@ -237,7 +236,7 @@ sub write_boxplot_file {
 	} print BOXDATA "\n";
 
 	for($s=0;$s<$n_samples;$s++){
-   	for($sp=0;$sp<$n_samples;$sp++){
+   	for($sp=0;$sp<$n_genomes;$sp++){
       	print BOXDATA "$ref_data->[$s][$sp]\t"
    	}
    	print BOXDATA "\n";

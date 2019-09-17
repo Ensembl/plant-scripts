@@ -4,7 +4,6 @@ use warnings;
 
 use Getopt::Long qw(:config no_ignore_case);
 use Benchmark;
-use Data::Dumper;
 use HTTP::Tiny;
 use JSON qw(decode_json);
 use FindBin '$Bin';

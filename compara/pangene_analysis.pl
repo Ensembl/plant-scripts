@@ -4,6 +4,7 @@ use warnings;
 
 use Getopt::Long qw(:config no_ignore_case);
 use Net::FTP;
+use FindBin '$Bin';
 use JSON qw(decode_json);
 use Data::Dumper;
 use Benchmark;
@@ -27,12 +28,14 @@ my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 
-my $TRANSPOSEXE= 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
+my $TRANSPOSEXE= 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'.
+	'$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
 # genome composition report
 my $RNDSEED = 12345;
 my $NOFSAMPLESREPORT = 10;
 
+my $downloadir = $Bin . '/downloads';
 my $verbose    = 0;
 my $division   = 'Plants';
 my $seqtype    = 'protein';
@@ -278,7 +281,7 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
 foreach $sp ( @supported_species ){
 
 	# get TSV file; these files are bulky and might take some time to download
-	my $stored_compara_file = download_compara_TSV_file( $comparadir, $sp );
+	my $stored_compara_file = download_compara_TSV_file( $comparadir, $sp, $downloadir );
 
 	# uncompress on the fly and parse
 	my %compara_isoform;
@@ -346,7 +349,7 @@ foreach $sp ( @supported_species ){
 	close(TSV);
 
 	# now get FASTA file and parse it, selected/longest isoforms are read
-   my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder"  );
+   my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
 	my $ref_sequence = parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
 	# count number of genes/selected isoforms in this species
@@ -725,7 +728,7 @@ sub parse_isoform_FASTA_file {
 # and saves it in current folder; uses FTP globals defined above
 sub download_compara_TSV_file {
 
-	my ($dir,$ref_genome) = @_;
+	my ($dir,$ref_genome,$targetdir) = @_;
 	my ($compara_file,$stored_compara_file) = ('','');
 
 	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
@@ -741,7 +744,7 @@ sub download_compara_TSV_file {
 		foreach my $file ( $ftp->ls() ){
 			if($file =~ m/protein_default.homologies.tsv.gz/){
 				$compara_file = $file;
-				$stored_compara_file = $compara_file;
+				$stored_compara_file = "$targetdir/$compara_file";
 				$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
 				last;
 			}
@@ -760,6 +763,7 @@ sub download_compara_TSV_file {
 
 			# rename file to final name
 			rename($compara_file, $stored_compara_file);
+
 			print "# using $stored_compara_file\n\n";
 		} else {
 			print "# re-using $stored_compara_file\n\n";
@@ -773,8 +777,8 @@ sub download_compara_TSV_file {
 # uses FTP globals defined above
 sub download_FASTA_file {
 
-   my ($dir,$genome_folder) = @_;
-   my ($fasta_file) = ('');
+   my ($dir,$genome_folder,$targetdir) = @_;
+   my ($fasta_file,$stored_fasta_file) = ('','');
 
    if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
       $ftp->login("anonymous",'-anonymous@') ||
@@ -789,12 +793,13 @@ sub download_FASTA_file {
       foreach my $file ( $ftp->ls() ){
          if($file =~ m/all.fa.gz/){
             $fasta_file = $file;
+				$stored_fasta_file = "$targetdir/$fasta_file";
             last;
          }
       }
 
 		# download that FASTA file
-      unless(-s $fasta_file){
+      unless(-s $stored_fasta_file){
          $ftp->binary();
          my $downsize = $ftp->size($fasta_file);
          $ftp->hash(\*STDOUT,$downsize/20) if($downsize);
@@ -804,13 +809,16 @@ sub download_FASTA_file {
             die "# ERROR: failed downloading $fasta_file\n";
          }
 
+			# rename file to final name
+         rename($fasta_file, $stored_fasta_file);
+
          print "# using $fasta_file\n\n";
       } else {
          print "# re-using $fasta_file\n\n";
       }
    } else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
 
-   return $fasta_file;
+   return $stored_fasta_file;
 }
 
 # uses global $request_count

@@ -18,7 +18,8 @@ use HTTP::Tiny;
 
 
 # Ensembl Genomes
-our @DIVISIONS  = qw( Plants Fungi Protists Metazoa );
+our @DIVISIONS  = qw( Plants ); 
+#Fungi Protists Metazoa have collections and one all-vs-all TSV fhave collections and one all-vs-all TSV file
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';

@@ -248,9 +248,12 @@ while(<TSV>){
 	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
 	$high_confidence) = split(/\t/);
 
-	next if($species ne $ref_genome || # in case all-vs-all file is used
-		$hom_species eq $ref_genome || # no inparalogues wanted
-		!$supported{ $hom_species });
+	if($species ne $ref_genome){
+		if(keys(%present) == $n_of_species){ last } # in case all-vs-all file is used
+		else{ next }
+	}
+
+	next if(	!$supported{ $hom_species } || $hom_species eq $ref_genome); 
 
 	if($high_confidence){
 		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));

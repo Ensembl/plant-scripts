@@ -3,13 +3,17 @@ use strict;
 use warnings;
 
 use Getopt::Long qw(:config no_ignore_case);
-use Net::FTP;
-use FindBin '$Bin';
-use JSON qw(decode_json);
-use Data::Dumper;
 use Benchmark;
-use Time::HiRes;
+use Data::Dumper;
 use HTTP::Tiny;
+use JSON qw(decode_json);
+use FindBin '$Bin';
+use lib $Bin;
+use ComparaUtils qw(
+	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
+   perform_rest_action write_boxplot_file factorial fisher_yates_shuffle 
+   $REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
+);
 
 # Produces pangenome analysis based on clusters of orthologous genes shared by (plant) species in clade 
 # by querying pre-computed Compara data from Ensembl Genomes
@@ -21,9 +25,6 @@ use HTTP::Tiny;
 
 # Ensembl Genomes
 my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
-my $FTPURL     = 'ftp.ensemblgenomes.org'; 
-my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
-my $FASTADIR   = '/pub/current/xxx/fasta';
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
@@ -47,7 +48,6 @@ my ($help,$sp,$sp2,$show_supported,$request,$response);
 my ($filename,$dnafile,$pepfile,$seqfolder,$ext);
 my ($n_core_clusters,$n_cluster_sp,$n_cluster_seqs) = (0,0,0);
 my ($GOC,$WGA,$LOWCONF) = (0,0,0);
-my ($request_time,$last_request_time) = (0,0);
 my (@ignore_species, %ignore, %division_supported);
 
 GetOptions(	
@@ -135,10 +135,10 @@ if($division){
 	} else {
 		my $lcdiv = lc($division);
 
-		$comparadir = $COMPARADIR;
+		$comparadir = $ComparaUtils::COMPARADIR;
 		$comparadir =~ s/xxx/$lcdiv/;
 		
-		$fastadir   = $FASTADIR;		
+		$fastadir   = $ComparaUtils::FASTADIR;		
 		$fastadir =~ s/xxx/$lcdiv/;
 	}
 }
@@ -188,16 +188,16 @@ else {
 
 my $start_time = new Benchmark();
 
-# new object for REST requests
+# new object and params for REST requests
 my $http = HTTP::Tiny->new();
 my $global_headers = { 'Content-Type' => 'application/json' };
-my $request_count = 0; # global counter to avoid overload
+$ComparaUtils::REQUEST_COUNT = 0; 
 
 ## 0) check supported species in division ##################################################
 
 $request = $INFOPOINT."Ensembl$division?";
 
-$response = perform_rest_action( $request, $global_headers );
+$response = perform_rest_action( $http, $request, $global_headers );
 my $infodump = decode_json($response);
 
 foreach $sp (@{ $infodump }) {
@@ -228,7 +228,7 @@ my (%incluster, %cluster, %sequence, %totalgenes, %totalclusters, %POCP_matrix);
 
 $request = $TAXOPOINT."$taxonid?";
 
-$response = perform_rest_action( $request, $global_headers );
+$response = perform_rest_action( $http, $request, $global_headers );
 $infodump = decode_json($response);
 
 foreach $sp (@{ $infodump }) {
@@ -668,247 +668,3 @@ print "# core-gene (number of clusters) = $core_file\n";
    
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
-
-###################################################################################################
-
-# parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file
-# returns a isoform=>sequence hash with the (optionally) selected or (default) longest peptide/transcript per gene
-sub parse_isoform_FASTA_file {
-
-	my ($FASTA_filename, $ref_isoforms2keep) = @_;
-
-	my ($stable_id, $gene_stable_id, $max, $len);
-	my ($iso_selected, $len_selected);
-	my (%sequence, %sequence4gene);
-
-   open(FASTA,"gzip -dc $FASTA_filename |") || die "# ERROR: cannot open $FASTA_filename\n";
-   while(my $line = <FASTA>){
-      #>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
-      if($line =~ m/^>(\S+).*?gene:(\S+)/){
-         $stable_id = $1; # might pep or cdna id
-         $gene_stable_id = $2;
-      } elsif($line =~ m/^(\S+)/){
-         $sequence{ $gene_stable_id }{ $stable_id } .= $1;
-      }
-   }
-   close(FASTA);
-
-	foreach $gene_stable_id (keys(%sequence)){
-
-		# work out which isoform should be kept for this gene
-		($max,$iso_selected,$len_selected) = (0,'','');
-		foreach $stable_id (keys(%{ $sequence{$gene_stable_id} })){
-
-			# find longest isoform (default), note that key order is random
-			$len = length($sequence{ $gene_stable_id }{ $stable_id });
-			if($len > $max){ 
-				$max = $len;
-				$len_selected = $stable_id;
-			}
-
-			if($ref_isoforms2keep->{ $stable_id }){
-				$iso_selected = $stable_id;
-			}
-		}
-
-		if($iso_selected){
-			$sequence4gene{ $iso_selected } = $sequence{ $gene_stable_id }{ $iso_selected };
-		} elsif($len_selected){
-			$sequence4gene{ $len_selected } = $sequence{ $gene_stable_id }{ $len_selected };
-		} else {
-			print "# ERROR: cannot select an isoform for gene $gene_stable_id\n";
-		}
-	}
-
-	return \%sequence4gene;
-}
-
-
-# download compressed TSV file from FTP site, renames it 
-# and saves it in current folder; uses FTP globals defined above
-sub download_compara_TSV_file {
-
-	my ($dir,$ref_genome,$targetdir) = @_;
-	my ($compara_file,$stored_compara_file) = ('','');
-
-	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
-		$ftp->login("anonymous",'-anonymous@') ||
-			die "# cannot login ". $ftp->message();
-		$ftp->cwd($dir) ||
-		   die "# ERROR: cannot change working directory to $dir ". $ftp->message();
-		$ftp->cwd($ref_genome) ||
-			die "# ERROR: cannot find $ref_genome in $dir ". $ftp->message();
-
-		# find out which file is to be downloaded and 
-		# work out its final name with $ref_genome in it
-		foreach my $file ( $ftp->ls() ){
-			if($file =~ m/protein_default.homologies.tsv.gz/){
-				$compara_file = $file;
-				$stored_compara_file = "$targetdir/$compara_file";
-				$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
-				last;
-			}
-		}
-		
-		# download that TSV file
-		unless(-s $stored_compara_file){
-			$ftp->binary();
-			my $downsize = $ftp->size($compara_file);
-			$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
-			printf("# downloading %s (%1.1fMb) ...\n",$stored_compara_file,$downsize/(1024*1024));
-			print "# [        50%       ]\n# ";
-			if(!$ftp->get($compara_file)){
-				die "# ERROR: failed downloading $compara_file\n";
-			}
-
-			# rename file to final name
-			rename($compara_file, $stored_compara_file);
-
-			print "# using $stored_compara_file\n\n";
-		} else {
-			print "# re-using $stored_compara_file\n\n";
-		}
-	} else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
-
-	return $stored_compara_file;
-}
-
-# download compressed FASTA file from FTP site, and saves it in current folder; 
-# uses FTP globals defined above
-sub download_FASTA_file {
-
-   my ($dir,$genome_folder,$targetdir) = @_;
-   my ($fasta_file,$stored_fasta_file) = ('','');
-
-   if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
-      $ftp->login("anonymous",'-anonymous@') ||
-         die "# cannot login ". $ftp->message();
-      $ftp->cwd($dir) ||
-         die "# ERROR: cannot change working directory to $dir ". $ftp->message();
-      $ftp->cwd($genome_folder) ||
-         die "# ERROR: cannot find $genome_folder in $dir ". $ftp->message();
-
-      # find out which file is to be downloaded and 
-      # work out its final name
-      foreach my $file ( $ftp->ls() ){
-         if($file =~ m/all.fa.gz/){
-            $fasta_file = $file;
-				$stored_fasta_file = "$targetdir/$fasta_file";
-            last;
-         }
-      }
-
-		# download that FASTA file
-      unless(-s $stored_fasta_file){
-         $ftp->binary();
-         my $downsize = $ftp->size($fasta_file);
-         $ftp->hash(\*STDOUT,$downsize/20) if($downsize);
-         printf("# downloading %s (%1.1fMb) ...\n",$fasta_file,$downsize/(1024*1024));
-         print "# [        50%       ]\n# ";
-         if(!$ftp->get($fasta_file)){
-            die "# ERROR: failed downloading $fasta_file\n";
-         }
-
-			# rename file to final name
-         rename($fasta_file, $stored_fasta_file);
-
-         print "# using $fasta_file\n\n";
-      } else {
-         print "# re-using $fasta_file\n\n";
-      }
-   } else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
-
-   return $stored_fasta_file;
-}
-
-# uses global $request_count
-# based on examples at https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
-sub perform_rest_action {
-	my ($url, $headers) = @_;
-	$headers ||= {};
-	$headers->{'Content-Type'} = 'application/json' unless exists $headers->{'Content-Type'};
-
-	if($request_count == 15) { # check every 15
-		my $current_time = Time::HiRes::time();
-		my $diff = $current_time - $last_request_time;
-
-		# if less than a second then sleep for the remainder of the second
-		if($diff < 1) {
-			Time::HiRes::sleep(1-$diff);
-		}
-		# reset
-		$last_request_time = Time::HiRes::time();
-		$request_count = 0;
-	}
-
-	my $response = $http->get($url, {headers => $headers});
-	my $status = $response->{status};
-	
-	if(!$response->{success}) {
-		# check for rate limit exceeded & Retry-After (lowercase due to our client)
-		if(($status == 429 || $status == 599) && exists $response->{headers}->{'retry-after'}) {
-			my $retry = $response->{headers}->{'retry-after'};
-			Time::HiRes::sleep($retry);
-			# afterr sleeping see that we re-request
-			return perform_rest_action($url, $headers);
-		}
-		else {
-			my ($status, $reason) = ($response->{status}, $response->{reason});
-			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}\n# Please re-run";
-		}
-	}
-
-	$request_count++;
-
-	if(length($response->{content})) { return $response->{content} } 
-	else { return '' }	
-}
-
-sub write_boxplot_file {
-
-	my ($outfile, $n_genomes, $n_samples, $ref_data) = @_;
-
-	my ($s,$sp);
-
-	open(BOXDATA,">",$outfile) || 
-		die "# ERROR(write_boxplot_file): cannot create $outfile\n";
-	for($sp=0;$sp<$n_genomes;$sp++){
-   	printf(BOXDATA "g%d\t",$sp+1); #g = genome
-	} print BOXDATA "\n";
-
-	for($s=0;$s<$n_samples;$s++){
-   	for($sp=0;$sp<$n_of_species;$sp++){
-      	print BOXDATA "$ref_data->[$s][$sp]\t"
-   	}
-   	print BOXDATA "\n";
-	}
-	close(BOXDATA);
-
-	return $outfile;
-}
-
-sub factorial
-{
-	my $max = int($_[0]);
-	my $f = 1;
-	for (2 .. $max) { $f *= $_ }
-	return $f;
-}
-
-# based on http://www.unix.org.ua/orelly/perl/cookbook/ch04_18.htm
-# generates a random permutation of @array in place
-sub fisher_yates_shuffle
-{
-  my $array = shift;
-  my ($i,$j,$array_string);
-
-  for ($i = @$array; --$i; )
-  {
-    $j = int(rand($i+1));
-    next if $i == $j;
-    @$array[$i,$j] = @$array[$j,$i];
-  }
-
-  return join('',@$array);
-}
-

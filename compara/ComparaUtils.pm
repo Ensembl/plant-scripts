@@ -1,4 +1,4 @@
-package PlantComparaUtils;
+package ComparaUtils;
 require Exporter;
 
 # Bruno Contreras Moreira 2019
@@ -7,7 +7,7 @@ require Exporter;
 @EXPORT_OK = qw( 
 	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
 	perform_rest_action write_boxplot_file factorial fisher_yates_shuffle 
-	$REQUEST_COUNT
+	$REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
 );
 
 use strict;
@@ -20,9 +20,9 @@ use HTTP::Tiny;
 
 
 # Ensembl Genomes
-my $FTPURL     = 'ftp.ensemblgenomes.org';
-my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
-my $FASTADIR   = '/pub/current/xxx/fasta';
+our $FTPURL     = 'ftp.ensemblgenomes.org';
+our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
+our $FASTADIR   = '/pub/current/xxx/fasta';
 
 our $REQUEST_COUNT = 0;
 

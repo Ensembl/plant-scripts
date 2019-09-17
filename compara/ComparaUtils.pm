@@ -80,6 +80,7 @@ sub parse_isoform_FASTA_file {
 
 # download compressed TSV file from FTP site, renames it 
 # and saves it in current folder; uses FTP globals defined above
+# NOTE: if species file is not found it tries the bulky all-vs-all file
 sub download_compara_TSV_file {
 
 	my ($dir,$ref_genome,$targetdir) = @_;
@@ -90,20 +91,34 @@ sub download_compara_TSV_file {
 			die "# ERROR(download_compara_TSV_file): cannot login ". $ftp->message();
 		$ftp->cwd($dir) ||
 		   die "# ERROR(download_compara_TSV_file): cannot change working directory to $dir ". $ftp->message();
-		$ftp->cwd($ref_genome) ||
-			die "# ERROR(download_compara_TSV_file): cannot find $ref_genome in $dir ". $ftp->message();
 
-		# find out which file is to be downloaded and 
-		# work out its final name with $ref_genome in it
-		foreach my $file ( $ftp->ls() ){
-			if($file =~ m/protein_default.homologies.tsv.gz/){
-				$compara_file = $file;
-				$stored_compara_file = "$targetdir/$compara_file";
-				$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
-				last;
+		# find out which file is to be downloaded
+		if($ftp->cwd($ref_genome)){
+			foreach my $file ( $ftp->ls() ){
+				if($file =~ m/protein_default.homologies.tsv.gz/){
+					$compara_file = $file;
+					$stored_compara_file = "$targetdir/$compara_file";
+					$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
+					last;
+				}
 			}
+		} else {	# try all-vs-all file instead (Fungi, Protists, Metazoa)
+
+			print "# WARNING(download_compara_TSV_file): cannot find $ref_genome in $dir, try all-vs-all file\n";
+
+			foreach my $file ( $ftp->ls() ){
+            if($file =~ m/protein_default.homologies.tsv.gz/){
+               $compara_file = $file;
+               $stored_compara_file = "$targetdir/$compara_file";
+               last;
+            }
+         }
 		}
-		
+	
+		if(!$compara_file){
+			die "# ERROR(download_compara_TSV_file): cannot find file to download\n";
+		}
+
 		# download that TSV file
 		unless(-s $stored_compara_file){
 			$ftp->binary();
@@ -122,7 +137,10 @@ sub download_compara_TSV_file {
 		} else {
 			print "# re-using $stored_compara_file\n\n";
 		}
-	} else { die "# ERROR(download_compara_TSV_file): cannot connect to $FTPURL , please try later\n" }
+	} 
+	else { 
+		die "# ERROR(download_compara_TSV_file): cannot connect to $FTPURL , please try later\n";
+	}
 
 	return $stored_compara_file;
 }

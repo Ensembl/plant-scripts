@@ -1,0 +1,7 @@
+genomes	arabidopsis_thaliana	arabidopsis_lyrata	brassica_rapa	brassica_oleracea	brassica_napus	arabidopsis_halleri
+arabidopsis_thaliana	100	79.39	76.14	64.45	69.34	78.02
+arabidopsis_lyrata	79.39	100	70.77	61.23	66.47	77.71
+brassica_rapa	76.14	70.77	100	74.69	81.41	70.87
+brassica_oleracea	64.45	61.23	74.69	100	81.99	61.01
+brassica_napus	69.34	66.47	81.41	81.99	100	65.50
+arabidopsis_halleri	78.02	77.71	70.87	61.01	65.50	100

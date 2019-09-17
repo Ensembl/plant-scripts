@@ -93,7 +93,7 @@ sub help_message {
 if($help){ help_message() }
 
 if($division){
-	if(!grep(/$division/,@ComparaUtils::DIVISIONS)){
+	if(!grep(/^$division$/,@ComparaUtils::DIVISIONS)){
 		die "# ERROR: accepted values for division are: ".join(',',@ComparaUtils::DIVISIONS)."\n"
 	} else {
 		$comparadir = $ComparaUtils::COMPARADIR;

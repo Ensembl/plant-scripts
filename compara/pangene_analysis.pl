@@ -12,7 +12,7 @@ use lib $Bin;
 use ComparaUtils qw(
 	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
    perform_rest_action write_boxplot_file factorial fisher_yates_shuffle 
-   $REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
+   $REQUEST_COUNT $COMPARADIR $FASTADIR
 );
 
 # Produces pangenome analysis based on clusters of orthologous genes shared by (plant) species in clade 

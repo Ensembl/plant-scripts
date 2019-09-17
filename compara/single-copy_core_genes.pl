@@ -97,6 +97,8 @@ if($taxonid eq ''){
 	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
 	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
 	exit;
+} else {
+	$taxonid =~ s/\s+/%20/g;
 }
 
 if($division){

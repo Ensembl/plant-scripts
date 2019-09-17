@@ -23,7 +23,7 @@ use ComparaUtils qw(
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes
-my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
+my @divisions  = @ComparaUtils::DIVISIONS;
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
@@ -112,7 +112,8 @@ if($taxonid eq ''){
 	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
 	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
 	exit;
-} else { 
+} else {
+	$taxonid =~ s/\s+/%20/g;
 	$clusterdir .= "_$taxonid\_algEnsemblCompara";
 }
 
@@ -270,10 +271,10 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) get orthologous (plant) genes shared by selected species ####################
 
-# columns of TSV file 
+# columns of TSV file, note high_conf might not be available for some divisions
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
-	$high_confidence,$homology_id);
+	$high_confidence);
 
 # iteratively get and parse TSV & FASTA files, starting with reference, to compile clusters
 # of sequences made by Ensembl Compara
@@ -287,27 +288,29 @@ foreach $sp ( @supported_species ){
 	open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
 	while(my $line = <TSV>){
 
-		#ATMG00030       ATMG00030.1     arabidopsis_thaliana    52.3364 ortholog_one2many       \
-		#Tp57577_TGAC_v2_gene25507       Tp57577_TGAC_v2_mRNA26377       trifolium_pratense      \
-		#16.8675 NULL    NULL    NULL    NULL    0       84344678
+		#ATMG00030       ATMG00030.1     arabidopsis_thaliana    52.3364 ortholog_one2many  \
+		#Tp57577       Tp57577       trifolium_pratense      \
+		#16.8675 NULL    NULL    NULL    NULL    0
 
 		($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
 		$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
-		$high_confidence,$homology_id) = split(/\t/,$line);
+		$high_confidence) = split(/\t/,$line);
 
-		next if(!$supported{ $hom_species });
+		next if(!$supported{ $species } || !$supported{ $hom_species });
 
-		if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0)){
-			print "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n" if($verbose);
-			next; 
-		}
+		if($high_confidence){ 
+			if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0)){
+				print "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n" if($verbose);
+				next; 
+			}
+		}	
 
 		next if($WGA && ($wga_coverage eq 'NULL' || $wga_coverage < $WGA));
 
 		next if($GOC && ($goc_score eq 'NULL' || $goc_score < $GOC));
 
 		if($homology_type =~ m/ortholog/) {
-
+	
 			# add $species protein to cluster only if not clustered yet
 			if(!$incluster{ $prot_stable_id }){
 

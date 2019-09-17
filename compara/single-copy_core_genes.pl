@@ -3,32 +3,31 @@ use strict;
 use warnings;
 
 use Getopt::Long qw(:config no_ignore_case);
-use Net::FTP;
-use JSON qw(decode_json);
-use Data::Dumper;
 use Benchmark;
-use Time::HiRes;
+use Data::Dumper;
 use HTTP::Tiny;
+use JSON qw(decode_json);
+use FindBin '$Bin';
+use lib $Bin;
+use ComparaUtils qw(
+	download_compara_TSV_file perform_rest_action  
+   $REQUEST_COUNT $COMPARADIR 
+);
 
 # Retrieves single-copy orthologous genes/proteins shared by (plant) species in clade 
 # by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
-# Based on scripts at
-# https://github.com/Ensembl/ensembl-compara/blob/release/97/scripts/examples/
-# https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
-#
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes 
 my @divisions  = qw( Plants Bacteria Fungi Vertebrates Protists Metazoa );
-my $FTPURL     = 'ftp.ensemblgenomes.org'; 
-my $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
 my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
+my $downloadir = $Bin . '/downloads';
 my $verbose    = 0;
 my $division   = 'Plants';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
@@ -41,7 +40,6 @@ my $out_genome = '';
 
 my ($help,$sp,$show_supported,$request,$response);
 my ($GOC,$WGA,$one2many,$LOWCONF) = (0,0,0,0);
-my ($request_time,$last_request_time) = (0,0);
 my (@multi_species, @ignore_species, %ignore, %polyploid, %division_supported);
 
 GetOptions(	
@@ -105,7 +103,7 @@ if($division){
 	if(!grep(/$division/,@divisions)){
 		die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
 	} else {
-		$comparadir = $COMPARADIR;
+		$comparadir = $ComparaUtils::COMPARADIR;
 		my $lcdiv = lc($division);
 		$comparadir =~ s/xxx/$lcdiv/;
 	}
@@ -155,16 +153,16 @@ else {
 
 my $start_time = new Benchmark();
 
-# new object for REST requests
+# new object and params for REST requests
 my $http = HTTP::Tiny->new();
 my $global_headers = { 'Content-Type' => 'application/json' };
-my $request_count = 0; # global counter to avoid overload
+$ComparaUtils::REQUEST_COUNT = 0; 
 
 ## 0) check supported species in division ##################################################
 
 $request = $INFOPOINT."Ensembl$division?";
 
-$response = perform_rest_action( $request, $global_headers );
+$response = perform_rest_action( $http, $request, $global_headers );
 my $infodump = decode_json($response);
 
 foreach $sp (@{ $infodump }) {
@@ -194,7 +192,7 @@ my (@supported_species, %supported, %core, %present);
 
 $request = $TAXOPOINT."$taxonid?";
 
-$response = perform_rest_action( $request, $global_headers );
+$response = perform_rest_action( $http, $request, $global_headers );
 $infodump = decode_json($response);
 
 foreach $sp (@{ $infodump }) {
@@ -235,9 +233,11 @@ my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_
    $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
 	$high_confidence,$homology_id);
 
-# get and parse TSV file
+# get TSV file
+my $stored_compara_file = download_compara_TSV_file( $comparadir, $ref_genome, $downloadir );
+
+# uncompress on the fly and parse
 my (@sorted_ids);
-my $stored_compara_file = download_TSV_file( $comparadir, $ref_genome );
 open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored_compara_file\n";
 while(<TSV>){
 	
@@ -339,7 +339,7 @@ foreach $gene_stable_id (@sorted_ids){
 
 		# make REST request and parse dumped JSON
 		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
-		$response = perform_rest_action( $request, $global_headers );
+		$response = perform_rest_action( $http, $request, $global_headers );
 		$treedump = Dumper( decode_json($response) ); 
 
 		foreach $line (split(/\n/, $treedump ) ){
@@ -404,99 +404,4 @@ if($total_core_clusters == 0){
 
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
-
-###################################################################################################
-
-# download compressed TSV file from FTP site, renames it 
-# and saves it in current folder; uses FTP globals defined above
-sub download_TSV_file {
-
-	my ($dir,$ref_genome) = @_;
-	my ($compara_file,$stored_compara_file) = ('','');
-
-	print "# connecting to $FTPURL ...\n";
-
-	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
-		$ftp->login("anonymous",'-anonymous@') ||
-			die "# cannot login ". $ftp->message();
-		$ftp->cwd($dir) ||
-		   die "# ERROR: cannot change working directory to $dir ". $ftp->message();
-		$ftp->cwd($ref_genome) ||
-			die "# ERROR: cannot find $ref_genome in $dir ". $ftp->message();
-
-		# find out which file is to be downloaded and 
-		# work out its final name with $ref_genome in it
-		foreach my $file ( $ftp->ls() ){
-			if($file =~ m/protein_default.homologies.tsv.gz/){
-				$compara_file = $file;
-				$stored_compara_file = $compara_file;
-				$stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
-				last;
-			}
-		}
-		
-		# download that TSV file
-		unless(-s $stored_compara_file){
-			$ftp->binary();
-			my $downsize = $ftp->size($compara_file);
-			$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
-			printf("# downloading %s (%1.1fMb) ...\n",$stored_compara_file,$downsize/(1024*1024));
-			print "# [        50%       ]\n# ";
-			if(!$ftp->get($compara_file)){
-				die "# ERROR: failed downloading $compara_file\n";
-			}
-
-			# rename file to final name
-			rename($compara_file, $stored_compara_file);
-			print "# using $stored_compara_file\n\n";
-		} else {
-			print "# re-using $stored_compara_file\n\n";
-		}
-	} else { die "# ERROR: cannot connect to $FTPURL , please try later\n" }
-
-	return $stored_compara_file;
-}
-
-
-# uses global $request_count
-sub perform_rest_action {
-	my ($url, $headers) = @_;
-	$headers ||= {};
-	$headers->{'Content-Type'} = 'application/json' unless exists $headers->{'Content-Type'};
-
-	if($request_count == 15) { # check every 15
-		my $current_time = Time::HiRes::time();
-		my $diff = $current_time - $last_request_time;
-
-		# if less than a second then sleep for the remainder of the second
-		if($diff < 1) {
-			Time::HiRes::sleep(1-$diff);
-		}
-		# reset
-		$last_request_time = Time::HiRes::time();
-		$request_count = 0;
-	}
-
-	my $response = $http->get($url, {headers => $headers});
-	my $status = $response->{status};
-	
-	if(!$response->{success}) {
-		# check for rate limit exceeded & Retry-After (lowercase due to our client)
-		if(($status == 429 || $status == 599) && exists $response->{headers}->{'retry-after'}) {
-			my $retry = $response->{headers}->{'retry-after'};
-			Time::HiRes::sleep($retry);
-			# afterr sleeping see that we re-request
-			return perform_rest_action($url, $headers);
-		}
-		else {
-			my ($status, $reason) = ($response->{status}, $response->{reason});
-			die "# ERROR: failed REST request $url\n# Status code: ${status}\n# Reason: ${reason}\n# Please re-run";
-		}
-	}
-
-	$request_count++;
-
-	if(length($response->{content})) { return $response->{content} } 
-	else { return '' }	
-}
 

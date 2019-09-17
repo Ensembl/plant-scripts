@@ -21,7 +21,6 @@ use ComparaUtils qw(
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes 
-my @divisions  = $ComparaUtils::DIVISIONS;
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
@@ -93,17 +92,9 @@ sub help_message {
 
 if($help){ help_message() }
 
-if($taxonid eq ''){
-	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
-	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
-	exit;
-} else {
-	$taxonid =~ s/\s+/%20/g;
-}
-
 if($division){
-	if(!grep(/$division/,@divisions)){
-		die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
+	if(!grep(/$division/,@ComparaUtils::DIVISIONS)){
+		die "# ERROR: accepted values for division are: ".join(',',@ComparaUtils::DIVISIONS)."\n"
 	} else {
 		$comparadir = $ComparaUtils::COMPARADIR;
 		my $lcdiv = lc($division);
@@ -111,44 +102,54 @@ if($division){
 	}
 }
 
-if(@ignore_species){
-	foreach my $sp (@ignore_species){
-		$ignore{ $sp } = 1;
-	}
-	printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
+if($show_supported){ 
+	print "# $0 -d $division -l \n\n"
 }
-
-# species for which one2many orths are allowed, such as polyploid species
-# with scaffold level assemblies or species with ancestral genome duplications
-if(@multi_species){
-	foreach my $sp (@multi_species){
-		if($sp eq 'all'){
-			$one2many = 1;
-			%polyploid = ();
-			$polyploid{ $sp } = 1;
-			last;
-		} else{ $polyploid{ $sp } = 1 }
+else{ 
+	if($taxonid eq ''){
+   	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
+   	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
+   	exit;
+	} else {
+   	$taxonid =~ s/\s+/%20/g;
 	}
 
-	if($one2many){ print "\n# multi-copy species : all\n\n" }
-	else{
-		printf("\n# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
-	}
-}
-
-if($outfolder){
-	if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
-	else { 
-		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
+	if(@ignore_species){
+		foreach my $sp (@ignore_species){
+			$ignore{ $sp } = 1;
+		}
+		printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
 	}
 
-	if($seqtype ne 'protein' && $seqtype ne 'cdna'){
-		die "# ERROR: accepted values for seqtype are: protein|cdna\n"
-	}
-}	
+	# species for which one2many orths are allowed, such as polyploid species
+	# with scaffold level assemblies or species with ancestral genome duplications
+	if(@multi_species){
+		foreach my $sp (@multi_species){
+			if($sp eq 'all'){
+				$one2many = 1;
+				%polyploid = ();
+				$polyploid{ $sp } = 1;
+				last;
+			} else{ $polyploid{ $sp } = 1 }
+		}
 
-if($show_supported){ print "# $0 -l \n\n" }
-else {
+		if($one2many){ print "\n# multi-copy species : all\n\n" }
+		else{
+			printf("\n# multi-copy species : %d\n\n",scalar(keys(%polyploid)));
+		}
+	}
+
+	if($outfolder){
+		if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
+		else { 
+			if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
+		}
+
+		if($seqtype ne 'protein' && $seqtype ne 'cdna'){
+			die "# ERROR: accepted values for seqtype are: protein|cdna\n"
+		}
+	}	
+
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
 		"-f $outfolder -t $seqtype -G $GOC -W $WGA -L $LOWCONF\n\n";
 }

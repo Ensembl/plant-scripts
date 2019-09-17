@@ -11,7 +11,7 @@ use lib $Bin;
 use ComparaUtils qw(
 	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
    perform_rest_action write_boxplot_file factorial fisher_yates_shuffle 
-   $REQUEST_COUNT $COMPARADIR $FASTADIR
+   $REQUEST_COUNT $COMPARADIR $FASTADIR @DIVISIONS
 );
 
 # Produces pangenome analysis based on clusters of orthologous genes shared by (plant) species in clade 
@@ -23,7 +23,6 @@ use ComparaUtils qw(
 # Bruno Contreras Moreira 2019
 
 # Ensembl Genomes
-my @divisions  = @ComparaUtils::DIVISIONS;
 my $RESTURL    = 'http://rest.ensembl.org';
 my $INFOPOINT  = $RESTURL.'/info/genomes/division/';
 my $TAXOPOINT  = $RESTURL.'/info/genomes/taxonomy/';
@@ -97,91 +96,94 @@ sub help_message {
 
 if($help){ help_message() }
 
-if($ref_genome eq ''){
-   print "# ERROR: need a valid reference species_name, such as -r arabidopsis_thaliana)\n\n";
-   exit;
-} else {
-   $clusterdir = $ref_genome;
-	$clusterdir =~ s/_//g;
-	if($out_genome){
-		$clusterdir .= "_plus_".$out_genome;
-	}
-}
-
-if($taxonid eq ''){
-	print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
-	print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
-	exit;
-} else {
-	$taxonid =~ s/\s+/%20/g;
-	$clusterdir .= "_$taxonid\_algEnsemblCompara";
-}
-
-if($GOC){
-	$params .= "_GOC$GOC";	
-}
-
-if($WGA){
-	$params .= "_WGA$WGA";	
-}
-
-if($LOWCONF){
-	$params .= "_LC";
-}
-
 if($division){
-	if(!grep(/$division/,@divisions)){
-		die "# ERROR: accepted values for division are: ".join(',',@divisions)."\n"
+   if(!grep(/^$division$/,@ComparaUtils::DIVISIONS)){
+      die "# ERROR: accepted values for division are: ".join(',',@ComparaUtils::DIVISIONS)."\n"
+   } else {
+      my $lcdiv = lc($division);
+
+      $comparadir = $ComparaUtils::COMPARADIR;
+      $comparadir =~ s/xxx/$lcdiv/;
+
+      $fastadir   = $ComparaUtils::FASTADIR;
+      $fastadir =~ s/xxx/$lcdiv/;
+   }
+}
+
+if($show_supported){ 
+	print "# $0 -d $division -l \n\n" 
+}
+else { 
+
+	if($ref_genome eq ''){
+   	print "# ERROR: need a valid reference species_name, such as -r arabidopsis_thaliana)\n\n";
+   	exit;
 	} else {
-		my $lcdiv = lc($division);
-
-		$comparadir = $ComparaUtils::COMPARADIR;
-		$comparadir =~ s/xxx/$lcdiv/;
-		
-		$fastadir   = $ComparaUtils::FASTADIR;		
-		$fastadir =~ s/xxx/$lcdiv/;
-	}
-}
-
-if(@ignore_species){
-	foreach my $sp (@ignore_species){
-		$ignore{ $sp } = 1;
-	}
-	printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
-}
-
-if($seqtype ne 'protein' && $seqtype ne 'cdna'){
-	die "# ERROR: accepted values for seqtype are: protein|cdna\n"
-} else {
-	if($seqtype eq 'protein'){ 
-		$ext = '.faa';
-		$seqfolder = 'pep';
-	}
-   else{ 
-		$ext = '.fna'; 
-		$seqfolder = 'cdna';
-		die "# ERROR: currently cannot accept seqtype = cdna\n"
-	}
-}
-
-if($outfolder){
-	if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
-	else{ 	 
-		if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
+	   $clusterdir = $ref_genome;
+		$clusterdir =~ s/_//g;
+		if($out_genome){
+			$clusterdir .= "_plus_".$out_genome;
+		}
 	}
 
-	# create $clusterdir with $params
-	$clusterdir .= $params;
-	if(!-e "$outfolder/$clusterdir"){
-		if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
+	if($taxonid eq ''){
+		print "# ERROR: need a valid NCBI Taxonomy clade, such as -c Brassicaceae or -c 3700\n\n";
+		print "# Check https://www.ncbi.nlm.nih.gov/taxonomy\n";
+		exit;
+	} else {
+		$taxonid =~ s/\s+/%20/g;
+		$clusterdir .= "_$taxonid\_algEnsemblCompara";
 	}
-} else {
-	print "# ERROR: need a valid output folder, such as -f Brassicaceae\n\n";
-   exit;
-}
+	
+	if($GOC){
+		$params .= "_GOC$GOC";	
+	}
+	
+	if($WGA){
+		$params .= "_WGA$WGA";	
+	}
+	
+	if($LOWCONF){
+		$params .= "_LC";
+	}
+	
+	if(@ignore_species){
+		foreach my $sp (@ignore_species){
+			$ignore{ $sp } = 1;
+		}
+		printf("\n# ignored species : %d\n\n",scalar(keys(%ignore)));
+	}
 
-if($show_supported){ print "# $0 -l \n\n" }
-else {
+	if($seqtype ne 'protein' && $seqtype ne 'cdna'){
+		die "# ERROR: accepted values for seqtype are: protein|cdna\n"
+	} else {
+		if($seqtype eq 'protein'){ 
+			$ext = '.faa';
+			$seqfolder = 'pep';
+		}
+	   else{ 
+			$ext = '.fna'; 
+			$seqfolder = 'cdna';
+			die "# ERROR: currently cannot accept seqtype = cdna\n"
+		}
+	}
+
+	if($outfolder){
+		if(-e $outfolder){ print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n" }
+		else{ 	 
+			if(!mkdir($outfolder)){ die "# ERROR: cannot create $outfolder\n" }
+		}
+
+		# create $clusterdir with $params
+		$clusterdir .= $params;
+		if(!-e "$outfolder/$clusterdir"){
+			if(!mkdir("$outfolder/$clusterdir")){ die "# ERROR: cannot create $outfolder/$clusterdir\n" }
+		}
+	} else {
+		print "# ERROR: need a valid output folder, such as -f Brassicaceae\n\n";
+	   exit;
+	}
+
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
 		"-f $outfolder -t $seqtype -G $GOC -W $WGA -L $LOWCONF\n\n";
 }

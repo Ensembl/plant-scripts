@@ -350,24 +350,18 @@ foreach $gene_stable_id (@sorted_ids){
 		# make REST request and parse dumped JSON
 		$request = "$TREEPOINT$gene_stable_id?compara=$division;aligned=1;sequence=$seqtype;$pruned_species";
 		$response = perform_rest_action( $http, $request, $global_headers );
-		$treedump = Dumper( decode_json($response) ); 
+		$treedump = decode_json($response); 
 
-		foreach $line (split(/\n/, $treedump ) ){
-			if($line =~ m/'sequence' =>/){
-				($seq,$acc) = ('','');
-			}
-			elsif($line =~ m/'seq' => '([^']+)'/){
-				$seq = $1;
-			}
-			elsif($line =~ m/'accession' => '([^']+)'/ && $acc eq ''){
-				$acc = $1;
-				if($valid_prots{ $acc } ){
-					$align{ $valid_prots{$acc} }{ $acc } = $seq;
-					$valid_prots{$acc} .= " found";
-				}
-			}
+		# parse sequences in that tree
+		my %tree_seqs;
+		transverse_tree_json( $treedump->{'tree'} , \%tree_seqs );
+		foreach $acc (keys(%tree_seqs)){
+			if($valid_prots{ $acc } ){
+               $align{ $valid_prots{$acc} }{ $acc } = $tree_seqs{ $acc };
+               $valid_prots{$acc} .= " found";
+            }
 		}
-
+		
 		# save cluster to file
 		if(scalar(keys(%align)) == $n_of_species){ 
 
@@ -415,3 +409,23 @@ if($total_core_clusters == 0){
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 
+##############################################################################
+
+# takes decoded JSON->{'tree'} returned from $TREEPOINT and fills a hash with
+# accession, sequence pairs
+sub transverse_tree_json {
+
+   my ($tree, $ref_hash) = @_;
+
+   my ($child,$id);
+
+   if($tree->{'sequence'}){
+      foreach $id (@{ $tree->{'sequence'}{'id'} }){
+         $ref_hash->{ $id->{'accession'} } = $tree->{'sequence'}{'mol_seq'}{'seq'};
+      }
+   }
+
+   foreach $child (@{ $tree->{'children'} }){
+      transverse_tree_json( $child, $ref_hash );
+   }
+}

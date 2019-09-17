@@ -7,7 +7,7 @@ require Exporter;
 @EXPORT_OK = qw( 
 	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
 	perform_rest_action write_boxplot_file factorial fisher_yates_shuffle 
-	$REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
+	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
 );
 
 use strict;
@@ -18,12 +18,12 @@ use HTTP::Tiny;
 
 
 # Ensembl Genomes
+our @DIVISIONS  = qw( Plants Fungi Protists Metazoa );
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
 
 our $REQUEST_COUNT = 0;
-
 
 # parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file
 # returns a isoform=>sequence hash with the (optionally) selected or (default) longest peptide/transcript per gene

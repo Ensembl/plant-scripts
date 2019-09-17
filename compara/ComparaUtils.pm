@@ -104,20 +104,26 @@ sub download_compara_TSV_file {
 			}
 		} else {	# try all-vs-all file instead (Fungi, Protists, Metazoa)
 
-			print "# WARNING(download_compara_TSV_file): cannot find $ref_genome in $dir, try all-vs-all file\n";
+			print "# WARNING(download_compara_TSV_file): cannot find $ref_genome in $dir, try all-vs-all\n";
 
 			foreach my $file ( $ftp->ls() ){
             if($file =~ m/protein_default.homologies.tsv.gz/){
                $compara_file = $file;
                $stored_compara_file = "$targetdir/$compara_file";
-               last;
+					foreach my $div (@DIVISIONS){
+						if($dir =~ m/($div)/i){
+							$div = $1;
+							$stored_compara_file =~ s/tsv.gz/$div.tsv.gz/;
+							last;
+						}
+					}
             }
          }
 		}
 	
 		if(!$compara_file){
 			die "# ERROR(download_compara_TSV_file): cannot find file to download\n";
-		}
+		} 
 
 		# download that TSV file
 		unless(-s $stored_compara_file){

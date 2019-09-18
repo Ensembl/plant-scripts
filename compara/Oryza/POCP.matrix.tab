@@ -1,0 +1,12 @@
+genomes	oryza_sativa	oryza_indica	oryza_brachyantha	oryza_meridionalis	oryza_glaberrima	oryza_punctata	oryza_longistaminata	oryza_barthii	oryza_nivara	oryza_rufipogon	oryza_glumipatula
+oryza_sativa	100	65.21	58.20	57.01	64.70	62.49	57.48	62.18	62.83	63.08	62.66
+oryza_indica	65.21	100	57.65	61.63	69.23	64.72	62.05	68.50	70.97	70.10	68.75
+oryza_brachyantha	58.20	57.65	100	52.53	57.18	60.98	55.98	56.84	55.72	55.37	56.69
+oryza_meridionalis	57.01	61.63	52.53	100	61.71	62.15	54.82	64.28	65.54	65.13	65.40
+oryza_glaberrima	64.70	69.23	57.18	61.71	100	64.23	58.77	70.26	69.23	69.54	68.98
+oryza_punctata	62.49	64.72	60.98	62.15	64.23	100	59.91	66.33	66.62	65.97	67.20
+oryza_longistaminata	57.48	62.05	55.98	54.82	58.77	59.91	100	61.60	59.75	59.31	60.24
+oryza_barthii	62.18	68.50	56.84	64.28	70.26	66.33	61.60	100	75.42	75.61	75.27
+oryza_nivara	62.83	70.97	55.72	65.54	69.23	66.62	59.75	75.42	100	79.18	75.92
+oryza_rufipogon	63.08	70.10	55.37	65.13	69.54	65.97	59.31	75.61	79.18	100	75.65
+oryza_glumipatula	62.66	68.75	56.69	65.40	68.98	67.20	60.24	75.27	75.92	75.65	100

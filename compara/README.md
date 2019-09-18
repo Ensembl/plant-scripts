@@ -12,8 +12,7 @@ Run any of the scripts with argument -h to get instructions and examples.
 
 ### pangene_analysis.pl
 
-For example, pangene_analysis.pl can be used to analyse a clade-specific pan-gene set. 
-If you run ./single-copy_core_genes.pl you'll get:
+Script pangene_analysis.pl can be used to analyse a clade-specific pan-gene set, with several options:
 
 ```
 usage: pangene_analysis.pl [options]
@@ -42,14 +41,13 @@ Read about GOC and WGA at:
 https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 ```
 
-Example calls:
+These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and produce the following output:
 ```
-perl pangene_analysis.pl -c Poaceae -f Poaceae -r brachypodium_distachyon
+perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa
 perl pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae
-```
 
-The second example will produce this output, and the results will be stored in folder '[Brassicaceae](./Brassicaceae)':
-```
+...
+
 # pangene_analysis.pl -d Plants -c Brassicaceae -r arabidopsis_thaliana -o  -f Brassicaceae -t protein -G 0 -W 0 -L 0
 
 # supported species in NCBI taxon Brassicaceae : 6

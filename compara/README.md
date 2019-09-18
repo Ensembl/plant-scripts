@@ -54,14 +54,24 @@ Those files can be used to produce pan-gene plots for instance with scripts from
 [GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues).
 
 ```
-perl get_homologues-est/plot_pancore_matrix.pl -f core_both -i core_gene.tab
+get_homologues-est/plot_pancore_matrix.pl -f core_both -i core_gene.tab
 
+get_homologues-est/plot_pancore_matrix.pl -f pan -i pan_gene.tab
+
+get_homologues-est/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s 
+
+get_homologues-est/plot_matrix_heatmap.sh -i POCP.matrix.tab
 
 ```
 
-![Core pan-gene plot of 11 Oryza species, generated with ][fig_1]
+![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)
+*Fig. 1. Core-gene plot of 11 Oryza species, generated with get_homologues-est/plot_pancore_matrix.pl*
 
-[fig_1]: ./Oryza/core_gene.tab_core_both.png 
+![Pan pan-gene plot](./Oryza/plots/core_gene.tab_pan.png)
+*Fig. 2. Pan-gene plot of 11 Oryza species, generated with get_homologues-est/plot_pancore_matrix.pl*
+
+![Pan-gene occupancy barplot](./Oryza/plots/pangenome_matrix__shell.png)
+*Fig. 3. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues-est/parse_pangenome_matrix.pl*
 
 
 

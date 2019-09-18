@@ -52,10 +52,10 @@ sub help_message {
 		"-d Ensembl division                        (optional, default: -d $division)\n".
 		"-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n".
 		"-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n".
-		"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
+		"-t sequence type [protein|cdna]            (optional, default: -t protein)\n\n";
 
 	print "Example calls:\n\n".
-		" perl $0 -c Liliopsida -o arabidopsis_thaliana -f Liliopsida.Atha.fasta\".
+		" perl $0 -c Liliopsida -o arabidopsis_thaliana -f Liliopsida.Atha.fasta\n";
 		exit(0);
 }
 

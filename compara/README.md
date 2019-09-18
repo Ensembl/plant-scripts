@@ -42,14 +42,26 @@ https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 ```
 
 These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and 
-produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log) 
+produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log).
+The output folders contain pan-gene clusters, pangenome matrices in several formats and also a matrix of
+Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
 ```
 perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
 perl pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
 ```
 
-Those files can be used to obtain plots such as these with scripts from 
-[GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues): 
+Those files can be used to produce pan-gene plots for instance with scripts from 
+[GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues).
+
+```
+perl get_homologues-est/plot_pancore_matrix.pl -f core_both -i core_gene.tab
+
+
+```
+
+![core plot](./Oryza/core_gene.tab_core_both.png)
+
+
 
 
 

@@ -60,8 +60,7 @@ get_homologues-est/plot_pancore_matrix.pl -f pan -i pan_gene.tab
 
 get_homologues-est/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s 
 
-get_homologues-est/plot_matrix_heatmap.sh -i POCP.matrix.tab
-
+get_homologues-est/plot_matrix_heatmap.sh -i POCP.matrix.tab -k "Percent Conserved Sequences (POCP)"
 ```
 
 ![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)
@@ -76,7 +75,9 @@ get_homologues-est/plot_matrix_heatmap.sh -i POCP.matrix.tab
 
 *Fig. 3. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues-est/parse_pangenome_matrix.pl*
 
+![POCP heatmap](./Oryza/plots/POCP.matrix_heatmap.svg)
 
+*Fig. 4. Percent conserved sequence matrix of 11 Oryza species, generated with get_homologues-est/plot_matrix_heatmap.sh*
 
 
 

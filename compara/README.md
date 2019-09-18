@@ -59,7 +59,9 @@ perl get_homologues-est/plot_pancore_matrix.pl -f core_both -i core_gene.tab
 
 ```
 
-![core plot](./Oryza/core_gene.tab_core_both.png)
+![Core pan-gene plot of 11 Oryza species, generated with ][fig_1]
+
+[fig_1]: ./Oryza/core_gene.tab_core_both.png 
 
 
 

@@ -41,60 +41,17 @@ Read about GOC and WGA at:
 https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 ```
 
-These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and produce the following output:
+These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and 
+produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log) 
 ```
-perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa
-perl pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae
-
-...
-
-# pangene_analysis.pl -d Plants -c Brassicaceae -r arabidopsis_thaliana -o  -f Brassicaceae -t protein -G 0 -W 0 -L 0
-
-# supported species in NCBI taxon Brassicaceae : 6
-
-# total selected species : 6
-
-...
-
-# arabidopsis_thaliana : sequences = 27628 clusters = 26478 (singletons = 1878)
-# arabidopsis_lyrata : sequences = 32667 clusters = 29462 (singletons = 3787)
-# brassica_rapa : sequences = 41018 clusters = 27880 (singletons = 1141)
-# brassica_oleracea : sequences = 59220 clusters = 39457 (singletons = 8077)
-# brassica_napus : sequences = 101040 clusters = 46335 (singletons = 11181)
-# arabidopsis_halleri : sequences = 32158 clusters = 29172 (singletons = 3981)
-
-# total sequences = 293731
-
-# number_of_clusters = 71515 (core = 16609)
-
-# cluster_list = Brassicaceae/arabidopsisthaliana_Brassicaceae_algEnsemblCompara.cluster_list
-# cluster_directory = Brassicaceae/arabidopsisthaliana_Brassicaceae_algEnsemblCompara
-
-# percent_conserved_proteins_file = Brassicaceae/POCP.matrix.tab
-
-# pangenome_file = Brassicaceae/pangenome_matrix.tab tranposed = Brassicaceae/pangenome_matrix.tr.tab
-# pangenome_genes = Brassicaceae/pangenome_matrix_genes.tab transposed = Brassicaceae/pangenome_matrix_genes.tr.tab
-# pangenome_FASTA_file = Brassicaceae/pangenome_matrix.fasta
-
-# genome composition report (samples=10,seed=12345)
-## sample 0 (arabidopsis_thaliana | 0,1,2,3,4,5,)
-## sample 1 (brassica_oleracea | 3,4,5,1,2,0,)
-## sample 2 (arabidopsis_lyrata | 1,2,5,0,3,4,)
-## sample 3 (brassica_oleracea | 3,2,4,5,1,0,)
-## sample 4 (arabidopsis_thaliana | 0,2,1,5,3,4,)
-## sample 5 (brassica_oleracea | 3,2,0,5,4,1,)
-## sample 6 (arabidopsis_lyrata | 1,4,3,5,0,2,)
-## sample 7 (arabidopsis_halleri | 5,3,1,0,2,4,)
-## sample 8 (brassica_rapa | 2,4,5,3,1,0,)
-## sample 9 (arabidopsis_thaliana | 0,2,4,3,5,1,)
-
-# pan-gene (number of clusters) = Brassicaceae/pan_gene.tab
-# core-gene (number of clusters) = Brassicaceae/core_gene.tab
-
-# runtime: 72 wallclock secs (62.80 usr  2.80 sys + 27.61 cusr  1.35 csys = 94.56 CPU)
+perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
+perl pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
 ```
-And those files can be used to obtain plots such as these with scripts from 
+
+Those files can be used to obtain plots such as these with scripts from 
 [GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues): 
+
+
 
 
 

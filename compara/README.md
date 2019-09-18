@@ -64,13 +64,16 @@ get_homologues-est/plot_matrix_heatmap.sh -i POCP.matrix.tab
 
 ```
 
-![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)\\
+![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)
+
 *Fig. 1. Core-gene plot of 11 Oryza species, generated with get_homologues-est/plot_pancore_matrix.pl*
 
-![Pan pan-gene plot](./Oryza/plots/pan_gene.tab_pan.png)\\
+![Pan pan-gene plot](./Oryza/plots/pan_gene.tab_pan.png)
+
 *Fig. 2. Pan-gene plot of 11 Oryza species, generated with get_homologues-est/plot_pancore_matrix.pl*
 
-![Pan-gene occupancy barplot](./Oryza/plots/pangenome_matrix__shell.png)\\
+![Pan-gene occupancy barplot](./Oryza/plots/pangenome_matrix__shell.png)
+
 *Fig. 3. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues-est/parse_pangenome_matrix.pl*
 
 

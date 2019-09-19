@@ -54,7 +54,7 @@ sub help_message {
 		"-t sequence type [protein|cdna]            (optional, default: -t protein)\n\n";
 
 	print "Example calls:\n\n".
-		" perl $0 -c Liliopsida -o arabidopsis_thaliana -f Liliopsida.Atha.fasta\n";
+		" perl $0 -c Liliopsida -o arabidopsis_thaliana -f Liliopsoda.Atha.EG44.faa\n";
 		exit(0);
 }
 

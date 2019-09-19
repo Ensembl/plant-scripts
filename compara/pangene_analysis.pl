@@ -355,7 +355,7 @@ foreach $sp ( @supported_species ){
 
 	# now get FASTA file and parse it, selected/longest isoforms are read
    my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
-	my $ref_sequence = parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
+	my ($ref_sequence, $ref_header) = parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
 	# count number of genes/selected isoforms in this species
 	$totalgenes{ $sp } = scalar(keys(%$ref_sequence));

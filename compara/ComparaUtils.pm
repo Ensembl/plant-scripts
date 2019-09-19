@@ -26,15 +26,17 @@ our $FASTADIR   = '/pub/current/xxx/fasta';
 
 our $REQUEST_COUNT = 0;
 
+
 # parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file
-# returns a isoform=>sequence hash with the (optionally) selected or (default) longest peptide/transcript per gene
+# returns: i) a isoform=>sequence hash with the (optionally) selected or (default) longest peptide/transcript per gene
+# ii) a isoform=>description hash with description & chr location extracted from the FASTA header
 sub parse_isoform_FASTA_file {
 
 	my ($FASTA_filename, $ref_isoforms2keep) = @_;
 
 	my ($stable_id, $gene_stable_id, $max, $len);
 	my ($iso_selected, $len_selected);
-	my (%sequence, %sequence4gene);
+	my (%sequence, %sequence4gene, %header, %header4gene);
 
    open(FASTA,"gzip -dc $FASTA_filename |") || die "# ERROR(parse_isoform_FASTA_file): cannot open $FASTA_filename\n";
    while(my $line = <FASTA>){
@@ -42,6 +44,14 @@ sub parse_isoform_FASTA_file {
       if($line =~ m/^>(\S+).*?gene:(\S+)/){
          $stable_id = $1; # might pep or cdna id
          $gene_stable_id = $2;
+
+			if($line =~ m/description:(.*)?\[/){
+				$header{$stable_id} = $1;
+			} else {
+				$header{$stable_id} = "no_description ";
+			}
+			$header{$stable_id} .= (split(/\s+/,$line))[2];
+
       } elsif($line =~ m/^(\S+)/){
          $sequence{ $gene_stable_id }{ $stable_id } .= $1;
       }
@@ -68,14 +78,16 @@ sub parse_isoform_FASTA_file {
 
 		if($iso_selected){
 			$sequence4gene{ $iso_selected } = $sequence{ $gene_stable_id }{ $iso_selected };
+			$header4gene{ $iso_selected } = $header{ $iso_selected };
 		} elsif($len_selected){
 			$sequence4gene{ $len_selected } = $sequence{ $gene_stable_id }{ $len_selected };
+			$header4gene{ $len_selected } = $header{ $len_selected };
 		} else {
 			print "# ERROR(parse_isoform_FASTA_file): cannot select an isoform for gene $gene_stable_id\n";
 		}
 	}
 
-	return \%sequence4gene;
+	return ( \%sequence4gene, \%header4gene );
 }
 
 

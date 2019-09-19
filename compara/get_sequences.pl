@@ -9,12 +9,11 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use ComparaUtils qw(
-	download_FASTA_file 
-   perform_rest_action 
+	download_FASTA_file parse_isoform_FASTA_file perform_rest_action 
    $REQUEST_COUNT $FASTADIR @DIVISIONS
 );
 
-# Downloads cds/pep sequences of species in a (plant) clade from Ensembl Genomes
+# Downloads longest cds/pep sequences of species in a (plant) clade from Ensembl Genomes
 #
 # Bruno Contreras Moreira 2019
 
@@ -29,7 +28,7 @@ my $seqtype    = 'protein';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my ($fastadir,$outfile,$out_genome) = ('','','');
 
-my ($help,$sp,$line,$show_supported,$request,$response);
+my ($help,$sp,$line,$id,$show_supported,$request,$response);
 my ($filename,$dnafile,$pepfile,$seqfolder,$ext);
 my (@ignore_species, %ignore, %division_supported);
 
@@ -188,15 +187,12 @@ foreach $sp ( @supported_species ){
 
 	# now get FASTA file and parse it, selected/longest isoforms are read
    my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
-
-	open(FASTA,"gzip -dc $stored_sequence_file |") || 
-		die "# ERROR: cannot read $stored_sequence_file\n";
-	while($line = <FASTA>){
-		print OUTFILE $line;
-
+	my ($ref_sequence, $ref_header) = parse_isoform_FASTA_file( $stored_sequence_file );
+		
+	foreach $id (keys(%$ref_sequence)){
+   	print OUTFILE ">$id $ref_header->{$id} [$sp]\n$ref_sequence->{$id}\n";                
 		$n_of_sequences++;
 	}
-	close(FASTA);
 }
 
 close(OUTFILE);

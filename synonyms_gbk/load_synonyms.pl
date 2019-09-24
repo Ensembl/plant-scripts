@@ -31,12 +31,12 @@ my $optsd = [ @{ $cli_helper->get_dba_opts() } ];
 push( @{$optsd}, "file:s" );
 push( @{$optsd}, "verbose" );
 push( @{$optsd}, "extdb:s" );
-push( @{$optsd}, "accessions" ); # add original accessiones as synonyms
+#push( @{$optsd}, "accessions" ); # add original accessions as synonyms
 
 my $opts = $cli_helper->process_args( $optsd, \&pod2usage );
 
 if( !$opts->{'file'} ){
-  die "# need -file synonyms.tsv\n";
+  die "# need -file synonyms.edited.tsv  NOTE: make sure you edit it before loading!\n";
 }
 
 if( !$opts->{'extdb'} ){
@@ -120,15 +120,17 @@ foreach $stableid (keys(%syns)) {
     my $new_display_xref = Bio::EnsEMBL::DBEntry -> new (
                 -PRIMARY_ID  => $syn_accs[0],
                 -DBNAME      => $opts->{'extdb'},
+					 -DISPLAY_ID  => $syns{$stableid}{ $syn_accs[0] },
                 -INFO_TYPE   => 'SEQUENCE_MATCH',
     );
     
-    # add all synonyms
+    # add only first synonyms
     my %seen; 
     foreach my $sacc (0 .. $#syn_accs) {
 	
         # add unique string synonym
-        $word = $syns{$stableid}{ $syn_accs[$sacc] };
+        #$word = $syns{$stableid}{ $syn_accs[$sacc] };
+		  $word=$stableid;
         if(!$seen{$word}){
             $new_display_xref->add_synonym( $syns{$stableid}{ $syn_accs[$sacc] } );
             $logger->info( "Adding $stableid : $syns{$stableid}{ $syn_accs[$sacc] }");
@@ -136,10 +138,10 @@ foreach $stableid (keys(%syns)) {
         }
 
         # add synonym accessions, should be all different
-		  if( $opts->{'accessions'} ){
-            $new_display_xref->add_synonym( $syn_accs[$sacc] );
-            $logger->info( "Adding $stableid : $syn_accs[$sacc] ");
-        }				
+		  #if( $opts->{'accessions'} ){
+        #    $new_display_xref->add_synonym( $syn_accs[$sacc] );
+        #    $logger->info( "Adding accession $stableid : $syn_accs[$sacc] ");
+        #}				
     }        
 
     # will complain if external db does not exist

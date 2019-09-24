@@ -120,7 +120,7 @@ foreach $stableid (keys(%syns)) {
     my $new_display_xref = Bio::EnsEMBL::DBEntry -> new (
                 -PRIMARY_ID  => $syn_accs[0],
                 -DBNAME      => $opts->{'extdb'},
-					 -DISPLAY_ID  => $syns{$stableid}{ $syn_accs[0] },
+                -DISPLAY_ID  => $syns{$stableid}{ $syn_accs[0] },
                 -INFO_TYPE   => 'SEQUENCE_MATCH',
     );
     

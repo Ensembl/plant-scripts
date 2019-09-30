@@ -25,6 +25,7 @@ usage: pangene_analysis.pl [options]
 -o outgroup species_name                   (optional, example: -o brachypodium_distachyon)
 -i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)
 -L allow low-confidence orthologues        (optional, by default these are skipped)
+-S skip singletons                         (optional, by default unclustered sequences are taken)
 -v verbose                                 (optional, example: -v
 
 The following options are only available for some clades:

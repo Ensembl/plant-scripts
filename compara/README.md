@@ -61,9 +61,16 @@ get_homologues/plot_pancore_matrix.pl -f core_both -i core_gene.tab
 get_homologues/plot_pancore_matrix.pl -f pan -i pan_gene.tab
 get_homologues/plot_pancore_matrix.pl -f pan -i pan_gene_nosingles.tab
 
-get_homologues/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s 
-
 get_homologues/plot_matrix_heatmap.sh -i POCP.matrix.tab -k "Percent Conserved Sequences (POCP)"
+
+get_homologues/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s
+# matrix contains 110289 clusters and 11 taxa
+
+# cloud size: 72627 list: pangenome_matrix__cloud_list.txt
+# shell size: 23361 list: pangenome_matrix__shell_list.txt
+# soft core size: 14301 list: pangenome_matrix__softcore_list.txt
+# core size: 8052 (included in soft core) list: pangenome_matrix__core_list.txt
+...
 ```
 
 ![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)

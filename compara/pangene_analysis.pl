@@ -45,7 +45,7 @@ my ($clusterdir,$comparadir,$fastadir,$outfolder,$out_genome,$params) = ('','','
 my ($help,$sp,$sp2,$show_supported,$request,$response);
 my ($filename,$dnafile,$pepfile,$seqfolder,$ext);
 my ($n_core_clusters,$n_cluster_sp,$n_cluster_seqs) = (0,0,0);
-my ($GOC,$WGA,$LOWCONF) = (0,0,0);
+my ($GOC,$WGA,$LOWCONF,$NOSINGLES) = (0,0,0,0);
 my (@ignore_species, %ignore, %division_supported);
 
 GetOptions(	
@@ -61,6 +61,7 @@ GetOptions(
 	"GOC|G=i"      => \$GOC,
 	"WGA|W=i"      => \$WGA,
 	"LC|L"         => \$LOWCONF,
+	"S|S"          => \$NOSINGLES,
 	"folder|f=s"   => \$outfolder
 ) || help_message(); 
 
@@ -76,6 +77,7 @@ sub help_message {
 		# commented until I find of matching protein ids to transcript ids
 		#"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
 		"-L allow low-confidence orthologues        (optional, by default these are skipped)\n".
+		"-S skip singletons                         (optional, by default unclustered sequences are taken)\n".
 		"-v verbose                                 (optional, example: -v\n";
 
 	print "\nThe following options are only available for some clades:\n\n".
@@ -146,7 +148,11 @@ else {
 	if($LOWCONF){
 		$params .= "_LC";
 	}
-	
+
+	if($NOSINGLES){
+      $params .= "_nosingles";
+   }
+
 	if(@ignore_species){
 		foreach my $sp (@ignore_species){
 			$ignore{ $sp } = 1;
@@ -185,7 +191,7 @@ else {
 	}
 
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
-		"-f $outfolder -t $seqtype -G $GOC -W $WGA -L $LOWCONF\n\n";
+		"-f $outfolder -t $seqtype -G $GOC -W $WGA -L $LOWCONF -S $NOSINGLES\n\n";
 }
 
 my $start_time = new Benchmark();
@@ -301,7 +307,7 @@ foreach $sp ( @supported_species ){
 
 		next if(!$supported{ $species } || !$supported{ $hom_species });
 
-		if($high_confidence){ 
+		if(defined($high_confidence)){ 
 			if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0)){
 				print "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n" if($verbose);
 				next; 
@@ -383,7 +389,7 @@ foreach $sp (@supported_species){
 	
 	foreach $prot_stable_id (sort keys(%{ $sequence{ $sp } })){
 
-		next if($incluster{ $prot_stable_id }); # skip
+		next if($NOSINGLES || $incluster{ $prot_stable_id }); # skip
 
 		# create new cluster
 		$cluster_id = $prot_stable_id;

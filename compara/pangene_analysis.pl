@@ -307,7 +307,7 @@ foreach $sp ( @supported_species ){
 
 		next if(!$supported{ $species } || !$supported{ $hom_species });
 
-		if($high_confidence){ 
+		if(defined($high_confidence)){ 
 			if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0)){
 				print "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n" if($verbose);
 				next; 

@@ -48,6 +48,7 @@ The output folders contain pan-gene clusters, pangenome matrices in several form
 Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
 ```
 perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
+perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -S > Oryza.nosingletons.log
 perl pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
 ```
 
@@ -55,30 +56,33 @@ Those files can be used to produce pan-gene plots for instance with scripts from
 [GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues).
 
 ```
-get_homologues-est/plot_pancore_matrix.pl -f core_both -i core_gene.tab
+get_homologues/plot_pancore_matrix.pl -f core_both -i core_gene.tab
 
-get_homologues-est/plot_pancore_matrix.pl -f pan -i pan_gene.tab
+get_homologues/plot_pancore_matrix.pl -f pan -i pan_gene.tab
 
-get_homologues-est/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s 
+get_homologues/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s 
 
-get_homologues-est/plot_matrix_heatmap.sh -i POCP.matrix.tab -k "Percent Conserved Sequences (POCP)"
+get_homologues/plot_matrix_heatmap.sh -i POCP.matrix.tab -k "Percent Conserved Sequences (POCP)"
 ```
 
 ![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)
 
-*Fig. 1. Core-gene plot of 11 Oryza species, generated with get_homologues-est/plot_pancore_matrix.pl*
+*Fig. 1. Core-gene plot of 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
 
-![Pan pan-gene plot](./Oryza/plots/pan_gene.tab_pan.png)
+All sequences | No singletons
+:-------------------------:|:-------------------------:
+![Pan pan-gene plot](./Oryza/plots/pan_gene.tab_pan.png) | ![Pan pan-gene plot](./Oryza/plots/pan_gene_nosingles.tab_pan.png)
 
-*Fig. 2. Pan-gene plot of 11 Oryza species, generated with get_homologues-est/plot_pancore_matrix.pl*
+*Fig. 2. Pan-gene plot of 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl. 
+Left) all sequences; right) after excluding unclustered sequences (singletons).*
 
 ![Pan-gene occupancy barplot](./Oryza/plots/pangenome_matrix__shell.png)
 
-*Fig. 3. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues-est/parse_pangenome_matrix.pl*
+*Fig. 3. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
 
 ![POCP heatmap](./Oryza/plots/POCP.matrix_heatmap.svg)
 
-*Fig. 4. Percent conserved sequence matrix of 11 Oryza species, generated with get_homologues-est/plot_matrix_heatmap.sh*
+*Fig. 4. Percent conserved sequence matrix of 11 Oryza species, generated with get_homologues/plot_matrix_heatmap.sh*
 
 
 

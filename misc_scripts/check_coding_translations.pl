@@ -7,15 +7,29 @@ use Bio::SeqIO;
 # this check is to mimic the dump process by Production
 #https://github.com/Ensembl/ensembl-production/blob/fd20cda83bf1808b3792ec227e1b29c00a705181/modules/Bio/EnsEMBL/Production/Pipeline/FASTA/DumpFile.pm
 
-my $reg_conf = $ENV{'ENSAPIPATH'}."/Registries/p1pan.reg";
+my ($reg_conf, $species);
+my $schema_type = 'core';
+
+if(!$ARGV[1]){ die "# usage: $0 <reg_file> <species_name> [otherfeatures]\n" }
+else{
+	$reg_conf= $ARGV[0];
+	$species = $ARGV[1];
+}
+
+if($ARGV[2]){
+	$schema_type = $ARGV[1];
+}
+
+print "# $0 $reg_conf $species $schema_type\n\n";
+
+#################################
+
 my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_all($reg_conf);
 
-###fetch a gene by its stable identifier
-my $ga = $registry->get_adaptor("saccharum_spontaneum", "core", "gene");
+my $ga = $registry->get_adaptor( $species, $schema_type, "gene");
 
 my $genes = $ga->fetch_all_by_biotype('protein_coding'); 
-#my $genes = $ga->fetch_all_by_logic_name('sugarcaneuil');
 
 my $n_of_coding_genes = 0;
 my ($tr,$seq, $gene);

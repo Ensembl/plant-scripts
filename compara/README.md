@@ -59,6 +59,7 @@ Those files can be used to produce pan-gene plots for instance with scripts from
 get_homologues/plot_pancore_matrix.pl -f core_both -i core_gene.tab
 
 get_homologues/plot_pancore_matrix.pl -f pan -i pan_gene.tab
+get_homologues/plot_pancore_matrix.pl -f pan -i pan_gene_nosingles.tab
 
 get_homologues/parse_pangenome_matrix.pl -m pangenome_matrix.tab -s 
 

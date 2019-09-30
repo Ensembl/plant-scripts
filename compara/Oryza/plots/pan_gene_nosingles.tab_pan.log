@@ -1,0 +1,15 @@
+# pan fit converged
+# residual standard error = 1312.59
+~ pangenes(g) == "28769" + "172.8" * (g - 1) + "18258" ~ exp(frac(-2, "2.07")) frac(1 - exp(frac(-(g - 1), "2.07")), 1 - exp(frac(-1, "2.07"))) 
+# fitted values (genomes, genes) :
+1	28768.5
+2	35878.3
+3	40327.0
+4	43135.5
+5	44932.9
+6	46107.1
+7	46897.2
+8	47450.5
+9	47857.9
+10	48175.3
+11	48437.2

@@ -35,6 +35,8 @@ my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $runDCexe = 'run_datachecks.pl';
 
+my @BADCHAR = qw( ' );
+
 getopts('hNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:G:O:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
@@ -166,16 +168,26 @@ print "# $argsline\n\n";
 #SL3.0ch00	maker_ITAG	mRNA	16480	17940	.	+	.	ID=mRNA:Solyc00g005000.3.1...
 #SL3.0ch00	maker_ITAG	exon	16480	16794	.	+	.	ID=exon:Solyc00g005000.3.1.1...
 #SL3.0ch00	maker_ITAG	CDS	16480	16794	.	+	0	ID=CDS:Solyc00g005000.3.1.1...
+my ($id,$char);
 open(GFF,'<',$gff3_file) || die "# ERROR: cannot read $gff3_file\n";
 while(<GFF>){
 	next if(/^#/);
 	my @gffdata = split(/\t/,$_);
 
-	if($gffdata[8] && $gffdata[8] =~ m/ID=gene:/){ 
-
-		print "# ERROR: please edit the GFF file to remove redundant ID names:\n$_\n\n";
-		#print "# You can try: \$ perl -lne 's/ID=\\w+:/ID=/; print' <gff3file> \n\n";
-		exit(0);
+	if($gffdata[8]){
+		if($gffdata[8] =~ m/ID=gene:/){ 
+			print "# ERROR: please edit the GFF file to remove redundant ID names:\n$_\n\n";
+			#print "# You can try: \$ perl -lne 's/ID=\\w+:/ID=/; print' <gff3file> \n\n";
+			exit(0);
+		} elsif($gffdata[8] =~ m/ID=([^;]+)/){
+			$id = $1;	
+			foreach $char (@BADCHAR){
+				if($id =~ /$char/){
+					print "# ERROR: please edit the GFF file to remove bad char $char in ID:\n$_\n\n";
+					exit(0);
+				}
+			}
+		}
 	}
 }
 close(GFF);

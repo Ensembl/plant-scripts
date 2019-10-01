@@ -10,7 +10,8 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use ComparaUtils qw(
-	download_compara_TSV_file perform_rest_action transverse_tree_json
+	download_compara_TSV_file download_FASTA_file
+	perform_rest_action transverse_tree_json
    $REQUEST_COUNT $COMPARADIR @DIVISIONS 
 );
 
@@ -31,10 +32,7 @@ my $division   = 'Plants';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = ''; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
-my $comparadir = '';
-my $outfolder  = '';
-my $out_genome = '';
-
+my ($comparadir,$fastadir,$outfolder,$out_genome) = ('','','','');
 
 my ($help,$sp,$show_supported,$request,$response);
 my ($GOC,$LOWCONF) = (75,0);
@@ -87,9 +85,13 @@ if($division){
 	if(!grep(/^$division$/,@ComparaUtils::DIVISIONS)){
 		die "# ERROR: accepted values for division are: ".join(',',@ComparaUtils::DIVISIONS)."\n"
 	} else {
-		$comparadir = $ComparaUtils::COMPARADIR;
 		my $lcdiv = lc($division);
+
+		$comparadir = $ComparaUtils::COMPARADIR;
 		$comparadir =~ s/xxx/$lcdiv/;
+
+		$fastadir   = $ComparaUtils::FASTADIR;
+      $fastadir =~ s/xxx/$lcdiv/;
 	}
 }
 
@@ -259,6 +261,11 @@ while(<TSV>){
 	}
 }
 close(TSV);
+
+# get FASTA file and parse chromosome coordinates from header
+my $stored_sequence_file = download_FASTA_file( $fastadir, "$ref_genome/pep", $downloadir );
+#my ($ref_sequence, $ref_header) = parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
+
 
 # check GOC availability
 foreach $hom_species (@supported_species){

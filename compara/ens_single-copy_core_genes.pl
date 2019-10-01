@@ -255,7 +255,7 @@ while(<TSV>){
 
 	next if(	!$supported{ $hom_species } || $hom_species eq $ref_genome); 
 
-	if($high_confidence){
+	if(defined($high_confidence)){
 		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
 	}
 

@@ -5,11 +5,8 @@ use Getopt::Std;
 use POSIX qw(strftime);
 use Cwd;
 use Bio::EnsEMBL::Registry;
-use Bio::EnsEMBL::Utils::Slice qw(split_Slices);
+#use Bio::EnsEMBL::Utils::Slice qw(split_Slices);
 use Bio::Seq;
-
-# TO BE DONE: automatically extract a stable_gene_id\tdescription file to load descriptions
-
 
 # This script takes a GFF3 & a peptide FASTA file and attempts to load the 
 # features on top of a previously loaded ENA genome assembly in hive.
@@ -18,8 +15,8 @@ use Bio::Seq;
 # NOTE: it won't load gene descriptions by default
 # NOTE: hive pipelines must be run in eb-cli nodes
 #
-# It uses env $USER to create hive job names and assumes Ensembl-version API
-# is loaded in @INC / $PERL5LIB
+# It uses env $USER to create hive job names and assumes:
+# i) Ensembl-version API is loaded in @INC / $PERL5LIB
 #
 # Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira 2018-9
 #
@@ -36,6 +33,7 @@ my ($new_gff3file,$short_gff3file,$synonym_file,$gbkfile,%synonym) = ('','','','
 my ($logicname,$other_params) = ('','');
 my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
+my $runDCexe = 'run_datachecks.pl';
 
 getopts('hNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:G:O:', \%opts);
 
@@ -455,11 +453,11 @@ my $genebuild_method = "Generated from $gene_source annotation";
 print "\n# Setting meta genebuild.method to $genebuild_method \n";
 
 if($meta_adaptor->single_value_by_key( 'genebuild.method' )){
-        if(!$meta_adaptor->key_value_exists( 'genebuild.method', $genebuild_method )) {
-                $meta_adaptor->update_key_value( 'genebuild.method', $genebuild_method );
-        }
+	if(!$meta_adaptor->key_value_exists( 'genebuild.method', $genebuild_method )) {
+		$meta_adaptor->update_key_value( 'genebuild.method', $genebuild_method );
+	}
 } else {
-                $meta_adaptor->store_key_value( 'genebuild.method', $genebuild_method );
+	$meta_adaptor->store_key_value( 'genebuild.method', $genebuild_method );
 }
 
 print "\n# Setting meta genebuild.version to $version_start_date\n";
@@ -542,4 +540,9 @@ print "# hive job URL: $hive_url\n\n";
 print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync\n\n";
 print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop\n\n";
 
+# suggested post datachecks
+my $adaptor = $registry->get_adaptor($species, "core", "gene");
 
+print "# suggested datachecks:\n";
+printf("run_datachecks.pl \$(%s details script) -dbname %s -name ProteinTranslation\n",
+	$adaptor->dbc->hostname(), $adaptor->dbc->dbname());

@@ -6,7 +6,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw( 
 	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
-	perform_rest_action write_boxplot_file factorial fisher_yates_shuffle 
+	perform_rest_action transverse_tree_json write_boxplot_file factorial fisher_yates_shuffle 
 	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
 );
 
@@ -307,5 +307,25 @@ sub fisher_yates_shuffle
 
   return join('',@$array);
 }
+
+# takes i) decoded JSON->{'tree'} returned from http://rest.ensembl.org/genetree/member/id/
+# and ii) reference to hash which gets populated with accession, sequence pairs
+sub transverse_tree_json {
+
+   my ($tree, $ref_hash) = @_;
+
+   my ($child,$id);
+
+   if($tree->{'sequence'}){
+      foreach $id (@{ $tree->{'sequence'}{'id'} }){
+         $ref_hash->{ $id->{'accession'} } = $tree->{'sequence'}{'mol_seq'}{'seq'};
+      }
+   }
+
+   foreach $child (@{ $tree->{'children'} }){
+      transverse_tree_json( $child, $ref_hash );
+   }
+}
+
 
 1;

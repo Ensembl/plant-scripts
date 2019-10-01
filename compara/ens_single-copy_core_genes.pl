@@ -10,7 +10,7 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use ComparaUtils qw(
-	download_compara_TSV_file perform_rest_action  
+	download_compara_TSV_file perform_rest_action transverse_tree_json 
    $REQUEST_COUNT $COMPARADIR @DIVISIONS 
 );
 
@@ -409,23 +409,3 @@ if($total_core_clusters == 0){
 my $end_time = new Benchmark();
 print "\n# runtime: ".timestr(timediff($end_time,$start_time),'all')."\n";
 
-##############################################################################
-
-# takes decoded JSON->{'tree'} returned from $TREEPOINT and fills a hash with
-# accession, sequence pairs
-sub transverse_tree_json {
-
-   my ($tree, $ref_hash) = @_;
-
-   my ($child,$id);
-
-   if($tree->{'sequence'}){
-      foreach $id (@{ $tree->{'sequence'}{'id'} }){
-         $ref_hash->{ $id->{'accession'} } = $tree->{'sequence'}{'mol_seq'}{'seq'};
-      }
-   }
-
-   foreach $child (@{ $tree->{'children'} }){
-      transverse_tree_json( $child, $ref_hash );
-   }
-}

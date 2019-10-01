@@ -10,12 +10,12 @@ The scripts in folder API/ use directly the [Perl API](https://www.ensembl.org/i
 
 Run any of the scripts with argument -h to get instructions and examples.
 
-### pangene_analysis.pl
+### ens_pangene_analysis.pl
 
-Script pangene_analysis.pl can be used to analyse a clade-specific pan-gene set, with several options:
+This script can be used to analyse a clade-specific pan-gene set, with several options:
 
 ```
-usage: pangene_analysis.pl [options]
+usage: ens_pangene_analysis.pl [options]
 
 -c NCBI Taxonomy clade of interest         (required, example: -c Brassicaceae or -c 3700)
 -f output folder                           (required, example: -f myfolder)
@@ -47,9 +47,9 @@ produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Ory
 The output folders contain pan-gene clusters, pangenome matrices in several formats and also a matrix of
 Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
 ```
-perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
-perl pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -S > Oryza.nosingletons.log
-perl pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
+perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
+perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -S > Oryza.nosingletons.log
+perl ens_pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
 ```
 
 Those files can be used to produce pan-gene plots for instance with scripts from 
@@ -97,16 +97,16 @@ Left) all sequences; right) after excluding unclustered sequences (singletons).*
 
 
 
-### single-copy_core_genes.pl
+### ens_single-copy_core_genes.pl
 
-Instead, single-copy_core_genes.pl can be used to obtain single-copy core genes present within a clade. 
+This scripts can be used to obtain single-copy core genes present within a clade. 
 Example calls include:
 
 ```
- perl ./single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
- perl ./single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao
- perl ./single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
- perl ./single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
+ perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
+ perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao
+ perl ens_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
+ perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
 
 ```
 

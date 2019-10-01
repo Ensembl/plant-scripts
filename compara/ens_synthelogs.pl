@@ -58,9 +58,9 @@ GetOptions(
 sub help_message {
 	print "\nusage: $0 [options]\n\n".
       "-c NCBI Taxonomy clade of interest      (required, example: -c Brassicaceae or -c 3700)\n".
+		"-r reference species_name               (required, example: -r)\n".
 		"-l list supported species_names         (optional, example: -l)\n".
 		"-d Ensembl division                     (optional, default: -d $division)\n".
-		"-r reference species_name               (optional, default: -r $ref_genome)\n".
 		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
 		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
 		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
@@ -76,8 +76,8 @@ sub help_message {
 		"https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
 
 	print "Example calls:\n\n".
-		" perl $0 -c Brassicaceae -f Brassicaceae\n".
-		" perl $0 -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao\n";
+		" perl $0 -c Brassicaceae -f Brassicaceae -r arabidopsis_thaliana\n".
+		" perl $0 -c Brassicaceae -f Brassicaceae -r arabidopsis_thaliana -t cdna -o theobroma_cacao\n";
 		exit(0);
 }
 
@@ -239,7 +239,7 @@ while(<TSV>){
 		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
 	}
 
-	next if($goc_score eq 'NULL' || $goc_score < $GOC));
+	next if($goc_score eq 'NULL' || $goc_score < $GOC);
 
 	if($homology_type eq 'ortholog_one2one' || $homology_type eq 'ortholog_one2many') {
 

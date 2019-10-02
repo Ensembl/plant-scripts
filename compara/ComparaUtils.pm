@@ -6,9 +6,10 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw( 
 	parse_isoform_FASTA_file 
-	download_compara_TSV_file download_FASTA_file download_GFF_file
-	perform_rest_action transverse_tree_json write_boxplot_file factorial fisher_yates_shuffle 
-	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
+	download_compara_TSV_file download_FASTA_file download_GTF_file
+	perform_rest_action transverse_tree_json 
+	write_boxplot_file factorial fisher_yates_shuffle 
+	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $FTPURL
 );
 
 use strict;
@@ -24,7 +25,7 @@ our @DIVISIONS  = qw( Plants );
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
-our $GFFDIR     = '/pub/current/xxx/gff3';
+our $GTFDIR     = '/pub/current/xxx/gtf';
 
 our $REQUEST_COUNT = 0;
 
@@ -92,13 +93,52 @@ sub parse_isoform_FASTA_file {
 	return ( \%sequence4gene, \%header4gene );
 }
 
-# download compressed TSV file from FTP site, renames it
+# download compressed GTF file from FTP site, renames it
 # # and saves it in $targetdir; uses FTP globals defined above
-sub download_GFF_file {
+sub download_GTF_file {
 	
 	my ($dir,$ref_genome,$targetdir) = @_;
-   my ($compara_file,$stored_compara_file) = ('','');
+   my ($gtf_file,$stored_gtf_file) = ('','');
 
+	if(my $ftp = Net::FTP->new($FTPURL,Passive=>1,Debug =>0,Timeout=>60)){
+		$ftp->login("anonymous",'-anonymous@') ||
+		   die "# ERROR(download_GTF_file): cannot login ". $ftp->message();
+		$ftp->cwd($dir) ||
+			die "# ERROR(download_GTF_file): cannot change working directory to $dir ". $ftp->message();
+		$ftp->cwd($ref_genome) ||
+			die "# ERROR(download_GTF_file): cannot find $ref_genome in $dir ". $ftp->message();
+
+		# find out which file is to be downloaded and
+		# work out its final name
+		foreach my $file ( $ftp->ls() ){
+			if($file =~ m/gtf3.gz/){
+				$gtf_file = $file;
+				$stored_gtf_file = "$targetdir/$gtf_file";
+				last;
+			}
+		}
+
+		unless(-s $stored_gtf_file){
+			$ftp->binary();
+			my $downsize = $ftp->size($gtf_file);
+			$ftp->hash(\*STDOUT,$downsize/20) if($downsize);
+			printf("# downloading %s (%1.1fMb) ...\n",$gtf_file,$downsize/(1024*1024));
+			print "# [        50%       ]\n# ";
+			if(!$ftp->get($gtf_file)){
+				die "# ERROR(download_GTF_file): failed downloading $gtf_file\n";
+			}
+
+			# rename file to final name
+			rename($gtf_file, $stored_gtf_file);
+			
+			print "# using $gtf_file\n\n";
+		} else {
+			print "# re-using $gtf_file\n\n";
+		}
+	} else { die "# ERROR(download_GTF_file): cannot connect to $FTPURL , please try later\n" }
+
+	return $stored_gtf_file;
+}
 
 # download compressed TSV file from FTP site, renames it 
 # and saves it in $targetdir; uses FTP globals defined above

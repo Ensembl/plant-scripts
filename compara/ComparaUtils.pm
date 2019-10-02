@@ -111,7 +111,7 @@ sub download_GTF_file {
 		# find out which file is to be downloaded and
 		# work out its final name
 		foreach my $file ( $ftp->ls() ){
-			if($file =~ m/gtf3.gz/){
+			if($file =~ m/gtf.gz/ && $file !~ m/.chr.gtf/){
 				$gtf_file = $file;
 				$stored_gtf_file = "$targetdir/$gtf_file";
 				last;

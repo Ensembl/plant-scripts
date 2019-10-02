@@ -5,7 +5,8 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw( 
-	parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file 
+	parse_isoform_FASTA_file 
+	download_compara_TSV_file download_FASTA_file download_GFF_file
 	perform_rest_action transverse_tree_json write_boxplot_file factorial fisher_yates_shuffle 
 	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $FTPURL
 );
@@ -23,6 +24,7 @@ our @DIVISIONS  = qw( Plants );
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
+our $GFFDIR     = '/pub/current/xxx/gff3';
 
 our $REQUEST_COUNT = 0;
 
@@ -90,9 +92,16 @@ sub parse_isoform_FASTA_file {
 	return ( \%sequence4gene, \%header4gene );
 }
 
+# download compressed TSV file from FTP site, renames it
+# # and saves it in $targetdir; uses FTP globals defined above
+sub download_GFF_file {
+	
+	my ($dir,$ref_genome,$targetdir) = @_;
+   my ($compara_file,$stored_compara_file) = ('','');
+
 
 # download compressed TSV file from FTP site, renames it 
-# and saves it in current folder; uses FTP globals defined above
+# and saves it in $targetdir; uses FTP globals defined above
 # NOTE: if species file is not found it tries the bulky all-vs-all file
 sub download_compara_TSV_file {
 
@@ -164,7 +173,7 @@ sub download_compara_TSV_file {
 	return $stored_compara_file;
 }
 
-# download compressed FASTA file from FTP site, and saves it in current folder; 
+# download compressed FASTA file from FTP site, and saves it in $targetdir; 
 # uses FTP globals defined above
 sub download_FASTA_file {
 

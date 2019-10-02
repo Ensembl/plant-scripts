@@ -5,8 +5,8 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw( 
-	parse_isoform_FASTA_file 
-	download_compara_TSV_file download_FASTA_file download_GTF_file
+	download_FASTA_file parse_isoform_FASTA_file
+	download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
 	perform_rest_action transverse_tree_json 
 	write_boxplot_file factorial fisher_yates_shuffle 
 	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $FTPURL
@@ -21,7 +21,7 @@ use HTTP::Tiny;
 
 # Ensembl Genomes
 our @DIVISIONS  = qw( Plants ); 
-#Fungi Protists Metazoa have collections and one all-vs-all TSV fhave collections and one all-vs-all TSV file
+#Fungi Protists Metazoa have collections and one all-vs-all TSV file
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
@@ -93,6 +93,29 @@ sub parse_isoform_FASTA_file {
 	return ( \%sequence4gene, \%header4gene );
 }
 
+# reads a compressed GTF file and returns a reference to an array with
+# chr-order geneids and their coordinates
+sub get_gene_coords_GTF_file {
+
+	my ($GTF_filename) = @_;
+
+	my ($chr,$start,$end,$strand,$geneid);
+	my (@chr_sorted_gene_ids );
+
+	open(GTF,"gzip -dc $GTF_filename |") || 
+		die "# ERROR(get_gene_coords_GTF_file): cannot open $GTF_filename\n";
+	while(my $line = <GTF>){
+		#1       araport11       gene    3631    5899    .       +       .       gene_id "AT1G01010";...
+		if($line =~ m/^([^#])\t[^\t]+\tgene\t(\d+)\t(\d+)\t[^\t]\t(\S+)\t[^\t]\tgene_id "([^";]+)/){
+			($chr,$start,$end,$strand,$geneid) = ($1,$2,$3,$4,$5);
+			push(@chr_sorted_gene_ids, [$geneid,$chr,$start,$end,$strand]);
+		}
+	}
+	close(GTF);
+
+	return \@chr_sorted_gene_ids;
+}
+
 # download compressed GTF file from FTP site, renames it
 # # and saves it in $targetdir; uses FTP globals defined above
 sub download_GTF_file {
@@ -133,7 +156,7 @@ sub download_GTF_file {
 			
 			print "# using $gtf_file\n\n";
 		} else {
-			print "# re-using $gtf_file\n\n";
+			print "# re-using $stored_gtf_file\n\n";
 		}
 	} else { die "# ERROR(download_GTF_file): cannot connect to $FTPURL , please try later\n" }
 
@@ -254,7 +277,7 @@ sub download_FASTA_file {
 
          print "# using $fasta_file\n\n";
       } else {
-         print "# re-using $fasta_file\n\n";
+         print "# re-using $stored_fasta_file\n\n";
       }
    } else { die "# ERROR(download_FASTA_file): cannot connect to $FTPURL , please try later\n" }
 

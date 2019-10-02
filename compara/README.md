@@ -109,4 +109,10 @@ Example calls include:
  perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
 
 ```
+### ens_synthelogs.pl
 
+This script is similar to the previous one but explicitely considers only orthogroups with Gene Order Conservation (GOC) score >= 75 by defaults. The output matrix contains also the genomic coordinates of genes of the reference genomes:
+
+```
+perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae
+```

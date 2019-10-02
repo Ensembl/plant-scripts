@@ -10,9 +10,9 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use ComparaUtils qw(
-	download_compara_TSV_file download_FASTA_file
+	download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
 	perform_rest_action transverse_tree_json
-   $REQUEST_COUNT $COMPARADIR @DIVISIONS 
+   $REQUEST_COUNT $COMPARADIR $GTFDIR @DIVISIONS 
 );
 
 # Retrieves orthologous, synthenic genes (synthelogs) shared by (plant) species in clade
@@ -28,11 +28,12 @@ my $TREEPOINT  = $RESTURL.'/genetree/member/id/';
 
 my $downloadir = $Bin . '/downloads';
 my $verbose    = 0;
+my $allowPAV   = 0;
 my $division   = 'Plants';
 my $taxonid    = ''; # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 my $ref_genome = ''; # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein'; 
-my ($comparadir,$fastadir,$outfolder,$out_genome) = ('','','','');
+my ($comparadir,$gtfdir,$outfolder,$out_genome) = ('','','','');
 
 my ($help,$sp,$show_supported,$request,$response);
 my ($GOC,$LOWCONF) = (75,0);
@@ -47,6 +48,7 @@ GetOptions(
 	"reference|r=s"=> \$ref_genome,
 	"outgroup|o=s" => \$out_genome,
 	"ignore|i=s"   => \@ignore_species,
+	"allowpav|a"   => \$allowPAV,
 	"type|t=s"     => \$seqtype,
 	"GOC|G=i"      => \$GOC,
 	"LC|L"         => \$LOWCONF,
@@ -62,9 +64,10 @@ sub help_message {
 		"-o outgroup species_name                (optional, example: -o brachypodium_distachyon)\n".
 		"-i ignore species_name(s)               (optional, example: -i selaginella_moellendorffii -i ...)\n".
 		"-f folder to output FASTA files         (optional, example: -f myfolder)\n".
+		"-a allow presence/absenve (PAV)         (optional, by default only core genes are taken)\n" . 
 		"-t sequence type [protein|cdna]         (optional, requires -f, default: -t protein)\n".
 		"-L allow low-confidence orthologues     (optional, by default these are skipped)\n".
-		"-v verbose                              (optional, example: -v\n";
+		"-v verbose                              (optional)\n";
 
 	print "\nThe following options are only available for some clades:\n\n".
 		"-G min Gene Order Conservation [1:100]  (optional, default: -G $GOC)\n".
@@ -90,8 +93,8 @@ if($division){
 		$comparadir = $ComparaUtils::COMPARADIR;
 		$comparadir =~ s/xxx/$lcdiv/;
 
-		$fastadir   = $ComparaUtils::FASTADIR;
-      $fastadir =~ s/xxx/$lcdiv/;
+		$gtfdir   = $ComparaUtils::GTFDIR;
+      $gtfdir =~ s/xxx/$lcdiv/;
 	}
 }
 
@@ -136,7 +139,7 @@ else{
 	}	
 
 	print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome ".
-		"-f $outfolder -t $seqtype -G $GOC -L $LOWCONF\n\n";
+		"-f $outfolder -a $allowPAV -t $seqtype -G $GOC -L $LOWCONF\n\n";
 }
 
 my $start_time = new Benchmark();
@@ -176,7 +179,7 @@ if($out_genome && !$division_supported{ $out_genome }){
 ## 1) check species in clade ##################################################################
 
 my $n_of_species = 0;
-my (@supported_species, %supported, %core, %present);
+my (@supported_species, %supported, %synth, %present, %chrcoords);
 
 $request = $TAXOPOINT."$taxonid?";
 
@@ -215,7 +218,7 @@ print "# total selected species : $n_of_species\n\n";
 
 # columns of TSV file 
 my ($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
-   $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,
+   $hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_ssynth,$wga_coverage,
 	$high_confidence);
 
 # get TSV file
@@ -227,7 +230,7 @@ open(TSV,"gzip -dc $stored_compara_file |") || die "# ERROR: cannot open $stored
 while(<TSV>){
 	
 	($gene_stable_id,$prot_stable_id,$species,$identity,$homology_type,$hom_gene_stable_id,
-	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_score,$wga_coverage,    
+	$hom_prot_stable_id,$hom_species,$hom_identity,$dn,$ds,$goc_ssynth,$wga_coverage,    
 	$high_confidence) = split(/\t/);
 
 	if($species ne $ref_genome){
@@ -241,31 +244,37 @@ while(<TSV>){
 		next if($LOWCONF == 0 && ($high_confidence eq 'NULL' || $high_confidence == 0));
 	}
 
-	next if($goc_score eq 'NULL' || $goc_score < $GOC);
+	next if($goc_ssynth eq 'NULL' || $goc_ssynth < $GOC);
 
 	if($homology_type eq 'ortholog_one2one' || $homology_type eq 'ortholog_one2many') {
 
 		# add $ref_genome protein 
-		if(!$core{ $gene_stable_id }){ 
+		if(!$synth{ $gene_stable_id }){ 
 
-			push(@{ $core{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
+			push(@{ $synth{ $gene_stable_id }{ $ref_genome } }, $prot_stable_id );
 
 			$present{ $ref_genome }++;
-
-			push(@sorted_ids, $gene_stable_id); # save cluster order
 		}
 
-		push(@{ $core{ $gene_stable_id }{ $hom_species } }, $hom_prot_stable_id );
+		push(@{ $synth{ $gene_stable_id }{ $hom_species } }, $hom_prot_stable_id );
 
 		$present{ $hom_species }++;
 	}
 }
 close(TSV);
 
-# get FASTA file and parse chromosome coordinates from header
-my $stored_sequence_file = download_FASTA_file( $fastadir, "$ref_genome/pep", $downloadir );
-#my ($ref_sequence, $ref_header) = parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
+# get GTF file to get chr-sorted lists of genes
+my $stored_gtf_file = download_GTF_file( $gtfdir, $ref_genome, $downloadir );
+my $ref_sorted_genes = get_gene_coords_GTF_file( $stored_gtf_file );
 
+foreach my $gene (@{ $ref_sorted_genes }){
+	$gene_stable_id = $gene->[0];
+	if($synth{ $gene_stable_id }){
+		push(@sorted_ids, $gene_stable_id);
+		$chrcoords{ $gene_stable_id } = 
+			"$gene->[1]:$gene->[2]-$gene->[3]:$gene->[4]";
+	}
+}
 
 # check GOC availability
 foreach $hom_species (@supported_species){
@@ -277,7 +286,7 @@ foreach $hom_species (@supported_species){
 
 ## 3) print summary matrix of synthelogs and compile sequence clusters #################
 
-my $total_core_clusters = 0;
+my $total_synth_clusters = 0;
 my ($pruned_species,$treedump,$acc,$seq,$line,$filename);
 
 # prepare param to prune species in REST requests
@@ -289,7 +298,7 @@ if($outfolder){
 
 foreach $gene_stable_id (@sorted_ids){
 
-	next if(scalar(keys(%{ $core{ $gene_stable_id } })) < $n_of_species); 
+	next if($allowPAV == 0 && scalar(keys(%{ $synth{ $gene_stable_id } })) < $n_of_species); 
 
 	my (%valid_prots, %align);
 
@@ -300,8 +309,8 @@ foreach $gene_stable_id (@sorted_ids){
 	}
 
 	# print matrix header
-	if($total_core_clusters == 0){
-		print "cluster";
+	if($total_synth_clusters == 0){
+		print "gene\tlocation";
 		foreach $hom_species (@supported_species){
 			print "\t$hom_species";
 		} 
@@ -309,14 +318,18 @@ foreach $gene_stable_id (@sorted_ids){
 	}
 	
 	# print a matrix row in TSV format
-	print $filename;
+	printf("%s\t%s",$filename,$chrcoords{ $filename });
 	foreach $hom_species (@supported_species){ 
 
-		printf("\t%s", join(',',@{ $core{ $gene_stable_id }{ $hom_species } }) );
+		if($synth{ $gene_stable_id }{ $hom_species }){
+			printf("\t%s", join(',',@{ $synth{ $gene_stable_id }{ $hom_species } }) );
 
-		# store which prots come from each species
-		foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
-			$valid_prots{ $hom_prot_stable_id } = $hom_species;
+			# store which prots come from each species
+			foreach $hom_prot_stable_id (@{ $synth{ $gene_stable_id }{ $hom_species } }){
+				$valid_prots{ $hom_prot_stable_id } = $hom_species;
+			}
+		} else { 
+			print "\tNA" #PAV
 		}
 	} print "\n";
 
@@ -325,7 +338,7 @@ foreach $gene_stable_id (@sorted_ids){
 	
 		# check whether this cluster already exists
 		if(-s "$outfolder/$filename"){
-			$total_core_clusters++;
+			$total_synth_clusters++;
 			next;
 		}
 
@@ -353,7 +366,7 @@ foreach $gene_stable_id (@sorted_ids){
 				die "# ERROR: cannot create $outfolder/$filename\n";
 
 			foreach $hom_species (@supported_species){
-				foreach $hom_prot_stable_id (@{ $core{ $gene_stable_id }{ $hom_species } }){
+				foreach $hom_prot_stable_id (@{ $synth{ $gene_stable_id }{ $hom_species } }){
 					print FASTA ">$hom_species $hom_prot_stable_id\n$align{ $hom_species }{ $hom_prot_stable_id }\n";
 				}
 			}	
@@ -371,13 +384,13 @@ foreach $gene_stable_id (@sorted_ids){
 		}
 	}
 	
-	$total_core_clusters++; #last if($total_core_clusters == 1); # debug
+	$total_synth_clusters++; #last if($total_synth_clusters == 1); # debug
 }
 
-print "\n# total synthelog clusters : $total_core_clusters\n\n";
+print "\n# total synthelog clusters : $total_synth_clusters\n\n";
 
 # print diagnostics
-if($total_core_clusters == 0){
+if($total_synth_clusters == 0){
 
 	print "# diagnostic stats (species\tclusters)\n\n";
 

@@ -11,13 +11,13 @@ use DBI;
 my $db = 'physcomitrella_patens_core_38_91_11';
 
 {
-    my $dsn = "DBI:mysql:database=$db;host=mysql-eg-prod-1.ebi.ac.uk;port=4238";
-    my $dbh = DBI->connect($dsn, 'ensrw', 'writ3rp1');
+    my $dsn = "DBI:mysql:database=$db;host=mysql-eg-prod-1.ebi.ac.uk;port=xxx";
+    my $dbh = DBI->connect($dsn, 'uuuu', 'ppppp');
 
     my @obj_xref_ids = get_ids($dbh);
     
-    my $dsn = "DBI:mysql:database=$db;host=mysql-eg-staging-2.ebi.ac.uk;port=4275";
-    my $dbh = DBI->connect($dsn, 'ensro', '');
+    my $dsn = "DBI:mysql:database=$db;host=mysql-eg-staging-2.ebi.ac.uk;port=xxx";
+    my $dbh = DBI->connect($dsn, 'uuuu', 'pppp');
 
     my $count = 0;
     my $sql;

@@ -18,4 +18,4 @@ perl _bench_blocks.pl Athaliana_blocks.uc.tsv ../downloads/Arabidopsis_thaliana.
 	Brassicaceae.synthelogs.tsv > Athaliana_blocks.report.tsv
 ```
 
-The final report is in file[Athaliana_blocks.report.tsv](Athaliana_blocks.report.tsv).
+The final report is in file [Athaliana_blocks.report.tsv](Athaliana_blocks.report.tsv).

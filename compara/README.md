@@ -110,8 +110,12 @@ Example calls include:
 ```
 ### ens_synthelogs.pl
 
-This script is similar to the previous one but explicitely considers only orthogroups with Gene Order Conservation (GOC) score >= 75 by defaults. The output matrix contains also the genomic coordinates of genes of the reference genomes:
+This script is related to [ens_single-copy_core_genes.pl](ens_single-copy_core_genes.pl) but explicitely considers only orthogroups with Gene Order Conservation (GOC) score >= 75 by default. The output matrix contains also the genomic coordinates of genes of the reference genomes:
 
 ```
 perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae
+
 ```
+
+A sample output matrix is available in [Brassicaceae.synthelogs.tsv](./bench/Brassicaceae.synthelogs.tsv).
+A benchmark is described in folder [bench](./bench). 

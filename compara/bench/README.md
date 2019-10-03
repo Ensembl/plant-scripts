@@ -7,19 +7,8 @@ and ii) filtering those with Gene Order Conservation (GOC) scores >= 75. GOC is 
 Our gold standard was a list of 22 genomic blocks building up the Ancestral Crucifer Karyotype, reported in https://www.ncbi.nlm.nih.gov/pubmed/26945766. Blocks are defined by *A. thaliana* intervals and the BAC clones that contain them. Those BAC clones were used to design chromosome painting probes used for comparative cytogenetics and define intervals that can be shorter than the gene-based intervals. Blocks are listed in file [Athaliana_blocks.uc.tsv](Athaliana_blocks.uc.tsv). 
 
 The following commands were performed to complete the benchmark:
+
 ```
-
-Script [_bench_blocks.pl](_bench_blocks.pl) interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org) and 
-the FTP site.
-
-The scripts in folder API/ use directly the [Perl API](https://www.ensembl.org/info/docs/api/index.html).
-
-## Documentation and examples
-
-Run any of the scripts with argument -h to get instructions and examples.
-
-### ens_pangene_analysis.pl
-
 # retrieve synthelogs from Ensembl (GOC>=75), leave out Brassica napus for being allopolyploid
 perl ../ens_synthelogs.pl -c Brassicaceae -r arabidopsis_thaliana -i brassica_napus \
 	-a > Brassicaceae.synthelogs.tsv

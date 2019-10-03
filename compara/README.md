@@ -39,7 +39,7 @@ The following options are only available for some clades:
    at https://github.com/Ensembl/ensembl-compara
 
 Read about GOC and WGA at:
-https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
+<https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html>
 ```
 
 These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and 

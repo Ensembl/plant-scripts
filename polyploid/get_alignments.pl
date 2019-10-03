@@ -46,9 +46,9 @@ my $mlss_id  = 9741;
 
 #$registry->load_registry_from_multiple_dbs( {
 #    -host => 'mysql-eg-mirror.ebi.ac.uk',
-#    -port => 4157,
-#    -user => 'ensrw',
-#    -pass => 'writ3r',
+#    -port => xxx,
+#    -user => 'xxx',
+#    -pass => 'xxxx',
 #    -db_version => $eRelease
 #});
 
@@ -61,21 +61,21 @@ $registry->load_all($reg_conf);
 ## Get all homeologues from Compara DB on Staging
 ##
 
-my $dsn = 'DBI:mysql:host=mysql-eg-staging-1.ebi.ac.uk;port=4160;' . 
+my $dsn = 'DBI:mysql:host=mysql-eg-staging-1.ebi.ac.uk;port=xxx;' . 
           'database=ensembl_compara_plants_41_94';
 
 
-my $dsn = 'DBI:mysql:host=mysql-eg-staging-2.ebi.ac.uk;port=4275;' . 
+my $dsn = 'DBI:mysql:host=mysql-eg-staging-2.ebi.ac.uk;port=xxx;' . 
           'database=ensembl_compara_plants_42_95';
 
 #mysql://ensrw:writ3rp1@mysql-eg-prod-1.ebi.ac.uk:4238/
                     
 print STDERR $dsn, "\n";
           
-my $user = 'ensrw';
-my $user = 'ensro';
-my $password = 'writ3r';
-my $password = 'writ3rp3';
+my $user = 'xxx';
+my $user = 'xxx';
+my $password = 'xxxx';
+my $password = 'xxxx';
 my $password = '';
 
 my $dbh = DBI->connect($dsn, $user, $password)

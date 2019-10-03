@@ -56,7 +56,7 @@ close(TSV);
 my @allblocks = ( keys(%$ref_blocks) , 'noblock'  );
 
 # header
-print "block\tinterval\tgenes\tsynthelogs";
+print "block\tinterval\tgenes\t%synthelogs";
 foreach $c (2 .. $#species){ print "\t$species[$c]" }
 print "\n";
 

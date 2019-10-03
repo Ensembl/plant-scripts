@@ -68,8 +68,6 @@ my $dsn = 'DBI:mysql:host=mysql-eg-staging-1.ebi.ac.uk;port=xxx;' .
 my $dsn = 'DBI:mysql:host=mysql-eg-staging-2.ebi.ac.uk;port=xxx;' . 
           'database=ensembl_compara_plants_42_95';
 
-#mysql://ensrw:writ3rp1@mysql-eg-prod-1.ebi.ac.uk:4238/
-                    
 print STDERR $dsn, "\n";
           
 my $user = 'xxx';
@@ -316,30 +314,26 @@ while ((my @results) = $psmt -> fetchrow()) {
 
 # get coordinates for all genes
 
-my $dsn = 'DBI:mysql:host=mysql-eg-staging-1.ebi.ac.uk;port=4160;' . 
+my $dsn = 'DBI:mysql:host=mysql-eg-staging-1.ebi.ac.uk;port=xxx;' . 
           'database=triticum_aestivum_core_33_86_3';
 
 my $user='ensro';
 my $password = '';		
 		         
-my $dsn = 'DBI:mysql:host=mysql-eg-mirror.ebi.ac.uk;port=4157;' . 
+my $dsn = 'DBI:mysql:host=mysql-eg-mirror.ebi.ac.uk;port=xxx;' . 
           'database=triticum_aestivum_core_' . $egRelease . '_' . $eRelease . '_' . 
           $assembly;
           
-my $user = 'ensrw';
-my $password = 'writ3r';
+my $user = 'xxxx';
+my $password = 'xxx';
  
 ##Take from prod-2
-#my $dsn = 'DBI:mysql:host=mysql-eg-mirror.ebi.ac.uk;port=4157;' . 
-#          'database=triticum_aestivum_core_' . $egRelease . '_' . $eRelease . '_' . 
-#          $assembly;
-
-my $dsn = 'DBI:mysql:host=mysql-eg-prod-2.ebi.ac.uk;port=4239;' .
+my $dsn = 'DBI:mysql:host=mysql-eg-prod-2.ebi.ac.uk;port=xxx;' .
           'database=triticum_dicoccoides_core_42_95_1';
 
           
-my $user = 'ensrw';
-my $password = 'writ3rp2';
+my $user = 'xxxx';
+my $password = 'xxxx';
  
 
 my $dbh = DBI->connect($dsn, $user, $password)

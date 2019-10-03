@@ -37,10 +37,9 @@ The following options are only available for some clades:
 -W min Whole Genome Align score [0:100] (optional, example: -W 75)
    see ensembl-compara/scripts/pipeline/compara_plants.xml
    at https://github.com/Ensembl/ensembl-compara
-
-Read about GOC and WGA at:
-<https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html>
 ```
+Read about GOC and WGA at https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
+
 
 These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and 
 produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log).

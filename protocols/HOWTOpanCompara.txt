@@ -135,19 +135,19 @@ $MASTER_CMD -e "show databases" | grep _97_ | wc
 
 ## copy cores of new species to our production server #############################
 
-# Copy from mysql://ensro@mysql-ens-sta-3:4160/marchantia_polymorpha_core_44_97_1 to 
-# 	mysql://ensrw:scr1b3d3@mysql-ens-plants-prod-2:4208/marchantia_polymorpha_core_44_97_1 is successful
+# Copy from mysql://ensro@mysql-ens-sta-3:xxx/marchantia_polymorpha_core_44_97_1 to 
+# 	mysql://ensrw:xxxx@mysql-ens-plants-prod-2:xxx/marchantia_polymorpha_core_44_97_1 is successful
 
-# Copy from mysql://ensro@mysql-ens-sta-3:4160/brachypodium_distachyon_core_44_97_4 to 
-#	mysql://ensrw:scr1b3d3@mysql-ens-plants-prod-2:4208/brachypodium_distachyon_core_44_97_4 is successful
+# Copy from mysql://ensro@mysql-ens-sta-3:xxx/brachypodium_distachyon_core_44_97_4 to 
+#	mysql://ensrw:xxxx@mysql-ens-plants-prod-2:xxx/brachypodium_distachyon_core_44_97_4 is successful
 
 $MASTER_CMD -e "show databases" | grep _97_ | wc
 #68
 
 ## copy pan_compara_master to prod server ######################################
 
-# Copy from mysql://ensro@mysql-eg-pan-prod:4276/pan_compara_master to 
-# 	mysql://ensrw:scr1b3d3@mysql-ens-plants-prod-2:4208/pan_compara_master is successful
+# Copy from mysql://ensro@mysql-eg-pan-prod:xxx/pan_compara_master to 
+# 	mysql://ensrw:xxxx@mysql-ens-plants-prod-2:xxx/pan_compara_master is successful
 
 # check schema and update if needed 
 $MASTER_CMD $MASTER_DB -e "select meta_value from meta where meta_key='schema_version'"
@@ -356,7 +356,7 @@ beekeeper.pl -url $url -analyses_pattern blastp_unannotated_himem -reset_failed_
 # so I now run it interactively:
 bshell4 -> ebi6-283
 screen -S compara1
-runWorker.pl -url "mysql://ensrw:scr1b3hive@mysql-ens-hive-prod-2:4411/ensembl_compara_pan_hom_44_97;reconnect_when_lost=1" \
+runWorker.pl -url "mysql://ensrw:xxxx@mysql-ens-hive-prod-2:xxx/ensembl_compara_pan_hom_44_97;reconnect_when_lost=1" \
 	-job_id 18911 -no_cleanup
 #...
 #Use of uninitialized value in hash element at /nfs/panda/ensemblgenomes/development/bcontreras//compara/97/ensembl-compara/modules/Bio/EnsEMBL/Compara/DBSQL/PeptideAlignFeatureAdaptor.pm line 327.

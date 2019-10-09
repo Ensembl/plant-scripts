@@ -553,8 +553,14 @@ print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync\n\n";
 print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop\n\n";
 
 # suggested post datachecks
-my $adaptor = $registry->get_adaptor($species, "core", "gene");
+my $adaptor  = $registry->get_adaptor($species, "core", "gene");
+my $dbserver = $adaptor->dbc->hostname();
+if($dbserver =~ m/(\S+)?.ebi.ac.uk/){
+	$dbserver = $1;
+}
 
 print "# suggested datachecks:\n";
 printf("run_datachecks.pl \$(%s details script) -dbname %s -name ProteinTranslation\n",
-	$adaptor->dbc->hostname(), $adaptor->dbc->dbname());
+	$dbserver, $adaptor->dbc->dbname());
+
+

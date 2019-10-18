@@ -260,6 +260,7 @@ if($sub_chr_names ne ''){
 	print "# created edited GFF3 file: $new_gff3file\n\n";
 
 	# add chr name synonyms to target db
+	# NOTE: this will fail if assembly does not have 'chromosome' coord_system
 	if($synonyms == 1){
 			
 		for $chr_int (keys(%synonyms)){

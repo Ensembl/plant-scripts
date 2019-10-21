@@ -31,7 +31,6 @@ my ($skip_bad_types,$rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_fea
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable,$otherfeats) = (0,0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file,$gbkfile,%synonym) = ('','','','');
 my ($logicname,$other_params) = ('','');
-my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $runDCexe = 'run_datachecks.pl';
 
@@ -259,17 +258,17 @@ if($sub_chr_names ne ''){
 
 	print "# created edited GFF3 file: $new_gff3file\n\n";
 
-	# add chr name synonyms to target db
-	# NOTE: this will fail if assembly does not have 'chromosome' coord_system
+	# add chr/toplevel name synonyms to target db
 	if($synonyms == 1){
 			
 		for $chr_int (keys(%synonyms)){
 
 			$chr_orig = $synonyms{ $chr_int };
-			my $chr_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chr_int );
+
+			my $slice = $slice_adaptor->fetch_by_region( 'toplevel', $chr_int );
 
 			print "# adding synonym $chr_orig ($chr_int)\n";
-			$chr_slice->add_synonym( $chr_orig );
+			$slice->add_synonym( $chr_orig );
 		}
 
 		# DanBolser's SQL queries for doing just that
@@ -303,10 +302,8 @@ if($synonym_file ne '' && -s $synonym_file){
 	while(<TSV>){
 		chomp;
 		($orig_gff,$syn) = split(/\s+/,$_); 
-		foreach $regtype (@seqregion_types){
-			$contig_slice = $slice_adaptor->fetch_by_region( $regtype, $syn );
-			last if(defined($contig_slice));
-		}
+		
+		$contig_slice = $slice_adaptor->fetch_by_region( 'toplevel', $syn );
 
 		if(defined($contig_slice)){
 	      #print "# adding synonym $orig_gff ($synonym)\n";

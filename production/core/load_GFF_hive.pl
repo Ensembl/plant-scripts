@@ -177,11 +177,10 @@ while(<GFF>){
 
 		$features{$gffdata[2]}++;
 
-		# this has caused me trouble in the past
-		if($gffdata[2] =~ m/prime_UTR/){
-			print "# ERROR: please edit the GFF file to remove UTR features:\n$_\n\n";
-			exit(0);
-		}
+		#if($gffdata[2] =~ m/prime_UTR/){
+		#	print "# ERROR: please edit the GFF file to remove UTR features:\n$_\n\n";
+		#	exit(0);
+		#}
 		
 		if($gffdata[8] =~ m/ID=gene:/){ 
 			print "# ERROR: please edit the GFF file to remove redundant ID names:\n$_\n\n";

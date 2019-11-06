@@ -105,7 +105,9 @@ my $ENAlogfile = 'ENA.'.$taxon_name.'.'.$datestring.'.err';
 my $report_file = $taxon_name.'.'.$datestring.'.report.tsv';
 
 ## 2) save local copy of ENAs current $taxon_name contents
-system("$WGETEXE -q '$ENAURL($taxon_id)$ENAquery' -O $ENAcurrent_file -o $ENAlogfile");
+my $fullquery = "$ENAURL($taxon_id)$ENAquery";
+print " ENA query: $fullquery\n\n";
+system("$WGETEXE -q '$fullquery' -O $ENAcurrent_file -o $ENAlogfile");
 
 ## 3) check currently supported assemblies in Ensembl division  
 my %current_ensembl_assembly_ids;

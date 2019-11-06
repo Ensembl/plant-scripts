@@ -31,7 +31,6 @@ my ($skip_bad_types,$rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_fea
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable,$otherfeats) = (0,0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file,$gbkfile,%synonym) = ('','','','');
 my ($logicname,$other_params) = ('','');
-my @seqregion_types = ('chromosome','supercontig','contig');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $runDCexe = 'run_datachecks.pl';
 
@@ -163,18 +162,26 @@ $argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -D %s -H
 print "# $argsline\n\n";
 
 
-## check ID=names in GFF3 file to warn about gene:, mRNA:,... tags, which otherwise are added as stable_ids to db
+## check format and ID=names in GFF3 file to warn about gene:, mRNA:,... tags, which otherwise are added as stable_ids to db
 #SL3.0ch00	maker_ITAG	gene	16480	17940	.	+	.	ID=gene:Solyc00g005000.3...
 #SL3.0ch00	maker_ITAG	mRNA	16480	17940	.	+	.	ID=mRNA:Solyc00g005000.3.1...
 #SL3.0ch00	maker_ITAG	exon	16480	16794	.	+	.	ID=exon:Solyc00g005000.3.1.1...
 #SL3.0ch00	maker_ITAG	CDS	16480	16794	.	+	0	ID=CDS:Solyc00g005000.3.1.1...
-my ($id,$char);
+my ($id,$char,%features);
 open(GFF,'<',$gff3_file) || die "# ERROR: cannot read $gff3_file\n";
 while(<GFF>){
 	next if(/^#/);
 	my @gffdata = split(/\t/,$_);
 
 	if($gffdata[8]){
+
+		$features{$gffdata[2]}++;
+
+		#if($gffdata[2] =~ m/prime_UTR/){
+		#	print "# ERROR: please edit the GFF file to remove UTR features:\n$_\n\n";
+		#	exit(0);
+		#}
+		
 		if($gffdata[8] =~ m/ID=gene:/){ 
 			print "# ERROR: please edit the GFF file to remove redundant ID names:\n$_\n\n";
 			#print "# You can try: \$ perl -lne 's/ID=\\w+:/ID=/; print' <gff3file> \n\n";
@@ -191,6 +198,8 @@ while(<GFF>){
 	}
 }
 close(GFF);
+
+print "# features found: ".join(',',keys(%features))."\n\n";
 
 ## replace chr names with natural & add original names to synonyms in db;
 ## also check whether coords in GFF3 are within chromosomes in db
@@ -259,16 +268,17 @@ if($sub_chr_names ne ''){
 
 	print "# created edited GFF3 file: $new_gff3file\n\n";
 
-	# add chr name synonyms to target db
+	# add chr/toplevel name synonyms to target db
 	if($synonyms == 1){
 			
 		for $chr_int (keys(%synonyms)){
 
 			$chr_orig = $synonyms{ $chr_int };
-			my $chr_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chr_int );
+
+			my $slice = $slice_adaptor->fetch_by_region( 'toplevel', $chr_int );
 
 			print "# adding synonym $chr_orig ($chr_int)\n";
-			$chr_slice->add_synonym( $chr_orig );
+			$slice->add_synonym( $chr_orig );
 		}
 
 		# DanBolser's SQL queries for doing just that
@@ -302,10 +312,8 @@ if($synonym_file ne '' && -s $synonym_file){
 	while(<TSV>){
 		chomp;
 		($orig_gff,$syn) = split(/\s+/,$_); 
-		foreach $regtype (@seqregion_types){
-			$contig_slice = $slice_adaptor->fetch_by_region( $regtype, $syn );
-			last if(defined($contig_slice));
-		}
+		
+		$contig_slice = $slice_adaptor->fetch_by_region( 'toplevel', $syn );
 
 		if(defined($contig_slice)){
 	      #print "# adding synonym $orig_gff ($synonym)\n";
@@ -332,10 +340,10 @@ if($synonym_file ne '' && -s $synonym_file){
 
 	open(GFF,'<',$new_gff3file) || die "# ERROR: cannot read $new_gff3file\n";
    while(<GFF>){
-		if(/^#/){ print FILTERGFF $_ }
+		if(/^$/){ next }
+		elsif(/^#/){ print FILTERGFF $_ }
       else{
 			my @gffdata = split(/\t/,$_);
-
 			if(!defined($synonym{$gffdata[0]})){
 
 				if($gffdata[2] eq 'gene'){ 
@@ -553,8 +561,14 @@ print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -sync\n\n";
 print "beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file -loop\n\n";
 
 # suggested post datachecks
-my $adaptor = $registry->get_adaptor($species, "core", "gene");
+my $adaptor  = $registry->get_adaptor($species, "core", "gene");
+my $dbserver = $adaptor->dbc->hostname();
+if($dbserver =~ m/(\S+)?.ebi.ac.uk/){
+	$dbserver = $1;
+}
 
 print "# suggested datachecks:\n";
 printf("run_datachecks.pl \$(%s details script) -dbname %s -name ProteinTranslation\n",
-	$adaptor->dbc->hostname(), $adaptor->dbc->dbname());
+	$dbserver, $adaptor->dbc->dbname());
+
+

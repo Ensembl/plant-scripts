@@ -468,7 +468,7 @@ my $year_month_day = strftime("%Y-%m-%d", localtime());
 
 my $version_start_date = "$year_month-$gene_source";
 
-my $genebuild_method = "Generated from $gene_source annotation";
+my $genebuild_method = "external_annotation_import"; #Generated from $gene_source annotation
 
 print "\n# Setting meta genebuild.method to $genebuild_method \n";
 
@@ -499,13 +499,13 @@ if($meta_adaptor->single_value_by_key( 'genebuild.start_date' )){
 	$meta_adaptor->store_key_value( 'genebuild.start_date', $version_start_date );
 }
 
-print "\n# Setting meta genebuild.last_geneset_update to $year_month_day\n\n";
+print "\n# Setting meta genebuild.last_geneset_update to $year_month\n\n";
 if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
-	if(!$meta_adaptor->key_value_exists( 'genebuild.last_geneset_update', $year_month_day )) {
-		$meta_adaptor->update_key_value( 'genebuild.last_geneset_update', $year_month_day );
+	if(!$meta_adaptor->key_value_exists( 'genebuild.last_geneset_update', $year_month )) {
+		$meta_adaptor->update_key_value( 'genebuild.last_geneset_update', $year_month );
 	}
 } else {
-	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month_day )
+	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month )
 }
 
 ## Run init script and produce a hive_db with all tasks to be carried out

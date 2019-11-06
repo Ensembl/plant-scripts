@@ -10,4 +10,4 @@ There are also scripts that do specific queries to Ensembl databases that might 
 
 ![Plant species tree](./EnsemblPlants46.png)
 
-*Fig. 1. Plant species tree of Ensembl Plants release 46.*
+*Fig. 1. Plant species tree of Ensembl Plants release 46, generated with [iTOL](https://itol.embl.de)*

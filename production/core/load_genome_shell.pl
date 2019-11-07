@@ -111,7 +111,7 @@ else{ $jsonpath = '' }
 $argsline = sprintf("%s -s %s -d %s -v %s -G %s -p %s -e %s -c %s -D '%s' -P %s -I %d -X %d -N %d -J %s",
 	$0, $species, $division, $ensembl_version, $GCA_accession, 
 	$prod_server, $egserver, $config_file, 
-	$species_display_name,$species_production_name, $interpro, $refs, $nogenes, 
+	$species_display_name,$species_production_name, $interpro, $xrefs, $nogenes, 
 	$jsonpath );
 
 print "# $argsline\n\n";

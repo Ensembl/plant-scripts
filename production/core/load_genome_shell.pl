@@ -22,10 +22,10 @@ use Sys::Hostname;
 
 my (%opts,$GCA_accession,$species,$division,$ensembl_version,$eg_version,$nogenes);
 my ($prod_server,$egserver,$config_file,$argsline,$GCA_core_acc,$GCA_version);
-my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$interpro,$jsonpath);
+my ($prod_db_args,$taxonomy_db_args,$analysis_db_args,$db_name,$interpro,$xrefs,$jsonpath);
 my ($species_display_name,$species_production_name,$cmd) = ('','');
 
-getopts('hXNJ:D:P:s:d:G:v:p:c:e:', \%opts);
+getopts('hXINJ:D:P:s:d:G:v:p:c:e:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
@@ -39,9 +39,10 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-c full-path to +/- genes ENA config file      (required, example: -c \$enaconfigng)\n";
   print "-P species production_name                     (optional, example: -P marchantia_polymorpha)\n";
   print "-D species display name                        (optional, example: -D 'Marchantia polymorpha')\n";
-  print "-N don't load genes or any other features      (optional)\n";
   print "-J save JSON dump                              (optional, example: -J ./)\n";
-  print "-X load InterPro mappings                      (optional)\n\n";
+  print "-N don't load genes or any other features      (optional, overrides -X, -I)\n";
+  print "-I load InterPro mappings                      (optional)\n";
+  print "-X load cross-references other than InterPro   (optional)\n\n";
   exit(0);
 }
 
@@ -94,10 +95,15 @@ if($opts{'D'}){
 }
 
 if($opts{'N'}){ $nogenes = 1 }
-else{ $nogenes = 0 }
+else{ 
+	$nogenes = 0;
 
-if($opts{'X'}){ $interpro = 1 }
-else{ $interpro = 0 }
+	if($opts{'I'}){ $interpro = 1 }
+	else{ $interpro = 0 }
+
+	if($opts{'X'}){ $xrefs = 1 }
+	else{ $xrefs = 0 }
+}
 
 if($opts{'J'}){ $jsonpath = $opts{'J'} }
 else{ $jsonpath = '' }
@@ -121,9 +127,9 @@ if($thishost =~ m/ebi-login/ || $thishost =~ m/ebi-cli/){
 # NOTE: this avoids conflicts with other instances of GL 
 # NOTE: you'll need to add your public key to the list if github SSH keys
 if(!-d $GCA_accession){
-	system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
+	#system("git clone git\@github.com:Ensembl/ensembl-genomeloader.git $GCA_accession");
 	#testing fork
-	#system("git clone git\@github.com:brunocontrerasmoreira/ensembl-genomeloader.git $GCA_accession");
+	system("git clone git\@github.com:brunocontrerasmoreira/ensembl-genomeloader.git $GCA_accession");
 }
 else {
     chdir($GCA_accession);
@@ -167,10 +173,14 @@ if($jsonpath){
 
 if($nogenes){ 
 	$cmd .= " --nogenes ";
-}
-elsif($interpro){
-        $cmd .= " --load_interpro ";
-}
+} else {
+	if($interpro){
+		$cmd .= " --load_interpro ";
+	}
+	if($xrefs){
+	   $cmd .= " --load_xrefs ";
+	}
+}	
 
 
 

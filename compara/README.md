@@ -4,11 +4,26 @@
 These scripts interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org) and 
 the FTP site.
 
-The scripts in folder API/ use directly the [Perl API](https://www.ensembl.org/info/docs/api/index.html).
+The scripts in folder 'API' use directly the [Perl API](https://www.ensembl.org/info/docs/api/index.html) and thus have Ensembl dependencies.
 
 ## Documentation and examples
 
 Run any of the scripts with argument -h to get instructions and examples.
+
+## Dependencies
+
+The scripts require the following non-core Perl modules:
+* [HTTP::Tiny](https://metacpan.org/release/HTTP-Tiny)
+* [JSON](https://metacpan.org/release/JSON)
+
+which can be installed with: 
+```
+# install cpanminus installer, check more options at https://metacpan.org/pod/App::cpanminus
+sudo cpan -i App::cpanminus  
+
+# actually install modules
+cpanm JSON HTTP::Tiny
+```
 
 ### ens_pangene_analysis.pl
 

@@ -13,6 +13,8 @@ use Getopt::Long;
 #
 # http://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Core+Statistics+Pipeline
 #
+# TODO: leave only metacoords, metalevel, canonical transcripts
+#
 ## check user arguments ######################################################
 ##############################################################################
 

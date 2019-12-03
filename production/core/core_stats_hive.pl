@@ -73,7 +73,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::CoreStatis
 	"$hive_args ".
 	"--registry $reg_file ".
 	"$species_cmd ".
-	"--no_pepstats " .                # done by production after handover
+	"--no_pepstats 1 " .                # done by production after handover
 	"--hive_force_init $overwrite";
 
 print "# $initcmd\n\n";

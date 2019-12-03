@@ -68,9 +68,10 @@ $hive_url .= $hive_db;
 #########################################################################
 
 my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::CoreStatistics_conf ".
-    	"$hive_args ".
-    	"--registry $reg_file ".
-    	"$species_cmd ".
+	"$hive_args ".
+	"--registry $reg_file ".
+	"$species_cmd ".
+	"--no_pepstats " .                # done by production after handover
 	"--hive_force_init $overwrite";
 
 print "# $initcmd\n\n";

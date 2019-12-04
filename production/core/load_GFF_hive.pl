@@ -22,6 +22,8 @@ use Bio::Seq;
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
 #
+# TODO: warn if transcripts have different strand to gene
+#
 ## check user arguments ######################################################
 ##############################################################################
 

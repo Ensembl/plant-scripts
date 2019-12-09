@@ -104,7 +104,7 @@ $response = perform_rest_action( $http, $request, $global_headers );
 my $infodump = decode_json($response);
 
 foreach $sp (@{ $infodump }) {
-	if($sp->{'has_peptide_compara'}){ # TODO : change to assembly accession
+	if($sp->{'assembly_accession'}){ 
 		$division_supported{ $sp->{'name'} } = 1;
 	}	
 }
@@ -156,23 +156,19 @@ if($out_genome){
 $n_of_species = scalar( @supported_species );
 print "# total selected species : $n_of_species\n\n";
 
-## 2) get sequences for selected (plant) species ####################
+## 2) get genome size for selected (plant) species ####################
 
 open(OUTFILE,">",$outfile) || die "# ERROR: cannot create $outfile\n";
 
 # iteratively get and parse FASTA files
 foreach $sp ( @supported_species ){
 
-	# now get FASTA file and parse it, selected/longest isoforms are read
-   my $stored_sequence_file = download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
-	my ($ref_sequence, $ref_header) = parse_isoform_FASTA_file( $stored_sequence_file );
-		
-	foreach $id (keys(%$ref_sequence)){
-   	print OUTFILE ">$id $ref_header->{$id} [$sp]\n$ref_sequence->{$id}\n";                
-		$n_of_sequences++;
-	}
+	#foreach $id (keys(%$ref_sequence)){
+   #	print OUTFILE ">$id $ref_header->{$id} [$sp]\n$ref_sequence->{$id}\n";                
+	#	$n_of_sequences++;
+	#}
 }
 
 close(OUTFILE);
 
-print "# created $outfile with $n_of_sequences sequences\n"; 
+print "# created $outfile\n"; 

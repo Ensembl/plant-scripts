@@ -121,7 +121,8 @@ print "# hive job URL: $hive_url\n\n";
 
 
 ## remind user to update analyses at metadata 
-
-print "# SQL to update meta:\n\n".
-	"UPDATE meta SET species_id=1 WHERE meta_key='repeat.analysis' AND meta_value IN ('dust','trf','repeatmask_redat','repeatmask_repbase');\n\n";
+#
+# not needed since James Allen fixed in the pipeline itself
+# print "# SQL to update meta:\n\n".
+#	"UPDATE meta SET species_id=1 WHERE meta_key='repeat.analysis' AND meta_value IN ('dust','trf','repeatmask_redat','repeatmask_repbase');\n\n";
 

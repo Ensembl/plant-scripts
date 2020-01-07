@@ -3,7 +3,7 @@
 ## To run: perl add_new_core --param_file=[PARAM_FILE]
 ## You can find param files in param_file_examples dir
 #
-## Guy Gnaamati, Bruno Contreras Moreira 2019
+## Guy Gnaamati, Bruno Contreras Moreira 2019-20
 
 use 5.14.0;
 use warnings;
@@ -62,7 +62,6 @@ my $param_file;
 {
     GetOptions (
 	 	"param_file=s" => \$param_file,
-
       ) or die("Incorrect Usage");
 
     if (!$param_file){
@@ -112,7 +111,9 @@ my $param_file;
    load_fasta($h);
 
    ##Loading AGP data
-   load_agp($h);
+   if($h->{'agp_file'}){
+      load_agp($h);
+   }
 
    ##updating meta table
    if($h->{'meta_source'}){

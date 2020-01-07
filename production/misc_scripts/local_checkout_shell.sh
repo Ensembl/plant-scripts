@@ -44,7 +44,7 @@ source ensembl-$ensembl_version/setup.sh
 
 # checkout hive  
 cd ensembl-$ensembl_version/ensembl-hive
-git checkout origin/version/2.4
+git checkout origin/version/2.5
 cd ../..
 
 # update Health Check code

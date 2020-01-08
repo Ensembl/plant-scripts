@@ -110,10 +110,9 @@ my $param_file;
 	# FILE: ensembl-pipeline/scripts/load_seq_region.pl LINE: 258
    load_fasta($h);
 
-   ##Loading AGP data
    if($h->{'agp_file'}){
-      load_agp($h);
-   }
+      load_agp($h); # optional, 
+   } 
 
    ##updating meta table
    if($h->{'meta_source'}){
@@ -122,8 +121,12 @@ my $param_file;
    	workout_meta($h, $dbh, $TAXOPOINT);	
    }
 
-   ##Add seq region attribs
-   add_seq_region_attribs($h, $dbh);
+   # Add seq region attribs
+   if($h->{'agp_file'}){
+      add_seq_region_attribs($h, $dbh); # might need tweaking if not polyploid
+   } else {
+      set_top_level($h);
+   }
 }
 
 #======================================== 
@@ -181,14 +184,22 @@ sub set_top_level {
 #======================================== 
 sub load_fasta {
 
-# loads chunks as virtual scaffolds	
+# Loads chunks as scaffolds, unless a different coord_system_name was passed as param.
+# By default rank is 2 as an AGP file will be loaded afterwards, see load_agp
 #======================================== 
     my ($h) = @_;
+
+    # set coord_system_name
+	 my $coord_sys_name = 'scaffold';
+    if(defined($h->{'coord_system_name'})){
+       $coord_sys_name = $h->{'coord_system_name'};
+    } 
+
     my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";
     my $cmd = "perl $path/load_seq_region.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ".
-              "--coord_system_name scaffold --coord_system_version $h->{'assembly.name'} ".
+              "--coord_system_name $coord_sys_name --coord_system_version $h->{'assembly.name'} ".
               "--rank 2 -default_version -sequence_level ".
               "--fasta_file $h->{fasta_file}";
     say $cmd,"\n";
@@ -197,6 +208,8 @@ sub load_fasta {
 
 #======================================== 
 sub load_agp {
+
+# Loads an AGP assembly which makes up chromosomes
 #======================================== 
     my ($h) = @_;
     my $path = "$ENSEMBLPATH/ensembl-pipeline/scripts";
@@ -259,8 +272,7 @@ sub copy_meta {
 sub workout_meta {
 
 # Work out the key meta data for this core db.
-# Mandatory params: accession, version, production_name, display_name, taxonomy_id, division, provider_name
-# Optional params: strain, provider_url
+# Mandatory param: $RESTentry
 
 #======================================== 
 
@@ -318,6 +330,9 @@ sub workout_meta {
 
 #======================================== 
 sub add_seq_region_attribs { 
+
+# Add required attributes to sequence regions, to be used after load_agp
+# NOTE: might need tweaking, this works for (polyploid) wheat and its 1A,1B,1D... subgenomes
 #======================================== 
     my ($h, $dbh) = @_;
     my ($sql, $sth);
@@ -356,7 +371,7 @@ sub add_seq_region_attribs {
         };
         run_sql($dbh,$sql,$core);
 
-        ##Insert top level
+        ## Insert top level
         $sql = qq{
             insert into $core.seq_region_attrib
                 (seq_region_id, attrib_type_id, value)

@@ -21,8 +21,8 @@ use HTTP::Tiny;
 # should contain ensembl, ensembl-production, ensembl-pipelines
 my $ENSEMBLPATH = $ENV{ENSEMBL_ROOT_DIR}; 
 
-# alias for pan production db server with rw permissions
-my $PANPRODSERVER = 'mysql-eg-pan-prod-ensrw';
+# alias for pan production db server, used to populate some tables
+my $PANPRODSERVER = 'mysql-ens-meta-prod-1';
 
 # REST configuration, used to get taxonomy
 my $RESTURL     = 'http://rest.ensembl.org';
@@ -65,6 +65,9 @@ my ($core, $file2, $param_file, $coord_sys_rank);
     if (!$param_file){
         usage();
     }
+
+    ## print global vars
+    print "# \$ENSEMBLPATH=$ENSEMBLPATH\n# \$PANPRODSERVER=$PANPRODSERVER\n\n";
 
     ## read param file, returns hash reference $h
     my $h   = file2hash_tab($param_file);

@@ -55,9 +55,7 @@ my %OPTIONAL_METAKEYS = (
 
 ############################################################################
 
-my $core;
-my $file2;
-my $param_file;
+my ($core, $file2, $param_file, $coord_sys_rank);
 
 {
     GetOptions (
@@ -68,7 +66,7 @@ my $param_file;
         usage();
     }
 
-    ## read param file
+    ## read param file, returns hash reference $h
     my $h   = file2hash_tab($param_file);
 
     ## check db server connection details
@@ -103,15 +101,22 @@ my $param_file;
    ##Adding controlled vocab
    add_cv($h);
 
+   ## work out coord_system rank, will be used during load_fasta
+   if($h->{'agp_file'}){ 
+      $coord_sys_rank = 2
+   } else {
+      $coord_sys_rank = 1
+   }
+
    ##Loading Fasta data
 	# will issue harmless warnings:
 	# -------------------- WARNING ----------------------
 	# MSG: Name 2C_43 does not look like a valid accession - are you sure this is what you want?
 	# FILE: ensembl-pipeline/scripts/load_seq_region.pl LINE: 258
-   load_fasta($h);
+   load_fasta($h, $coord_sys_rank);
 
    if($h->{'agp_file'}){
-      load_agp($h); # optional, 
+      load_agp($h); # optional 
    } 
 
    ##updating meta table
@@ -185,9 +190,11 @@ sub set_top_level {
 sub load_fasta {
 
 # Loads chunks as scaffolds, unless a different coord_system_name was passed as param.
-# By default rank is 2 as an AGP file will be loaded afterwards, see load_agp
+# Mandatory param: hash of config params, and rank integer
+#
+# Rank is expected to be 2 unless load_agp is not called afterwards
 #======================================== 
-    my ($h) = @_;
+    my ($h, $rank) = @_;
 
     # set coord_system_name
 	 my $coord_sys_name = 'scaffold';
@@ -200,7 +207,7 @@ sub load_fasta {
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "--dbname $h->{core} ".
               "--coord_system_name $coord_sys_name --coord_system_version $h->{'assembly.name'} ".
-              "--rank 2 -default_version -sequence_level ".
+              "--rank $rank -default_version -sequence_level ".
               "--fasta_file $h->{fasta_file}";
     say $cmd,"\n";
     system($cmd);

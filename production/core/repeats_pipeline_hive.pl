@@ -12,7 +12,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # $ENV{'USER'}."_dna_features_$ensembl_version";
 #
 # Adapted from Dan Bolser's run_the_dna_pipeline.sh
-# by B Contreras Moreira
+# by B Contreras Moreira 2018-20
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/DNA+Features+Pipeline
 #
@@ -119,10 +119,4 @@ system("beekeeper.pl -url '$hive_url;reconnect_when_lost=1' -reg_conf $reg_file 
 
 print "# hive job URL: $hive_url\n\n";
 
-
-## remind user to update analyses at metadata 
-#
-# not needed since James Allen fixed in the pipeline itself
-# print "# SQL to update meta:\n\n".
-#	"UPDATE meta SET species_id=1 WHERE meta_key='repeat.analysis' AND meta_value IN ('dust','trf','repeatmask_redat','repeatmask_repbase');\n\n";
-
+print "# If you have trouble you might want to check/remove the data at -P folder\n";

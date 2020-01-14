@@ -1,6 +1,7 @@
 
 [2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words]
 
+[explain algae, landplants, flowering plant (angiosperms), monocot + dicots?]
 
 
 

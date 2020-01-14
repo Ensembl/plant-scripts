@@ -5,6 +5,12 @@
 
 
 
+Did you know that the first documented colours for domesticated carrot root (Daucus carota sp. Sativus) were yellow and purple in Central Asia approximately 1,100 years ago, with orange carrots not reliably reported until the sixteenth century in Europe? Or that there are species like the spikemoss Selaginella lepidophylla (also called “the resurrection plant”) that can be completely dry during years, but that are able to resume normal growth and activity upon rehydration?
+There exists a lot of biodiversity within and between plants, and part of it can be understood by exploring their DNA (DNA is short for deoxyribonucleic acid), which is an essential molecule for life.  In a very real sense, DNA is information. It acts like a recipe holding the instructions for each organism. A genome is an organism’s complete set of DNA.
+In Ensembl Plants, a public resource of plant genomes, we hold the genomic information of 61 plant species, many of them present in the Cambridge University Botanic Gardens.
+If you want to learn more interesting (and funny!) facts about plants, and to know the plants that have complete genomic information, join us on this “Plant DNA trail”!!
+
+
 From tiny plants to record-breakers
 
 At their most extreme, trees are examples of the plant kingdom at its most impressive. The tallest tree in the world, a Coastal Redwood (Sequoia sempervirens) nicknamed ‘Hyperion’, reaches 115m; the largest in diameter is a Baobab (Adansonia digitata) in South Africa, and a Norwegian Spruce (Picea abies) in Sweden has lived for 9,500 years. Yet trees can also be surprisingly delicate, as seen in the feathered edges of the leaves of Japanese Maple (Acer palmatum) or the quivering leaves of Quaking Aspen (Populus tremula). Worldwide, estimates suggest that there are around three trillion trees, of which around 15 billion are felled annually, and five billion planted.

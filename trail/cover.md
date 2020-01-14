@@ -6,7 +6,12 @@ The genomes of plants shed light on their history, contain evolutionary treasure
 The genomes of plants shed light on their history, ... [100 words]
 
 
+Did you know that the first documented colours for domesticated carrot root (Daucus carota sp. Sativus) were yellow and purple in Central Asia approximately 1,100 years ago, with orange carrots not reliably reported until the sixteenth century in Europe? Or that there are species like the spikemoss Selaginella lepidophylla (also called “the resurrection plant”) that can be completely dry during years, but that are able to resume normal growth and activity upon rehydration?
+There exists a lot of biodiversity within and between plants, and part of it can be understood by exploring their DNA (DNA is short for deoxyribonucleic acid), which is an essential molecule for life.  In a very real sense, DNA is information. It acts like a recipe holding the instructions for each organism. A genome is an organism’s complete set of DNA.
+In Ensembl Plants, a public resource of plant genomes, we hold the genomic information of 61 plant species, many of them present in the Cambridge University Botanic Gardens.
+If you want to learn more interesting (and funny!) facts about plants, and to know the plants that have complete genomic information, join us on this “Plant DNA trail”!!
 
+###########
 
 Our trees provide a framework around which the other elements of the Garden have evolved. The current site was originally acquired to accommodate a wide range of trees, and many of the mature specimens seen along the Main Walk and around the perimeter of the western half of the Garden date back to its establishment in 1846. 
 

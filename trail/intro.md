@@ -1,7 +1,15 @@
 
-[2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words]
+[2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words, 2 pages]
 
 [explain algae, landplants, flowering plant (angiosperms), monocot + dicots?]
+
+What is DNA?
+Where is it in cells, what are chromosomes, what are genes?
+What is a genome? 
+When was the first genome sequenced? How long did it take/how much did it cost? 
+How do we sequence a genome (very broadly!) - perhaps talk about shotgun and assembly, again very briefly
+How long does it take and how much does it cost now?
+Why do we want to know a plant’s genome? What can we do with the information? 
 
 
 

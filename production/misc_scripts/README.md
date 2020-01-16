@@ -1,13 +1,17 @@
 add_gene_from_mRNA_gff.pl:
+
 add genes to a GFF file containing only mRNA features
 
-add_gene_from_mRNA_no_parent_gff.pl
+add_gene_from_mRNA_no_parent_gff.pl:
+
 add genes to a GFF file containing only mRNA features with no explicit parent
 
-add_transcript_from_CDS_gff.pl
+add_transcript_from_CDS_gff.pl:
+
 add transcripts to a GFF file containing only gene and CDS features (no exons)
 
-add_transcript_from_gene_gff.pl
+add_transcript_from_gene_gff.pl:
+
 add transcripts to a GFF file containing gene, exon and CDS features
 
 BIGD2ENA.pl

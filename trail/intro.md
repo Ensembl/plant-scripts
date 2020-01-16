@@ -5,7 +5,7 @@
 
 What is DNA?
 Where is it in cells, what are chromosomes, what are genes?
-What is a genome? 
+What is a genome, nuclear, plastid, mt? 
 When was the first genome sequenced? How long did it take/how much did it cost? 
 How do we sequence a genome (very broadly!) - perhaps talk about shotgun and assembly, again very briefly
 How long does it take and how much does it cost now?

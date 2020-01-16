@@ -11,7 +11,7 @@ How do we sequence a genome (very broadly!) - perhaps talk about shotgun and ass
 How long does it take and how much does it cost now?
 Why do we want to know a plant’s genome? What can we do with the information? 
 
-whats a model org
+whats a model org , whats gene annotation
 
 https://www.kew.org/read-and-watch/size-matters-genome
 

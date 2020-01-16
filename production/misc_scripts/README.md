@@ -16,38 +16,38 @@ takes a FASTA file with contigs from BIGD (non INSDC archive) and attempts to ma
  Bruno Contreras Moreira 2019
 
 
->check_coding_translations.pl
+#### check_coding_translations.pl
 
->check_xref_objects.pl
+#### check_xref_objects.pl
 
->compare_two_fasta_files.pl
+#### compare_two_fasta_files.pl
 
->delete_genes.pl
+#### delete_genes.pl
 
->extract_gff_description_xref.pl
+#### extract_gff_description_xref.pl
 
->extract_RAPDB_description_xref.pl
+#### extract_RAPDB_description_xref.pl
 
->fix_redundant_GFF_IDs.pl
+#### fix_redundant_GFF_IDs.pl
 
->gene_api_example.pl
+#### gene_api_example.pl
 
->get_assembly_provider.pl
+#### get_assembly_provider.pl
 
->get_exon_dna.pl
+#### get_exon_dna.pl
 
->get_slices.pl
+#### get_slices.pl
 
->get_species_with_analysis.pl
+#### get_species_with_analysis.pl
 
->get_translation_example.pl
+#### get_translation_example.pl
 
->json2perlhash.pl
+#### json2perlhash.pl
 
->local_checkout_shell.sh
+#### local_checkout_shell.sh
 
->mask_stats.pl
+#### mask_stats.pl
 
->merge_gff.pl
+#### merge_gff.pl
 
 

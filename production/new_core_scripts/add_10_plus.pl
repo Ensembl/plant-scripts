@@ -6,7 +6,7 @@ use warnings;
 use Data::Dumper;
 use Cwd;
 use DBI;
-use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
+use production::Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab line2hash);
 
 {
     my ($species) = @ARGV;
@@ -28,18 +28,18 @@ use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab
     my $fasta_file = "$species.genome.fa";
 
     ##Clean up the file:
-    my $cmd = "perl $ENV{plant_tools}/new_core_scripts/clean_fasta.pl $fasta_file > clean_$species.fa";
+    my $cmd = "perl $ENV{plant_tools}/production/new_core_scripts/clean_fasta.pl $fasta_file > clean_$species.fa";
     say "1. Cleaning up the fasta headers:\n$cmd";
     system($cmd);
 
     ##Break into chunks
     my $chunk_file = $species."_chunks.fa";
-    $cmd = "perl $ENV{plant_tools}/new_core_scripts/fasta2agp/break_fasta.pl  clean_$species.fa  > $chunk_file";
+    $cmd = "perl $ENV{plant_tools}/production/new_core_scripts/fasta2agp/break_fasta.pl  clean_$species.fa  > $chunk_file";
     say "2. Breaking into chunks:\n$cmd";
     system($cmd);
     
     ##Create AGP file
-    $cmd = "perl $ENV{plant_tools}/new_core_scripts/fasta2agp/fasta2agp.pl  $chunk_file  > $species.agp";
+    $cmd = "perl $ENV{plant_tools}/production/new_core_scripts/fasta2agp/fasta2agp.pl  $chunk_file  > $species.agp";
     say "3. Creating the agp file:\n$cmd";
     system($cmd);
 
@@ -62,7 +62,7 @@ use Tools::FileReader qw(slurp slurp_hash_list read_file file2hash file2hash_tab
     close OUT;
 
     ##Nearly there: load the new assembly!
-    $cmd = "perl $ENV{plant_tools}/new_core_scripts/add_new_core.pl --param_file=$conf_file";
+    $cmd = "perl $ENV{plant_tools}/production/new_core_scripts/add_new_core.pl --param_file=$conf_file";
     say "4. Loading the assembly into the DB:\n$cmd";
     system($cmd);
 

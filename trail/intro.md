@@ -11,7 +11,7 @@ How do we sequence a genome (very broadly!) - perhaps talk about shotgun and ass
 How long does it take and how much does it cost now?
 Why do we want to know a plant’s genome? What can we do with the information? 
 
-
+https://www.kew.org/read-and-watch/size-matters-genome
 
 Did you know that the first documented colours for domesticated carrot root (Daucus carota sp. Sativus) were yellow and purple in Central Asia approximately 1,100 years ago, with orange carrots not reliably reported until the sixteenth century in Europe? Or that there are species like the spikemoss Selaginella lepidophylla (also called “the resurrection plant”) that can be completely dry during years, but that are able to resume normal growth and activity upon rehydration?
 There exists a lot of biodiversity within and between plants, and part of it can be understood by exploring their DNA (DNA is short for deoxyribonucleic acid), which is an essential molecule for life.  In a very real sense, DNA is information. It acts like a recipe holding the instructions for each organism. A genome is an organism’s complete set of DNA.

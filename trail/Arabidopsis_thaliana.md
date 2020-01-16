@@ -1,11 +1,5 @@
 
-[150 words]
+Thale cress (Arabidopsis thaliana)
+135Mb , 5 chromosomes , diploid , http://plants.ensembl.org/Arabidopsis_thaliana
 
-I think it would be very nice to have Arabidopsis as the first plant on the trail - it would really set the scene - so we could think carefully about where it could be positioned. 
-
-Arabidopsis thaliana is a small flowering plant that is widely used as a model organism in plant biology. Arabidopsis is a member of the mustard (Brassicaceae) family, which includes cultivated species such as cabbage and radish. Arabidopsis is not of major agronomic significance, but its small genome size and ease of cultivation offer important advantages for basic research in genetics and molecular biology. Arabidopsis thaliana has a genome size of ~135 Mb, and a haploid chromosome number of five.
-
-A rosetta stone for plant evolutionary history.
-
-
-http://plants.ensembl.org/Arabidopsis_thaliana
+Arabidopsis thaliana is a small weed native to Eurasia and Africa. Compared to other relatives of the mustard family (Brassicaceae), such as cabbage or rapeseed, has little agronomic significance. It has been the model organism for plants due to its short generation time, small size, large number of offspring, and small genome. In 2000 it was the first plant ever to have its genome sequenced. Researchers around the world have used this tiny plant as a Rosetta stone for plant biology making discoveries about flowering, evolution and many other areas that in many cases have been transfered to other species and crops. It is the best source of gene annotation for dicot plants. Today many other plants are being used as models for specific topics. For instance, Brachypodium distachyon is regarded as a better model for monocots.

@@ -38,28 +38,28 @@ my @METAKEYS = qw(
 );
 
 my %DERIVED_METAKEYS = (
-	'assembly.name' => 
-		['assembly.default'],
-	'species.production_name' => 
-		['species.db_name'],
-	'species.display_name' => 
-		['species.scientific_name','species.species_name','species.wikipedia_name','species.url','species.wikipedia_url'],
-	'species.taxonomy_id' => 
-		['species.species_taxonomy_id']
+    'assembly.name' => 
+        ['assembly.default'],
+    'species.production_name' => 
+        ['species.db_name'],
+    'species.display_name' => 
+        ['species.scientific_name','species.species_name','species.wikipedia_name','species.url','species.wikipedia_url'],
+    'species.taxonomy_id' => 
+        ['species.species_taxonomy_id']
 );
 
 my %OPTIONAL_METAKEYS = ( 
-	'species.strain' => 1,
-	'provider.url' => 1 
+    'species.strain' => 1,
+    'provider.url' => 1 
 );
 
-############################################################################
+##########################Main Script####################################
 
 my ($core, $file2, $param_file, $coord_sys_rank);
 
 {
     GetOptions (
-	 	"param_file=s" => \$param_file,
+         "param_file=s" => \$param_file,
       ) or die("Incorrect Usage");
 
     if (!$param_file){
@@ -72,37 +72,19 @@ my ($core, $file2, $param_file, $coord_sys_rank);
     ## read param file, returns hash reference $h
     my $h   = file2hash_tab($param_file);
 
-    ## check db server connection details
-    if($h->{'host'}){
-    	if(!$h->{'user'}){ 
-    		my $server_args;
-    		chomp( $server_args = `$h->{'host'} details` );
-    		if($server_args =~ m/--host=(\S+) --port=(\S+) --user=(\S+) --pass=(\S+)/){
-				$h->{'host'} = $1;
-    			$h->{'port'} = $2;
-				$h->{'user'} = $3;
-				$h->{'pass'} = $4;
-      	} else {
-    			die "# ERROR: please set port, user & password in param_file\n";
-    		}
-    	}
-    } else {
-    	die "# ERROR: please set host in param_file\n";
-	 }
+    print Dumper $h;
 
-   ## check assembly.name is set
-   if(!$h->{'assembly.name'}){
-   	die "# ERROR: please set assembly.name in param_file\n";
-   }
+    ##check assembly name and server connection details
+    check_params($h);
 
-   ##connect to db server 
-   my $dbh = get_dbh($h);
+    ##connect to db server 
+    my $dbh = get_dbh($h);
 
-   ##creating db and adding tables
-   create_db($h);
+    ##creating db and adding tables
+    create_db($h);
 
-   ##Adding controlled vocab
-   add_cv($h);
+    ##Adding controlled vocab
+    add_cv($h);
 
    ## work out coord_system rank, will be used during load_fasta
    if($h->{'agp_file'}){ 
@@ -112,11 +94,7 @@ my ($core, $file2, $param_file, $coord_sys_rank);
    }
 
    ##Loading Fasta data
-	# will issue harmless warnings:
-	# -------------------- WARNING ----------------------
-	# MSG: Name 2C_43 does not look like a valid accession - are you sure this is what you want?
-	# FILE: ensembl-pipeline/scripts/load_seq_region.pl LINE: 258
-   load_fasta($h, $coord_sys_rank);
+       load_fasta($h, $coord_sys_rank);
 
    if($h->{'agp_file'}){
       load_agp($h); # optional 
@@ -124,9 +102,9 @@ my ($core, $file2, $param_file, $coord_sys_rank);
 
    ##updating meta table
    if($h->{'meta_source'}){
-   	copy_meta($h, $dbh); # requires manual tweaking
+       copy_meta($h, $dbh); # requires manual tweaking
    } else {
-   	workout_meta($h, $dbh, $TAXOPOINT);	
+       workout_meta($h, $dbh, $TAXOPOINT);    
    }
 
    # Add seq region attribs
@@ -138,8 +116,37 @@ my ($core, $file2, $param_file, $coord_sys_rank);
 }
 
 #======================================== 
-sub create_db {
+sub check_params {
+#======================================== 
+    my ($h) = @_;
+    if($h->{'host'}){
+        if(!$h->{'user'}){ 
+            my $server_args;
+            chomp( $server_args = `$h->{'host'} details` );
+            if($server_args =~ m/--host=(\S+) --port=(\S+) --user=(\S+) --pass=(\S+)/){
+                $h->{'host'} = $1;
+                $h->{'port'} = $2;
+                $h->{'user'} = $3;
+                $h->{'pass'} = $4;
+            } 
+            else {
+                die "# ERROR: please set port, user & password in param_file\n";
+            }
+        }
+    } 
+    else {
+        die "# ERROR: please set host in param_file\n";
+    }
 
+    ## check assembly.name is set
+    if(!$h->{'assembly.name'}){
+       die "# ERROR: please set assembly.name in param_file\n";
+   }
+}
+
+
+#======================================== 
+sub create_db {
 #======================================== 
     my ($h) = @_;
 
@@ -148,9 +155,9 @@ sub create_db {
     my $cmd = "mysqladmin -h $h->{host} -P $h->{port} -u$h->{user} -p$h->{pass} CREATE $h->{core}";
     open(SQL,"$cmd 2>&1 |") || die "# ERROR(create_db): cannot run $cmd\n";
     while(<SQL>){
-    	if(/mysqladmin: CREATE DATABASE failed/){
-    		die "# ERROR (create_db): $h->{core} already exists, remove it and re-run\n";
-    	}
+        if(/mysqladmin: CREATE DATABASE failed/){
+            die "# ERROR (create_db): $h->{core} already exists, remove it and re-run\n";
+        }
     }
     
     ##Adding tables
@@ -166,7 +173,7 @@ sub add_cv {
     warn "# add_cv : adding controlled vocabulary for $h->{'core'}\n";
     
     my $path = "$ENSEMBLPATH/ensembl-production/scripts/production_database";    
-	 my $tmpdir = tempdir( CLEANUP => 1 );
+     my $tmpdir = tempdir( CLEANUP => 1 );
     my $cmd = "perl $path/populate_production_db_tables.pl ".
               "--host $h->{host} --port $h->{port} --user $h->{user} --pass $h->{pass} ".
               "\$($PANPRODSERVER details prefix_m) ".
@@ -174,7 +181,7 @@ sub add_cv {
               "--dumppath $tmpdir --dropbaks";
     system($cmd);
 
-	 warn "# add_cv: done\n\n";
+     warn "# add_cv: done\n\n";
 }
 
 #======================================== 
@@ -196,11 +203,16 @@ sub load_fasta {
 # Mandatory param: hash of config params, and rank integer
 #
 # Rank is expected to be 2 unless load_agp is not called afterwards
+# will issue harmless warnings:
+#  -------------------- WARNING ----------------------
+# MSG: Name 2C_43 does not look like a valid accession - are you sure this is what you want?
+#FILE: ensembl-pipeline/scripts/load_seq_region.pl LINE: 258
+
 #======================================== 
     my ($h, $rank) = @_;
 
     # set coord_system_name
-	 my $coord_sys_name = 'scaffold';
+     my $coord_sys_name = 'scaffold';
     if(defined($h->{'coord_system_name'})){
        $coord_sys_name = $h->{'coord_system_name'};
     } 
@@ -286,68 +298,66 @@ sub workout_meta {
 
 #======================================== 
 
-	my ($h, $dbh, $rest_entry_point) = @_;
-	my ($sql, $sth, $metakey, $derived_key, $derived_value);
+    my ($h, $dbh, $rest_entry_point) = @_;
+    my ($sql, $sth, $metakey, $derived_key, $derived_value);
 
-	foreach $metakey (@METAKEYS) {
+    foreach $metakey (@METAKEYS) {
 
-		if(!$h->{$metakey}){
-			if($OPTIONAL_METAKEYS{$metakey}){ 
-				next 
-			} else{
-				die "# ERROR (workout_meta) : please set param '$metakey' in param_file\n";
-			}
-		}
+        if(!$h->{$metakey}){
+            if($OPTIONAL_METAKEYS{$metakey}){ 
+                next 
+            } else{
+                die "# ERROR (workout_meta) : please set param '$metakey' in param_file\n";
+            }
+        }
 
-	   warn "# workout_meta: $metakey=$h->{$metakey}\n" if($VERBOSE);
-	   $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, '$metakey', '$h->{$metakey}');};
-	   $sth = $dbh->prepare($sql);
-	   $sth->execute();
+       warn "# workout_meta: $metakey=$h->{$metakey}\n" if($VERBOSE);
+       $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, '$metakey', '$h->{$metakey}');};
+       $sth = $dbh->prepare($sql);
+       $sth->execute();
 
-		# check derived meta keys
-		if($DERIVED_METAKEYS{$metakey}){
-			foreach $derived_key (@{ $DERIVED_METAKEYS{$metakey}  }){
+        # check derived meta keys
+        if($DERIVED_METAKEYS{$metakey}){
+            foreach $derived_key (@{ $DERIVED_METAKEYS{$metakey}  }){
 
-				$derived_value = $h->{$metakey};
-				if($derived_key =~ m/url/){ $derived_value =~ s/\s/_/g }
+                $derived_value = $h->{$metakey};
+                if($derived_key =~ m/url/){ $derived_value =~ s/\s/_/g }
 
-				$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, '$derived_key', '$derived_value');};
-				$sth = $dbh->prepare($sql);
-				$sth->execute();
-			}
-		}	
-	
-		# obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
-		if($metakey eq 'species.taxonomy_id'){
-			my $http = HTTP::Tiny->new();
-			my $request = $rest_entry_point.$h->{$metakey};
-			my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});
-			if($response->{success} && $response->{content}){
-				my $taxondump = decode_json($response->{content});
-				foreach my $taxon (@{ $taxondump }) {
-					next if(!$taxon->{'name'});
-					warn "# workout_meta: species.classification, $taxon->{'name'}\n" if($VERBOSE);
-					$sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
-					$sth = $dbh->prepare($sql);
-					$sth->execute();
-				}
-			} else {
-				warn "# ERROR (workout_meta) : $request request failed, please re-run\n";
-			}
-		} 
-	}
+                $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, '$derived_key', '$derived_value');};
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+            }
+        }    
+    
+        # obtain full taxonomy for passed taxonomy_id from Ensembl REST interface
+        if($metakey eq 'species.taxonomy_id'){
+            my $http = HTTP::Tiny->new();
+            my $request = $rest_entry_point.$h->{$metakey};
+            my $response = $http->get($request, {headers => {'Content-Type' => 'application/json'}});
+            if($response->{success} && $response->{content}){
+                my $taxondump = decode_json($response->{content});
+                foreach my $taxon (@{ $taxondump }) {
+                    next if(!$taxon->{'name'});
+                    warn "# workout_meta: species.classification, $taxon->{'name'}\n" if($VERBOSE);
+                    $sql = qq{INSERT INTO $h->{'core'}.meta (species_id,meta_key,meta_value) VALUES (1, 'species.classification', '$taxon->{'name'}');};
+                    $sth = $dbh->prepare($sql);
+                    $sth->execute();
+                }
+            } else {
+                warn "# ERROR (workout_meta) : $request request failed, please re-run\n";
+            }
+        } 
+    }
 }
 
 #======================================== 
 sub add_seq_region_attribs { 
 
 # Add required attributes to sequence regions, to be used after load_agp
-# NOTE: might need tweaking, this works for (polyploid) wheat and its 1A,1B,1D... subgenomes
+# For polyploids needs to have polyploid attrib $h->{polyploid}
 #======================================== 
     my ($h, $dbh) = @_;
     my ($sql, $sth);
-
-    print Dumper $dbh;
 
     my $seq_region_file = $h->{seq_region_file};
     my $core = $h->{core};
@@ -360,7 +370,8 @@ sub add_seq_region_attribs {
     my $rank = 1;
     while (my $ref = $sth->fetchrow_hashref()) {
         my ($seq_region_id, $name) = ($ref->{seq_region_id},$ref->{name});
-
+        
+        ##Get components (for polyploids)
         my $comp;
         if ($name =~ /\d(\w)/){
             $comp = $1;
@@ -372,14 +383,16 @@ sub add_seq_region_attribs {
             say "no $comp for $name";
         }
 
-        ##Insert polyploid value
+        ##Insert polyploid value (only if polyploid)
         my $sql = qq{
             insert into $core.seq_region_attrib
                 (seq_region_id, attrib_type_id, value)
             values
                 ($seq_region_id, 425, '$comp');
         };
-        run_sql($dbh,$sql,$core);
+        if ($h->{polyploid}){
+            run_sql($dbh,$sql,$core);
+        }
 
         ## Insert top level
         $sql = qq{

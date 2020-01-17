@@ -5,7 +5,7 @@
 #
 # requires $ENSAPIPATH pointing to ensembl-metadata
 #
-# by Bruno Contreras Moreira EMBL-EBI 2019
+# by Bruno Contreras Moreira, Raphael Flores EMBL-EBI 2019-20
 
 if [ $# -eq 0 ]; then
 	echo "# ERROR: need ensembl_genomes_version"
@@ -33,7 +33,7 @@ perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.p
         | grep -P '_otherfeatures_'  > $PLANTOTHERDBLIST
 
 SQL='
-  -- same as used by Dan Bolser
+  -- matches https://urgi.versailles.inra.fr/wheatis/join#tsv-tabulation-separated-values
   SELECT
     # Unicity within a dataset is handled by the `name` field
     COALESCE(xref.display_label, stable_id)
@@ -75,7 +75,7 @@ while read -r db; do
     $MIRRSERVER $db -Ne "$SQL"
 done < $PLANTOTHERDBLIST >> $WHEATISOTHERFILE
 
-# Add missing URL for otherfeatures database
-sed -ri 's#(Gene/Summary\?)#\1db=otherfeatures;#g'  $WHEATISOTHERFILE
+# Add missing URL param for otherfeatures databases
+perl -p -i -e 's/(Gene\/Summary\?)/$1db=otherfeatures;/' $WHEATISOTHERFILE
 
 exit

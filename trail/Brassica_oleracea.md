@@ -1,4 +1,5 @@
 Wild Cabbage (Brassica_oleracea) 
+
 488 MB, 9 chromosomes, diploid, http://plants.ensembl.org/Brassica_oleracea
 
 Brassica oleracea is a plant species that includes many common foods as different cultivated cultivated varieties, including cabbage, broccoli, cauliflower, kale and Brussels sprouts.

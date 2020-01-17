@@ -35,27 +35,23 @@ perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.p
 SQL='
   -- same as used by Dan Bolser
   SELECT
-    # ID is created by solr
-    "Sequence feature" AS entry_type,
-    "Ensembl Plants"   AS database_name,
-    stable_id          AS db_id,
-    gene.version       AS db_version,
+    # Unicity within a dataset is handled by the `name` field
     COALESCE(xref.display_label, stable_id)
-                       AS name,
-    COALESCE(gene.description, "")
-                       AS description,
+                        AS name,
+    "Genome annotation" AS entryType,
+    "EBI"               AS node,
+    "Ensembl Plants"    AS databaseName,
     CONCAT("http://plants.ensembl.org/",
            (SELECT meta_value FROM meta
             WHERE meta_key = "species.url"
            ), "/Gene/Summary?g=", stable_id
-          )            AS url,
+          )             AS url,
     (SELECT meta_value FROM meta
      WHERE meta_key = "species.scientific_name"
-    )                  AS species,
-    biotype            AS feature_type,
-    name               AS sequence_id,
-    seq_region_start   AS start_position,
-    seq_region_end     AS end_position
+    )                   AS species,
+    CONCAT(COALESCE(gene.description, ""),
+     " feature type = ", COALESCE(biotype,"n/a")
+     )                  AS description
   FROM
     seq_region
   INNER JOIN
@@ -78,5 +74,8 @@ while read -r db; do
     >&2 echo $db
     $MIRRSERVER $db -Ne "$SQL"
 done < $PLANTOTHERDBLIST >> $WHEATISOTHERFILE
+
+# Add missing URL for otherfeatures database
+sed -ri 's#(Gene/Summary\?)#\1db=otherfeatures;#g'  $WHEATISOTHERFILE
 
 exit

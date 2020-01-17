@@ -1,22 +1,18 @@
-This is the transPLANT v0.2 dump for release XX of Ensembl Plants:
+This is the WheatIS (formerly transPLANT) dump for release XX of Ensembl Plants:
 
 ftp://ftp.ensemblgenomes.org/pub/misc_data/TransPLANT/transplant-EBI-core-XX.tsv.gz
 ftp://ftp.ensemblgenomes.org/pub/misc_data/TransPLANT/transplant-EBI-otherfeatures-XX.tsv.gz
 
 Columns are:
-* entry_type		(always "Sequence feature")
-* database_name		(always "Ensembl Plants")
-* db_id			(gene ID)
-* db_version		(always NULL)
 * name			(gene name, where available, else gene ID)
-* description		(gene description, where available)
+* entryType		(always "Genome annotation")
+* node			(always "EBI")
+* databaseName	(always "Ensembl Plants")
 * url			(an Ensembl Plants URL for the gene)
 * species		(the associated species name)
-* feature_type		(SO term, usually protein_coding)
-* sequence_id		(GFF like position terms...
-* start_position          ...
-* end_position		  ...)
+* description	(gene description, where available, with the biotype/SO term, usually protein_coding)
 
+Last up-to-date version of the format is available here: https://urgi.versailles.inra.fr/wheatis/join
 
 For details on how these are produced check the script:
 

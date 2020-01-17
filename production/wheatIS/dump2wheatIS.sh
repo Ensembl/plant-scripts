@@ -47,7 +47,7 @@ SQL='
            ), "/Gene/Summary?g=", stable_id
           )             AS url,
     (SELECT meta_value FROM meta
-     WHERE meta_key = "species.scientific_name"
+     WHERE meta_key = "species.display_name"
     )                   AS species,
     CONCAT(COALESCE(gene.description, ""),
      " feature type = ", COALESCE(biotype,"n/a")

@@ -3,8 +3,6 @@ Barley (Hordeum vulgare)
 
 5,300,000,000 Mb ,7 chromosomes, diploid, http://plants.ensembl.org/Hordeum_vulgare
 
-sequencing allows breeding faster; difference between two-row and six-row, 
-
 Barley is the world's fourth most important cereal crop, having been cultivated in all temperate regions from the Arctic Circle to the tropics. With a total of 5300 million DNA letters, this is one of the largest genomes sequenced to date.
 It was one of the first cereals domesticated by humans, originating in the Fertile Crescent over 10,000 years ago. 
 About two-thirds of the barley in the world is used for animal feed, while the remaining third goes to the malting, brewing, and distilling industries. This includes mostly malt whiskey and also many types of beer.

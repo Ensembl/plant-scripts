@@ -34,6 +34,7 @@ perl $ENSAPIPATH/ensembl-metadata/misc_scripts/get_list_databases_for_division.p
 
 SQL='
   -- matches https://urgi.versailles.inra.fr/wheatis/join#tsv-tabulation-separated-values
+  -- species.display_name is now used instead of scientific_name to add strain names
   SELECT
     # Unicity within a dataset is handled by the `name` field
     COALESCE(xref.display_label, stable_id)

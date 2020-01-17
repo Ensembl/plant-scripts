@@ -1,5 +1,6 @@
 
 Hot Pepper (Capsicum annuum)
+
 3000Mb, 12 chromosomes, diploid, http://plants.ensembl.org/Capsicum_annuum
 
 Hot pepper (Capsicum annuum), one of the oldest domesticated crops in the Americas, and is the most widely grown spice crop in the world. It is also a close relative of potato, tomato and tobacco (Solanaceae).

@@ -1,10 +1,12 @@
 
 [150 words]
 
-Food crops, perhaps why they taste slightly fiery (eg compounds of sulphur etc.), how we use weedkillers and pesticides, the fact that many of our crops are domesticated from one wild relative
+Wild Cabbage (Brassica_oleracea) 
+488 MB, 9 chromosomes, diploid, http://plants.ensembl.org/Brassica_oleracea
+
+Brassica oleracea is a plant species that includes many common foods as different cultivated cultivated varieties, including cabbage, broccoli, cauliflower, kale and Brussels sprouts.
+In its uncultivated form it is called wild cabbage, and is native to coastal southern and western Europe. A hardy plant in its uncultivated form, its high tolerance for salt and lime, and its intolerance of competition from other plants, typically restrict its natural occurrence to limestone sea cliffs, like the chalk cliffs on both sides of the English Channel and the windswept coast on the western side of the Isle of Wight.
+B. oleracea has become established as an important human food crop plant, used because of its large food reserves, which are stored over the winter in its leaves. It is rich in essential nutrients including vitamin C. A diet rich in cruciferous vegetables (e.g., cabbage, broccoli, cauliflower) is linked to a reduced risk of several human cancers.
 
 
 
-Brassica oleracea is a widely cultivated vegetable species integral to human diets, with different strains giving rise to many common vegetables, such as ales, cabbages, Brussels sprouts, broccoli, kohl rabi and cauliflower. It is also a pre-cursor to B. napus, having hybridised with B. rapa is known as the C genome of B. napus.
-
-http://plants.ensembl.org/Brassica_oleracea

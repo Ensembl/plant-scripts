@@ -1,6 +1,3 @@
-
-[150 words]
-
 Wild Cabbage (Brassica_oleracea) 
 488 MB, 9 chromosomes, diploid, http://plants.ensembl.org/Brassica_oleracea
 

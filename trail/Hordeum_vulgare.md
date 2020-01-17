@@ -1,5 +1,6 @@
 
-[150 words]
+Barley (Hordeum vulgare)
+5,300,000,000 Mb ,7 chromosomes, diploid, http://plants.ensembl.org/Hordeum_vulgare
 
 sequencing allows breeding faster; difference between two-row and six-row, 
 

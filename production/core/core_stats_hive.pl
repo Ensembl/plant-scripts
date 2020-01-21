@@ -63,6 +63,9 @@ if(!$reg_file || !-e $reg_file){ die "# EXIT : need a valid -R file, such as -R 
 
 chomp( $hive_args = `$hive_db_cmd details script` );
 $hive_db = $ENV{'USER'}."_min_core_statistics_$ensembl_version";
+if($full){
+	$hive_db = $ENV{'USER'}."_core_statistics_$ensembl_version";
+}
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 

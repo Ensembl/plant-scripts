@@ -13,7 +13,7 @@ use Bio::EnsEMBL::Registry;
 # and env $USER to create hive job names 
 #
 # Adapted from Dan Bolser's run_the_transcript_variation_pipeline.sh
-# by B Contreras Moreira
+# by B Contreras Moreira 2019-20
 #
 # http://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/The+transcript+variation+pipeline
 #
@@ -125,10 +125,10 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::Variation::Pipeline::VariationCons
 	"-hive_default_max_retry_count 1 ".
 	"-disambiguate_single_nucleotide_alleles 1 ".
 	# these were used apparently by Dan Bolser
-	"-default_lsf_options '-q production-rh7 -M  2000 -R \"rusage[mem= 2000]\"' ".
-	"-highmem_lsf_options '-q production-rh7 -M 15000 -R \"rusage[mem=15000]\"' ".
-	"-urgent_lsf_options  '-q production-rh7 -M  2000 -R \"rusage[mem= 2000]\"' ".
-	"-long_lsf_options    '-q production-rh7 -M  2000 -R \"rusage[mem= 2000]\"' ";
+	"-default_lsf_options '-q production-rh74 -M  2000 -R \"rusage[mem= 2000]\"' ".
+	"-highmem_lsf_options '-q production-rh74 -M 15000 -R \"rusage[mem=15000]\"' ".
+	"-urgent_lsf_options  '-q production-rh74 -M  2000 -R \"rusage[mem= 2000]\"' ".
+	"-long_lsf_options    '-q production-rh74 -M  2000 -R \"rusage[mem= 2000]\"' ";
 
 print "# $initcmd\n\n";
 

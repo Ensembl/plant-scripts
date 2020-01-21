@@ -74,7 +74,7 @@ if($full){
 	$initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::CoreStatistics_conf";
 }
 
-$initcmd = " $hive_args --registry $reg_file $species_cmd  --hive_force_init $overwrite";
+$initcmd .= " $hive_args --registry $reg_file $species_cmd  --hive_force_init $overwrite";
 
 print "# $initcmd\n\n";
 

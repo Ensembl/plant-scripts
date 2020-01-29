@@ -1,6 +1,8 @@
 The genomes (“genetic instructions”) of plants shed light on their history, contain evolutionary treasures and are used by breeders. 
 Since the publication in 2000 of the model Arabidopsis thaliana genome, the number of genomes has steadily increased. In Ensembl Plants, a public resource of plant genomes, we hold the genomic information of multiple plant species, many of them present in the Cambridge University Botanic Gardens.
-Join us on this “Plant genomes trail” to learn which plants genomes have been sequenced to date, what some of these are like, and what geneticists and breeders hope to accomplish through these sequencing efforts.
+
+Join us on this “Plant DNA trail” to learn which plants genomes have been sequenced to date, what some of these are like, and what geneticists and breeders hope to accomplish through these sequencing efforts.
+
 
 
 ---------------------------------------------------------------------------

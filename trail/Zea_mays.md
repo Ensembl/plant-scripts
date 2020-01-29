@@ -1,8 +1,7 @@
 
-[150 words]
+Zea mays
 
-domestication (I’m talking about teosinte in the Speciation trail but no harm in talking about it again here); fungal disease, branching…
+2.400Mb, 10 chromosomes, diploid, http://plants.ensembl.org/Zea_mays
 
-Zea mays (maize) has the highest world-wide production of all grain crops, yielding 875 million tonnes in 2012. Although a food staple in many regions of the world, most is used for animal feed and ethanol fuel. Maize was domesticated from wild teosinte in Central America and its cultivation spread throughout the Americas by Pre-Columbian civilisations. In addition to its economic value, maize is an important model organism for studies in plant genetics, physiology, and development. It has a large genome of of about 2.4 gigabases with a haploid chromosome number of 10 (Schnable et al., 2009; Zhang et al., 2009). Maize is distinguished from other grasses in that its genome arose from an ancient tetraploidy event unique to its lineage.
+Zea mays (maize, corn) has the highest world-wide production of all grain crops. Although a food staple in many regions of the world, most is used for animal feed and ethanol fuel. Maize was domesticated from wild teosinte, which has a tiny ear, in Central America, and its cultivation spread throughout the Americas by Pre-Columbian civilisations. Farmer selection transformed the tiny ears of teosinte into large corncobs. In addition to its economic value, maize is an important model organism for studies in plant genetics, physiology, and development. It has a large genome made in its major part of transposons, a kind of jumping DNA elements discovered by Barbara McClintock. Transposons play a role in evolution and domestication as they can change the genes and the genomes as they jump along. One of these transposon jumps next to gene tb1 is responsible for maize bearing its seeds in cobs on short side stems, while teosinte directs the growth of long side branches with tassels at the ends.
 
-http://plants.ensembl.org/Zea_mays

@@ -12,6 +12,8 @@ How long does it take and how much does it cost now?
 Why do we want to know a plant’s genome? What can we do with the information? 
 whats a model org , whats gene annotation 
 its hard to find out genome size; C values do not always match assembly size 
+bp = base pair(s)—one bp corresponds to approximately 3.4 Å of length along the strand
+Mb (= Mbp) = mega base pairs = 1,000,000 bp
 -->
 
 ![genome size distribution](./pics/nph16356-fig-0001-m.jpg)

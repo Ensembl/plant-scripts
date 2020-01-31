@@ -1,40 +1,34 @@
 
-# [2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words, 2 pages]
+<!-- 2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words, 2 pages -->
 
+<!-- explain algae, landplants, flowering plant (angiosperms), monocot + dicots -->
 
-
-[explain algae, landplants, flowering plant (angiosperms), monocot + dicots?]
-
-What is DNA?
+<!-- What is DNA?
 Where is it in cells, what are chromosomes, what are genes?
 What is a genome, nuclear, plastid, mt? 
 When was the first genome sequenced? How long did it take/how much did it cost? 
 How do we sequence a genome (very broadly!) - perhaps talk about shotgun and assembly, again very briefly
 How long does it take and how much does it cost now?
 Why do we want to know a plant’s genome? What can we do with the information? 
+whats a model org , whats gene annotation -->
 
-whats a model org , whats gene annotation
-
-
-![Core pan-gene plot](./pics/nph16356-fig-0001-m.jpg)
+![genome size distribution](./pics/nph16356-fig-0001-m.jpg)
 
 * Distribution of genome size for 6000 plant species. Data obtained from Kew [Plant C‐value database](https://cvalues.science.kew.org). 
 Source: R Akakpo, MC Carpentier, YI Hsing, O Panaud https://doi.org/10.1111/nph.16356 *
 
+![a DNA sequencing machie]()
+
+* A DNA sequencing machine from the Wellcome Genome Campus... *
 
 
-
-
-
-https://www.kew.org/read-and-watch/size-matters-genome
 
 Did you know that the first documented colours for domesticated carrot root (Daucus carota sp. Sativus) were yellow and purple in Central Asia approximately 1,100 years ago, with orange carrots not reliably reported until the sixteenth century in Europe? Or that there are species like the spikemoss Selaginella lepidophylla (also called “the resurrection plant”) that can be completely dry during years, but that are able to resume normal growth and activity upon rehydration?
 There exists a lot of biodiversity within and between plants, and part of it can be understood by exploring their DNA (DNA is short for deoxyribonucleic acid), which is an essential molecule for life.  In a very real sense, DNA is information. It acts like a recipe holding the instructions for each organism. A genome is an organism’s complete set of DNA.
-In Ensembl Plants, a public resource of plant genomes, we hold the genomic information of 61 plant species, many of them present in the Cambridge University Botanic Gardens.
-If you want to learn more interesting (and funny!) facts about plants, and to know the plants that have complete genomic information, join us on this “Plant DNA trail”!!
 
+<!-- stuff about the EBI and Ensembl Plants -->
 
-From tiny plants to record-breakers
+<!-- From tiny plants to record-breakers
 
 At their most extreme, trees are examples of the plant kingdom at its most impressive. The tallest tree in the world, a Coastal Redwood (Sequoia sempervirens) nicknamed ‘Hyperion’, reaches 115m; the largest in diameter is a Baobab (Adansonia digitata) in South Africa, and a Norwegian Spruce (Picea abies) in Sweden has lived for 9,500 years. Yet trees can also be surprisingly delicate, as seen in the feathered edges of the leaves of Japanese Maple (Acer palmatum) or the quivering leaves of Quaking Aspen (Populus tremula). Worldwide, estimates suggest that there are around three trillion trees, of which around 15 billion are felled annually, and five billion planted.
 Trees in the Garden
@@ -46,3 +40,4 @@ A living collection
 
 Pinus nigra on the Main WalkLike all specimens in the Garden, trees have a finite life. In wildlife reserves and forests, decaying wood provides a valuable habitat for numerous animals, plants and fungi, and so dying or dead trees are frequently left in place. However, a Botanic Garden exists as a resource of living plant material for use by researchers, so we usually remove damaged or dead trees and replace them with new specimens. An example of such replacement can be found on the Main Walk: on the north side of the crossroads stands a magnificent Cedar of Lebanon (Cedrus libani), which was formerly paired with a fine Atlantic Cedar (Cedrus atlantica) on the south side. In 2018, a long dry summer was followed by a wet autumn, and the crown of the tree split under the weight of the water it had absorbed. After the old tree had been removed, the Botanic Garden’s Director Beverley Glover planted an Atlantic Cedar sapling in its place. While dwarfed by its partner at present, we expect it to match its predecessor in stature in a century or two.
 
+-->

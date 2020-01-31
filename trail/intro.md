@@ -1,5 +1,7 @@
 
-[2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words, 2 pages]
+# [2 pics (a sequencer instrument + a plant genome diagram?), 4-500 words, 2 pages]
+
+
 
 [explain algae, landplants, flowering plant (angiosperms), monocot + dicots?]
 
@@ -12,6 +14,17 @@ How long does it take and how much does it cost now?
 Why do we want to know a plant’s genome? What can we do with the information? 
 
 whats a model org , whats gene annotation
+
+
+![Core pan-gene plot](./pics/nph16356-fig-0001-m.jpg)
+
+* Distribution of genome size for 6000 plant species. Data obtained from Kew [Plant C‐value database](https://cvalues.science.kew.org). 
+Source: R Akakpo, MC Carpentier, YI Hsing, O Panaud https://doi.org/10.1111/nph.16356 *
+
+
+
+
+
 
 https://www.kew.org/read-and-watch/size-matters-genome
 

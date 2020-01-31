@@ -10,7 +10,9 @@ When was the first genome sequenced? How long did it take/how much did it cost?
 How do we sequence a genome (very broadly!) - perhaps talk about shotgun and assembly, again very briefly
 How long does it take and how much does it cost now?
 Why do we want to know a plant’s genome? What can we do with the information? 
-whats a model org , whats gene annotation -->
+whats a model org , whats gene annotation 
+its hard to find out genome size; C values do not always match assembly size 
+-->
 
 ![genome size distribution](./pics/nph16356-fig-0001-m.jpg)
 

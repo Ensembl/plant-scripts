@@ -522,7 +522,7 @@ if($meta_adaptor->single_value_by_key( 'annotation.provider_name' )){
         $meta_adaptor->update_key_value( 'annotation.provider_name', $full_provider_name );
     }
 } else {
-    $meta_adaptor->store_key_value( 'annoation.provider_name', $full_provider_name )
+    $meta_adaptor->store_key_value( 'annotation.provider_name', $full_provider_name )
 }
 
 print "\n# Setting meta annotation.provider_url to $URL\n\n";

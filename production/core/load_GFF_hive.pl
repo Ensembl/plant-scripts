@@ -44,12 +44,12 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
   print "-s species_name                                (required, example: -s arabidopsis_thaliana)\n";
-  print "-f protein FASTA file                          (required, example: -f atha.pep.fasta)\n";
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-g GFF3 file                                   (required, example: -g atha.gff)\n";
   print "-R registry file, can be env variable          (required, example: -R \$p1panreg)\n";
   print "-D ensembl_production db name                  (required, example: -D ensembl_production)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
+  print "-f protein FASTA file                          (optional, example: -f atha.pep.fasta)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-G GenBank file to load sequence edits         (optional, example: -G atha.gbk)\n";
   print "-m max genes to load                           (optional, default: all loaded)\n";
@@ -90,7 +90,6 @@ if($opts{'s'}){
 else{ die "# EXIT : need a valid -s species_name, such as -s arabidopsis_thaliana\n" }
 
 if($opts{'f'} && -e $opts{'f'}){ $protein_fasta_file = $opts{'f'} }
-else{ die "# EXIT : need a valid -f file, such as -f atha.pep.fasta\n" }
 
 if($opts{'g'} && -e $opts{'g'}){ $gff3_file = $opts{'g'} }
 else{ die "# EXIT : need a valid -g file, such as -g atha.gff\n" }
@@ -539,16 +538,17 @@ if($meta_adaptor->single_value_by_key( 'annotation.provider_url' )){
 #########################################################################
 
 my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf ".
-    	"$hive_args ".
-    	"--registry $reg_file ".
-        "--production_db $prodbname ".
-    	"--pipeline_dir $pipeline_dir ".
-    	"--species $species ".
-    	"--gff3_file $new_gff3file ".
-    	"--protein_fasta_file $protein_fasta_file ".
-    	"--gene_source '$gene_source' ".
+	"$hive_args ".
+	"--registry $reg_file ".
+	"--production_db $prodbname ".
+	"--pipeline_dir $pipeline_dir ".
+	"--species $species ".
+	"--gff3_file $new_gff3file ".
+	"--gene_source '$gene_source' ".
 	#"-fix_models 0 ".
 	"--hive_force_init $overwrite ";
+
+if($protein_fasta_file){ $initcmd .= "--protein_fasta_file $protein_fasta_file " } 
 
 if($names_stable){ $initcmd .= "-use_name_field stable_id " }
 

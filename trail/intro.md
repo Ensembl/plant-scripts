@@ -3,34 +3,29 @@
 
 <!-- explain algae, landplants, flowering plant (angiosperms), monocot + dicots -->
 
-<!-- What is DNA?
-Where is it in cells, what are chromosomes, what are genes?
-What is a genome, nuclear, plastid, mt? 
-When was the first genome sequenced? How long did it take/how much did it cost? 
-How do we sequence a genome (very broadly!) - perhaps talk about shotgun and assembly, again very briefly
-How long does it take and how much does it cost now?
-Why do we want to know a plant’s genome? What can we do with the information? 
-whats a model org , whats gene annotation 
-its hard to find out genome size; C values do not always match assembly size 
-bp = base pair(s)—one bp corresponds to approximately 3.4 Å of length along the strand
-Mb (= Mbp) = mega base pairs = 1,000,000 bp
--->
+DNA or deoxyribonucleic acid is an essential molecule for life. DNA molecules are long strings of beads called bases, which are written as A, C, G or T. They can be found in plant cells in the form of chromosomes both in the nucleous and inside chloroplasts, the tiny organulles where photosynthesis happens. The set of DNA molecules in a cell is what we call the genome. In a very real sense DNA, is information. It acts like a recipe holding the instructions for each organism, split in segments called genes. Genome sizes can be measured in the lab and are usually given as gametic nuclear DNA contents, C-values, in picograms.
+
+Sequencing is a word that summarizes the complex chemical reactions that researchers carry out to read the nucleotides in a chromosome. The first plant genome sequenced was that of thale cress (Arabidopsis thaliana) in 2000. This was a massive international effort that took a long time, even though this is one of the smallest plant genomes. Thale cress was the first model plant of the genomic era. Model plants are useful to do research and solve problems which are much harder in other plants. However, current sequencing technologies are now being used to solve really large genomes, such as those of wheat or pine trees. 
+
+Plant chromosomes are usually very long and can only be sequenced in smaller bits. That is why after sequencing a genome then needs to be assembled, or in other words, put together by matching sequenced fragments. The resulting assembled genome is frequently incomplete, and its length is given in megabases, where 1 Mbp is a a million base pairs. Due to the challenges of this process, assembly lenghts do not always match C values.
+
+The exploration of plant genomes is providing insights to understand the diversity of plants, from algae to landplants, and provides plant breeders with detailed maps that allow them to produce improved cultivars faster than ever. The genomes is this trail, and many others, can be browsed at Ensembl Plants (http://plants.ensembl.org), a database developed at the European Bioinformatics Institute in Hinxton, near Cambridge. 
 
 ![genome size distribution](./pics/nph16356-fig-0001-m.jpg)
 
 * Distribution of genome size for 6000 plant species. Data obtained from Kew [Plant C‐value database](https://cvalues.science.kew.org). 
 Source: R Akakpo, MC Carpentier, YI Hsing, O Panaud https://doi.org/10.1111/nph.16356 *
 
-![a DNA sequencing machie]()
+![a DNA sequencing machine](./pics/sequencer.jpg)
 
-* A DNA sequencing machine from the Wellcome Genome Campus... *
+* A researcher programming a DNA sequencing machine at the Wellcome Genome Campus *
 
 
+
+<!-- Did you know that the first documented carrots root were yellow and purple in Central Asia approximately 1,100 years ago, with orange carrots not reported until the sixteenth century in Europe? What about the spikemoss Selaginella lepidophylla, the resurrection plant, that can dry out for  years and then it is able to resume normal life rehydration? 
 
 Did you know that the first documented colours for domesticated carrot root (Daucus carota sp. Sativus) were yellow and purple in Central Asia approximately 1,100 years ago, with orange carrots not reliably reported until the sixteenth century in Europe? Or that there are species like the spikemoss Selaginella lepidophylla (also called “the resurrection plant”) that can be completely dry during years, but that are able to resume normal growth and activity upon rehydration?
-There exists a lot of biodiversity within and between plants, and part of it can be understood by exploring their DNA (DNA is short for deoxyribonucleic acid), which is an essential molecule for life.  In a very real sense, DNA is information. It acts like a recipe holding the instructions for each organism. A genome is an organism’s complete set of DNA.
-
-<!-- stuff about the EBI and Ensembl Plants -->
+There exists a lot of biodiversity within and between plants, and part of it can be understood by exploring their DNA (DNA is short for deoxyribonucleic acid), which is an essential molecule for life.  In a very real sense, DNA is information. It acts like a recipe holding the instructions for each organism. A genome is an organism’s complete set of DNA. -->
 
 <!-- From tiny plants to record-breakers
 

@@ -1,15 +1,16 @@
 package ComparaUtils;
 require Exporter;
 
-# Bruno Contreras Moreira 2019
+# Bruno Contreras Moreira 2019-20
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw( 
 	download_FASTA_file parse_isoform_FASTA_file
 	download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
+	download_annotation_HTML_file
 	perform_rest_action transverse_tree_json 
 	write_boxplot_file factorial fisher_yates_shuffle 
-	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $FTPURL
+	@DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $FTPURL $BASEURL $ANNOTURL
 );
 
 use strict;
@@ -19,13 +20,16 @@ use Time::HiRes;
 use HTTP::Tiny;
 
 
-# Ensembl Genomes
+# Ensembl Genomes / Non Vertebrates
 our @DIVISIONS  = qw( Plants ); 
 #Fungi Protists Metazoa have collections and one all-vs-all TSV file
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
 our $GTFDIR     = '/pub/current/xxx/gtf';
+
+our $BASEURL    = 'http://xxx.ensembl.org';
+our $ANNOTURL   = '/Info/Annotation/index.html';
 
 our $REQUEST_COUNT = 0;
 
@@ -317,7 +321,7 @@ sub perform_rest_action {
 		if(($status == 429 || $status == 599) && exists $response->{headers}->{'retry-after'}) {
 			my $retry = $response->{headers}->{'retry-after'};
 			Time::HiRes::sleep($retry);
-			# afterr sleeping see that we re-request
+			# after sleeping see that we re-request
 			return perform_rest_action($url, $headers);
 		}
 		else {

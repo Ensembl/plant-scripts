@@ -82,28 +82,31 @@ perl get_ambiguous_Pfam_domains.pl log.annot > Pfam.tsv
 # mixedclusters=2109
 ```
 
-The resulting file *Pfam.tsv* was then imported to Google Sheets, and columns 'frac_potgenes', 'TElibs_per_cluster' and 'notes'. Note that 'frac_potgenes' is rounded to two decimals and captures the fraction of clustered sequences that share a Pfam domain and have been annotated as 'PotentialHostGene' in library RepetDB. The resulting TSV file is [Pfam_notes.tsv](./Pfam_notes.tsv).
+The resulting file *Pfam.tsv* was then imported to Google Sheets, and columns 'frac_potgenes', 'TElibs_per_cluster' and 'notes'. Note that 'frac_potgenes' is rounded to two decimals and captures the fraction of clustered sequences that share a Pfam domain and have been annotated as 'PotentialHostGene' (PHG) in library RepetDB. 
+The resulting TSV file is [Pfam_notes.tsv](./Pfam_notes.tsv).
 
 ## Removing ambiguous TE sequences
 
-Two lists of Pfam domains were curated as controls. File [control_pos.list](./control_pos.list) contains a set of Pfam domains contained in coding sequences of bona fide TEs. Instead, file [control_neg_NLR.list](./control_neg_NLR.list) contains Pfam domains of NLR genes, which are known to be often masked as a side-effect when masking repeated sequences in genomes (see https://www.nature.com/articles/s41477-018-0264-0).
+Two lists of Pfam domains were curated as controls. 
+File [control_pos.list](./control_pos.list) contains a set of Pfam domains contained in coding sequences of bona fide TEs. 
+Instead, file [control_neg_NLR.list](./control_neg_NLR.list) contains Pfam domains of NLR genes, curated by Carla Filippi. NLR genes are known to be often masked as a side-effect when masking repeated sequences in genomes (see https://www.nature.com/articles/s41477-018-0264-0).
 
+Both files were used to compute the performance of removing TE sequences clustered with PHGs:
 
 ```
+#TP = True positive = correctly identified
+#FP = False positive = incorrectly identified
+#TN = True negative = correctly rejected
+#FN = False negative = incorrectly rejected
 
-True positive = correctly identified
-False positive = incorrectly identified
-True negative = correctly rejected
-False negative = incorrectly rejected
-
-# check control + , column [7] is frac_potgenes
+# check control +, column [7] is frac_potgenes
 grep -f control_pos.list Pfam_notes.tsv | wc
 22   
-grep -f control_pos.list Pfam_notes.tsv | perl -F"\t" -lane 'print if($F[7]>0)' |wc
+grep -f control_pos.list Pfam_notes.tsv | perl -F"\t" -lane 'print if($F[7]>0)' | wc
 3     
 
-TP = 19
-FN = 3
+#TP = 19
+#FN = 3
 
 # check control -
 grep -f control_neg_NLR.list Pfam_notes.tsv | wc
@@ -111,23 +114,23 @@ grep -f control_neg_NLR.list Pfam_notes.tsv | wc
 grep -f control_neg_NLR.list Pfam_notes.tsv | perl -F"\t" -lane 'print if($F[7]>0)' | wc
 21 
 
-TN = 21
-FP = 4
+#TN = 21
+#FP = 4
 
-sensitivity = TP / (TP + FN) = 19 / (19 + 3) = 0.86
-specificity = TN / (TN + FP) = 21 / 21 + 4) = 0.84
+#sensitivity = TP / (TP + FN) = 19 / (19 + 3) = 0.86
+#specificity = TN / (TN + FP) = 21 / 21 + 4) = 0.84
+```
 
-
+Based on this benchmark we decided to filter out TE sequences with Pfam associated to PHGs:
 ```
 perl -F"\t" -lane 'print if ($F[7]>0)' Pfam_notes.tsv  | wc
 332
 
-# clusters to remove
 perl -F"\t" -lane 'if($F[7]>0){ foreach $cl (split(/,/,$F[10])){print $cl}}' Pfam_notes.tsv | sort -u > clusters2remove.list
 ```
 
+Finally, a non-redundant library of plant TEs was produced as follows:
 
 ```
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsMar2020 &> log.select 
 ```
-

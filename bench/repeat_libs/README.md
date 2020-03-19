@@ -13,17 +13,23 @@ This Markdown document explains how to produce a library of non-redundant transp
 
 ## cDNA sequences
 
-In order to gauge the overlap between TE libraries and coding sequences, transcripts from the best annotated plant species in Ensembl Plants were also downloaded with script [ens_sequences.pl](../../compara/ens_sequences.pl). The obtained nucleotide files were also put in folder [repeats/](./repeats/).
+In order to gauge the overlap between TE libraries and coding sequences, transcripts from the best annotated plant species in Ensembl Plants were also downloaded with script [ens_sequences.pl](../../compara/ens_sequences.pl). The obtained nucleotide files were also put in folder [repeats/](./repeats/). Check the [README.txt](./repeats/README.txt) file there for details.
 
 ## Clustering sequences
 
+All TE sequences and cDNA were clustered with software [GET_HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues), which can compute alignment coverage of split alignments.
+
+```
+git clone https://github.com/eead-csic-compbio/get_homologues.git
+
+# in file get_homologues-est.pl modify lines [L36-7](https://github.com/eead-csic-compbio/get_homologues/blob/0dce095527ba059c69fba3aa267162e17374f86d/get_homologues-est.pl#L36):
 
 set my $MAXSEQLENGTH = 55000;
 set my $MINSEQLENGTH = 90;
 
-~/soft/github/get_homologues/get_homologues-est.pl -d repeats -m cluster -M -t 0 -i 100 &> log.M
+perl get_homologues-est.pl -d repeats -m cluster -M -t 0 -i 100 &> log.M
 
-~/soft/github/get_homologues/compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n
+perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n
 
 # number of input cluster directories = 1
 
@@ -42,35 +48,14 @@ set my $MINSEQLENGTH = 90;
 # pangenome_FASTA file = all_clusters/pangenome_matrix_t0.fasta
 # pangenome CSV file (Scoary) = all_clusters/pangenome_matrix_t0.tr.csv
 
-~/soft/github/get_homologues/parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
-
-# occupancy stats:
-	cloud	shell	soft_core	core
-SINEs.plants.fna.gz.nucl	57	3	0	0
-arabidopsis_thaliana.cdna.fna.gz.nucl	26694	52	0	0
-brachypodium_distachyon.cdna.fna.gz.nucl	32934	115	0	0
-brassica_napus.cdna.fna.gz.nucl	73474	46	0	0
-glycine_max.cdna.fna.gz.nucl	51903	19	0	0
-helianthus_annuus.cdna.fna.gz.nucl	46382	32	0	0
-hordeum_vulgare.cdna.fna.gz.nucl	32478	118	0	0
-medicago_truncatula.cdna.fna.gz.nucl	47423	46	0	0
-mipsREdat_9.3p_ALL.fasta.gz.nucl	42440	281	0	0
-oryza_sativa_japonica.cdna.fna.gz.nucl	33066	84	0	0
-phaseolus_vulgaris.cdna.fna.gz.nucl	27049	17	0	0
-populus_trichocarpa.cdna.fna.gz.nucl	37918	14	0	0
-repetDB.Mar2020.fna.gz.nucl	28115	188	0	0
-solanum_lycopersicum.cdna.fna.gz.nucl	32512	30	0	0
-sorghum_bicolor.cdna.fna.gz.nucl	32524	56	0	0
-trep-db_nr_Rel-19.fasta.gz.nucl	1383	191	0	0
-vitis_vinifera.cdna.fna.gz.nucl	27105	32	0	0
-zea_mays.cdna.fna.gz.nucl	34196	153	0	0
+perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 
 # intersection pangenome matrix: all_clusters/pangenome_matrix_t0__intersection.tab
 # mean %cluster intersection: 5.70
 
-~/soft/github/get_homologues/plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
+./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
 
-~/soft/github/get_homologues/parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeats/cdna.list -B repeats/TE.list -a
+perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeats/cdna.list -B repeats/TE.list -a
 
 # matrix contains 602746 clusters and 18 taxa
 
@@ -78,8 +63,9 @@ zea_mays.cdna.fna.gz.nucl	34196	153	0	0
 
 # finding genes which are absent in B ...
 # file with genes absent in B (532793): all_clusters/pangenome_matrix_t0__pangenes_list.txt
+```
 
-## align and get TE_sequences
+## Align and get TE sequences
 
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot
 

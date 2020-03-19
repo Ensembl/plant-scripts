@@ -69,20 +69,27 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeat
 # file with genes absent in B (532793): all_clusters/pangenome_matrix_t0__pangenes_list.txt
 ```
 
-## Align and get TE sequences
+## Align TE clusters and annotate Pfam domains
 
+With two custom scripts we will first concentrate on clusters containing both TE and cDNA sequences:
+
+```
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot
 
-# can be used to get Pfam table
-#perl -lne 'if(/# Pfam domains: $/){ $tot{'noPfam'}++ } while(/(PF[\d\.]+)/g){ $tot{$1}++; } END{ foreach my $pf (keys(%tot)){ print "$pf\t$tot{$pf}"} }' log.annot | sort -rn -k2,2 
+perl get_ambiguous_Pfam_domains.pl log.annot > Pfam.tsv
 
-# Pfam domains found in clusters with both TE and transcripts
-perl get_ambiguous_Pfam_domains.pl  log.annot > Pfam.tsv
 # TEclusters=69953
 # mixedclusters=2109
+```
 
-# import to https://docs.google.com/spreadsheets/d/1HzN7Hpr0ul9TxSwAFEaYEoR26cPcnIDogVyfzc_qOfo/edit#gid=1353841590,
-# add columns frac_potgenes (round,2), TElibs_perl_cluster & notes, then download Pfam_notes.tsv
+The resulting file *Pfam.tsv* was then imported to Google Sheets, and columns 'frac_potgenes', 'TElibs_per_cluster' and 'notes'. Note that 'frac_potgenes' is rounded to two decimals and captures the fraction of clustered sequences that share a Pfam domain and have been annotated as 'PotentialHostGene' in library RepetDB. The resulting TSV file is [Pfam_notes.tsv](./Pfam_notes.tsv).
+
+## Removing ambiguous TE sequences
+
+Two lists of Pfam domains were curated as controls. File [control_pos.list](./control_pos.list) contains a set of Pfam domains contained in coding sequences of bona fide TEs. Instead, file [control_neg_NLR.list](./control_neg_NLR.list) contains Pfam domains of NLR genes, which are known to be often masked as a side-effect when masking repeated sequences in genomes (see https://www.nature.com/articles/s41477-018-0264-0).
+
+
+```
 
 True positive = correctly identified
 False positive = incorrectly identified
@@ -110,12 +117,17 @@ FP = 4
 sensitivity = TP / (TP + FN) = 19 / (19 + 3) = 0.86
 specificity = TN / (TN + FP) = 21 / 21 + 4) = 0.84
 
+
+```
 perl -F"\t" -lane 'print if ($F[7]>0)' Pfam_notes.tsv  | wc
 332
 
 # clusters to remove
 perl -F"\t" -lane 'if($F[7]>0){ foreach $cl (split(/,/,$F[10])){print $cl}}' Pfam_notes.tsv | sort -u > clusters2remove.list
+```
 
+
+```
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsMar2020 &> log.select 
-
+```
 

@@ -2,7 +2,7 @@
 
 # nrTEplants
 
-This Markdown document explains how to produce a library of non-redundant transposable elements found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats](./repeats): 
+This Markdown document explains how to produce a library of non-redundant transposable elements (TE) found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats/](./repeats/): 
 
 |library|URL|files downloaded|publication|
 |-------|---|----------------|-----------|
@@ -13,6 +13,7 @@ This Markdown document explains how to produce a library of non-redundant transp
 
 ## cDNA sequences
 
+In order to gauge the overlap between TE libraries and coding sequences, transcripts from the best annotated plant species in Ensembl Plants were also downloaded with script [ens_sequences.pl](../../compara/ens_sequences.pl). The obtained nucleotide files were also put in folder [repeats/](./repeats/).
 
 ## Clustering sequences
 

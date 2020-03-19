@@ -127,3 +127,76 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 ```
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsMar2020 &> log.select 
 ```
+
+The resulting library has the following contents:
+```
+# clusters=69209 sequences=69209
+mipsREdat_9.3p_ALL      41848
+repetDB.Mar2020 26495
+trep-db_nr_Rel-19       819
+SINEs.plants    47
+
+LTR/Gypsy       19291
+LTR     16445
+LTR/Copia       8797
+TIR     5372
+MobileElement   4022
+LINE    3229
+Unclassified    2758
+DNA     892
+Helitron        743
+SINE    704
+DIRS    685
+MITE    662
+rRNA    568
+DNA/En-Spm      548
+Other   431
+DNA/Mite        414
+TRIM    397
+Retroelement    393
+LARD    298
+TIR/hAT 297
+DNA/MuDR        284
+DNA/TcMar       242
+Other/Simple    187
+TIR/PIF-Harbinger       176
+nonLTR  173
+DNA/Stowaway    169
+Satellite       160
+TIR/Mutator     149
+DNA/Harbinger   119
+TIR/Mariner     89
+TIR/Harbinger   72
+DNA/hAT 60
+TIR/CACTA       51
+non-LTR(SINE)   43
+Helitron/Helitron       32
+DNA/Tourist     32
+non-LTR(SINE)/I 32
+Maverick        29
+TIR/EnSpm/CACTA 25
+LARD|TRIM       25
+SINE|TRIM       10
+non-LTR(SINE)/Jokey     10
+LTR|TIR 10
+DNA/hAT-Ac      9
+non-LTR(SINE)/L1        8
+non-LTR(SINE)/Pan       8
+RC/Helitron     8
+DIRS|TIR        7
+Helitron|LARD   7
+LTR/Echo        5
+LTR/Halcyon     5
+Other/Centromeric       5
+PLE     5
+Helitron|TRIM   3
+LTR|DIRS        3
+TIR/PiggyBac    2
+TIR|Maverick    2
+SINE|LARD       2
+DNA/TcMar-Pogo  1
+TIR/P   1
+non-LTR(SINE)/R2        1
+Crypton 1
+non-LTR(SINE)/Chronos   1
+```

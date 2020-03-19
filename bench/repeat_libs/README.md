@@ -4,12 +4,12 @@
 
 This Markdown document explains how to produce a library of non-redundant transposable elements (TE) found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats/](./repeats/): 
 
-|library|URL|files downloaded|publication|
-|-------|---|----------------|-----------|
-|TREP|http://botserv2.uzh.ch/kelldata/trep-db|http://botserv2.uzh.ch/kelldata/trep-db/downloads/trep-db_nr_Rel-19.fasta.gz||
-|SINEbase|http://sines.eimb.ru|http://sines.eimb.ru/banks/SINEs.bnk|https://www.ncbi.nlm.nih.gov/pubmed/23203982|
-|REdat|https://pgsb.helmholtz-muenchen.de/plant/recat|ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz|https://www.ncbi.nlm.nih.gov/pubmed/23203886|
-|RepetDB|http://urgi.versailles.inra.fr/repetdb/begin.do|Exported all Viridiplantae in FASTA|https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6350395/|
+|library|files downloaded|sequences|publication|
+|-------|----------------|---------|-----------|
+|[TREP](http://botserv2.uzh.ch/kelldata/trep-db)|http://botserv2.uzh.ch/kelldata/trep-db/downloads/trep-db_nr_Rel-19.fasta.gz||
+|[SINEbase](http://sines.eimb.ru)|http://sines.eimb.ru/banks/SINEs.bnk|https://www.ncbi.nlm.nih.gov/pubmed/23203982|
+|[REdat](https://pgsb.helmholtz-muenchen.de/plant/recat)|ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz|https://www.ncbi.nlm.nih.gov/pubmed/23203886|
+|[RepetDB](http://urgi.versailles.inra.fr/repetdb/begin.do)|Exported all Viridiplantae in i) FASTA and ii) TSV formats |https://www.ncbi.nlm.nih.gov/pubmed/30719103|
 
 ## cDNA sequences
 
@@ -17,7 +17,7 @@ In order to gauge the overlap between TE libraries and coding sequences, transcr
 
 ## Clustering sequences
 
-All TE sequences and cDNA were clustered with software [GET_HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues), which can compute alignment coverage of split alignments.
+All TE sequences and cDNA were clustered with [GET_HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues). This software runs BLASTN and the MCL algorithm, and computes coverage by combining local alignments. 
 
 ```
 git clone https://github.com/eead-csic-compbio/get_homologues.git
@@ -31,39 +31,32 @@ set my $MINSEQLENGTH = 90;
 
 Sequence clustering can be done with the following commands:
 ```
+# default sequence identity = 95%
+# default alignment coverage = 75% of shortest sequence in pair
+# OMCL algorithm
+# skip redundant sequences within TE/cDNA lib overlap>100bp with no mismatches
 perl get_homologues-est.pl -d repeats -m cluster -M -t 0 -i 100 &> log.M
 
+# produce pangenome matrix in folder all_clusters
 perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n
-
-# number of input cluster directories = 1
-
-# parsing clusters in repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ ...
-# cluster_list in place, will parse it (repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_.cluster_list)
-# number of clusters = 602746
 
 # intersection output directory: all_clusters
 # intersection size = 602746 clusters
 
-# intersection list = all_clusters/intersection_t0.cluster_list
-
 # pangenome_file = all_clusters/pangenome_matrix_t0.tab transposed = all_clusters/pangenome_matrix_t0.tr.tab
 # pangenome_genes = all_clusters/pangenome_matrix_genes_t0.tab transposed = all_clusters/pangenome_matrix_genes_t0.tr.tab
-# pangenome_phylip file = all_clusters/pangenome_matrix_t0.phylip
-# pangenome_FASTA file = all_clusters/pangenome_matrix_t0.fasta
-# pangenome CSV file (Scoary) = all_clusters/pangenome_matrix_t0.tr.csv
 
+# compute intersections among TE and cDNA libraries
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 
 # intersection pangenome matrix: all_clusters/pangenome_matrix_t0__intersection.tab
 # mean %cluster intersection: 5.70
 
+# heatmap of cluster intersection
 ./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
 
+# count how many clusters do not contain TEs
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeats/cdna.list -B repeats/TE.list -a
-
-# matrix contains 602746 clusters and 18 taxa
-
-# taxa included in group B = 4
 
 # finding genes which are absent in B ...
 # file with genes absent in B (532793): all_clusters/pangenome_matrix_t0__pangenes_list.txt
@@ -71,7 +64,7 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeat
 
 ## Align TE clusters and annotate Pfam domains
 
-With two custom scripts we will first concentrate on clusters containing both TE and cDNA sequences:
+We now concentrate on the subset of clusters containing TE sequences. Note that over two thousand clusters contain TE and cDNA sequences, and are thus called 'mixed clusters':
 
 ```
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot

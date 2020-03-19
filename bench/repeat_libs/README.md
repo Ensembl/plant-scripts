@@ -21,12 +21,16 @@ All TE sequences and cDNA were clustered with software [GET_HOMOLOGUES](https://
 
 ```
 git clone https://github.com/eead-csic-compbio/get_homologues.git
+```
 
-# in file get_homologues-est.pl modify lines [L36-7](https://github.com/eead-csic-compbio/get_homologues/blob/0dce095527ba059c69fba3aa267162e17374f86d/get_homologues-est.pl#L36):
-
+Now, in file *get_homologues-est.pl* modify lines [L36-7](https://github.com/eead-csic-compbio/get_homologues/blob/0dce095527ba059c69fba3aa267162e17374f86d/get_homologues-est.pl#L36):
+```
 set my $MAXSEQLENGTH = 55000;
 set my $MINSEQLENGTH = 90;
+```
 
+Sequence clustering can be done with the following commands:
+```
 perl get_homologues-est.pl -d repeats -m cluster -M -t 0 -i 100 &> log.M
 
 perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n

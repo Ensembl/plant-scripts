@@ -2,14 +2,19 @@
 
 # nrTEplants
 
-This Markdown document explains how to produce a library of non-redundant transposable elements found in plants and annotated in the following libraries, contained in FASTA format in folder *repeats/* : 
+This Markdown document explains how to produce a library of non-redundant transposable elements found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats](./repeats): 
 
 |library|URL|files downloaded|publication|
 |-------|---|----------------|-----------|
 |TREP|http://botserv2.uzh.ch/kelldata/trep-db|http://botserv2.uzh.ch/kelldata/trep-db/downloads/trep-db_nr_Rel-19.fasta.gz||
+|SINEbase|http://sines.eimb.ru|http://sines.eimb.ru/banks/SINEs.bnk|https://www.ncbi.nlm.nih.gov/pubmed/23203982|
+|REdat|https://pgsb.helmholtz-muenchen.de/plant/recat|ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz|https://www.ncbi.nlm.nih.gov/pubmed/23203886|
+|RepetDB|http://urgi.versailles.inra.fr/repetdb/begin.do|Exported all Viridiplantae in FASTA|https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6350395/|
+
+## cDNA sequences
 
 
-# 
+## Clustering sequences
 
 
 set my $MAXSEQLENGTH = 55000;

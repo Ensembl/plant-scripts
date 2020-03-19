@@ -36,10 +36,10 @@ $eg_api_path/eg-utils/bin/checkout_or_update_ensembl.sh ensembl-$ensembl_version
 cd ensembl-$ensembl_version
 git ensembl --clone regulation --branch master
 git ensembl --pull regulation --branch master
-git clone git@github.com:Ensembl/ols-ensembl-loader.git
-cd ensj-healthcheck/
-ant clean jar
-cd ../..
+#git clone git@github.com:Ensembl/ols-ensembl-loader.git
+#cd ensj-healthcheck/
+#ant clean jar
+#cd ../..
 source ensembl-$ensembl_version/setup.sh
 
 # checkout hive  

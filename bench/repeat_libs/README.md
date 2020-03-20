@@ -128,7 +128,8 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsMar2020 &> log.select 
 ```
 
-The resulting library has the following contents:
+The resulting library contains 69,209 sequences from 4 TE collections and has the following contents:
+
 ```
 # clusters=69209 sequences=69209
 mipsREdat_9.3p_ALL      41848
@@ -199,4 +200,32 @@ TIR/P   1
 non-LTR(SINE)/R2        1
 Crypton 1
 non-LTR(SINE)/Chronos   1
+```
+
+## Clustering sequences from TE libraries with CD-HIT
+
+In order to put the previous results in context a similar clustering experiment, including only TEs and no cDNAs, was carried out with [CD-HIT](http://weizhongli-lab.org/cd-hit):
+
+```
+# ch-hit-est
+
+cat mipsREdat_9.3p_ALL.fasta SINEs.bnk.fna trep-db_complete_Rel-19.fasta repetDB.Mar2020.fna >
+all.fna
+
+~/soft/cd-hit-v4.8.1-2019-0228/cd-hit-est -i all.fna -c 0.95 -T 3 -o TE.nr.fna
+
+total seq: 99538
+longest and shortest : 54107 and 25
+Total letters: 632259937
+Sequences have been sorted
+
+# comparing sequences from          0  to         18
+...
+# comparing sequences from      98665  to      99538
+..................---------- new table with      552 representatives
+
+    99538  finished      84944  clusters
+
+Approximated maximum memory consumption: 837M
+Total CPU time 17598.12
 ```

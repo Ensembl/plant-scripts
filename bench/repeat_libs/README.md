@@ -207,8 +207,6 @@ non-LTR(SINE)/Chronos   1
 In order to put the previous results in context a similar clustering experiment, including only TEs and no cDNAs, was carried out with [CD-HIT](http://weizhongli-lab.org/cd-hit):
 
 ```
-# ch-hit-est
-
 cat mipsREdat_9.3p_ALL.fasta SINEs.bnk.fna trep-db_complete_Rel-19.fasta repetDB.Mar2020.fna >
 all.fna
 

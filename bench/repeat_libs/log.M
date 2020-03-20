@@ -1,7 +1,6 @@
-nohup: ignoring input
 # INFO: no cluster config file
 
-# /home/contrera/soft/github/get_homologues/get_homologues-est.pl -d repeats -o 0 -i 100 -e 0 -r 0 -t 0 -c 0 -z 0 -I 0 -m cluster -n 2 -M 1 -C 75 -S 95 -E 1e-05 -F 1.5 -b 0 -s 0 -D 0 -R 0 -L 0 -A 0 -P 0
+# ~/soft/github/get_homologues/get_homologues-est.pl -d repeats -o 0 -i 100 -e 0 -r 0 -t 0 -c 0 -z 0 -I 0 -m cluster -n 2 -M 1 -C 75 -S 95 -E 1e-05 -F 1.5 -b 0 -s 0 -D 0 -R 0 -L 0 -A 0 -P 0
 
 # computer cluster settings
 # CHKEXE	qstat
@@ -15,7 +14,7 @@ nohup: ignoring input
 # TYPE	sge
 
 # version 03032020
-# results_directory=/home/contrera/devel_gethoms/repeats_est_homologues
+# results_directory=repeats_est_homologues
 # parameters: MAXEVALUEBLASTSEARCH=0.01 MAXPFAMSEQS=250 BATCHSIZE=1000 MINSEQLENGTH=90 MAXSEQLENGTH=55000
 
 # checking input files...
@@ -2816,41 +2815,41 @@ nohup: ignoring input
 
 # mask=SINEs_isoover100_0taxa_algOMCL_e0_ (_isoover100_0taxa_algOMCL)
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/SINEs.plants.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/SINEs.plants.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/arabidopsis_thaliana.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/arabidopsis_thaliana.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/brachypodium_distachyon.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/brachypodium_distachyon.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/brassica_napus.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/brassica_napus.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/glycine_max.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/glycine_max.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/helianthus_annuus.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/helianthus_annuus.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/hordeum_vulgare.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/hordeum_vulgare.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/medicago_truncatula.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/medicago_truncatula.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/mipsREdat_9.3p_ALL.fasta.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/mipsREdat_9.3p_ALL.fasta.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/oryza_sativa_japonica.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/oryza_sativa_japonica.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/phaseolus_vulgaris.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/phaseolus_vulgaris.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/populus_trichocarpa.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/populus_trichocarpa.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/repetDB.Mar2020.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/repetDB.Mar2020.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/solanum_lycopersicum.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/solanum_lycopersicum.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/sorghum_bicolor.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/sorghum_bicolor.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/trep-db_nr_Rel-19.fasta.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/trep-db_nr_Rel-19.fasta.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/vitis_vinifera.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/vitis_vinifera.cdna.fna.gz.nucl.fasta
 
-# running makeblastdb with /home/contrera/devel_gethoms/repeats_est_homologues/zea_mays.cdna.fna.gz.nucl.fasta
+# running makeblastdb with repeats_est_homologues/zea_mays.cdna.fna.gz.nucl.fasta
 
 # running BLAST searches ...
 # check_cluster_jobs: waiting ...
@@ -5567,7 +5566,7 @@ nohup: ignoring input
 # done
 
 
-# parsing blast result! (/home/contrera/devel_gethoms/repeats_est_homologues/tmp/all.blast , 3.8e+04MB)
+# parsing blast result! (repeats_est_homologues/tmp/all.blast , 3.8e+04MB)
 # parsing file finished
 
 # making temporary indexes required for clustering isoforms
@@ -5646,7 +5645,7 @@ nohup: ignoring input
 # redundancy-filtering blast file
 # created nr blast file
 
-# parsing blast result! (/home/contrera/devel_gethoms/repeats_est_homologues/tmp/all.blast.nr , 3.8e+04MB)
+# parsing blast result! (repeats_est_homologues/tmp/all.blast.nr , 3.8e+04MB)
 # parsing file finished
 
 # creating indexes, this might take some time (lines=1.05e+08) ...
@@ -6219,7 +6218,7 @@ nohup: ignoring input
 # running MCL (inflation=1.5) ...
 # running MCL finished
 
-# find_OMCL_clusters: parsing clusters (/home/contrera/devel_gethoms/repeats_est_homologues/tmp/all_ortho.mcl)
+# find_OMCL_clusters: parsing clusters (repeats_est_homologues/tmp/all_ortho.mcl)
 
 
 # add_unmatched_singletons : 549535 sequences, 18 taxa

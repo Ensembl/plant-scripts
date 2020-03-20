@@ -80,6 +80,10 @@ perl get_ambiguous_Pfam_domains.pl log.annot > Pfam.tsv
 The resulting file *Pfam.tsv* was then imported to Google Sheets, and columns 'frac_potgenes', 'TElibs_per_cluster' and 'notes'. Note that 'frac_potgenes' is rounded to two decimals and captures the fraction of clustered sequences that share a Pfam domain and have been annotated as 'PotentialHostGene' (PHG) in library RepetDB. 
 The resulting TSV file is [Pfam_notes.tsv](./Pfam_notes.tsv).
 
+![Sample aligned cluster](./pics/269_AT4G16920.2.png)
+
+*Fig. 1. Aligned cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology)*
+
 ## Removing ambiguous TE sequences
 
 Two lists of Pfam domains were curated as controls. 
@@ -123,6 +127,8 @@ perl -F"\t" -lane 'print if ($F[7]>0)' Pfam_notes.tsv  | wc
 
 perl -F"\t" -lane 'if($F[7]>0){ foreach $cl (split(/,/,$F[10])){print $cl}}' Pfam_notes.tsv | sort -u > clusters2remove.list
 ```
+
+## Producing a nonredundant TE library
 
 Finally, a non-redundant library of plant TEs was produced as follows:
 

@@ -20,6 +20,8 @@ In order to gauge the overlap between TE libraries and coding sequences, transcr
 All TE sequences and cDNA were clustered with [GET_HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues). This software runs BLASTN and the MCL algorithm, and computes coverage by combining local alignments. 
 
 ```
+cd ~/soft/github
+
 git clone https://github.com/eead-csic-compbio/get_homologues.git
 ```
 

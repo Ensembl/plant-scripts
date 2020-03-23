@@ -88,7 +88,7 @@ The resulting TSV file is [Pfam_notes.tsv](./Pfam_notes.tsv).
 
 Two lists of Pfam domains were curated as controls. 
 File [control_pos.list](./control_pos.list) contains a set of Pfam domains contained in coding sequences of bona fide TEs. 
-Instead, file [control_neg_NLR.list](./control_neg_NLR.list) contains Pfam domains of NLR genes, curated by Carla Filippi. NLR genes are known to be often masked as a side-effect when masking repeated sequences in genomes (see https://www.nature.com/articles/s41477-018-0264-0).
+Instead, file [control_neg_NLR.list](./control_neg_NLR.list) contains Pfam domains of NLR genes, curated by Carla Filippi. NLR genes are known to be often masked when masking repeated sequences in genomes (see https://www.nature.com/articles/s41477-018-0264-0) and are common accessory genes in plant pangenomes (https://doi.org/10.3389/fpls.2017.00184 , https://www.nature.com/articles/s41467-017-02292-8).
 
 Both files were used to compute the performance of removing TE sequences clustered with PHGs:
 

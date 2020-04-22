@@ -4,7 +4,8 @@ use warnings;
 use File::Copy;
 
 # 1) align nucleotides sequences in clusters and annotate any Pfam domains;
-# note that original FASTA headers are shortened
+# note that original FASTA headers are shortened and stored in $short_dir
+# with lower-case sequences
 
 my $align_dir = 'TE_alignments';
 my $short_dir = 'TE_clusters'; # shortened FASTA headers
@@ -13,7 +14,11 @@ my %TElibs = (
 	'SINEs.plants.fna.gz.nucl'         => 1,
 	'mipsREdat_9.3p_ALL.fasta.gz.nucl' => 1,
 	'repetDB.Mar2020.fna.gz.nucl'      => 1,
-	'trep-db_nr_Rel-19.fasta.gz.nucl'  => 1
+	'trep-db_nr_Rel-19.fasta.gz.nucl'  => 1,
+	'rice6.9.5.liban.fna.gz.nucl'      => 1,
+	'maizeTE11122019.fna.gz.nucl'      => 1,
+	'SoyBaseTE.fna.gz.nucl'            => 1,
+   'TAIR10_TE.fna.gz.nucl'            => 1
 );
 
 my $annotEXE = '~/soft/github/get_homologues/annotate_cluster.pl';
@@ -33,7 +38,7 @@ while(<MAT>){
 	chomp;
 
 	if(/^source:(\S+)/){
-		$cluster_folder = $1;
+		$cluster_folder = "$1/";
 		my @names = split(/\t/,$_);
 		$last_col = $#names;
 		foreach $col ( 1 .. $last_col ){
@@ -84,7 +89,7 @@ while(<MAT>){
 				else{ $seqid = (split(/\|/,$seqid))[0] } # mips
 				print SHORT ">$seqid [$taxon]\n";
 			}
-			else{ print SHORT $line }
+			else{ print SHORT lc($line) }
 		}
 		close(CLUSTER);
 
@@ -97,7 +102,7 @@ while(<MAT>){
 			copy("$short_dir/$cluster_name" , "$align_dir/$cluster_name");				
 		}
 
-		print "$_\t$num_seqs\n";
+		print "$_\t$num_seqs\n"; #exit;
 	}	
 }
 close(MAT);

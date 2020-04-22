@@ -1,6 +1,7 @@
+nohup: ignoring input
 # INFO: no cluster config file
 
-# ~/soft/github/get_homologues/get_homologues-est.pl -d repeats -o 0 -i 100 -e 0 -r 0 -t 0 -c 0 -z 0 -I 0 -m cluster -n 2 -M 1 -C 75 -S 95 -E 1e-05 -F 1.5 -b 0 -s 0 -D 0 -R 0 -L 0 -A 0 -P 0
+# /home/contrera/soft/github/get_homologues/get_homologues-est.pl -d repeats -o 0 -i 100 -e 0 -r 0 -t 0 -c 0 -z 0 -I 0 -m cluster -n 2 -M 1 -C 75 -S 95 -E 1e-05 -F 1.5 -b 0 -s 0 -D 0 -R 0 -L 0 -A 0 -P 0
 
 # computer cluster settings
 # CHKEXE	qstat
@@ -13,8 +14,8 @@
 # SUBEXE	qsub
 # TYPE	sge
 
-# version 03032020
-# results_directory=repeats_est_homologues
+# version 10042020
+# results_directory=/home/contrera/devel/repeat_libs/repeats_est_homologues
 # parameters: MAXEVALUEBLASTSEARCH=0.01 MAXPFAMSEQS=250 BATCHSIZE=1000 MINSEQLENGTH=90 MAXSEQLENGTH=55000
 
 # checking input files...
@@ -1227,6 +1228,13 @@
 # skipped short sequence (EPlHVUT00000248395 no_description chromosome:IBSC_v2:Mt:66424:66488:-1 [hordeum_vulgare] , 65)
 # skipped short sequence (EPlHVUT00000248392 no_description chromosome:IBSC_v2:Mt:515221:515279:1 [hordeum_vulgare] , 59)
 # skipped short sequence (EPlHVUT00000248384 no_description chromosome:IBSC_v2:Mt:490:530:1 [hordeum_vulgare] , 41)
+# maizeTE11122019.fna.gz 1362  median length = 3308
+# skipped short sequence (ZM00485_consensus#DNA/Harbinger , 81)
+# skipped short sequence (ZM00031_consensus#DNA/Tc1-Mariner , 80)
+# skipped short sequence (ZM00037_consensus#DNA/Tc1-Mariner , 80)
+# skipped short sequence (ZM00048_consensus#DNA/Tc1-Mariner , 80)
+# skipped short sequence (ZM00055_consensus#DNA/Tc1-Mariner , 80)
+# skipped short sequence (ZM00057_consensus#DNA/Tc1-Mariner , 80)
 # medicago_truncatula.cdna.fna.gz 50444  median length = 981
 # skipped short sequence (KEH23023 no_description chromosome:MedtrA17_4.0:7:23374075:23374161:-1 [medicago_truncatula] , 87)
 # skipped short sequence (KEH22449 no_description chromosome:MedtrA17_4.0:7:16801795:16801878:-1 [medicago_truncatula] , 84)
@@ -2326,6 +2334,14 @@
 # skipped short sequence (ESW21434 no_description chromosome:PhaVulg1_0:5:11567134:11567138:-1 [phaseolus_vulgaris] , 5)
 # populus_trichocarpa.cdna.fna.gz 41335  median length = 1474
 # repetDB.Mar2020.fna.gz 33416  median length = 3567
+# rice6.9.5.liban.fna.gz 2431  median length = 984
+# skipped short sequence (Os0027#DNAnona/MULE  , 85)
+# skipped short sequence (Os1611#SINE/unknown  , 85)
+# skipped short sequence (Os2340#DNAnona/CACTA  , 84)
+# skipped short sequence (Os0674#MITE/Stow  , 80)
+# skipped short sequence (Os0943#MITE/Stow  , 80)
+# skipped short sequence (Os2860#DNAnona/CACTG  , 73)
+# skipped short sequence (Os0414_INT#LTR/TRIM  , 40)
 # solanum_lycopersicum.cdna.fna.gz 34658  median length = 1184
 # skipped short sequence (Solyc02g092690.1.1 no_description chromosome:SL3.0:2:54326930:54327204:1 [solanum_lycopersicum] , 87)
 # skipped short sequence (Solyc06g050260.1.1 no_description chromosome:SL3.0:6:32915519:32915655:-1 [solanum_lycopersicum] , 87)
@@ -2808,3427 +2824,7051 @@
 # skipped short sequence (ZemaCt129 no_description chromosome:B73_RefGen_v4:Pt:15954:16025:1 [zea_mays] , 72)
 # skipped short sequence (ZeamMt017 no_description chromosome:B73_RefGen_v4:Mt:138489:138560:-1 [zea_mays] , 72)
 # skipped short sequence (ZeamMt021 no_description chromosome:B73_RefGen_v4:Mt:263239:263356:-1 [zea_mays] , 70)
+# SoyBaseTE.fna.gz 38664  median length = 1716
+# skipped short sequence (DTT_uuu_Gm1-12:SoyBaseTE#TIR/Tc1-Mariner , 89)
+# skipped short sequence (DTT_uuu_Gm18-13:SoyBaseTE#TIR/Tc1-Mariner , 89)
+# skipped short sequence (DTT_uuu_Gm1-16:SoyBaseTE#TIR/Tc1-Mariner , 88)
+# skipped short sequence (DTT_uuu_Gm10-24:SoyBaseTE#TIR/Tc1-Mariner , 88)
+# skipped short sequence (DTT_uuu_Gm16-5:SoyBaseTE#TIR/Tc1-Mariner , 88)
+# skipped short sequence (DTT_uuu_Gm10-4:SoyBaseTE#TIR/Tc1-Mariner , 87)
+# skipped short sequence (DTT_uuu_Gm11-14:SoyBaseTE#TIR/Tc1-Mariner , 87)
+# skipped short sequence (DTT_uuu_Gm11-28:SoyBaseTE#TIR/Tc1-Mariner , 87)
+# skipped short sequence (DTT_uuu_Gm17-96:SoyBaseTE#TIR/Tc1-Mariner , 87)
+# skipped short sequence (DTT_uuu_Gm4-32:SoyBaseTE#TIR/Tc1-Mariner , 87)
+# skipped short sequence (DTT_uuu_Gm7-15:SoyBaseTE#TIR/Tc1-Mariner , 87)
+# skipped short sequence (DTT_uuu_Gm13-24:SoyBaseTE#TIR/Tc1-Mariner , 86)
+# skipped short sequence (DTT_uuu_Gm2-12:SoyBaseTE#TIR/Tc1-Mariner , 86)
+# skipped short sequence (DTT_uuu_Gm2-73:SoyBaseTE#TIR/Tc1-Mariner , 86)
+# skipped short sequence (DTT_uuu_Gm2-77:SoyBaseTE#TIR/Tc1-Mariner , 86)
+# skipped short sequence (DTT_uuu_Gm5-67:SoyBaseTE#TIR/Tc1-Mariner , 86)
+# skipped short sequence (DTT_uuu_Gm5-15:SoyBaseTE#TIR/Tc1-Mariner , 85)
+# skipped short sequence (DTT_uuu_Gm14-52:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm14-78:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm17-63:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm18-16:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm18-8:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm2-89:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm3-8:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm5-24:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm8-102:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm9-58:SoyBaseTE#TIR/Tc1-Mariner , 84)
+# skipped short sequence (DTT_uuu_Gm10-18:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm10-80:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm11-39:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm13-17:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm13-35:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm14-29:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm14-45:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm16-30:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm18-109:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm18-114:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm20-51:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm3-18:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm3-39:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm4-4:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm5-50:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm6-66:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm6-67:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm8-27:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm8-30:SoyBaseTE#TIR/Tc1-Mariner , 83)
+# skipped short sequence (DTT_uuu_Gm11-63:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm18-113:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm5-13:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm6-33:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm6-52:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm6-93:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm8-23:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm8-83:SoyBaseTE#TIR/Tc1-Mariner , 82)
+# skipped short sequence (DTT_uuu_Gm14-23:SoyBaseTE#TIR/Tc1-Mariner , 81)
+# skipped short sequence (DTT_uuu_Gm17-37:SoyBaseTE#TIR/Tc1-Mariner , 81)
+# skipped short sequence (DTT_uuu_Gm17-88:SoyBaseTE#TIR/Tc1-Mariner , 81)
+# skipped short sequence (DTT_uuu_Gm5-69:SoyBaseTE#TIR/Tc1-Mariner , 81)
+# skipped short sequence (DTT_uuu_Gm8-1:SoyBaseTE#TIR/Tc1-Mariner , 81)
+# skipped short sequence (DTT_uuu_Gm10-69:SoyBaseTE#TIR/Tc1-Mariner , 80)
+# skipped short sequence (DTT_uuu_Gm14-3:SoyBaseTE#TIR/Tc1-Mariner , 80)
+# skipped short sequence (DTT_uuu_Gm20-44:SoyBaseTE#TIR/Tc1-Mariner , 80)
+# skipped short sequence (DTT_uuu_Gm6-34:SoyBaseTE#TIR/Tc1-Mariner , 80)
+# skipped short sequence (DTT_uuu_Gm18-55:SoyBaseTE#TIR/Tc1-Mariner , 79)
+# skipped short sequence (DTT_uuu_Gm20-60:SoyBaseTE#TIR/Tc1-Mariner , 79)
+# skipped short sequence (DTT_uuu_Gm1-73:SoyBaseTE#TIR/Tc1-Mariner , 78)
+# skipped short sequence (DTT_uuu_Gm1-88:SoyBaseTE#TIR/Tc1-Mariner , 78)
+# skipped short sequence (DTT_uuu_Gm19-48:SoyBaseTE#TIR/Tc1-Mariner , 78)
+# skipped short sequence (DTT_uuu_Gm2-58:SoyBaseTE#TIR/Tc1-Mariner , 77)
+# skipped short sequence (DTT_uuu_Gm8-37:SoyBaseTE#TIR/Tc1-Mariner , 77)
+# skipped short sequence (DTT_uuu_Gm12-6:SoyBaseTE#TIR/Tc1-Mariner , 76)
+# skipped short sequence (DTT_uuu_Gm8-50:SoyBaseTE#TIR/Tc1-Mariner , 75)
+# skipped short sequence (DTT_uuu_Gm9-6:SoyBaseTE#TIR/Tc1-Mariner , 75)
+# skipped short sequence (DTT_uuu_Gm1-1:SoyBaseTE#TIR/Tc1-Mariner , 73)
+# skipped short sequence (DTT_uuu_Gm10-34:SoyBaseTE#TIR/Tc1-Mariner , 71)
+# skipped short sequence (DTT_uuu_Gm19-77:SoyBaseTE#TIR/Tc1-Mariner , 67)
+# skipped short sequence (DTT_uuu_Gm20-28:SoyBaseTE#TIR/Tc1-Mariner , 64)
+# skipped short sequence (DTT_uuu_Gm5-68:SoyBaseTE#TIR/Tc1-Mariner , 39)
+# TAIR10_TE.fna.gz 31189  median length = 304
+# skipped short sequence (AT1TE60200:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT1TE67145:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT1TE47270:TAIR10#DNA , 89)
+# skipped short sequence (AT1TE47490:TAIR10#DNA , 89)
+# skipped short sequence (AT1TE40890:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT1TE60785:TAIR10#LTR/Copia , 89)
+# skipped short sequence (AT1TE51030:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT1TE19400:TAIR10#LTR/Copia , 89)
+# skipped short sequence (AT1TE51025:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT1TE98070:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT1TE46580:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT1TE56770:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT1TE45690:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT2TE44880:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT2TE20495:TAIR10#DNA/En-Spm , 89)
+# skipped short sequence (AT2TE16870:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT2TE02280:TAIR10#LINE/L1 , 89)
+# skipped short sequence (AT2TE10740:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT2TE45630:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT2TE12365:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT2TE19800:TAIR10#DNA/En-Spm , 89)
+# skipped short sequence (AT2TE42505:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT2TE25000:TAIR10#RathE1_cons , 89)
+# skipped short sequence (AT2TE19090:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT2TE05695:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT2TE20515:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT2TE22670:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT2TE08580:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT3TE32955:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT3TE40910:TAIR10#DNA/Harbinger , 89)
+# skipped short sequence (AT3TE52105:TAIR10#LTR/Copia , 89)
+# skipped short sequence (AT3TE59650:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT3TE68800:TAIR10#DNA/HAT , 89)
+# skipped short sequence (AT3TE74705:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT3TE51625:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT3TE53370:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT3TE47740:TAIR10#SINE , 89)
+# skipped short sequence (AT3TE61285:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT3TE68495:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT3TE53525:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT4TE39005:TAIR10#DNA/Harbinger , 89)
+# skipped short sequence (AT4TE14195:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT4TE05100:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT4TE31590:TAIR10#RathE1_cons , 89)
+# skipped short sequence (AT4TE32210:TAIR10#DNA/Mariner , 89)
+# skipped short sequence (AT4TE38300:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT4TE18780:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT4TE34985:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT4TE27450:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT5TE32285:TAIR10#LTR/Copia , 89)
+# skipped short sequence (AT5TE40535:TAIR10#DNA , 89)
+# skipped short sequence (AT5TE31740:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT5TE19700:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT5TE14160:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT5TE68880:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT5TE63500:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT5TE48985:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT5TE36145:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT5TE45175:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT5TE74505:TAIR10#RC/Helitron , 89)
+# skipped short sequence (AT5TE52590:TAIR10#LINE/L1 , 89)
+# skipped short sequence (AT5TE55195:TAIR10#LINE/L1 , 89)
+# skipped short sequence (AT5TE39565:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT5TE67895:TAIR10#LTR/Gypsy , 89)
+# skipped short sequence (AT5TE61595:TAIR10#DNA , 89)
+# skipped short sequence (AT5TE71255:TAIR10#DNA/MuDR , 89)
+# skipped short sequence (AT1TE60660:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE49890:TAIR10#DNA , 88)
+# skipped short sequence (AT1TE56175:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE00470:TAIR10#LINE/L1 , 88)
+# skipped short sequence (AT1TE29080:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT1TE02260:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE58690:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE61740:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE52065:TAIR10#LTR/Copia , 88)
+# skipped short sequence (AT1TE65230:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE56960:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT2TE20325:TAIR10#LTR/Gypsy , 88)
+# skipped short sequence (AT2TE27000:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT2TE67255:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT2TE60090:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT2TE36790:TAIR10#DNA , 88)
+# skipped short sequence (AT2TE47125:TAIR10#DNA/Harbinger , 88)
+# skipped short sequence (AT2TE41695:TAIR10#LTR/Gypsy , 88)
+# skipped short sequence (AT2TE08245:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT2TE05985:TAIR10#LTR/Copia , 88)
+# skipped short sequence (AT2TE26475:TAIR10#LINE/L1 , 88)
+# skipped short sequence (AT2TE20595:TAIR10#LTR/Gypsy , 88)
+# skipped short sequence (AT2TE51365:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT2TE02730:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT2TE17050:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT2TE79680:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE40485:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE50730:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE34665:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE35065:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE35240:TAIR10#LTR/Copia , 88)
+# skipped short sequence (AT3TE26880:TAIR10#DNA/En-Spm , 88)
+# skipped short sequence (AT3TE25250:TAIR10#LINE/L1 , 88)
+# skipped short sequence (AT3TE92800:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT3TE39260:TAIR10#DNA , 88)
+# skipped short sequence (AT3TE38380:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE84400:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT3TE92730:TAIR10#LTR/Copia , 88)
+# skipped short sequence (AT3TE49215:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE48900:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT3TE53110:TAIR10#LTR/Gypsy , 88)
+# skipped short sequence (AT4TE84235:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT4TE11455:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT4TE09120:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT4TE54360:TAIR10#DNA/HAT , 88)
+# skipped short sequence (AT4TE08365:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT4TE51630:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT4TE22410:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT4TE60690:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT4TE39040:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT5TE65380:TAIR10#RathE2_cons , 88)
+# skipped short sequence (AT5TE88040:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT5TE30305:TAIR10#RathE1_cons , 88)
+# skipped short sequence (AT5TE17340:TAIR10#LTR/Gypsy , 88)
+# skipped short sequence (AT5TE50990:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT5TE38015:TAIR10#LTR/Copia , 88)
+# skipped short sequence (AT5TE36320:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT5TE56010:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT5TE50355:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT5TE35175:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT5TE56160:TAIR10#RathE1_cons , 88)
+# skipped short sequence (AT5TE47410:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT5TE54395:TAIR10#LTR/Gypsy , 88)
+# skipped short sequence (AT5TE55030:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT5TE44610:TAIR10#DNA/MuDR , 88)
+# skipped short sequence (AT5TE47370:TAIR10#RC/Helitron , 88)
+# skipped short sequence (AT1TE79835:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE51220:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT1TE70700:TAIR10#LINE/L1 , 87)
+# skipped short sequence (AT1TE73200:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT1TE64640:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE36905:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE42860:TAIR10#LINE/L1 , 87)
+# skipped short sequence (AT1TE18270:TAIR10#LTR/Copia , 87)
+# skipped short sequence (AT1TE60340:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT1TE25180:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE56080:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE43000:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE14325:TAIR10#LINE/L1 , 87)
+# skipped short sequence (AT1TE85340:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE29650:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT1TE51280:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT1TE51240:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT1TE61060:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT1TE45275:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT2TE32600:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT2TE12520:TAIR10#DNA/HAT , 87)
+# skipped short sequence (AT2TE09015:TAIR10#DNA/Pogo , 87)
+# skipped short sequence (AT2TE47780:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT2TE71350:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT2TE60190:TAIR10#DNA/En-Spm , 87)
+# skipped short sequence (AT2TE42050:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT2TE20615:TAIR10#RathE1_cons , 87)
+# skipped short sequence (AT2TE06485:TAIR10#DNA/Pogo , 87)
+# skipped short sequence (AT2TE46150:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT2TE23570:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT2TE28645:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT2TE31760:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT2TE40330:TAIR10#LTR/Copia , 87)
+# skipped short sequence (AT2TE53715:TAIR10#DNA , 87)
+# skipped short sequence (AT2TE06460:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT2TE31900:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE46875:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE46880:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE59655:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT3TE70385:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE93310:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT3TE59220:TAIR10#DNA/Harbinger , 87)
+# skipped short sequence (AT3TE53875:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT3TE62160:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE47910:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT3TE19190:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE62185:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE53535:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT3TE22730:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT4TE32420:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT4TE52345:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT4TE13425:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT4TE29165:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT4TE32120:TAIR10#DNA/HAT , 87)
+# skipped short sequence (AT4TE28205:TAIR10#DNA/HAT , 87)
+# skipped short sequence (AT4TE21410:TAIR10#RathE2_cons , 87)
+# skipped short sequence (AT4TE10615:TAIR10#LINE/L1 , 87)
+# skipped short sequence (AT4TE21270:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT4TE31185:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT4TE21770:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT4TE21065:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT5TE32735:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT5TE50695:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE62605:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT5TE34000:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE44565:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT5TE25790:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE65165:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE43370:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT5TE93410:TAIR10#DNA/MuDR , 87)
+# skipped short sequence (AT5TE72360:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT5TE33290:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE37585:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE74745:TAIR10#RC/Helitron , 87)
+# skipped short sequence (AT5TE49970:TAIR10#LTR/Gypsy , 87)
+# skipped short sequence (AT1TE72160:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE10930:TAIR10#LTR/Copia , 86)
+# skipped short sequence (AT1TE40405:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE37060:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT1TE10605:TAIR10#DNA/Harbinger , 86)
+# skipped short sequence (AT1TE54935:TAIR10#DNA , 86)
+# skipped short sequence (AT1TE86380:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE53165:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE43435:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT1TE64660:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE45940:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT1TE79255:TAIR10#LTR/Copia , 86)
+# skipped short sequence (AT1TE28510:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT1TE28460:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT1TE28330:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT1TE28405:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT1TE37245:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE22745:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE11385:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT1TE19820:TAIR10#LINE/L1 , 86)
+# skipped short sequence (AT1TE88505:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT1TE78710:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT1TE36595:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT2TE23475:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT2TE59885:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT2TE30940:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT2TE32450:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT2TE21130:TAIR10#LINE/L1 , 86)
+# skipped short sequence (AT2TE44710:TAIR10#LTR/Copia , 86)
+# skipped short sequence (AT2TE18205:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT2TE12565:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT2TE03090:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT2TE18645:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT3TE72870:TAIR10#LTR/Copia , 86)
+# skipped short sequence (AT3TE68155:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT3TE47030:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT3TE35070:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT3TE13085:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT3TE17370:TAIR10#DNA/En-Spm , 86)
+# skipped short sequence (AT3TE60320:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT3TE74125:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT3TE60055:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT3TE43535:TAIR10#DNA , 86)
+# skipped short sequence (AT3TE61470:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT3TE53330:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT3TE18025:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT4TE31140:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT4TE04690:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT4TE03070:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT4TE42885:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT4TE10915:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT4TE49160:TAIR10#RathE1_cons , 86)
+# skipped short sequence (AT4TE50930:TAIR10#LTR/Gypsy , 86)
+# skipped short sequence (AT4TE50430:TAIR10#LTR/Copia , 86)
+# skipped short sequence (AT4TE11930:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT5TE51555:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51575:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51540:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51500:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51520:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51595:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51615:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51635:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51975:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51745:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51670:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51655:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51480:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51465:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51400:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51380:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51260:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51360:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51340:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51325:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51305:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE51285:TAIR10#DNA/HAT , 86)
+# skipped short sequence (AT5TE70060:TAIR10#LINE/L1 , 86)
+# skipped short sequence (AT5TE32680:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT5TE41735:TAIR10#DNA/En-Spm , 86)
+# skipped short sequence (AT5TE87450:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT5TE40060:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT5TE53905:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT5TE61060:TAIR10#RC/Helitron , 86)
+# skipped short sequence (AT5TE39710:TAIR10#DNA/MuDR , 86)
+# skipped short sequence (AT1TE61105:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE51860:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT1TE57470:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE25780:TAIR10#DNA , 85)
+# skipped short sequence (AT1TE56305:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE40180:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT1TE45580:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT1TE27685:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE68940:TAIR10#LTR/Copia , 85)
+# skipped short sequence (AT1TE42320:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE82685:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE24950:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT1TE12715:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE40880:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE31655:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE89520:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE19165:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT2TE26730:TAIR10#DNA , 85)
+# skipped short sequence (AT2TE51875:TAIR10#LINE/L1 , 85)
+# skipped short sequence (AT2TE57960:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE17555:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT2TE02800:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE01670:TAIR10#RathE2_cons , 85)
+# skipped short sequence (AT2TE87400:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE27020:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE35895:TAIR10#RathE1_cons , 85)
+# skipped short sequence (AT2TE65135:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT2TE69030:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE12490:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT2TE29735:TAIR10#LTR/Copia , 85)
+# skipped short sequence (AT3TE65920:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT3TE91950:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT3TE50285:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT3TE91450:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT3TE43295:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT3TE50975:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT3TE49795:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT3TE74780:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT3TE38590:TAIR10#LINE/L1 , 85)
+# skipped short sequence (AT3TE45460:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT4TE16520:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT4TE51390:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT4TE15220:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT4TE15350:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT4TE25355:TAIR10#DNA/En-Spm , 85)
+# skipped short sequence (AT4TE64650:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT4TE71335:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT4TE23565:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT4TE19430:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT4TE41300:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT4TE14300:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT4TE42870:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE29665:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE30190:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE17360:TAIR10#LTR/Gypsy , 85)
+# skipped short sequence (AT5TE31210:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE62280:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT5TE40880:TAIR10#RathE1_cons , 85)
+# skipped short sequence (AT5TE81595:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE74355:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE58060:TAIR10#DNA/Mariner , 85)
+# skipped short sequence (AT5TE56350:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT5TE62460:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE59875:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE25405:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE64050:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT5TE77165:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT5TE33555:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT5TE69850:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT5TE56355:TAIR10#DNA/MuDR , 85)
+# skipped short sequence (AT5TE67990:TAIR10#RC/Helitron , 85)
+# skipped short sequence (AT1TE34175:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE74985:TAIR10#DNA , 84)
+# skipped short sequence (AT1TE52270:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT1TE14655:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT1TE73405:TAIR10#RathE2_cons , 84)
+# skipped short sequence (AT1TE67860:TAIR10#LTR/Gypsy , 84)
+# skipped short sequence (AT1TE86180:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE52935:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE55210:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE55935:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE85070:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE85330:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE41560:TAIR10#LINE/L1 , 84)
+# skipped short sequence (AT1TE66385:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT1TE46985:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT1TE73565:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT2TE11530:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT2TE00505:TAIR10#SINE , 84)
+# skipped short sequence (AT2TE22340:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT2TE31150:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT2TE47120:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT2TE07485:TAIR10#LINE/L1 , 84)
+# skipped short sequence (AT2TE22055:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT2TE55030:TAIR10#RathE1_cons , 84)
+# skipped short sequence (AT2TE01675:TAIR10#RathE2_cons , 84)
+# skipped short sequence (AT2TE28030:TAIR10#LTR/Gypsy , 84)
+# skipped short sequence (AT2TE26030:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT2TE60120:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT3TE65270:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT3TE49085:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT3TE36100:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT3TE54615:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT3TE51875:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT3TE52900:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT3TE46780:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT3TE58800:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT3TE65025:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT3TE81510:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT4TE08215:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT4TE43840:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT4TE28140:TAIR10#DNA/HAT , 84)
+# skipped short sequence (AT4TE06460:TAIR10#LINE/L1 , 84)
+# skipped short sequence (AT4TE16445:TAIR10#LTR/Gypsy , 84)
+# skipped short sequence (AT4TE12530:TAIR10#LINE/L1 , 84)
+# skipped short sequence (AT4TE09700:TAIR10#DNA/MuDR , 84)
+# skipped short sequence (AT4TE03925:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT4TE22055:TAIR10#LINE/L1 , 84)
+# skipped short sequence (AT4TE23950:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT4TE68885:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT4TE25485:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT4TE06135:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT5TE61970:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT5TE81045:TAIR10#LINE/L1 , 84)
+# skipped short sequence (AT5TE43340:TAIR10#DNA/En-Spm , 84)
+# skipped short sequence (AT5TE58595:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT5TE33805:TAIR10#DNA/HAT , 84)
+# skipped short sequence (AT5TE29950:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT5TE37900:TAIR10#RC/Helitron , 84)
+# skipped short sequence (AT5TE53985:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT5TE20300:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT5TE40185:TAIR10#LTR/Gypsy , 84)
+# skipped short sequence (AT5TE43470:TAIR10#LTR/Copia , 84)
+# skipped short sequence (AT5TE47530:TAIR10#DNA/En-Spm , 84)
+# skipped short sequence (AT1TE01905:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT1TE25650:TAIR10#DNA/Pogo , 83)
+# skipped short sequence (AT1TE63780:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT1TE40235:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT1TE56725:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT1TE23950:TAIR10#LINE/L1 , 83)
+# skipped short sequence (AT1TE37480:TAIR10#DNA/HAT , 83)
+# skipped short sequence (AT1TE70120:TAIR10#LINE/L1 , 83)
+# skipped short sequence (AT1TE42885:TAIR10#DNA/MuDR , 83)
+# skipped short sequence (AT1TE72440:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT1TE53100:TAIR10#DNA/HAT , 83)
+# skipped short sequence (AT1TE00845:TAIR10#DNA/MuDR , 83)
+# skipped short sequence (AT2TE40040:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT2TE06820:TAIR10#DNA/En-Spm , 83)
+# skipped short sequence (AT2TE11195:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT2TE01210:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT2TE56190:TAIR10#LTR/Copia , 83)
+# skipped short sequence (AT2TE20820:TAIR10#DNA/MuDR , 83)
+# skipped short sequence (AT2TE11010:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT2TE05930:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT2TE02555:TAIR10#RathE1_cons , 83)
+# skipped short sequence (AT2TE03630:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT2TE12545:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT3TE83015:TAIR10#LTR/Copia , 83)
+# skipped short sequence (AT3TE43260:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE39990:TAIR10#DNA/MuDR , 83)
+# skipped short sequence (AT3TE65045:TAIR10#LINE? , 83)
+# skipped short sequence (AT3TE60240:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT3TE28470:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE53180:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE73730:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE54390:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE75975:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE12940:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE44745:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT3TE57115:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT4TE13320:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT4TE34330:TAIR10#DNA/MuDR , 83)
+# skipped short sequence (AT4TE05565:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT4TE26110:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT4TE33800:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT4TE26245:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT4TE61990:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT5TE55560:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT5TE05630:TAIR10#DNA , 83)
+# skipped short sequence (AT5TE52880:TAIR10#LTR/Copia , 83)
+# skipped short sequence (AT5TE93580:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT5TE34180:TAIR10#LINE/L1 , 83)
+# skipped short sequence (AT5TE08215:TAIR10#DNA/MuDR , 83)
+# skipped short sequence (AT5TE83780:TAIR10#LTR/Copia , 83)
+# skipped short sequence (AT5TE54865:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT5TE33390:TAIR10#LTR/Gypsy , 83)
+# skipped short sequence (AT5TE34445:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT5TE38520:TAIR10#RC/Helitron , 83)
+# skipped short sequence (AT5TE76950:TAIR10#LTR/Copia , 83)
+# skipped short sequence (AT1TE51505:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT1TE86440:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT1TE58745:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT1TE86370:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT1TE79120:TAIR10#LINE/L1 , 82)
+# skipped short sequence (AT1TE30380:TAIR10#DNA , 82)
+# skipped short sequence (AT1TE34040:TAIR10#LINE/L1 , 82)
+# skipped short sequence (AT1TE81400:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT1TE50980:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT1TE46015:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT1TE52670:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT1TE71370:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT1TE54840:TAIR10#LTR/Copia , 82)
+# skipped short sequence (AT1TE43855:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT1TE53805:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT1TE93920:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT1TE50095:TAIR10#DNA , 82)
+# skipped short sequence (AT1TE49625:TAIR10#DNA , 82)
+# skipped short sequence (AT1TE76055:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT2TE02195:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE29765:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE19710:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE32125:TAIR10#LINE/L1 , 82)
+# skipped short sequence (AT2TE25665:TAIR10#LTR/Copia , 82)
+# skipped short sequence (AT2TE29140:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE44180:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE08790:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT2TE50125:TAIR10#DNA/HAT , 82)
+# skipped short sequence (AT2TE20250:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT2TE61315:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE46745:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE13920:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT2TE06635:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT2TE28980:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE82735:TAIR10#LINE/L1 , 82)
+# skipped short sequence (AT3TE64850:TAIR10#DNA/Mariner , 82)
+# skipped short sequence (AT3TE64685:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE54175:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE70120:TAIR10#DNA , 82)
+# skipped short sequence (AT3TE53700:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT3TE52930:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE71255:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE32610:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE51740:TAIR10#DNA/En-Spm , 82)
+# skipped short sequence (AT3TE70365:TAIR10#LINE/L1 , 82)
+# skipped short sequence (AT3TE66620:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT3TE45300:TAIR10#LTR/Copia , 82)
+# skipped short sequence (AT3TE41955:TAIR10#DNA/En-Spm , 82)
+# skipped short sequence (AT3TE53440:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE68870:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT3TE35620:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT4TE39190:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT4TE16300:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT4TE13885:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT4TE15655:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT4TE31925:TAIR10#RathE1_cons , 82)
+# skipped short sequence (AT4TE16135:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT4TE12970:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT4TE00940:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT4TE22065:TAIR10#DNA , 82)
+# skipped short sequence (AT4TE60610:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT4TE10595:TAIR10#LTR/Copia , 82)
+# skipped short sequence (AT4TE70660:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT4TE27725:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT4TE09300:TAIR10#DNA/HAT , 82)
+# skipped short sequence (AT4TE18795:TAIR10#LTR/Gypsy , 82)
+# skipped short sequence (AT4TE02725:TAIR10#DNA , 82)
+# skipped short sequence (AT5TE21175:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE77735:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE37185:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT5TE34275:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE76755:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE51730:TAIR10#DNA/HAT , 82)
+# skipped short sequence (AT5TE51710:TAIR10#DNA/HAT , 82)
+# skipped short sequence (AT5TE43860:TAIR10#DNA/En-Spm , 82)
+# skipped short sequence (AT5TE41030:TAIR10#DNA , 82)
+# skipped short sequence (AT5TE60920:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE49285:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE50180:TAIR10#DNA/MuDR , 82)
+# skipped short sequence (AT5TE87415:TAIR10#DNA/Harbinger , 82)
+# skipped short sequence (AT5TE40570:TAIR10#DNA/En-Spm , 82)
+# skipped short sequence (AT5TE30580:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT5TE73485:TAIR10#RC/Helitron , 82)
+# skipped short sequence (AT1TE42765:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT1TE42435:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE55885:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE56035:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT1TE67610:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE52465:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT1TE42375:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE18740:TAIR10#DNA/En-Spm , 81)
+# skipped short sequence (AT1TE55875:TAIR10#LINE/L1 , 81)
+# skipped short sequence (AT1TE54755:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT1TE33900:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE91520:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT1TE38200:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE76975:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE74105:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT2TE13460:TAIR10#LTR/Copia , 81)
+# skipped short sequence (AT2TE51495:TAIR10#LTR/Gypsy , 81)
+# skipped short sequence (AT2TE71725:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT2TE14720:TAIR10#LTR/Gypsy , 81)
+# skipped short sequence (AT2TE02720:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT2TE26215:TAIR10#DNA/Pogo , 81)
+# skipped short sequence (AT2TE35060:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT2TE23735:TAIR10#DNA/HAT , 81)
+# skipped short sequence (AT2TE12845:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT2TE07365:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT2TE08355:TAIR10#LTR/Copia , 81)
+# skipped short sequence (AT3TE95460:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT3TE48085:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT3TE16390:TAIR10#LINE? , 81)
+# skipped short sequence (AT3TE55380:TAIR10#LTR/Gypsy , 81)
+# skipped short sequence (AT3TE59680:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT3TE40300:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT3TE54610:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT3TE74990:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT3TE49600:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT3TE59370:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT3TE67115:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT3TE92475:TAIR10#DNA , 81)
+# skipped short sequence (AT3TE36545:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT3TE44430:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT4TE15940:TAIR10#LTR/Gypsy , 81)
+# skipped short sequence (AT4TE16825:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT4TE02475:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE35435:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE05450:TAIR10#LTR/Copia , 81)
+# skipped short sequence (AT5TE96480:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE46115:TAIR10#LTR/Gypsy , 81)
+# skipped short sequence (AT5TE46810:TAIR10#LTR/Copia , 81)
+# skipped short sequence (AT5TE35010:TAIR10#RathE3_cons , 81)
+# skipped short sequence (AT5TE27150:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT5TE62945:TAIR10#LINE/L1 , 81)
+# skipped short sequence (AT5TE57485:TAIR10#DNA , 81)
+# skipped short sequence (AT5TE49815:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE63410:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE76310:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE39750:TAIR10#DNA/MuDR , 81)
+# skipped short sequence (AT5TE74175:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT5TE34555:TAIR10#RC/Helitron , 81)
+# skipped short sequence (AT1TE80800:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT1TE00010:TAIR10#LTR/Copia , 80)
+# skipped short sequence (AT1TE93325:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT1TE19050:TAIR10#DNA , 80)
+# skipped short sequence (AT1TE81900:TAIR10#RathE1_cons , 80)
+# skipped short sequence (AT1TE64480:TAIR10#LINE/L1 , 80)
+# skipped short sequence (AT1TE56095:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT1TE52545:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT1TE50200:TAIR10#DNA , 80)
+# skipped short sequence (AT1TE42405:TAIR10#LTR/Gypsy , 80)
+# skipped short sequence (AT1TE36540:TAIR10#RathE1_cons , 80)
+# skipped short sequence (AT1TE73415:TAIR10#LINE/L1 , 80)
+# skipped short sequence (AT1TE62860:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT1TE65275:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT1TE61560:TAIR10#DNA/HAT , 80)
+# skipped short sequence (AT2TE20195:TAIR10#LINE/L1 , 80)
+# skipped short sequence (AT2TE03200:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT2TE03080:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT2TE35905:TAIR10#RathE1_cons , 80)
+# skipped short sequence (AT2TE13435:TAIR10#LTR/Gypsy , 80)
+# skipped short sequence (AT2TE04890:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT3TE51705:TAIR10#DNA/HAT , 80)
+# skipped short sequence (AT3TE66520:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT3TE50355:TAIR10#LTR/Gypsy , 80)
+# skipped short sequence (AT3TE66920:TAIR10#LINE? , 80)
+# skipped short sequence (AT3TE15780:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT3TE76045:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT3TE64040:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT3TE60625:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT3TE34970:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT3TE34685:TAIR10#DNA/Pogo , 80)
+# skipped short sequence (AT3TE33260:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT3TE29600:TAIR10#LTR/Copia , 80)
+# skipped short sequence (AT3TE54980:TAIR10#DNA/En-Spm , 80)
+# skipped short sequence (AT3TE73060:TAIR10#DNA/Pogo , 80)
+# skipped short sequence (AT3TE67130:TAIR10#DNA , 80)
+# skipped short sequence (AT4TE20655:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT4TE50040:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT4TE17780:TAIR10#LTR/Copia , 80)
+# skipped short sequence (AT4TE45325:TAIR10#DNA/En-Spm , 80)
+# skipped short sequence (AT4TE16840:TAIR10#LTR/Gypsy , 80)
+# skipped short sequence (AT4TE13085:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT4TE52350:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT4TE42890:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE60360:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE37270:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT5TE40285:TAIR10#LTR/Gypsy , 80)
+# skipped short sequence (AT5TE29565:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE44270:TAIR10#DNA/MuDR , 80)
+# skipped short sequence (AT5TE92730:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE56330:TAIR10#DNA/HAT , 80)
+# skipped short sequence (AT5TE54035:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE38825:TAIR10#DNA/HAT , 80)
+# skipped short sequence (AT5TE38880:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE16160:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE60475:TAIR10#LINE/L1 , 80)
+# skipped short sequence (AT5TE37155:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE67135:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT5TE73860:TAIR10#RC/Helitron , 80)
+# skipped short sequence (AT1TE35450:TAIR10#RathE2_cons , 79)
+# skipped short sequence (AT1TE52625:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT1TE07365:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT1TE38320:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT1TE40575:TAIR10#LTR/Copia , 79)
+# skipped short sequence (AT1TE98895:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT1TE10570:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT1TE70810:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT1TE56375:TAIR10#RathE2_cons , 79)
+# skipped short sequence (AT1TE63795:TAIR10#SINE , 79)
+# skipped short sequence (AT1TE43005:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT1TE23515:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT1TE67575:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT1TE35585:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT2TE45595:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT2TE29720:TAIR10#DNA/HAT , 79)
+# skipped short sequence (AT2TE19805:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT2TE37060:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT2TE85785:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT2TE80000:TAIR10#DNA/Harbinger , 79)
+# skipped short sequence (AT2TE66655:TAIR10#DNA/HAT , 79)
+# skipped short sequence (AT2TE06675:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT2TE25180:TAIR10#LTR/Gypsy , 79)
+# skipped short sequence (AT2TE11390:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT3TE53855:TAIR10#LTR/Gypsy , 79)
+# skipped short sequence (AT3TE53410:TAIR10#SINE , 79)
+# skipped short sequence (AT3TE78270:TAIR10#LINE/L1 , 79)
+# skipped short sequence (AT3TE76900:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT3TE55310:TAIR10#DNA , 79)
+# skipped short sequence (AT3TE55315:TAIR10#DNA , 79)
+# skipped short sequence (AT3TE55320:TAIR10#DNA , 79)
+# skipped short sequence (AT3TE64415:TAIR10#DNA/Mariner , 79)
+# skipped short sequence (AT3TE61370:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT3TE63555:TAIR10#DNA/Harbinger , 79)
+# skipped short sequence (AT3TE61190:TAIR10#LTR/Gypsy , 79)
+# skipped short sequence (AT3TE59050:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT3TE43215:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT3TE65325:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT4TE50630:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT4TE15335:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE37440:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT4TE34780:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE10075:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE26100:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT4TE24990:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE26015:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE25890:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE33285:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE23090:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT4TE16810:TAIR10#LTR/Gypsy , 79)
+# skipped short sequence (AT5TE33655:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE29660:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE96835:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE57310:TAIR10#RathE2_cons , 79)
+# skipped short sequence (AT5TE54165:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE40245:TAIR10#LTR/Gypsy , 79)
+# skipped short sequence (AT5TE53395:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE41335:TAIR10#LTR/Copia , 79)
+# skipped short sequence (AT5TE54565:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT5TE24160:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE14820:TAIR10#LTR/Copia , 79)
+# skipped short sequence (AT5TE52620:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT5TE66525:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT5TE72625:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE48070:TAIR10#DNA/Tc1 , 79)
+# skipped short sequence (AT5TE66300:TAIR10#DNA/HAT , 79)
+# skipped short sequence (AT5TE62045:TAIR10#DNA/MuDR , 79)
+# skipped short sequence (AT5TE40940:TAIR10#LTR/Gypsy , 79)
+# skipped short sequence (AT5TE05195:TAIR10#DNA/En-Spm , 79)
+# skipped short sequence (AT5TE33210:TAIR10#RC/Helitron , 79)
+# skipped short sequence (AT5TE39270:TAIR10#LINE/L1 , 79)
+# skipped short sequence (AT1TE59425:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT1TE13370:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT1TE40350:TAIR10#LTR/Copia , 78)
+# skipped short sequence (AT1TE33790:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT1TE11730:TAIR10#LTR/Gypsy , 78)
+# skipped short sequence (AT1TE29760:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT1TE27035:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT1TE55130:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT1TE73870:TAIR10#LTR/Copia , 78)
+# skipped short sequence (AT1TE72840:TAIR10#SINE , 78)
+# skipped short sequence (AT1TE97385:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT1TE25120:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT1TE64255:TAIR10#DNA/HAT , 78)
+# skipped short sequence (AT2TE06455:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE04375:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE89030:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE51360:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE23900:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE29185:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE43380:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT2TE09795:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT3TE67650:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT3TE10150:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT3TE41840:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT3TE55080:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT3TE53960:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE52710:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE52815:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE52840:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE53945:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE53900:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE53920:TAIR10#SINE , 78)
+# skipped short sequence (AT3TE61860:TAIR10#DNA/Pogo , 78)
+# skipped short sequence (AT3TE48600:TAIR10#DNA/En-Spm , 78)
+# skipped short sequence (AT3TE40800:TAIR10#LTR/Copia , 78)
+# skipped short sequence (AT3TE54495:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT3TE66480:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT4TE11800:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT4TE51190:TAIR10#DNA/MuDR , 78)
+# skipped short sequence (AT4TE23710:TAIR10#LTR/Gypsy , 78)
+# skipped short sequence (AT4TE11990:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT4TE16875:TAIR10#LTR/Gypsy , 78)
+# skipped short sequence (AT4TE33430:TAIR10#DNA/HAT , 78)
+# skipped short sequence (AT4TE26985:TAIR10#RathE2_cons , 78)
+# skipped short sequence (AT4TE11070:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT4TE69735:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT4TE29815:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT4TE23870:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE26165:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE49215:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE54410:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE49055:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE93220:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE61580:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE38245:TAIR10#LTR/Gypsy , 78)
+# skipped short sequence (AT5TE36120:TAIR10#LINE/L1 , 78)
+# skipped short sequence (AT5TE32600:TAIR10#DNA/En-Spm , 78)
+# skipped short sequence (AT5TE03980:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE96885:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE65070:TAIR10#LTR/Copia , 78)
+# skipped short sequence (AT5TE41015:TAIR10#DNA , 78)
+# skipped short sequence (AT5TE38400:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE47960:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE38310:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE30385:TAIR10#DNA/En-Spm , 78)
+# skipped short sequence (AT5TE47930:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT5TE42970:TAIR10#LTR/Gypsy , 78)
+# skipped short sequence (AT5TE44075:TAIR10#LTR/Gypsy , 78)
+# skipped short sequence (AT5TE18550:TAIR10#RC/Helitron , 78)
+# skipped short sequence (AT1TE55460:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE51755:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT1TE33335:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT1TE39770:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE85050:TAIR10#LINE/L1 , 77)
+# skipped short sequence (AT1TE82655:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE40135:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE41275:TAIR10#DNA/En-Spm , 77)
+# skipped short sequence (AT1TE70170:TAIR10#SINE , 77)
+# skipped short sequence (AT1TE51445:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE69995:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE51875:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT1TE80990:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT1TE55710:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT2TE01025:TAIR10#SINE , 77)
+# skipped short sequence (AT2TE63945:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT2TE27760:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT2TE10120:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT2TE12280:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT2TE08920:TAIR10#LINE/L1 , 77)
+# skipped short sequence (AT2TE00430:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT2TE22130:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT2TE21570:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT2TE02210:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT2TE40390:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT2TE26365:TAIR10#DNA/En-Spm , 77)
+# skipped short sequence (AT3TE62905:TAIR10#DNA/HAT , 77)
+# skipped short sequence (AT3TE45175:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT3TE11095:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT3TE64980:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT3TE72710:TAIR10#SINE , 77)
+# skipped short sequence (AT3TE06390:TAIR10#LTR/Copia , 77)
+# skipped short sequence (AT3TE53420:TAIR10#SINE , 77)
+# skipped short sequence (AT3TE53065:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT3TE50790:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT3TE54555:TAIR10#SINE , 77)
+# skipped short sequence (AT3TE54080:TAIR10#SINE , 77)
+# skipped short sequence (AT3TE55730:TAIR10#DNA , 77)
+# skipped short sequence (AT3TE55765:TAIR10#DNA , 77)
+# skipped short sequence (AT3TE72320:TAIR10#LTR/Copia , 77)
+# skipped short sequence (AT3TE57865:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT3TE16920:TAIR10#LTR/Copia , 77)
+# skipped short sequence (AT3TE08310:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT3TE57875:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT3TE79330:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT3TE67800:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT3TE53540:TAIR10#DNA , 77)
+# skipped short sequence (AT3TE64510:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT3TE39895:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE27385:TAIR10#DNA , 77)
+# skipped short sequence (AT4TE06145:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE16790:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT4TE30485:TAIR10#RathE2_cons , 77)
+# skipped short sequence (AT4TE12150:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT4TE41050:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE10545:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE34100:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE18965:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT4TE44225:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE28360:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE52730:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE27365:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT4TE12245:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE30940:TAIR10#LTR/Gypsy , 77)
+# skipped short sequence (AT5TE52800:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE44325:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE57660:TAIR10#DNA/HAT , 77)
+# skipped short sequence (AT5TE54750:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE53315:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT5TE46830:TAIR10#DNA , 77)
+# skipped short sequence (AT5TE49665:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT5TE59145:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE62335:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE07900:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE56365:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE35855:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE61720:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE33765:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE40895:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT5TE54040:TAIR10#RC/Helitron , 77)
+# skipped short sequence (AT5TE76325:TAIR10#DNA/MuDR , 77)
+# skipped short sequence (AT1TE69785:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT1TE34510:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT1TE63230:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT1TE74635:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT1TE55665:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT1TE23070:TAIR10#DNA , 76)
+# skipped short sequence (AT1TE71645:TAIR10#DNA , 76)
+# skipped short sequence (AT1TE53210:TAIR10#DNA , 76)
+# skipped short sequence (AT2TE27915:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE18135:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT2TE26990:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE73130:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE10580:TAIR10#LTR/Gypsy , 76)
+# skipped short sequence (AT2TE17830:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT2TE46580:TAIR10#DNA/Harbinger , 76)
+# skipped short sequence (AT2TE47045:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE01595:TAIR10#DNA/En-Spm , 76)
+# skipped short sequence (AT2TE45230:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE45130:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT2TE33560:TAIR10#LTR/Copia , 76)
+# skipped short sequence (AT2TE17295:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT2TE40340:TAIR10#RathE2_cons , 76)
+# skipped short sequence (AT2TE85930:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT2TE28115:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE09160:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE11550:TAIR10#DNA/En-Spm , 76)
+# skipped short sequence (AT2TE26430:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE37320:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT2TE17615:TAIR10#LTR/Gypsy , 76)
+# skipped short sequence (AT3TE57440:TAIR10#LTR/Gypsy , 76)
+# skipped short sequence (AT3TE67255:TAIR10#DNA/HAT , 76)
+# skipped short sequence (AT3TE47700:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT3TE34915:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT3TE69045:TAIR10#SINE , 76)
+# skipped short sequence (AT3TE14610:TAIR10#DNA/HAT , 76)
+# skipped short sequence (AT3TE51990:TAIR10#DNA/HAT , 76)
+# skipped short sequence (AT3TE58405:TAIR10#DNA , 76)
+# skipped short sequence (AT3TE57960:TAIR10#LTR/Gypsy , 76)
+# skipped short sequence (AT3TE24565:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT3TE42670:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT3TE80610:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT3TE62730:TAIR10#DNA/En-Spm , 76)
+# skipped short sequence (AT3TE54100:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT4TE64170:TAIR10#LTR/Copia , 76)
+# skipped short sequence (AT4TE05575:TAIR10#LINE/L1 , 76)
+# skipped short sequence (AT4TE20505:TAIR10#LTR/Copia , 76)
+# skipped short sequence (AT4TE20030:TAIR10#LINE/L1 , 76)
+# skipped short sequence (AT4TE49050:TAIR10#LTR/Copia , 76)
+# skipped short sequence (AT4TE49280:TAIR10#LTR/Copia , 76)
+# skipped short sequence (AT4TE08395:TAIR10#DNA/En-Spm , 76)
+# skipped short sequence (AT4TE14025:TAIR10#LTR/Gypsy , 76)
+# skipped short sequence (AT4TE30125:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT4TE56155:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT4TE09160:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT5TE88480:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT5TE50705:TAIR10#DNA/MuDR , 76)
+# skipped short sequence (AT5TE57955:TAIR10#LINE/L1 , 76)
+# skipped short sequence (AT5TE41525:TAIR10#LTR/Gypsy , 76)
+# skipped short sequence (AT5TE28210:TAIR10#LINE/L1 , 76)
+# skipped short sequence (AT5TE15645:TAIR10#LINE/L1 , 76)
+# skipped short sequence (AT5TE82010:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT5TE79265:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT5TE50230:TAIR10#RC/Helitron , 76)
+# skipped short sequence (AT5TE44545:TAIR10#LTR/Copia , 76)
+# skipped short sequence (AT1TE62280:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT1TE78700:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT1TE22705:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT1TE57410:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT1TE53295:TAIR10#LTR/Copia , 75)
+# skipped short sequence (AT1TE38520:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT1TE36555:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT1TE91610:TAIR10#RathE2_cons , 75)
+# skipped short sequence (AT1TE87365:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT1TE53785:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT1TE63710:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT2TE25680:TAIR10#DNA/HAT , 75)
+# skipped short sequence (AT2TE20035:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT2TE25825:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT2TE89480:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT2TE38095:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT2TE80550:TAIR10#DNA/Harbinger , 75)
+# skipped short sequence (AT2TE13880:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT2TE36470:TAIR10#DNA/En-Spm , 75)
+# skipped short sequence (AT2TE41095:TAIR10#DNA/HAT , 75)
+# skipped short sequence (AT2TE20750:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT2TE46355:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT2TE10195:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT2TE18150:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT3TE41200:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT3TE57415:TAIR10#DNA/En-Spm , 75)
+# skipped short sequence (AT3TE48125:TAIR10#LINE/L1 , 75)
+# skipped short sequence (AT3TE65445:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT3TE59545:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT3TE49400:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT3TE46770:TAIR10#DNA/Harbinger , 75)
+# skipped short sequence (AT3TE59475:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT3TE52035:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT3TE40165:TAIR10#LINE/L1 , 75)
+# skipped short sequence (AT3TE43485:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT3TE45710:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT3TE45140:TAIR10#DNA/HAT , 75)
+# skipped short sequence (AT4TE17095:TAIR10#LTR/Copia , 75)
+# skipped short sequence (AT4TE09765:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT4TE10385:TAIR10#DNA/HAT , 75)
+# skipped short sequence (AT4TE28665:TAIR10#RathE1_cons , 75)
+# skipped short sequence (AT4TE26045:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT4TE65600:TAIR10#DNA/Pogo , 75)
+# skipped short sequence (AT4TE10200:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT4TE19940:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT4TE24815:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT4TE24865:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT4TE74470:TAIR10#DNA/Harbinger , 75)
+# skipped short sequence (AT4TE19615:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT4TE54350:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT4TE16545:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT4TE10475:TAIR10#LINE/L1 , 75)
+# skipped short sequence (AT4TE17045:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT5TE81025:TAIR10#DNA/Mariner , 75)
+# skipped short sequence (AT5TE50855:TAIR10#LINE/L1 , 75)
+# skipped short sequence (AT5TE49395:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT5TE19890:TAIR10#LTR/Copia , 75)
+# skipped short sequence (AT5TE52465:TAIR10#DNA/MuDR , 75)
+# skipped short sequence (AT5TE79930:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT5TE54770:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT5TE43430:TAIR10#LTR/Gypsy , 75)
+# skipped short sequence (AT5TE66650:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT5TE62130:TAIR10#RC/Helitron , 75)
+# skipped short sequence (AT1TE51625:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT1TE32710:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT1TE20980:TAIR10#RathE1_cons , 74)
+# skipped short sequence (AT1TE57590:TAIR10#RathE2_cons , 74)
+# skipped short sequence (AT1TE56630:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT1TE46125:TAIR10#DNA/Pogo , 74)
+# skipped short sequence (AT1TE53795:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT1TE40130:TAIR10#DNA/Pogo , 74)
+# skipped short sequence (AT1TE45125:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT1TE24930:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT1TE57000:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT1TE55395:TAIR10#LINE/L1 , 74)
+# skipped short sequence (AT1TE17510:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE33085:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE05705:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE12895:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE55910:TAIR10#LTR/Copia , 74)
+# skipped short sequence (AT2TE22575:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE02590:TAIR10#DNA , 74)
+# skipped short sequence (AT2TE07850:TAIR10#LTR/Copia , 74)
+# skipped short sequence (AT2TE13375:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT2TE20830:TAIR10#LTR/Copia , 74)
+# skipped short sequence (AT2TE22675:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE11710:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT2TE56855:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE86395:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT2TE07355:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT3TE46860:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE69465:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE48585:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE91225:TAIR10#LINE/L1 , 74)
+# skipped short sequence (AT3TE75985:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE91170:TAIR10#LINE/L1 , 74)
+# skipped short sequence (AT3TE45540:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE60480:TAIR10#LTR/Copia , 74)
+# skipped short sequence (AT3TE57475:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT3TE30005:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE39535:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT3TE59550:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT3TE16300:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE67730:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT3TE67665:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT3TE70045:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE70605:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE51835:TAIR10#LTR/Copia , 74)
+# skipped short sequence (AT3TE54230:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE63370:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE50245:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT3TE57430:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT4TE06675:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT4TE21450:TAIR10#LINE/L1 , 74)
+# skipped short sequence (AT4TE12010:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT4TE20410:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT4TE09195:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT4TE15725:TAIR10#DNA/En-Spm , 74)
+# skipped short sequence (AT4TE22075:TAIR10#SINE , 74)
+# skipped short sequence (AT4TE34225:TAIR10#LINE/L1 , 74)
+# skipped short sequence (AT4TE12575:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT4TE08405:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT4TE88500:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT4TE34170:TAIR10#DNA/HAT , 74)
+# skipped short sequence (AT4TE28170:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT4TE13140:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT5TE33875:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT5TE56115:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT5TE56845:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT5TE41860:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT5TE49170:TAIR10#LTR/Gypsy , 74)
+# skipped short sequence (AT5TE57140:TAIR10#DNA/Harbinger , 74)
+# skipped short sequence (AT5TE55540:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT5TE40825:TAIR10#DNA/En-Spm , 74)
+# skipped short sequence (AT5TE33150:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT5TE29805:TAIR10#DNA/MuDR , 74)
+# skipped short sequence (AT5TE41025:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT5TE73985:TAIR10#DNA , 74)
+# skipped short sequence (AT5TE19475:TAIR10#DNA , 74)
+# skipped short sequence (AT5TE35480:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT5TE73580:TAIR10#RC/Helitron , 74)
+# skipped short sequence (AT1TE59730:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT1TE81780:TAIR10#DNA/HAT , 73)
+# skipped short sequence (AT1TE62290:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE58870:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE10470:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT1TE63725:TAIR10#LINE/L1 , 73)
+# skipped short sequence (AT1TE86040:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE24005:TAIR10#LINE? , 73)
+# skipped short sequence (AT1TE52245:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE59665:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE60395:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT1TE25360:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT1TE97790:TAIR10#LINE/L1 , 73)
+# skipped short sequence (AT1TE67595:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE60080:TAIR10#RathE1_cons , 73)
+# skipped short sequence (AT1TE52060:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT1TE48785:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT1TE86840:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE60440:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE86540:TAIR10#DNA , 73)
+# skipped short sequence (AT1TE55820:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT2TE46480:TAIR10#DNA/HAT , 73)
+# skipped short sequence (AT2TE48415:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT2TE89510:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT2TE10920:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT2TE27920:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT2TE70700:TAIR10#DNA , 73)
+# skipped short sequence (AT2TE28700:TAIR10#DNA , 73)
+# skipped short sequence (AT2TE73080:TAIR10#DNA/Harbinger , 73)
+# skipped short sequence (AT2TE17815:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT2TE19265:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT2TE17860:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT2TE30570:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT3TE46485:TAIR10#LINE/L1 , 73)
+# skipped short sequence (AT3TE69360:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT3TE91875:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT3TE42665:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT3TE64065:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT3TE33440:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT3TE62825:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT3TE59590:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT3TE90540:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT3TE90565:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT3TE33670:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT3TE61250:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT3TE11175:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT3TE46800:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT3TE66925:TAIR10#DNA/HAT , 73)
+# skipped short sequence (AT4TE48185:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT4TE33290:TAIR10#RathE1_cons , 73)
+# skipped short sequence (AT4TE10180:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT4TE22380:TAIR10#RathE1_cons , 73)
+# skipped short sequence (AT4TE22550:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT4TE16435:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT4TE19410:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT4TE07970:TAIR10#LINE/L1 , 73)
+# skipped short sequence (AT4TE37540:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT4TE13115:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT4TE01630:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT4TE19880:TAIR10#DNA/En-Spm , 73)
+# skipped short sequence (AT4TE22950:TAIR10#DNA/En-Spm , 73)
+# skipped short sequence (AT4TE85395:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE39505:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE46755:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT5TE56345:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE75995:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE43740:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE31900:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE35945:TAIR10#LINE/L1 , 73)
+# skipped short sequence (AT5TE30860:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE43790:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT5TE44780:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT5TE78575:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT5TE64605:TAIR10#LTR/Copia , 73)
+# skipped short sequence (AT5TE45725:TAIR10#DNA , 73)
+# skipped short sequence (AT5TE45820:TAIR10#DNA , 73)
+# skipped short sequence (AT5TE45775:TAIR10#DNA , 73)
+# skipped short sequence (AT5TE40115:TAIR10#LTR/Gypsy , 73)
+# skipped short sequence (AT5TE54095:TAIR10#DNA/MuDR , 73)
+# skipped short sequence (AT5TE07200:TAIR10#RC/Helitron , 73)
+# skipped short sequence (AT1TE41720:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE43970:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE32450:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE38185:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE56785:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE54650:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT1TE45920:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE86340:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE39500:TAIR10#DNA/En-Spm , 72)
+# skipped short sequence (AT1TE59245:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT1TE60600:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE46840:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT1TE53700:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE30905:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT1TE68070:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT1TE31900:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT1TE94900:TAIR10#DNA/HAT , 72)
+# skipped short sequence (AT2TE30000:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT2TE23950:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT2TE21550:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT2TE26290:TAIR10#RathE3_cons , 72)
+# skipped short sequence (AT2TE03610:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT2TE13470:TAIR10#DNA/En-Spm , 72)
+# skipped short sequence (AT2TE41685:TAIR10#LTR/Copia , 72)
+# skipped short sequence (AT2TE21120:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT2TE31225:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT3TE72875:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT3TE45680:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT3TE66075:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT3TE02640:TAIR10#LTR/Copia , 72)
+# skipped short sequence (AT3TE58210:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE58200:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE32925:TAIR10#LINE/L1 , 72)
+# skipped short sequence (AT3TE58905:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT3TE58310:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE60640:TAIR10#LTR/Copia , 72)
+# skipped short sequence (AT3TE26870:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT3TE56350:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE56325:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE55690:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE55805:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE55825:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE56305:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE55890:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE56285:TAIR10#DNA , 72)
+# skipped short sequence (AT3TE53150:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT3TE72270:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT3TE82235:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT3TE36050:TAIR10#RathE1_cons , 72)
+# skipped short sequence (AT3TE89375:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT3TE92785:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT3TE45780:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE23770:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT4TE85390:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE00080:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT4TE05815:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE27970:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE10195:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT4TE49225:TAIR10#RathE3_cons , 72)
+# skipped short sequence (AT4TE10485:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT4TE11170:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE16630:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE34550:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE62405:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE22815:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE22820:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT4TE39730:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT4TE14600:TAIR10#DNA , 72)
+# skipped short sequence (AT4TE53650:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE30390:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE37220:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE69875:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT5TE51690:TAIR10#DNA/HAT , 72)
+# skipped short sequence (AT5TE95135:TAIR10#LTR/Copia , 72)
+# skipped short sequence (AT5TE77210:TAIR10#LTR/Copia , 72)
+# skipped short sequence (AT5TE62370:TAIR10#LINE/L1 , 72)
+# skipped short sequence (AT5TE39900:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT5TE47785:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE62910:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE67715:TAIR10#DNA/En-Spm , 72)
+# skipped short sequence (AT5TE12240:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT5TE48520:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE50305:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE41910:TAIR10#LTR/Copia , 72)
+# skipped short sequence (AT5TE48445:TAIR10#LINE/L1 , 72)
+# skipped short sequence (AT5TE17960:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE40540:TAIR10#LTR/Gypsy , 72)
+# skipped short sequence (AT5TE21590:TAIR10#RC/Helitron , 72)
+# skipped short sequence (AT5TE63775:TAIR10#DNA/MuDR , 72)
+# skipped short sequence (AT1TE58495:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT1TE42640:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT1TE50530:TAIR10#DNA , 71)
+# skipped short sequence (AT1TE50355:TAIR10#DNA , 71)
+# skipped short sequence (AT1TE71160:TAIR10#LTR/Copia , 71)
+# skipped short sequence (AT1TE06140:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT1TE67775:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT1TE58235:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT1TE50585:TAIR10#DNA , 71)
+# skipped short sequence (AT1TE72730:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT1TE25200:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT1TE20045:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE29585:TAIR10#DNA , 71)
+# skipped short sequence (AT2TE41865:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT2TE21615:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE32630:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE33245:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT2TE11785:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE17995:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT2TE28640:TAIR10#DNA/HAT , 71)
+# skipped short sequence (AT2TE27355:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE12615:TAIR10#DNA , 71)
+# skipped short sequence (AT2TE45245:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT2TE37405:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE18770:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE20660:TAIR10#DNA/En-Spm , 71)
+# skipped short sequence (AT2TE12685:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT2TE13885:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT3TE69330:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT3TE43665:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT3TE67355:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT3TE66210:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT3TE94920:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT3TE56795:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55510:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE57285:TAIR10#DNA/En-Spm , 71)
+# skipped short sequence (AT3TE58190:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55495:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE80000:TAIR10#RathE1_cons , 71)
+# skipped short sequence (AT3TE73740:TAIR10#DNA/Pogo , 71)
+# skipped short sequence (AT3TE56000:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55995:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56015:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56030:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56060:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56075:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56070:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55985:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55975:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55810:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55770:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55925:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55935:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55940:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55965:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56100:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55955:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55950:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56170:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56520:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56510:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56500:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56570:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56565:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56555:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56490:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56480:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56205:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56185:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56230:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56240:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56395:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56165:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56265:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56275:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55735:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55675:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55560:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55550:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55570:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55585:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55600:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55625:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55545:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55620:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55610:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE56595:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55520:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE55530:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE44410:TAIR10#LTR/Copia , 71)
+# skipped short sequence (AT3TE56600:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE58320:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE49345:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT3TE70490:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT3TE58415:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE58390:TAIR10#DNA , 71)
+# skipped short sequence (AT3TE50465:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT3TE57155:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT3TE39730:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT3TE55165:TAIR10#LTR/Copia , 71)
+# skipped short sequence (AT3TE50015:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT3TE59860:TAIR10#LTR/Copia , 71)
+# skipped short sequence (AT3TE64060:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT4TE29390:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT4TE25055:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT4TE03810:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT4TE31170:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT4TE04095:TAIR10#RathE1_cons , 71)
+# skipped short sequence (AT4TE67300:TAIR10#LTR/Copia , 71)
+# skipped short sequence (AT4TE73595:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT4TE78240:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT4TE79610:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT4TE26715:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT5TE01185:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT5TE40995:TAIR10#DNA , 71)
+# skipped short sequence (AT5TE41010:TAIR10#DNA , 71)
+# skipped short sequence (AT5TE43355:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT5TE29720:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT5TE42285:TAIR10#DNA/En-Spm , 71)
+# skipped short sequence (AT5TE45810:TAIR10#DNA , 71)
+# skipped short sequence (AT5TE45500:TAIR10#DNA , 71)
+# skipped short sequence (AT5TE45480:TAIR10#DNA , 71)
+# skipped short sequence (AT5TE45830:TAIR10#DNA , 71)
+# skipped short sequence (AT5TE54760:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT5TE38030:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT5TE44210:TAIR10#LTR/Gypsy , 71)
+# skipped short sequence (AT5TE54370:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT5TE31915:TAIR10#RC/Helitron , 71)
+# skipped short sequence (AT5TE22125:TAIR10#DNA/MuDR , 71)
+# skipped short sequence (AT1TE60710:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE43525:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE47250:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT1TE47470:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT1TE47670:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT1TE80940:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE38045:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE57055:TAIR10#DNA/HAT , 70)
+# skipped short sequence (AT1TE74375:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE15455:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE11150:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE41740:TAIR10#LTR/Copia , 70)
+# skipped short sequence (AT1TE71505:TAIR10#DNA/En-Spm , 70)
+# skipped short sequence (AT1TE44955:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT1TE80880:TAIR10#RathE2_cons , 70)
+# skipped short sequence (AT1TE64335:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT1TE43015:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT1TE46860:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT1TE68790:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE96320:TAIR10#LTR/Copia , 70)
+# skipped short sequence (AT1TE72985:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE80645:TAIR10#SINE , 70)
+# skipped short sequence (AT1TE91220:TAIR10#LTR/Copia , 70)
+# skipped short sequence (AT1TE90560:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT1TE42955:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT2TE17800:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT2TE25480:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT2TE07715:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT2TE18510:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT2TE32690:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT2TE46275:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT2TE13085:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT2TE15555:TAIR10#DNA , 70)
+# skipped short sequence (AT2TE36670:TAIR10#LTR/Copia , 70)
+# skipped short sequence (AT2TE25690:TAIR10#LTR/Copia , 70)
+# skipped short sequence (AT2TE18855:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT2TE21905:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE89725:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT3TE59425:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT3TE80140:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT3TE47095:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT3TE05780:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT3TE55455:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE55490:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE58170:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE67760:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT3TE64765:TAIR10#LTR/Copia , 70)
+# skipped short sequence (AT3TE55505:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE63590:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT3TE58420:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56590:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56220:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56190:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56255:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56435:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56450:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56585:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56175:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56460:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56470:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56605:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56155:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE55635:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE55650:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56160:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56025:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE56020:TAIR10#DNA , 70)
+# skipped short sequence (AT3TE48970:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT3TE24550:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT3TE66245:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT3TE84285:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT3TE40925:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT4TE32240:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT4TE52335:TAIR10#DNA/Pogo , 70)
+# skipped short sequence (AT4TE21660:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT4TE06870:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT4TE19575:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT4TE12195:TAIR10#DNA/MuDR , 70)
+# skipped short sequence (AT4TE10045:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT4TE54005:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE74385:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE90870:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE51280:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE41085:TAIR10#DNA/Pogo , 70)
+# skipped short sequence (AT5TE51100:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT5TE57825:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE71075:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE61510:TAIR10#DNA , 70)
+# skipped short sequence (AT5TE69255:TAIR10#DNA , 70)
+# skipped short sequence (AT5TE43645:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT5TE50830:TAIR10#DNA , 70)
+# skipped short sequence (AT5TE57235:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT5TE54360:TAIR10#LINE/L1 , 70)
+# skipped short sequence (AT5TE51190:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT5TE45690:TAIR10#DNA , 70)
+# skipped short sequence (AT5TE45360:TAIR10#DNA , 70)
+# skipped short sequence (AT5TE38630:TAIR10#LTR/Gypsy , 70)
+# skipped short sequence (AT5TE40325:TAIR10#DNA , 70)
+# skipped short sequence (AT5TE50240:TAIR10#RC/Helitron , 70)
+# skipped short sequence (AT1TE61575:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE58250:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE98905:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE88530:TAIR10#DNA , 69)
+# skipped short sequence (AT1TE75870:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE44865:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE31040:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE29670:TAIR10#DNA/HAT , 69)
+# skipped short sequence (AT1TE45385:TAIR10#DNA/En-Spm , 69)
+# skipped short sequence (AT1TE55030:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE77940:TAIR10#LTR/Copia , 69)
+# skipped short sequence (AT1TE09695:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE87985:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE43130:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE15960:TAIR10#LTR/Copia , 69)
+# skipped short sequence (AT1TE46070:TAIR10#LTR/Gypsy , 69)
+# skipped short sequence (AT1TE35595:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE18515:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE06365:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE27940:TAIR10#DNA/HAT , 69)
+# skipped short sequence (AT2TE48405:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE55525:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE04135:TAIR10#LTR/Copia , 69)
+# skipped short sequence (AT2TE17265:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE22060:TAIR10#LTR/Gypsy , 69)
+# skipped short sequence (AT2TE20550:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE23320:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE13910:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE25460:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE09340:TAIR10#DNA/MuDR , 69)
+# skipped short sequence (AT2TE34115:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE13890:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE09995:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT2TE64585:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE49335:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE33675:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE18290:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE49435:TAIR10#LTR/Gypsy , 69)
+# skipped short sequence (AT3TE19345:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE52585:TAIR10#LINE/L1 , 69)
+# skipped short sequence (AT3TE56645:TAIR10#LTR/Gypsy , 69)
+# skipped short sequence (AT3TE39970:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE52245:TAIR10#LTR/Gypsy , 69)
+# skipped short sequence (AT3TE38385:TAIR10#DNA/MuDR , 69)
+# skipped short sequence (AT3TE44535:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE63675:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT3TE26690:TAIR10#LINE/L1 , 69)
+# skipped short sequence (AT3TE30925:TAIR10#DNA/MuDR , 69)
+# skipped short sequence (AT3TE64190:TAIR10#DNA/HAT , 69)
+# skipped short sequence (AT3TE36710:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT4TE70265:TAIR10#DNA/MuDR , 69)
+# skipped short sequence (AT4TE02540:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT4TE33180:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT4TE23930:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT4TE23295:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE48840:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE59730:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE33755:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE07120:TAIR10#DNA/HAT , 69)
+# skipped short sequence (AT5TE26800:TAIR10#DNA/MuDR , 69)
+# skipped short sequence (AT5TE19485:TAIR10#DNA/Harbinger , 69)
+# skipped short sequence (AT5TE59070:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE45250:TAIR10#DNA , 69)
+# skipped short sequence (AT5TE42810:TAIR10#DNA , 69)
+# skipped short sequence (AT5TE61480:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE38585:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT5TE68920:TAIR10#RC/Helitron , 69)
+# skipped short sequence (AT1TE09705:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE69725:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE52560:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE50645:TAIR10#DNA , 68)
+# skipped short sequence (AT1TE80805:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE44340:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE43095:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE58175:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE72305:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE37155:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE65215:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE40085:TAIR10#RathE1_cons , 68)
+# skipped short sequence (AT1TE66870:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE35810:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE49690:TAIR10#DNA , 68)
+# skipped short sequence (AT1TE11105:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE57075:TAIR10#DNA/HAT , 68)
+# skipped short sequence (AT1TE54735:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT1TE91360:TAIR10#DNA/En-Spm , 68)
+# skipped short sequence (AT2TE26725:TAIR10#LTR/Gypsy , 68)
+# skipped short sequence (AT2TE82800:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT2TE40700:TAIR10#LTR/Gypsy , 68)
+# skipped short sequence (AT2TE06500:TAIR10#LINE/L1 , 68)
+# skipped short sequence (AT2TE31720:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT2TE16355:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT2TE24505:TAIR10#LINE/L1 , 68)
+# skipped short sequence (AT2TE02215:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT2TE23550:TAIR10#LTR/Copia , 68)
+# skipped short sequence (AT2TE11160:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE83990:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT3TE62420:TAIR10#DNA/HAT , 68)
+# skipped short sequence (AT3TE53880:TAIR10#LINE/L1 , 68)
+# skipped short sequence (AT3TE62805:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT3TE61460:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE34655:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT3TE64570:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT3TE44005:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE66465:TAIR10#DNA , 68)
+# skipped short sequence (AT3TE60710:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT3TE51715:TAIR10#DNA/HAT , 68)
+# skipped short sequence (AT3TE46265:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE20790:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT3TE48435:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE66485:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE64660:TAIR10#DNA/Pogo , 68)
+# skipped short sequence (AT3TE79245:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE07355:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE36060:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE46375:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT3TE54325:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT4TE05830:TAIR10#DNA/MuDR , 68)
+# skipped short sequence (AT4TE78830:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT4TE82990:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT4TE54400:TAIR10#DNA , 68)
+# skipped short sequence (AT4TE49545:TAIR10#DNA/Pogo , 68)
+# skipped short sequence (AT4TE39270:TAIR10#DNA/HAT , 68)
+# skipped short sequence (AT4TE44985:TAIR10#LTR/Copia , 68)
+# skipped short sequence (AT4TE64935:TAIR10#DNA/HAT , 68)
+# skipped short sequence (AT5TE38870:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT5TE09315:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT5TE39930:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT5TE49265:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT5TE43390:TAIR10#DNA/En-Spm , 68)
+# skipped short sequence (AT5TE38690:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT5TE80445:TAIR10#DNA/En-Spm , 68)
+# skipped short sequence (AT5TE52595:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT5TE35200:TAIR10#RC/Helitron , 68)
+# skipped short sequence (AT1TE03835:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE62615:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE57615:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE42065:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE60720:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE18380:TAIR10#DNA/HAT , 67)
+# skipped short sequence (AT1TE61470:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE50120:TAIR10#DNA , 67)
+# skipped short sequence (AT1TE53990:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT1TE70880:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE41685:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE40580:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE90180:TAIR10#DNA/En-Spm , 67)
+# skipped short sequence (AT1TE76510:TAIR10#LTR/Copia , 67)
+# skipped short sequence (AT1TE20185:TAIR10#DNA/MuDR , 67)
+# skipped short sequence (AT1TE50610:TAIR10#DNA , 67)
+# skipped short sequence (AT1TE94275:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT1TE50215:TAIR10#DNA , 67)
+# skipped short sequence (AT1TE36585:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE20175:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE30340:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE05445:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE41500:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT2TE84970:TAIR10#LTR/Copia , 67)
+# skipped short sequence (AT2TE17630:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT2TE64420:TAIR10#LINE/L1 , 67)
+# skipped short sequence (AT2TE49930:TAIR10#DNA/En-Spm , 67)
+# skipped short sequence (AT2TE70830:TAIR10#LINE/L1 , 67)
+# skipped short sequence (AT2TE15515:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT2TE32465:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE44890:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE82925:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE09290:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE09440:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT2TE18955:TAIR10#DNA/MuDR , 67)
+# skipped short sequence (AT3TE81500:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE63480:TAIR10#LINE/L1 , 67)
+# skipped short sequence (AT3TE56610:TAIR10#DNA , 67)
+# skipped short sequence (AT3TE57910:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT3TE55515:TAIR10#DNA , 67)
+# skipped short sequence (AT3TE57985:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT3TE55500:TAIR10#DNA , 67)
+# skipped short sequence (AT3TE46580:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE51780:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE65795:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE56010:TAIR10#DNA , 67)
+# skipped short sequence (AT3TE56180:TAIR10#DNA , 67)
+# skipped short sequence (AT3TE56195:TAIR10#DNA , 67)
+# skipped short sequence (AT3TE54770:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT3TE48280:TAIR10#DNA/En-Spm , 67)
+# skipped short sequence (AT3TE48845:TAIR10#DNA/HAT , 67)
+# skipped short sequence (AT3TE52100:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE70360:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE34475:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT3TE90285:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE20940:TAIR10#LTR/Gypsy , 67)
+# skipped short sequence (AT4TE32250:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE10990:TAIR10#DNA/MuDR , 67)
+# skipped short sequence (AT4TE28520:TAIR10#LINE/L1 , 67)
+# skipped short sequence (AT4TE03425:TAIR10#LINE/L1 , 67)
+# skipped short sequence (AT4TE03930:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE17190:TAIR10#DNA/En-Spm , 67)
+# skipped short sequence (AT4TE09270:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE54500:TAIR10#DNA/HAT , 67)
+# skipped short sequence (AT4TE10290:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE16715:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE26000:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE77695:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE24835:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT4TE17725:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT5TE37760:TAIR10#LTR/Copia , 67)
+# skipped short sequence (AT5TE37680:TAIR10#LTR/Copia , 67)
+# skipped short sequence (AT5TE30875:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT5TE60465:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT5TE59670:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT5TE44315:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT5TE41410:TAIR10#DNA/En-Spm , 67)
+# skipped short sequence (AT5TE44925:TAIR10#DNA , 67)
+# skipped short sequence (AT5TE43880:TAIR10#DNA/En-Spm , 67)
+# skipped short sequence (AT5TE51940:TAIR10#DNA/MuDR , 67)
+# skipped short sequence (AT5TE66015:TAIR10#RC/Helitron , 67)
+# skipped short sequence (AT5TE40865:TAIR10#RathE1_cons , 67)
+# skipped short sequence (AT1TE89970:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE76140:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE37620:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE72375:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE57275:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT1TE91140:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE12795:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE41165:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE36955:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE61240:TAIR10#LINE/L1 , 66)
+# skipped short sequence (AT1TE85850:TAIR10#DNA/Pogo , 66)
+# skipped short sequence (AT1TE87390:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE19080:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE01145:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT1TE55735:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT1TE44140:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT1TE45460:TAIR10#DNA , 66)
+# skipped short sequence (AT1TE41990:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT1TE52850:TAIR10#LTR/Copia , 66)
+# skipped short sequence (AT1TE82940:TAIR10#DNA , 66)
+# skipped short sequence (AT1TE62595:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE12880:TAIR10#DNA/En-Spm , 66)
+# skipped short sequence (AT1TE71795:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT2TE09390:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT2TE23615:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT2TE08570:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT2TE06540:TAIR10#LINE/L1 , 66)
+# skipped short sequence (AT2TE37310:TAIR10#LINE/L1 , 66)
+# skipped short sequence (AT2TE05100:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT2TE30175:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT2TE82910:TAIR10#DNA , 66)
+# skipped short sequence (AT2TE10345:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT2TE20485:TAIR10#DNA/En-Spm , 66)
+# skipped short sequence (AT2TE28510:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT2TE88030:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT3TE45420:TAIR10#LINE/L1 , 66)
+# skipped short sequence (AT3TE52480:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT3TE45915:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT3TE62315:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT3TE58355:TAIR10#DNA , 66)
+# skipped short sequence (AT3TE66855:TAIR10#SINE , 66)
+# skipped short sequence (AT3TE73070:TAIR10#LTR/Copia , 66)
+# skipped short sequence (AT3TE54765:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT3TE65260:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT3TE60100:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT3TE72350:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT3TE70540:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT4TE11450:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT4TE14430:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT4TE27310:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT4TE16245:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT4TE19210:TAIR10#DNA/En-Spm , 66)
+# skipped short sequence (AT4TE44215:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT4TE49510:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT5TE53630:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT5TE77570:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT5TE08070:TAIR10#DNA/HAT , 66)
+# skipped short sequence (AT5TE40200:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT5TE49870:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT5TE94550:TAIR10#LTR/Copia , 66)
+# skipped short sequence (AT5TE27875:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT5TE93050:TAIR10#DNA/HAT , 66)
+# skipped short sequence (AT5TE68755:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT5TE48900:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT5TE50530:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT5TE52395:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT5TE57250:TAIR10#DNA/MuDR , 66)
+# skipped short sequence (AT5TE42935:TAIR10#LTR/Gypsy , 66)
+# skipped short sequence (AT5TE50885:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT5TE39525:TAIR10#RC/Helitron , 66)
+# skipped short sequence (AT1TE81530:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE63740:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE57835:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT1TE80580:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE81370:TAIR10#DNA , 65)
+# skipped short sequence (AT1TE51375:TAIR10#LINE/L1 , 65)
+# skipped short sequence (AT1TE54535:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE67000:TAIR10#DNA/Pogo , 65)
+# skipped short sequence (AT1TE62955:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE05590:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE38160:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE92665:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE18960:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE42615:TAIR10#DNA/HAT , 65)
+# skipped short sequence (AT2TE41515:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT2TE02850:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT2TE17135:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT2TE47600:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT2TE34025:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT2TE44360:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT2TE55975:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT2TE27395:TAIR10#LINE/L1 , 65)
+# skipped short sequence (AT2TE30595:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT2TE05200:TAIR10#LINE/L1 , 65)
+# skipped short sequence (AT2TE47770:TAIR10#LTR/Copia , 65)
+# skipped short sequence (AT2TE20670:TAIR10#LTR/Gypsy , 65)
+# skipped short sequence (AT2TE35825:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT3TE49930:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT3TE86965:TAIR10#DNA/HAT , 65)
+# skipped short sequence (AT3TE51965:TAIR10#LTR/Gypsy , 65)
+# skipped short sequence (AT3TE37700:TAIR10#DNA/Pogo , 65)
+# skipped short sequence (AT3TE32105:TAIR10#LINE/L1 , 65)
+# skipped short sequence (AT3TE41510:TAIR10#DNA , 65)
+# skipped short sequence (AT3TE64405:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT3TE55135:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT3TE51800:TAIR10#LTR/Copia , 65)
+# skipped short sequence (AT3TE55305:TAIR10#DNA , 65)
+# skipped short sequence (AT3TE36155:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT3TE34520:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT3TE07860:TAIR10#DNA/En-Spm , 65)
+# skipped short sequence (AT4TE28230:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT4TE38270:TAIR10#LTR/Copia , 65)
+# skipped short sequence (AT4TE52090:TAIR10#LINE/L1 , 65)
+# skipped short sequence (AT4TE65485:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT4TE26370:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT4TE21145:TAIR10#DNA/En-Spm , 65)
+# skipped short sequence (AT4TE18840:TAIR10#LTR/Gypsy , 65)
+# skipped short sequence (AT4TE65480:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT4TE07530:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT4TE45215:TAIR10#LTR/Copia , 65)
+# skipped short sequence (AT4TE26305:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT4TE07990:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT4TE14590:TAIR10#DNA , 65)
+# skipped short sequence (AT4TE39810:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT4TE35920:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT4TE18660:TAIR10#LTR/Gypsy , 65)
+# skipped short sequence (AT4TE26835:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT5TE38865:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT5TE20655:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT5TE18215:TAIR10#LTR/Gypsy , 65)
+# skipped short sequence (AT5TE50910:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT5TE60320:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT5TE50320:TAIR10#DNA/HAT , 65)
+# skipped short sequence (AT5TE61570:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT5TE35380:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT5TE68720:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT5TE38805:TAIR10#DNA/MuDR , 65)
+# skipped short sequence (AT5TE41340:TAIR10#LTR/Gypsy , 65)
+# skipped short sequence (AT5TE66365:TAIR10#RC/Helitron , 65)
+# skipped short sequence (AT1TE43600:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT1TE45300:TAIR10#DNA , 64)
+# skipped short sequence (AT1TE44090:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT1TE54170:TAIR10#DNA , 64)
+# skipped short sequence (AT1TE54190:TAIR10#DNA , 64)
+# skipped short sequence (AT1TE12310:TAIR10#LTR/Copia , 64)
+# skipped short sequence (AT1TE46185:TAIR10#LTR/Copia , 64)
+# skipped short sequence (AT1TE30090:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT1TE44960:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT1TE39540:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT1TE59405:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT1TE37855:TAIR10#LINE/L1 , 64)
+# skipped short sequence (AT1TE80630:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT1TE44820:TAIR10#LINE/L1 , 64)
+# skipped short sequence (AT1TE46280:TAIR10#DNA/HAT , 64)
+# skipped short sequence (AT1TE31910:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT1TE45550:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT1TE49440:TAIR10#DNA , 64)
+# skipped short sequence (AT2TE51945:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT2TE41660:TAIR10#LTR/Copia , 64)
+# skipped short sequence (AT2TE15545:TAIR10#DNA , 64)
+# skipped short sequence (AT2TE07395:TAIR10#DNA , 64)
+# skipped short sequence (AT2TE21150:TAIR10#DNA , 64)
+# skipped short sequence (AT2TE29780:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT2TE34415:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT2TE08650:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT2TE08305:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT2TE23145:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE50870:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT3TE38950:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE55865:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE51100:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT3TE56430:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58145:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58140:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58150:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56440:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58155:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58160:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58175:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56420:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58165:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56425:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58130:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58110:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56445:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56475:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57020:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57015:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57025:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57030:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56465:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57035:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58180:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57045:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57040:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56455:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56485:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56415:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58195:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE41320:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE56370:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE50450:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE56360:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56365:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE67175:TAIR10#LTR/Copia , 64)
+# skipped short sequence (AT3TE56375:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58215:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58205:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56410:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56405:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58220:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56390:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE93740:TAIR10#DNA/En-Spm , 64)
+# skipped short sequence (AT3TE58185:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56385:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57000:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56995:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56495:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56780:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58225:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56765:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56790:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56675:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58105:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56815:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56820:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58100:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56810:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56615:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55325:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58250:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58245:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE08300:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT3TE58230:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE57145:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT3TE55300:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58235:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55285:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56825:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56830:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56580:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56530:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56930:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56920:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56935:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56940:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56515:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56955:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56990:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56535:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56980:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56970:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56505:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE52160:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT3TE56915:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56540:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56575:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56840:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56835:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56845:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56860:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56560:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56870:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56900:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56910:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56890:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56880:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56550:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56345:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55680:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56055:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55670:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55685:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55660:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56005:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55705:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55715:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55710:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55990:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55695:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56080:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55655:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55645:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55590:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56105:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55580:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55595:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56095:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55605:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55615:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56085:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55970:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55640:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56090:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55630:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55575:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55720:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55945:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55895:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55835:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55830:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55840:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55905:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55845:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55850:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55860:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55875:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55855:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55885:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55820:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55800:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55910:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55930:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55745:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55740:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55750:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55755:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55920:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55760:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55795:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55725:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55790:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55785:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55915:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56130:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55565:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55555:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56295:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56270:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56260:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56250:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56300:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56340:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56330:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56320:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56315:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56245:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56150:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE46040:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE56145:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55525:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56135:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55540:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56140:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE55535:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56200:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56235:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56225:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56210:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE56215:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58255:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58475:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58455:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58435:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58480:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58425:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58485:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58395:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58335:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58330:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58315:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58325:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58340:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58380:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58375:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58345:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE58350:TAIR10#DNA , 64)
+# skipped short sequence (AT3TE25945:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE62285:TAIR10#DNA/HAT , 64)
+# skipped short sequence (AT3TE37150:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE57070:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT3TE71160:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT3TE45485:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT3TE55870:TAIR10#DNA , 64)
+# skipped short sequence (AT4TE18750:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT4TE29360:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE89910:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT4TE27325:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE16860:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT4TE12305:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE20010:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE24840:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT4TE34840:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT4TE14155:TAIR10#DNA , 64)
+# skipped short sequence (AT4TE14150:TAIR10#DNA , 64)
+# skipped short sequence (AT4TE14160:TAIR10#DNA , 64)
+# skipped short sequence (AT4TE53655:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE51585:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE14985:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT4TE08790:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE03090:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE21800:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT4TE09245:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE40485:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE46170:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT5TE79445:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE33880:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE83200:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE41000:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE49600:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE48545:TAIR10#LINE/L1 , 64)
+# skipped short sequence (AT5TE45410:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45430:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45400:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45385:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45395:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45435:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45445:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45455:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45585:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45525:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45510:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45495:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45490:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45380:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45350:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45345:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45335:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45255:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45275:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45325:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45315:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45305:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45295:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45285:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45265:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE52890:TAIR10#LTR/Gypsy , 64)
+# skipped short sequence (AT5TE19460:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE45595:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45615:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE36655:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE54585:TAIR10#LINE/L1 , 64)
+# skipped short sequence (AT5TE90585:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE57280:TAIR10#RathE3_cons , 64)
+# skipped short sequence (AT5TE64845:TAIR10#RathE1_cons , 64)
+# skipped short sequence (AT5TE56715:TAIR10#LTR/Copia , 64)
+# skipped short sequence (AT5TE45825:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45785:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45665:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45655:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45645:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45635:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45625:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45675:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45680:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45710:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45765:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45760:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45740:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45730:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45715:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE45605:TAIR10#DNA , 64)
+# skipped short sequence (AT5TE62265:TAIR10#RC/Helitron , 64)
+# skipped short sequence (AT5TE48290:TAIR10#DNA/MuDR , 64)
+# skipped short sequence (AT1TE41955:TAIR10#LINE/L1 , 63)
+# skipped short sequence (AT1TE56680:TAIR10#RathE1_cons , 63)
+# skipped short sequence (AT1TE40125:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT1TE65155:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT1TE54175:TAIR10#DNA , 63)
+# skipped short sequence (AT1TE54180:TAIR10#DNA , 63)
+# skipped short sequence (AT1TE54185:TAIR10#DNA , 63)
+# skipped short sequence (AT1TE75345:TAIR10#LTR/Copia , 63)
+# skipped short sequence (AT1TE58150:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT1TE81565:TAIR10#DNA/HAT , 63)
+# skipped short sequence (AT1TE53075:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT1TE27300:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT1TE86165:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT1TE38990:TAIR10#LTR/Gypsy , 63)
+# skipped short sequence (AT1TE89760:TAIR10#LINE/L1 , 63)
+# skipped short sequence (AT2TE45610:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT2TE38885:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT2TE23335:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT2TE09585:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT2TE28495:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT2TE25550:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT2TE08040:TAIR10#LTR/Copia , 63)
+# skipped short sequence (AT2TE32975:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT2TE21900:TAIR10#DNA , 63)
+# skipped short sequence (AT2TE11835:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE45715:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE38930:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE65430:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE32805:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE22600:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE56885:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56875:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56865:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56905:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56985:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56975:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56925:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56855:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56850:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE29570:TAIR10#RathE1_cons , 63)
+# skipped short sequence (AT3TE56650:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56785:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE57005:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56685:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56775:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE57010:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE16030:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE59030:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE33210:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE24150:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE60215:TAIR10#LINE/L1 , 63)
+# skipped short sequence (AT3TE91515:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE45985:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE58845:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE58490:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58370:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58365:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58360:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58095:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58385:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58465:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58445:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58430:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE58400:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56280:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56065:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56310:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE55665:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE76285:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE56355:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56380:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE56400:TAIR10#DNA , 63)
+# skipped short sequence (AT3TE48595:TAIR10#LTR/Copia , 63)
+# skipped short sequence (AT3TE58785:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE88340:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE63945:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE48745:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE59845:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE70460:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT3TE63800:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE06605:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT3TE49695:TAIR10#DNA/En-Spm , 63)
+# skipped short sequence (AT3TE49505:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT4TE00605:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE26565:TAIR10#DNA/En-Spm , 63)
+# skipped short sequence (AT4TE09185:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE38950:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE33005:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT4TE19855:TAIR10#LTR/Gypsy , 63)
+# skipped short sequence (AT4TE10170:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT4TE13225:TAIR10#LINE/L1 , 63)
+# skipped short sequence (AT4TE17125:TAIR10#LTR/Gypsy , 63)
+# skipped short sequence (AT4TE15735:TAIR10#DNA/En-Spm , 63)
+# skipped short sequence (AT4TE20170:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE05175:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE00600:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE48740:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT4TE14775:TAIR10#DNA , 63)
+# skipped short sequence (AT4TE10755:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT4TE14620:TAIR10#DNA , 63)
+# skipped short sequence (AT4TE55590:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT5TE24300:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT5TE77560:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT5TE08160:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT5TE62860:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT5TE37960:TAIR10#DNA/En-Spm , 63)
+# skipped short sequence (AT5TE40990:TAIR10#DNA , 63)
+# skipped short sequence (AT5TE54490:TAIR10#LTR/Copia , 63)
+# skipped short sequence (AT5TE45750:TAIR10#DNA , 63)
+# skipped short sequence (AT5TE45700:TAIR10#DNA , 63)
+# skipped short sequence (AT5TE45420:TAIR10#DNA , 63)
+# skipped short sequence (AT5TE45370:TAIR10#DNA , 63)
+# skipped short sequence (AT5TE90240:TAIR10#DNA/En-Spm , 63)
+# skipped short sequence (AT5TE41540:TAIR10#LTR/Gypsy , 63)
+# skipped short sequence (AT5TE62275:TAIR10#LTR/Copia , 63)
+# skipped short sequence (AT5TE20925:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT5TE75980:TAIR10#DNA/MuDR , 63)
+# skipped short sequence (AT5TE46785:TAIR10#LTR/Copia , 63)
+# skipped short sequence (AT5TE91210:TAIR10#RC/Helitron , 63)
+# skipped short sequence (AT1TE25690:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE58815:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE69800:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT1TE48480:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT1TE98935:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE45065:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE44410:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE56600:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE45320:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT1TE43575:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT1TE44505:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE51450:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT1TE64215:TAIR10#SINE , 62)
+# skipped short sequence (AT1TE45290:TAIR10#DNA , 62)
+# skipped short sequence (AT1TE03180:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT1TE86155:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE56710:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT2TE20585:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT2TE38460:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT2TE09805:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT2TE02295:TAIR10#LINE/L1 , 62)
+# skipped short sequence (AT2TE08090:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT2TE86050:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT2TE25340:TAIR10#LTR/Copia , 62)
+# skipped short sequence (AT2TE24645:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT2TE22875:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT2TE15550:TAIR10#DNA , 62)
+# skipped short sequence (AT2TE35745:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT2TE57280:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT2TE10095:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT2TE22280:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT3TE47120:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT3TE54290:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE48045:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE05380:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE47215:TAIR10#LTR/Copia , 62)
+# skipped short sequence (AT3TE55085:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE39400:TAIR10#LINE/L1 , 62)
+# skipped short sequence (AT3TE56290:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE55900:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE55880:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE56335:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE63740:TAIR10#RathE1_cons , 62)
+# skipped short sequence (AT3TE58240:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE55815:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE55780:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE55700:TAIR10#DNA , 62)
+# skipped short sequence (AT3TE52700:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT3TE51615:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT3TE67685:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT3TE60960:TAIR10#LINE/L1 , 62)
+# skipped short sequence (AT3TE45155:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE60680:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT3TE50065:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT3TE63615:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT3TE32180:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE22720:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE12540:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT3TE02115:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT4TE11255:TAIR10#LINE? , 62)
+# skipped short sequence (AT4TE21675:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT4TE14180:TAIR10#DNA , 62)
+# skipped short sequence (AT4TE20165:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT4TE14655:TAIR10#DNA , 62)
+# skipped short sequence (AT4TE20880:TAIR10#LTR/Gypsy , 62)
+# skipped short sequence (AT4TE83235:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT4TE42100:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT4TE14795:TAIR10#DNA , 62)
+# skipped short sequence (AT5TE61055:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE27115:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT5TE59080:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE78150:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE41005:TAIR10#DNA , 62)
+# skipped short sequence (AT5TE40600:TAIR10#DNA , 62)
+# skipped short sequence (AT5TE54575:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT5TE69970:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE56450:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE27605:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE15350:TAIR10#DNA/MuDR , 62)
+# skipped short sequence (AT5TE45835:TAIR10#DNA , 62)
+# skipped short sequence (AT5TE45505:TAIR10#DNA , 62)
+# skipped short sequence (AT5TE74460:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT5TE73855:TAIR10#RC/Helitron , 62)
+# skipped short sequence (AT1TE12725:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT1TE21845:TAIR10#DNA/Pogo , 61)
+# skipped short sequence (AT1TE63955:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT1TE44035:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT1TE42135:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT1TE49305:TAIR10#LTR/Gypsy , 61)
+# skipped short sequence (AT1TE57985:TAIR10#LTR/Gypsy , 61)
+# skipped short sequence (AT1TE53125:TAIR10#LINE/L1 , 61)
+# skipped short sequence (AT1TE69870:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT1TE63945:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT1TE37900:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT2TE06630:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT2TE12770:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT2TE32530:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT2TE15405:TAIR10#LTR/Gypsy , 61)
+# skipped short sequence (AT2TE13610:TAIR10#LTR/Copia , 61)
+# skipped short sequence (AT2TE06055:TAIR10#RathE1_cons , 61)
+# skipped short sequence (AT2TE54490:TAIR10#DNA , 61)
+# skipped short sequence (AT2TE09935:TAIR10#LINE/L1 , 61)
+# skipped short sequence (AT2TE13535:TAIR10#DNA , 61)
+# skipped short sequence (AT2TE11940:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT2TE28735:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT3TE15630:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE84555:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE82900:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT3TE49830:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE46300:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT3TE93145:TAIR10#LINE/L1 , 61)
+# skipped short sequence (AT3TE15620:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE53560:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE44545:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE64525:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE56895:TAIR10#DNA , 61)
+# skipped short sequence (AT3TE56690:TAIR10#DNA , 61)
+# skipped short sequence (AT3TE79310:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE42355:TAIR10#DNA/HAT , 61)
+# skipped short sequence (AT3TE05735:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE40660:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE67240:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE47150:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT3TE46540:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT3TE47900:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT4TE20835:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT4TE56170:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT4TE34680:TAIR10#LTR/Gypsy , 61)
+# skipped short sequence (AT4TE49520:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT4TE11060:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT4TE38500:TAIR10#DNA/En-Spm , 61)
+# skipped short sequence (AT4TE24935:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT4TE15895:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT4TE27785:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT4TE44230:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT4TE78245:TAIR10#LTR/Copia , 61)
+# skipped short sequence (AT5TE37670:TAIR10#LTR/Gypsy , 61)
+# skipped short sequence (AT5TE46520:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE86425:TAIR10#DNA/En-Spm , 61)
+# skipped short sequence (AT5TE29575:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE62895:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE83185:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT5TE46740:TAIR10#LTR/Copia , 61)
+# skipped short sequence (AT5TE63835:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE71750:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE48790:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT5TE41785:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE43160:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE39475:TAIR10#LTR/Copia , 61)
+# skipped short sequence (AT5TE56805:TAIR10#RC/Helitron , 61)
+# skipped short sequence (AT5TE54350:TAIR10#DNA/MuDR , 61)
+# skipped short sequence (AT1TE93500:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT1TE72320:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT1TE36480:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT1TE13380:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT1TE53670:TAIR10#DNA , 60)
+# skipped short sequence (AT1TE82945:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT1TE50430:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT1TE59790:TAIR10#RathE1_cons , 60)
+# skipped short sequence (AT1TE15700:TAIR10#LTR/Copia , 60)
+# skipped short sequence (AT1TE41535:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT1TE55660:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE47360:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE26330:TAIR10#DNA/HAT , 60)
+# skipped short sequence (AT2TE25225:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE05610:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE18835:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE04880:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT2TE63120:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT2TE46115:TAIR10#DNA , 60)
+# skipped short sequence (AT2TE13120:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT2TE35735:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE26615:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE27330:TAIR10#LTR/Copia , 60)
+# skipped short sequence (AT2TE08215:TAIR10#DNA , 60)
+# skipped short sequence (AT2TE87765:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE13240:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT2TE10700:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE17130:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE09770:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE28375:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE47875:TAIR10#DNA/Pogo , 60)
+# skipped short sequence (AT2TE79225:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT2TE45505:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT3TE40970:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT3TE48625:TAIR10#DNA/En-Spm , 60)
+# skipped short sequence (AT3TE57075:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT3TE08265:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT3TE60390:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT3TE64290:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT3TE27630:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE62880:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT3TE73040:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE36240:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE51455:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT3TE62960:TAIR10#DNA/En-Spm , 60)
+# skipped short sequence (AT3TE05390:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE51465:TAIR10#DNA/En-Spm , 60)
+# skipped short sequence (AT3TE51970:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT3TE36550:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE33270:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE40120:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT3TE84420:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT3TE75235:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT4TE57335:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT4TE14925:TAIR10#DNA , 60)
+# skipped short sequence (AT4TE22540:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT4TE27205:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT4TE29010:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT4TE39515:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT4TE14280:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT4TE13440:TAIR10#LINE/L1 , 60)
+# skipped short sequence (AT4TE25105:TAIR10#LTR/Copia , 60)
+# skipped short sequence (AT4TE04915:TAIR10#RathE1_cons , 60)
+# skipped short sequence (AT4TE10680:TAIR10#DNA/En-Spm , 60)
+# skipped short sequence (AT4TE90090:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT4TE30495:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT5TE42340:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT5TE41465:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT5TE05950:TAIR10#LTR/Gypsy , 60)
+# skipped short sequence (AT5TE37810:TAIR10#LTR/Copia , 60)
+# skipped short sequence (AT5TE50985:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT5TE66355:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT5TE52780:TAIR10#DNA/MuDR , 60)
+# skipped short sequence (AT5TE50280:TAIR10#RC/Helitron , 60)
+# skipped short sequence (AT5TE63550:TAIR10#DNA , 60)
+# skipped short sequence (AT1TE42985:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE59215:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE62810:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT1TE49270:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT1TE57600:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE19295:TAIR10#DNA/Pogo , 59)
+# skipped short sequence (AT1TE71935:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE80190:TAIR10#RathE3_cons , 59)
+# skipped short sequence (AT1TE72040:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE15095:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE61875:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE60960:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT1TE58190:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT2TE22070:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT2TE11345:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT2TE47885:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT2TE10570:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT2TE25355:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT2TE15050:TAIR10#LTR/Copia , 59)
+# skipped short sequence (AT2TE19525:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT3TE75220:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT3TE83375:TAIR10#LTR/Copia , 59)
+# skipped short sequence (AT3TE75580:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT3TE62060:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT3TE62105:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT3TE59940:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT3TE58470:TAIR10#DNA , 59)
+# skipped short sequence (AT3TE58450:TAIR10#DNA , 59)
+# skipped short sequence (AT3TE56525:TAIR10#DNA , 59)
+# skipped short sequence (AT3TE70400:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE26080:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE54480:TAIR10#DNA/HAT , 59)
+# skipped short sequence (AT4TE57470:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE20060:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE20740:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT4TE07430:TAIR10#DNA/En-Spm , 59)
+# skipped short sequence (AT4TE56275:TAIR10#LTR/Copia , 59)
+# skipped short sequence (AT4TE45140:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE34650:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE34690:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT4TE16215:TAIR10#LTR/Copia , 59)
+# skipped short sequence (AT5TE78825:TAIR10#DNA/Pogo , 59)
+# skipped short sequence (AT5TE34600:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT5TE57815:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT5TE43630:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT5TE42905:TAIR10#LTR/Gypsy , 59)
+# skipped short sequence (AT5TE87920:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT5TE18295:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT5TE55480:TAIR10#RC/Helitron , 59)
+# skipped short sequence (AT5TE40005:TAIR10#DNA/MuDR , 59)
+# skipped short sequence (AT1TE01900:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE46595:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT1TE37730:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE43090:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE43075:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE55205:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE39845:TAIR10#RathE1_cons , 58)
+# skipped short sequence (AT1TE69260:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE52250:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE56180:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE27815:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE75340:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE01610:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE90210:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE45880:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE69620:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT1TE43035:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT1TE43685:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT1TE06460:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE20655:TAIR10#DNA/En-Spm , 58)
+# skipped short sequence (AT2TE16140:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT2TE08775:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE04680:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE18675:TAIR10#LTR/Copia , 58)
+# skipped short sequence (AT2TE14960:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE33400:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE20780:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT2TE47940:TAIR10#LTR/Copia , 58)
+# skipped short sequence (AT2TE18740:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE17100:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE62550:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE82900:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT2TE03960:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT2TE03220:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT2TE05975:TAIR10#DNA , 58)
+# skipped short sequence (AT2TE54155:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT2TE02200:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE61890:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE51890:TAIR10#LTR/Copia , 58)
+# skipped short sequence (AT3TE65980:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE50180:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT3TE42405:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE58440:TAIR10#DNA , 58)
+# skipped short sequence (AT3TE58410:TAIR10#DNA , 58)
+# skipped short sequence (AT3TE58460:TAIR10#DNA , 58)
+# skipped short sequence (AT3TE44820:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT3TE42150:TAIR10#DNA/En-Spm , 58)
+# skipped short sequence (AT3TE48095:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT3TE01810:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE32915:TAIR10#DNA/HAT , 58)
+# skipped short sequence (AT3TE62645:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE53565:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE11830:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE49050:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT3TE49655:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE65860:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT3TE64000:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT4TE21975:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT4TE16650:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT4TE67750:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT4TE19420:TAIR10#DNA/En-Spm , 58)
+# skipped short sequence (AT4TE21260:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT4TE19350:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT4TE59475:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT4TE27060:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT4TE35195:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT4TE40030:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE62985:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE29695:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE63260:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE50755:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT5TE46545:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE41165:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT5TE00010:TAIR10#LINE? , 58)
+# skipped short sequence (AT5TE49925:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE46680:TAIR10#LTR/Gypsy , 58)
+# skipped short sequence (AT5TE54580:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE31070:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE32660:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT5TE91035:TAIR10#RC/Helitron , 58)
+# skipped short sequence (AT5TE51160:TAIR10#DNA/MuDR , 58)
+# skipped short sequence (AT1TE58170:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE60170:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE51460:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT1TE69680:TAIR10#DNA , 57)
+# skipped short sequence (AT1TE38525:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT1TE34430:TAIR10#DNA/HAT , 57)
+# skipped short sequence (AT1TE58265:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE32100:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE39205:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE37600:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE63535:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE45765:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT1TE46905:TAIR10#DNA/HAT , 57)
+# skipped short sequence (AT1TE27400:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE57050:TAIR10#DNA/HAT , 57)
+# skipped short sequence (AT1TE54555:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE65295:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT1TE49980:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT1TE58510:TAIR10#LINE/L1 , 57)
+# skipped short sequence (AT1TE65890:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE41125:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE40590:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE75460:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE65350:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT2TE20910:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT2TE09110:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT2TE23910:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT2TE20465:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT2TE70740:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT2TE17465:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT2TE32850:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT2TE21430:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT2TE06050:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE73725:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE44315:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT3TE45065:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE50115:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT3TE18985:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE42225:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE49610:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE28265:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT3TE06640:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT3TE58925:TAIR10#LTR/Copia , 57)
+# skipped short sequence (AT3TE34110:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE29355:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE45435:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT3TE58015:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT3TE71105:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT3TE94240:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT4TE53640:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT4TE21420:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT4TE09660:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT4TE13045:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT4TE40365:TAIR10#LTR/Copia , 57)
+# skipped short sequence (AT4TE29990:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT4TE19800:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT4TE10360:TAIR10#LTR/Copia , 57)
+# skipped short sequence (AT4TE03525:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT4TE07425:TAIR10#DNA/En-Spm , 57)
+# skipped short sequence (AT4TE21945:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT4TE10715:TAIR10#DNA , 57)
+# skipped short sequence (AT4TE51095:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT4TE17465:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT4TE04900:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE30575:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT5TE61210:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE33965:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT5TE31725:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE34955:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE71610:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT5TE02575:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT5TE52580:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE30200:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE45910:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT5TE48115:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE44000:TAIR10#LTR/Gypsy , 57)
+# skipped short sequence (AT5TE28140:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE11310:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE81380:TAIR10#LTR/Copia , 57)
+# skipped short sequence (AT5TE45970:TAIR10#DNA/MuDR , 57)
+# skipped short sequence (AT5TE41800:TAIR10#DNA/En-Spm , 57)
+# skipped short sequence (AT5TE71870:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT5TE54170:TAIR10#RC/Helitron , 57)
+# skipped short sequence (AT1TE22740:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE52565:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE69845:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE53835:TAIR10#LTR/Copia , 56)
+# skipped short sequence (AT1TE89280:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE44240:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT1TE58275:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE70195:TAIR10#LTR/Copia , 56)
+# skipped short sequence (AT1TE35640:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT1TE40740:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT1TE39815:TAIR10#DNA , 56)
+# skipped short sequence (AT1TE46930:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE48690:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT1TE54025:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT1TE37250:TAIR10#RathE3_cons , 56)
+# skipped short sequence (AT1TE34585:TAIR10#LTR/Copia , 56)
+# skipped short sequence (AT1TE01010:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT1TE17830:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT1TE72445:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE45070:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE50595:TAIR10#DNA , 56)
+# skipped short sequence (AT1TE37525:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE23820:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE44920:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE61335:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE71530:TAIR10#LTR/Copia , 56)
+# skipped short sequence (AT2TE44765:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE37340:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE13575:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT2TE64900:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE37080:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE20800:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT2TE08375:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT2TE25535:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT2TE21140:TAIR10#DNA , 56)
+# skipped short sequence (AT2TE62965:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT2TE26155:TAIR10#LTR/Copia , 56)
+# skipped short sequence (AT2TE23200:TAIR10#DNA/En-Spm , 56)
+# skipped short sequence (AT2TE09060:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT3TE51220:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE53480:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT3TE94190:TAIR10#LTR/Copia , 56)
+# skipped short sequence (AT3TE57120:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT3TE50200:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT3TE32170:TAIR10#DNA/Mariner , 56)
+# skipped short sequence (AT3TE53520:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE63990:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE49070:TAIR10#DNA , 56)
+# skipped short sequence (AT3TE40975:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE39215:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE61450:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT3TE45350:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE70425:TAIR10#RathE1_cons , 56)
+# skipped short sequence (AT3TE42775:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT3TE58755:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE41160:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE56045:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT3TE55470:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT3TE63790:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE94245:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE49490:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE49370:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT3TE95180:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT3TE46840:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE59775:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE57460:TAIR10#DNA/HAT , 56)
+# skipped short sequence (AT3TE64565:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT3TE75230:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT4TE18420:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT4TE09265:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT4TE09620:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT4TE49235:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT4TE52305:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT4TE33470:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT4TE22865:TAIR10#DNA/En-Spm , 56)
+# skipped short sequence (AT4TE33375:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT4TE55340:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT4TE39060:TAIR10#DNA/Pogo , 56)
+# skipped short sequence (AT4TE40220:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT4TE15240:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT4TE21920:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT4TE50085:TAIR10#DNA/HAT , 56)
+# skipped short sequence (AT4TE11700:TAIR10#DNA/Pogo , 56)
+# skipped short sequence (AT4TE23695:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT5TE48530:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT5TE33465:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE33500:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE21620:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE20620:TAIR10#DNA/MuDR , 56)
+# skipped short sequence (AT5TE87430:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE38405:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE39150:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE47570:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT5TE87470:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE42830:TAIR10#LTR/Gypsy , 56)
+# skipped short sequence (AT5TE16390:TAIR10#LINE/L1 , 56)
+# skipped short sequence (AT5TE38255:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE90880:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE50525:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT5TE63850:TAIR10#RC/Helitron , 56)
+# skipped short sequence (AT1TE56635:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE76770:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT1TE55235:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE32090:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE07305:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE15500:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE43160:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE30760:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE77670:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE44400:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE55535:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE74435:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE57690:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE51390:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT1TE30765:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE96410:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE74480:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT1TE54240:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE93505:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT1TE26375:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE10285:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE46135:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE17200:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT2TE16960:TAIR10#DNA/En-Spm , 55)
+# skipped short sequence (AT2TE56275:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE84940:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT2TE25075:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT2TE66650:TAIR10#DNA/HAT , 55)
+# skipped short sequence (AT2TE47965:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE07255:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE42950:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE23880:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE08910:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE81040:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE45555:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT2TE47850:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE51180:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT2TE05500:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE27175:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE24985:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT2TE15445:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT3TE44760:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT3TE42980:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT3TE01390:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT3TE47510:TAIR10#LTR/Copia , 55)
+# skipped short sequence (AT3TE32160:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE65815:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT3TE80920:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT3TE46505:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE84100:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT3TE26470:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT3TE39590:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE71725:TAIR10#DNA , 55)
+# skipped short sequence (AT3TE63785:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT3TE66510:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE60580:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE64650:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE82725:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE30225:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT3TE46965:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE23255:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT4TE15390:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT4TE52405:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE33020:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT4TE40725:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT4TE30500:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE75750:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE40355:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE05230:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE21310:TAIR10#DNA/Harbinger , 55)
+# skipped short sequence (AT4TE20900:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT4TE34440:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE40595:TAIR10#RathE3_cons , 55)
+# skipped short sequence (AT4TE60835:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE16935:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT4TE54355:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE68335:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE17750:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT4TE18820:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT4TE20825:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT4TE24040:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE55315:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE07620:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT5TE54305:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE48585:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE28735:TAIR10#LTR/Copia , 55)
+# skipped short sequence (AT5TE23120:TAIR10#DNA , 55)
+# skipped short sequence (AT5TE36265:TAIR10#LTR/Copia , 55)
+# skipped short sequence (AT5TE54985:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE10985:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE01820:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT5TE69090:TAIR10#DNA , 55)
+# skipped short sequence (AT5TE48185:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT5TE41755:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT5TE25960:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE20930:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE65575:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE58280:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT5TE41945:TAIR10#DNA/MuDR , 55)
+# skipped short sequence (AT5TE16185:TAIR10#LINE/L1 , 55)
+# skipped short sequence (AT5TE46920:TAIR10#LTR/Gypsy , 55)
+# skipped short sequence (AT5TE93015:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE52655:TAIR10#RC/Helitron , 55)
+# skipped short sequence (AT5TE31105:TAIR10#DNA/Pogo , 55)
+# skipped short sequence (AT1TE68765:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE54490:TAIR10#LTR/Copia , 54)
+# skipped short sequence (AT1TE45485:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT1TE64270:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE80570:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE51925:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT1TE35520:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE35270:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE25885:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE30340:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE53800:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE47425:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE47205:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE42365:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE54280:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT1TE01970:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT1TE22675:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT1TE47150:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE47370:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE54495:TAIR10#LTR/Copia , 54)
+# skipped short sequence (AT1TE45190:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE52395:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT1TE78970:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT2TE18630:TAIR10#DNA/HAT , 54)
+# skipped short sequence (AT2TE04920:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT2TE05020:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT2TE15420:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT2TE05685:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT2TE06335:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT2TE45515:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT2TE60105:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT2TE33490:TAIR10#DNA/HAT , 54)
+# skipped short sequence (AT2TE37530:TAIR10#RathE1_cons , 54)
+# skipped short sequence (AT2TE05950:TAIR10#DNA , 54)
+# skipped short sequence (AT2TE66740:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT2TE43090:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE20235:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE43195:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE57675:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT3TE37610:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE26850:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE91560:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT3TE54370:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE84650:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT3TE63030:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT3TE50525:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT3TE48245:TAIR10#LTR/Copia , 54)
+# skipped short sequence (AT3TE45655:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT3TE54795:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT3TE55775:TAIR10#DNA , 54)
+# skipped short sequence (AT3TE23670:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT3TE10540:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT3TE49095:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT3TE63955:TAIR10#LTR/Copia , 54)
+# skipped short sequence (AT3TE44655:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE79015:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE58000:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT3TE63170:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT3TE25635:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT3TE53740:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT4TE33195:TAIR10#LTR/Copia , 54)
+# skipped short sequence (AT4TE09450:TAIR10#DNA/En-Spm , 54)
+# skipped short sequence (AT4TE43225:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT4TE31595:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT4TE30410:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT4TE60900:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT4TE29345:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT4TE30315:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT4TE84490:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT4TE31090:TAIR10#DNA/Pogo , 54)
+# skipped short sequence (AT4TE22590:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT4TE17650:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT4TE29810:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE31730:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE30040:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE86635:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE35530:TAIR10#DNA/MuDR , 54)
+# skipped short sequence (AT5TE52560:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE36285:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE45660:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45670:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45650:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45620:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45640:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45685:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45695:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45705:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45790:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45770:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45755:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45745:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45735:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45610:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45600:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45590:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45580:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45375:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45365:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45355:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45340:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45330:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45390:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45795:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45405:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45415:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45520:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45475:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45465:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45460:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45425:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45805:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE50165:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE48470:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE93855:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE45320:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45300:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45280:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45290:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45270:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE45260:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE33890:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE44375:TAIR10#LTR/Gypsy , 54)
+# skipped short sequence (AT5TE36650:TAIR10#DNA/En-Spm , 54)
+# skipped short sequence (AT5TE28285:TAIR10#DNA/Harbinger , 54)
+# skipped short sequence (AT5TE50840:TAIR10#LINE/L1 , 54)
+# skipped short sequence (AT5TE69925:TAIR10#DNA , 54)
+# skipped short sequence (AT5TE25940:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT5TE14760:TAIR10#DNA/Harbinger , 54)
+# skipped short sequence (AT5TE80380:TAIR10#RC/Helitron , 54)
+# skipped short sequence (AT1TE08430:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE38805:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE45115:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE55355:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE95900:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE44970:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT1TE55240:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE37185:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE53005:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT1TE10860:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE42795:TAIR10#DNA , 53)
+# skipped short sequence (AT1TE22690:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT1TE35825:TAIR10#DNA , 53)
+# skipped short sequence (AT2TE32735:TAIR10#DNA/HAT , 53)
+# skipped short sequence (AT2TE08900:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT2TE00040:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT2TE02540:TAIR10#LTR/Copia , 53)
+# skipped short sequence (AT2TE16640:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT2TE22500:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT2TE37525:TAIR10#RathE1_cons , 53)
+# skipped short sequence (AT2TE37535:TAIR10#RathE1_cons , 53)
+# skipped short sequence (AT2TE37555:TAIR10#RathE1_cons , 53)
+# skipped short sequence (AT2TE16285:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT2TE37540:TAIR10#RathE1_cons , 53)
+# skipped short sequence (AT2TE37550:TAIR10#RathE1_cons , 53)
+# skipped short sequence (AT2TE63780:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT2TE13150:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT2TE11720:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT2TE49310:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT2TE18405:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT2TE11775:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT2TE49195:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT2TE29095:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT2TE20320:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT3TE56635:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT3TE55250:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT3TE47255:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT3TE58885:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT3TE66770:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT3TE81320:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT3TE79295:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT3TE08240:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT3TE53730:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT3TE45410:TAIR10#LTR/Copia , 53)
+# skipped short sequence (AT3TE59020:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT3TE79235:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT3TE60090:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT3TE30215:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT3TE58045:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT3TE05730:TAIR10#DNA/Pogo , 53)
+# skipped short sequence (AT4TE44755:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT4TE10325:TAIR10#LTR/Copia , 53)
+# skipped short sequence (AT4TE54720:TAIR10#LTR/Copia , 53)
+# skipped short sequence (AT4TE00540:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT4TE13530:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT4TE00165:TAIR10#LINE/L1 , 53)
+# skipped short sequence (AT4TE11580:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT4TE16025:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT4TE14235:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT4TE35925:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT4TE08135:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT4TE50130:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT5TE43620:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT5TE08320:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT5TE23370:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT5TE47405:TAIR10#DNA/En-Spm , 53)
+# skipped short sequence (AT5TE52495:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT5TE37935:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT5TE41580:TAIR10#DNA/En-Spm , 53)
+# skipped short sequence (AT5TE48100:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT5TE78460:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT5TE70675:TAIR10#LINE/L1 , 53)
+# skipped short sequence (AT5TE66285:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT5TE54190:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT5TE36705:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT5TE45440:TAIR10#DNA , 53)
+# skipped short sequence (AT5TE45780:TAIR10#DNA , 53)
+# skipped short sequence (AT5TE45720:TAIR10#DNA , 53)
+# skipped short sequence (AT5TE45630:TAIR10#DNA , 53)
+# skipped short sequence (AT5TE45450:TAIR10#DNA , 53)
+# skipped short sequence (AT5TE45310:TAIR10#DNA , 53)
+# skipped short sequence (AT5TE38540:TAIR10#DNA/MuDR , 53)
+# skipped short sequence (AT5TE38575:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT5TE46750:TAIR10#LTR/Gypsy , 53)
+# skipped short sequence (AT5TE16770:TAIR10#RC/Helitron , 53)
+# skipped short sequence (AT1TE68325:TAIR10#LTR/Copia , 52)
+# skipped short sequence (AT1TE71270:TAIR10#DNA/En-Spm , 52)
+# skipped short sequence (AT1TE40370:TAIR10#LTR/Copia , 52)
+# skipped short sequence (AT1TE46175:TAIR10#LINE/L1 , 52)
+# skipped short sequence (AT1TE57085:TAIR10#LTR/Copia , 52)
+# skipped short sequence (AT1TE37270:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE62340:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE51510:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE94410:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE58895:TAIR10#LINE/L1 , 52)
+# skipped short sequence (AT1TE79505:TAIR10#DNA , 52)
+# skipped short sequence (AT1TE36535:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT1TE71785:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT1TE31950:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE62835:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT1TE44335:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT1TE47070:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT1TE64450:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT1TE79350:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE21125:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE21350:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE55490:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE64920:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE42185:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT1TE45255:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE84975:TAIR10#LTR/Copia , 52)
+# skipped short sequence (AT2TE58125:TAIR10#DNA/Pogo , 52)
+# skipped short sequence (AT2TE12690:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE33090:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE27265:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE23330:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE38355:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE47140:TAIR10#DNA , 52)
+# skipped short sequence (AT2TE19170:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT2TE33750:TAIR10#DNA/Harbinger , 52)
+# skipped short sequence (AT2TE18355:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT2TE17575:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT2TE09855:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT2TE21740:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT2TE01225:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT2TE06825:TAIR10#RathE2_cons , 52)
+# skipped short sequence (AT2TE29590:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE37565:TAIR10#RathE1_cons , 52)
+# skipped short sequence (AT2TE37545:TAIR10#RathE1_cons , 52)
+# skipped short sequence (AT2TE37520:TAIR10#RathE1_cons , 52)
+# skipped short sequence (AT2TE25650:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE12870:TAIR10#LTR/Copia , 52)
+# skipped short sequence (AT2TE20340:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT2TE39265:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE48565:TAIR10#DNA/En-Spm , 52)
+# skipped short sequence (AT3TE47795:TAIR10#LINE/L1 , 52)
+# skipped short sequence (AT3TE25430:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE52820:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE69545:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE49785:TAIR10#LINE/L1 , 52)
+# skipped short sequence (AT3TE59760:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT3TE51595:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT3TE47830:TAIR10#DNA/Pogo , 52)
+# skipped short sequence (AT3TE56945:TAIR10#DNA , 52)
+# skipped short sequence (AT3TE27500:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT3TE41605:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE62640:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE70575:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE40210:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE44685:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT3TE52350:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT3TE59870:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT3TE68170:TAIR10#DNA , 52)
+# skipped short sequence (AT3TE50240:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE39530:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT3TE52500:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT4TE33915:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT4TE31325:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT4TE79340:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT4TE25910:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT4TE15700:TAIR10#DNA/HAT , 52)
+# skipped short sequence (AT4TE19175:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT4TE59365:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT4TE01645:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE25530:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE38355:TAIR10#DNA/En-Spm , 52)
+# skipped short sequence (AT5TE24990:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT5TE31600:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE53180:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE86110:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE52875:TAIR10#DNA , 52)
+# skipped short sequence (AT5TE43040:TAIR10#LTR/Gypsy , 52)
+# skipped short sequence (AT5TE35840:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE63135:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE76205:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT5TE57600:TAIR10#RC/Helitron , 52)
+# skipped short sequence (AT5TE81575:TAIR10#DNA/MuDR , 52)
+# skipped short sequence (AT1TE51895:TAIR10#DNA/En-Spm , 51)
+# skipped short sequence (AT1TE26725:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE37775:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE81520:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE54705:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE56440:TAIR10#LTR/Copia , 51)
+# skipped short sequence (AT1TE69980:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE46895:TAIR10#DNA/HAT , 51)
+# skipped short sequence (AT1TE57920:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT1TE56065:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE86800:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE44460:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE46320:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT1TE79095:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE38790:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT1TE59420:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT1TE19630:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE22645:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE33480:TAIR10#DNA/HAT , 51)
+# skipped short sequence (AT2TE74480:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE44905:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE51155:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT2TE20740:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT2TE10135:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE20600:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT2TE20930:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT2TE61840:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE05935:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT2TE55560:TAIR10#DNA , 51)
+# skipped short sequence (AT2TE49075:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT3TE40955:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT3TE76400:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE45690:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT3TE53750:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT3TE50645:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT3TE56965:TAIR10#DNA , 51)
+# skipped short sequence (AT3TE06610:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE59295:TAIR10#DNA , 51)
+# skipped short sequence (AT3TE20785:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT3TE67700:TAIR10#LINE/L1 , 51)
+# skipped short sequence (AT3TE42730:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE25645:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE51885:TAIR10#LTR/Copia , 51)
+# skipped short sequence (AT3TE60095:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE30760:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE46010:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE63725:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE42335:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT3TE66500:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE33070:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE18025:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE23670:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT4TE51915:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT4TE55450:TAIR10#LINE/L1 , 51)
+# skipped short sequence (AT4TE04275:TAIR10#DNA , 51)
+# skipped short sequence (AT4TE16160:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT4TE25775:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE18620:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT4TE29740:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE04890:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE36880:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE18590:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT4TE28025:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE22900:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE17055:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE15980:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT4TE10605:TAIR10#LTR/Copia , 51)
+# skipped short sequence (AT4TE24690:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT4TE28180:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE65610:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT4TE45030:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE49500:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE35800:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE55710:TAIR10#DNA/HAT , 51)
+# skipped short sequence (AT5TE93010:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE50975:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE56610:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE46630:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE02720:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE42845:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT5TE26410:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE47760:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT5TE45815:TAIR10#DNA , 51)
+# skipped short sequence (AT5TE55880:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT5TE56695:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE76700:TAIR10#RC/Helitron , 51)
+# skipped short sequence (AT5TE45485:TAIR10#DNA , 51)
+# skipped short sequence (AT5TE25100:TAIR10#DNA/Harbinger , 51)
+# skipped short sequence (AT5TE33850:TAIR10#DNA , 51)
+# skipped short sequence (AT5TE46340:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT5TE51955:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT5TE52185:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT5TE46295:TAIR10#LTR/Gypsy , 51)
+# skipped short sequence (AT5TE34790:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT5TE50645:TAIR10#DNA/MuDR , 51)
+# skipped short sequence (AT1TE51380:TAIR10#LINE/L1 , 50)
+# skipped short sequence (AT1TE35315:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE25265:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE46040:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE53855:TAIR10#DNA/Mariner , 50)
+# skipped short sequence (AT1TE86830:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE54905:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE51815:TAIR10#DNA/En-Spm , 50)
+# skipped short sequence (AT1TE47345:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT1TE54415:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE47585:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT1TE78580:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE27835:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE45645:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT1TE50865:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT1TE96430:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT1TE56420:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT1TE45660:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE43955:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT1TE85160:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT1TE60655:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT1TE43185:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT2TE35100:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT2TE37490:TAIR10#DNA , 50)
+# skipped short sequence (AT2TE10820:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT2TE37560:TAIR10#RathE1_cons , 50)
+# skipped short sequence (AT2TE54150:TAIR10#LTR/Copia , 50)
+# skipped short sequence (AT2TE10830:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT2TE62355:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT2TE42620:TAIR10#LINE/L1 , 50)
+# skipped short sequence (AT2TE30030:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT2TE33535:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT2TE12455:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT2TE20825:TAIR10#LTR/Copia , 50)
+# skipped short sequence (AT2TE52790:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT2TE56850:TAIR10#DNA/Pogo , 50)
+# skipped short sequence (AT2TE19195:TAIR10#DNA/En-Spm , 50)
+# skipped short sequence (AT3TE67715:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT3TE51320:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT3TE42295:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE33890:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE59375:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE68250:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE43520:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE31720:TAIR10#DNA/Harbinger , 50)
+# skipped short sequence (AT3TE60035:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT3TE51080:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT3TE22015:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE48265:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE49910:TAIR10#DNA/HAT , 50)
+# skipped short sequence (AT3TE46465:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT3TE57390:TAIR10#DNA , 50)
+# skipped short sequence (AT3TE70970:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT3TE49705:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE19335:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE18325:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE28865:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE08460:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE28185:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT4TE40520:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE74235:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE06540:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE16680:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE23540:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT4TE08250:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE12430:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE52300:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE05585:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE53990:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT4TE15780:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE16090:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT4TE14940:TAIR10#DNA , 50)
+# skipped short sequence (AT4TE24010:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE59120:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE71090:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE76380:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE35665:TAIR10#DNA/HAT , 50)
+# skipped short sequence (AT5TE64575:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT5TE48660:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE54480:TAIR10#LTR/Copia , 50)
+# skipped short sequence (AT5TE48095:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE44830:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE35300:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE47510:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT5TE54885:TAIR10#RathE2_cons , 50)
+# skipped short sequence (AT5TE50870:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE28730:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE52955:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE39235:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT5TE36760:TAIR10#LTR/Copia , 50)
+# skipped short sequence (AT5TE33385:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE24015:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT5TE57240:TAIR10#DNA/MuDR , 50)
+# skipped short sequence (AT5TE26475:TAIR10#RC/Helitron , 50)
+# skipped short sequence (AT5TE42875:TAIR10#LTR/Gypsy , 50)
+# skipped short sequence (AT1TE30860:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE20910:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT1TE26730:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE67605:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE79265:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE95920:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE60700:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE08245:TAIR10#DNA/HAT , 49)
+# skipped short sequence (AT1TE31780:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE56355:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE02695:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE56510:TAIR10#LINE/L1 , 49)
+# skipped short sequence (AT1TE21020:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT1TE57775:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE43105:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE01920:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE70975:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT1TE59350:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT1TE52705:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT1TE88645:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE62195:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE45005:TAIR10#DNA/En-Spm , 49)
+# skipped short sequence (AT1TE61125:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE41050:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE79825:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE22685:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE30400:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT2TE12885:TAIR10#LTR/Copia , 49)
+# skipped short sequence (AT2TE29770:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT2TE81055:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE47880:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE09730:TAIR10#DNA/HAT , 49)
+# skipped short sequence (AT2TE19295:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT2TE10660:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT2TE11170:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE54865:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE47035:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT2TE13845:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE09230:TAIR10#LTR/Copia , 49)
+# skipped short sequence (AT2TE23390:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE32005:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT2TE84985:TAIR10#LTR/Copia , 49)
+# skipped short sequence (AT3TE70980:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT3TE51700:TAIR10#DNA/Pogo , 49)
+# skipped short sequence (AT3TE64540:TAIR10#SINE , 49)
+# skipped short sequence (AT3TE14860:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT3TE77790:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT3TE65355:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT3TE54720:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT3TE57450:TAIR10#DNA/Harbinger , 49)
+# skipped short sequence (AT3TE46100:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT3TE60450:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT3TE61840:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT3TE44610:TAIR10#DNA , 49)
+# skipped short sequence (AT3TE41150:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT3TE46055:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT3TE69100:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT3TE71705:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT3TE27820:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT3TE64490:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT4TE09495:TAIR10#LTR/Copia , 49)
+# skipped short sequence (AT4TE17815:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT4TE20405:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT4TE82600:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT4TE26200:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT4TE15385:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT4TE33120:TAIR10#DNA/HAT , 49)
+# skipped short sequence (AT4TE02930:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT4TE56085:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT4TE27980:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT4TE11525:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT4TE51605:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT4TE34135:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT4TE48605:TAIR10#DNA , 49)
+# skipped short sequence (AT5TE34735:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT5TE78665:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE52650:TAIR10#DNA/MuDR , 49)
+# skipped short sequence (AT5TE61050:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE26485:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE52690:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE27845:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE47770:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE36675:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE63230:TAIR10#DNA/HAT , 49)
+# skipped short sequence (AT5TE47145:TAIR10#LTR/Gypsy , 49)
+# skipped short sequence (AT5TE31880:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE32040:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE31290:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE57835:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE15340:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE34470:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE36690:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE83725:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE49195:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE34870:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT5TE43155:TAIR10#RC/Helitron , 49)
+# skipped short sequence (AT1TE31585:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT1TE50565:TAIR10#DNA , 48)
+# skipped short sequence (AT1TE57185:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT1TE44210:TAIR10#LTR/Copia , 48)
+# skipped short sequence (AT1TE60535:TAIR10#DNA , 48)
+# skipped short sequence (AT1TE19135:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT1TE32770:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT1TE57490:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT1TE40720:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT1TE58450:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT1TE78205:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT1TE51300:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT2TE57465:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT2TE11825:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT2TE44745:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT2TE17655:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT2TE03490:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT2TE20730:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT2TE13305:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT2TE06760:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT2TE26015:TAIR10#DNA , 48)
+# skipped short sequence (AT2TE10635:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT2TE07410:TAIR10#LTR/Copia , 48)
+# skipped short sequence (AT2TE28365:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT3TE71165:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT3TE39195:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE37040:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT3TE59805:TAIR10#LTR/Copia , 48)
+# skipped short sequence (AT3TE55270:TAIR10#DNA , 48)
+# skipped short sequence (AT3TE56695:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT3TE66615:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT3TE53250:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE60110:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE64715:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE55225:TAIR10#DNA/En-Spm , 48)
+# skipped short sequence (AT3TE50315:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE52720:TAIR10#SINE , 48)
+# skipped short sequence (AT3TE74805:TAIR10#DNA , 48)
+# skipped short sequence (AT3TE71440:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE48780:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE61095:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE67145:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT3TE45320:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE33475:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT4TE26150:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE24555:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE16375:TAIR10#LTR/Copia , 48)
+# skipped short sequence (AT4TE29375:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE13040:TAIR10#DNA/En-Spm , 48)
+# skipped short sequence (AT4TE43255:TAIR10#LTR/Copia , 48)
+# skipped short sequence (AT4TE12975:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE05115:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE16065:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT4TE01650:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE22310:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT4TE00010:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT4TE29405:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE61470:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT5TE93210:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE82580:TAIR10#LTR/Copia , 48)
+# skipped short sequence (AT5TE46720:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT5TE50500:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE48335:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE30215:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE40955:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT5TE39540:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT5TE46305:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT5TE40405:TAIR10#LTR/Gypsy , 48)
+# skipped short sequence (AT5TE30160:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE38445:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT5TE08540:TAIR10#DNA/MuDR , 48)
+# skipped short sequence (AT5TE54795:TAIR10#DNA/Pogo , 48)
+# skipped short sequence (AT5TE61780:TAIR10#RC/Helitron , 48)
+# skipped short sequence (AT1TE42455:TAIR10#LTR/Copia , 47)
+# skipped short sequence (AT1TE45195:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT1TE42120:TAIR10#DNA/HAT , 47)
+# skipped short sequence (AT1TE13440:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE42760:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE44285:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE49940:TAIR10#DNA , 47)
+# skipped short sequence (AT1TE78190:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE00830:TAIR10#DNA/MuDR , 47)
+# skipped short sequence (AT1TE47600:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT1TE41925:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE47885:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT1TE52080:TAIR10#LTR/Copia , 47)
+# skipped short sequence (AT1TE73005:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE55405:TAIR10#LINE/L1 , 47)
+# skipped short sequence (AT1TE79325:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE30525:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE39020:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE44560:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE53365:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT1TE44350:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE46450:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE72430:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE45310:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT1TE52435:TAIR10#DNA/MuDR , 47)
+# skipped short sequence (AT1TE20905:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE75095:TAIR10#DNA/HAT , 47)
+# skipped short sequence (AT1TE40805:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE41385:TAIR10#DNA/En-Spm , 47)
+# skipped short sequence (AT2TE39480:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE20375:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE05850:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE52675:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE17210:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT2TE00960:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE73145:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE07585:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE21435:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT2TE06640:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE18575:TAIR10#DNA/MuDR , 47)
+# skipped short sequence (AT2TE35140:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE08975:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE09905:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE07795:TAIR10#LTR/Copia , 47)
+# skipped short sequence (AT2TE38410:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT2TE61320:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE64025:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT3TE44705:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE66535:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE20960:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE08250:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT3TE67750:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT3TE90555:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT3TE68395:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE68855:TAIR10#DNA , 47)
+# skipped short sequence (AT3TE46625:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT3TE91175:TAIR10#LTR/Copia , 47)
+# skipped short sequence (AT3TE62145:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE44775:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT3TE51190:TAIR10#DNA/MuDR , 47)
+# skipped short sequence (AT3TE88035:TAIR10#DNA/HAT , 47)
+# skipped short sequence (AT4TE16555:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT4TE05150:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE34495:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE34745:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE00515:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE19660:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT4TE62775:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE15815:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT4TE21465:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE22045:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE15360:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT4TE18910:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT4TE09915:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT4TE16550:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT4TE69880:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE34620:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE66385:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE73885:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE36050:TAIR10#DNA/Pogo , 47)
+# skipped short sequence (AT5TE52205:TAIR10#LINE/L1 , 47)
+# skipped short sequence (AT5TE44215:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT5TE02560:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE28790:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE33485:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE36590:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE36865:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE62170:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT5TE54960:TAIR10#DNA , 47)
+# skipped short sequence (AT5TE43305:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT5TE47060:TAIR10#DNA/Pogo , 47)
+# skipped short sequence (AT5TE41685:TAIR10#LTR/Gypsy , 47)
+# skipped short sequence (AT5TE57880:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE77575:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE55895:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT5TE35675:TAIR10#RC/Helitron , 47)
+# skipped short sequence (AT1TE21375:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE93400:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE41160:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE31195:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT1TE27465:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE35755:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE55150:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE57765:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE55790:TAIR10#LTR/Copia , 46)
+# skipped short sequence (AT1TE30190:TAIR10#LTR/Copia , 46)
+# skipped short sequence (AT1TE43415:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT1TE25775:TAIR10#DNA/Pogo , 46)
+# skipped short sequence (AT1TE78735:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE23060:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE51365:TAIR10#LTR/Copia , 46)
+# skipped short sequence (AT1TE83480:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT1TE91155:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE45600:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE32810:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE09750:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT2TE13310:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT2TE20310:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT2TE19190:TAIR10#DNA/En-Spm , 46)
+# skipped short sequence (AT2TE09520:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE48410:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE17350:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE20300:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE69210:TAIR10#RathE2_cons , 46)
+# skipped short sequence (AT2TE11730:TAIR10#LTR/Copia , 46)
+# skipped short sequence (AT2TE27090:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE21920:TAIR10#DNA/En-Spm , 46)
+# skipped short sequence (AT2TE61760:TAIR10#DNA/Harbinger , 46)
+# skipped short sequence (AT2TE57260:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE22010:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE15620:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE11640:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE09715:TAIR10#DNA/Pogo , 46)
+# skipped short sequence (AT2TE27445:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE43375:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE17435:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT2TE07755:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE25305:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE29355:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT2TE54210:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT2TE19975:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT3TE44030:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT3TE51645:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT3TE64110:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE68235:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT3TE65160:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE38575:TAIR10#LTR/Copia , 46)
+# skipped short sequence (AT3TE45060:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE17750:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE46035:TAIR10#DNA/Pogo , 46)
+# skipped short sequence (AT3TE59305:TAIR10#DNA/En-Spm , 46)
+# skipped short sequence (AT3TE57990:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT3TE57915:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT3TE64050:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE61115:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE64340:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE34930:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE39265:TAIR10#DNA/HAT , 46)
+# skipped short sequence (AT3TE33685:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT3TE53400:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT3TE53465:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE10070:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE31310:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE20845:TAIR10#LTR/Copia , 46)
+# skipped short sequence (AT4TE68045:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE76690:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE14375:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT4TE26680:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE03600:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE08415:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE88420:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE01635:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE07435:TAIR10#DNA/En-Spm , 46)
+# skipped short sequence (AT4TE74935:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT4TE16585:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT4TE16855:TAIR10#DNA/En-Spm , 46)
+# skipped short sequence (AT4TE48755:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT5TE50250:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE41350:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT5TE54145:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE37460:TAIR10#DNA/En-Spm , 46)
+# skipped short sequence (AT5TE39500:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE49645:TAIR10#LINE/L1 , 46)
+# skipped short sequence (AT5TE69825:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE37070:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT5TE42060:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT5TE43710:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE44950:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE66510:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT5TE54555:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE33640:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE57895:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE36545:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE47945:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE40975:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT5TE53095:TAIR10#DNA/Pogo , 46)
+# skipped short sequence (AT5TE11865:TAIR10#RC/Helitron , 46)
+# skipped short sequence (AT5TE00390:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT5TE54655:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT5TE38185:TAIR10#DNA/MuDR , 46)
+# skipped short sequence (AT5TE46205:TAIR10#LTR/Gypsy , 46)
+# skipped short sequence (AT1TE45340:TAIR10#LTR/Copia , 45)
+# skipped short sequence (AT1TE23555:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE43520:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE53740:TAIR10#LINE/L1 , 45)
+# skipped short sequence (AT1TE45055:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE59475:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE52370:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE55580:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE61645:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE52225:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE52390:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT1TE64910:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE43540:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE34340:TAIR10#LTR/Copia , 45)
+# skipped short sequence (AT1TE50110:TAIR10#DNA , 45)
+# skipped short sequence (AT1TE81270:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE86790:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE43450:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT1TE61050:TAIR10#DNA/Pogo , 45)
+# skipped short sequence (AT1TE32780:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE20190:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE51940:TAIR10#DNA/En-Spm , 45)
+# skipped short sequence (AT1TE14345:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE74425:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT1TE35320:TAIR10#DNA , 45)
+# skipped short sequence (AT2TE31655:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT2TE07275:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT2TE06475:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT2TE26915:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT2TE22115:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT2TE18190:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT2TE68635:TAIR10#LTR/Copia , 45)
+# skipped short sequence (AT2TE04475:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT2TE06020:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE44785:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE47315:TAIR10#DNA , 45)
+# skipped short sequence (AT3TE61575:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT3TE75960:TAIR10#LTR/Copia , 45)
+# skipped short sequence (AT3TE52150:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT3TE70985:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE65675:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE47940:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE11160:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE17375:TAIR10#DNA/En-Spm , 45)
+# skipped short sequence (AT3TE65350:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT3TE52460:TAIR10#LTR/Copia , 45)
+# skipped short sequence (AT3TE50075:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT4TE22155:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT4TE24035:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT4TE08205:TAIR10#DNA/Harbinger , 45)
+# skipped short sequence (AT4TE51480:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT4TE71190:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT4TE21390:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT4TE89330:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT4TE17890:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT4TE23725:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT5TE31175:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE52695:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE49565:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT5TE35375:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT5TE47480:TAIR10#LTR/Gypsy , 45)
+# skipped short sequence (AT5TE26490:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE08190:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE67055:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT5TE41805:TAIR10#DNA/En-Spm , 45)
+# skipped short sequence (AT5TE47030:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE39430:TAIR10#DNA/En-Spm , 45)
+# skipped short sequence (AT5TE36105:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE35645:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE34825:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE33605:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE48875:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT5TE21820:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE18580:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE61285:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE52435:TAIR10#DNA/MuDR , 45)
+# skipped short sequence (AT5TE80450:TAIR10#DNA/Pogo , 45)
+# skipped short sequence (AT5TE72860:TAIR10#DNA/HAT , 45)
+# skipped short sequence (AT5TE55390:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE37865:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT5TE29925:TAIR10#RC/Helitron , 45)
+# skipped short sequence (AT1TE54565:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE60420:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT1TE83340:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE47390:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT1TE47170:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT1TE31745:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE35240:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE53460:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT1TE42045:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE81790:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT1TE54475:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT1TE86365:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT1TE63495:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT1TE59870:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT1TE66995:TAIR10#DNA/Pogo , 44)
+# skipped short sequence (AT1TE33960:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT1TE63245:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE41570:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT1TE62115:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT1TE28645:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE33030:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE33080:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE04975:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT1TE42020:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT2TE25655:TAIR10#DNA , 44)
+# skipped short sequence (AT2TE39085:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT2TE19620:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT2TE55695:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT2TE05795:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT2TE24685:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT2TE09775:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT2TE35490:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT2TE13400:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT2TE12110:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT2TE26790:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT2TE30560:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT2TE09450:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT2TE66535:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT2TE15595:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT2TE72250:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT2TE78215:TAIR10#LINE/L1 , 44)
+# skipped short sequence (AT2TE18615:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT2TE06310:TAIR10#DNA , 44)
+# skipped short sequence (AT3TE48065:TAIR10#DNA/HAT , 44)
+# skipped short sequence (AT3TE53675:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT3TE60490:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE53515:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE63755:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE92805:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT3TE26785:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE61605:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT3TE11090:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE92025:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT3TE47115:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE49270:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT3TE92520:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT3TE44500:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE50780:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT3TE61080:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT3TE41760:TAIR10#DNA/Harbinger , 44)
+# skipped short sequence (AT3TE59440:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT3TE91205:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT3TE60615:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT3TE48115:TAIR10#LINE/L1 , 44)
+# skipped short sequence (AT3TE60080:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT3TE54680:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT4TE13995:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT4TE17930:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT4TE20725:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT4TE13285:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT4TE09325:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT4TE36900:TAIR10#LINE/L1 , 44)
+# skipped short sequence (AT4TE15305:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT4TE25645:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT4TE13105:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE38195:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE73890:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE62435:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE63565:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE15840:TAIR10#LINE/L1 , 44)
+# skipped short sequence (AT5TE51150:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT5TE43170:TAIR10#LTR/Gypsy , 44)
+# skipped short sequence (AT5TE71265:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE54485:TAIR10#LTR/Copia , 44)
+# skipped short sequence (AT5TE33825:TAIR10#DNA/MuDR , 44)
+# skipped short sequence (AT5TE80865:TAIR10#RC/Helitron , 44)
+# skipped short sequence (AT5TE31710:TAIR10#DNA/Pogo , 44)
+# skipped short sequence (AT1TE51500:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE64815:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE81920:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE66650:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE70725:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE34025:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE40410:TAIR10#DNA , 43)
+# skipped short sequence (AT1TE79200:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE71050:TAIR10#DNA , 43)
+# skipped short sequence (AT1TE45945:TAIR10#LTR/Copia , 43)
+# skipped short sequence (AT1TE71735:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE56810:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT1TE54355:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT1TE58705:TAIR10#LTR/Copia , 43)
+# skipped short sequence (AT1TE66780:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE49745:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT1TE47025:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT1TE51585:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT1TE70460:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE50570:TAIR10#DNA , 43)
+# skipped short sequence (AT1TE72405:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT1TE63235:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE50480:TAIR10#DNA , 43)
+# skipped short sequence (AT2TE17855:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE00975:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE10250:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE02925:TAIR10#DNA/HAT , 43)
+# skipped short sequence (AT2TE21040:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE13665:TAIR10#LTR/Copia , 43)
+# skipped short sequence (AT2TE69530:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT2TE10390:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE28575:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE27005:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE17825:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE15455:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE25100:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE35325:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE25890:TAIR10#RathE3_cons , 43)
+# skipped short sequence (AT2TE23585:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT2TE55575:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE02460:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT2TE20490:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT2TE11905:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT2TE09920:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT2TE17185:TAIR10#DNA , 43)
+# skipped short sequence (AT2TE48425:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT2TE18910:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT2TE33980:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE90535:TAIR10#LTR/Copia , 43)
+# skipped short sequence (AT3TE44805:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE69500:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT3TE15625:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE32195:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE54965:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT3TE53205:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE07050:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT3TE54870:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE68140:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE75570:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE13075:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT3TE79790:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE57280:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT3TE53610:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT3TE59000:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT3TE62110:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE72330:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT3TE86805:TAIR10#LINE/L1 , 43)
+# skipped short sequence (AT3TE44425:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE75965:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT3TE66490:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE23025:TAIR10#DNA/Pogo , 43)
+# skipped short sequence (AT4TE13145:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT4TE17860:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE18930:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT4TE28630:TAIR10#DNA , 43)
+# skipped short sequence (AT4TE15200:TAIR10#DNA/En-Spm , 43)
+# skipped short sequence (AT4TE26295:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE16170:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT4TE58660:TAIR10#DNA/Mariner , 43)
+# skipped short sequence (AT4TE27105:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE48760:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE29020:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE06125:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE10955:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE12385:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT4TE08770:TAIR10#LTR/Copia , 43)
+# skipped short sequence (AT5TE93290:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT5TE48755:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT5TE20420:TAIR10#LTR/Gypsy , 43)
+# skipped short sequence (AT5TE34025:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT5TE22495:TAIR10#LINE/L1 , 43)
+# skipped short sequence (AT5TE63855:TAIR10#DNA , 43)
+# skipped short sequence (AT5TE57980:TAIR10#DNA/Mariner , 43)
+# skipped short sequence (AT5TE38555:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE36615:TAIR10#LINE/L1 , 43)
+# skipped short sequence (AT5TE23340:TAIR10#DNA , 43)
+# skipped short sequence (AT5TE11320:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE70700:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE41375:TAIR10#LTR/Copia , 43)
+# skipped short sequence (AT5TE94370:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT5TE01225:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE56305:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE44295:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE53360:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE39925:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE49625:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE03990:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE52900:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE38305:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT5TE23170:TAIR10#DNA/MuDR , 43)
+# skipped short sequence (AT5TE33490:TAIR10#RC/Helitron , 43)
+# skipped short sequence (AT1TE03865:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE01140:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT1TE56160:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE31595:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE55005:TAIR10#LTR/Copia , 42)
+# skipped short sequence (AT1TE18785:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE51640:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE61475:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE77765:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE17870:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE63010:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE58340:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE84525:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT1TE76225:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT1TE44185:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT2TE08230:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE35315:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE18555:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT2TE21275:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE22580:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE19450:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE30495:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE72990:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE55610:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE32300:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE49220:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE13195:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT2TE02470:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT2TE01895:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE54230:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT2TE22255:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE17840:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE17285:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE17250:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE24925:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE26145:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE45645:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE47760:TAIR10#LTR/Copia , 42)
+# skipped short sequence (AT2TE75555:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT2TE44865:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT2TE22515:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT2TE43365:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE61320:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE46280:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT3TE63625:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT3TE69485:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE28165:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE53225:TAIR10#DNA/En-Spm , 42)
+# skipped short sequence (AT3TE51555:TAIR10#LTR/Copia , 42)
+# skipped short sequence (AT3TE28435:TAIR10#DNA/HAT , 42)
+# skipped short sequence (AT3TE52690:TAIR10#LINE/L1 , 42)
+# skipped short sequence (AT3TE48320:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE67215:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT3TE62705:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT3TE62075:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT3TE50700:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE94440:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT3TE73715:TAIR10#DNA , 42)
+# skipped short sequence (AT3TE54530:TAIR10#LTR/Copia , 42)
+# skipped short sequence (AT3TE53160:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE19145:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT4TE44180:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE03165:TAIR10#DNA/HAT , 42)
+# skipped short sequence (AT4TE50870:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE18100:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE33040:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE19455:TAIR10#LTR/Copia , 42)
+# skipped short sequence (AT4TE11285:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT4TE16180:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT4TE51505:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT4TE38230:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE49215:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT4TE20475:TAIR10#DNA/En-Spm , 42)
+# skipped short sequence (AT4TE13915:TAIR10#DNA , 42)
+# skipped short sequence (AT4TE38965:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE37225:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE62745:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE33835:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE64435:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE19450:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE46445:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT5TE35245:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT5TE41995:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE74220:TAIR10#RathE3_cons , 42)
+# skipped short sequence (AT5TE74100:TAIR10#RathE3_cons , 42)
+# skipped short sequence (AT5TE69995:TAIR10#LINE/L1 , 42)
+# skipped short sequence (AT5TE73025:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE44260:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT5TE37405:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT5TE47135:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT5TE35170:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE44125:TAIR10#LTR/Gypsy , 42)
+# skipped short sequence (AT5TE43475:TAIR10#LTR/Copia , 42)
+# skipped short sequence (AT5TE39825:TAIR10#DNA/En-Spm , 42)
+# skipped short sequence (AT5TE92190:TAIR10#RC/Helitron , 42)
+# skipped short sequence (AT5TE44760:TAIR10#DNA/MuDR , 42)
+# skipped short sequence (AT5TE38470:TAIR10#DNA/HAT , 42)
+# skipped short sequence (AT1TE47120:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT1TE43060:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT1TE15100:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE54040:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE53155:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE46655:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT1TE64225:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT1TE56625:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE50455:TAIR10#DNA , 41)
+# skipped short sequence (AT1TE51410:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT1TE57065:TAIR10#DNA/HAT , 41)
+# skipped short sequence (AT1TE42590:TAIR10#LTR/Copia , 41)
+# skipped short sequence (AT1TE58470:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE02680:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE71695:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE44145:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE58680:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE77550:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE20175:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT1TE47335:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT2TE21930:TAIR10#DNA/En-Spm , 41)
+# skipped short sequence (AT2TE13405:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT2TE18310:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT2TE27755:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE08325:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE00080:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT2TE13175:TAIR10#LINE? , 41)
+# skipped short sequence (AT2TE51475:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE10165:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT2TE01640:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE59985:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT2TE58090:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE54005:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE23160:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE19950:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT2TE16260:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT3TE38370:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE55170:TAIR10#LTR/Copia , 41)
+# skipped short sequence (AT3TE39815:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE30865:TAIR10#DNA , 41)
+# skipped short sequence (AT3TE57595:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE68645:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE53990:TAIR10#DNA/En-Spm , 41)
+# skipped short sequence (AT3TE58505:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT3TE42990:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE67740:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT3TE52960:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE08255:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE47470:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE71550:TAIR10#DNA , 41)
+# skipped short sequence (AT3TE69715:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE52285:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT3TE40960:TAIR10#RathE3_cons , 41)
+# skipped short sequence (AT3TE13080:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE92020:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE54125:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE51955:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE41055:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT3TE08305:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE08295:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE94885:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE34675:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT3TE43890:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE51515:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT4TE20675:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE27255:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE43015:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE09890:TAIR10#LINE/L1 , 41)
+# skipped short sequence (AT4TE10870:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE08470:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT4TE38470:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT4TE23860:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE14830:TAIR10#DNA , 41)
+# skipped short sequence (AT4TE73650:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE19725:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT4TE80435:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT4TE20795:TAIR10#DNA/En-Spm , 41)
+# skipped short sequence (AT4TE21320:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT4TE08940:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT4TE23805:TAIR10#DNA , 41)
+# skipped short sequence (AT4TE02915:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE48200:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT5TE21985:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE42815:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT5TE71060:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE91610:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE36015:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE79720:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE34940:TAIR10#DNA/En-Spm , 41)
+# skipped short sequence (AT5TE78455:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE47420:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT5TE17355:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT5TE41850:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT5TE39655:TAIR10#LTR/Gypsy , 41)
+# skipped short sequence (AT5TE47995:TAIR10#LINE/L1 , 41)
+# skipped short sequence (AT5TE32000:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE52220:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE60085:TAIR10#RC/Helitron , 41)
+# skipped short sequence (AT5TE51990:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT5TE51760:TAIR10#DNA/MuDR , 41)
+# skipped short sequence (AT1TE32020:TAIR10#LTR/Copia , 40)
+# skipped short sequence (AT1TE52415:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT1TE61330:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE75315:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE54965:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT1TE32330:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE49820:TAIR10#DNA , 40)
+# skipped short sequence (AT1TE46935:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE43620:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE62635:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT1TE53175:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE61040:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE41760:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT1TE43175:TAIR10#LTR/Copia , 40)
+# skipped short sequence (AT1TE06345:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE41380:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT1TE54045:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT1TE92720:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT2TE23205:TAIR10#DNA/En-Spm , 40)
+# skipped short sequence (AT2TE08435:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE23250:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE24995:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE18125:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT2TE21520:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT2TE10610:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE18350:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE27370:TAIR10#DNA/HAT , 40)
+# skipped short sequence (AT2TE45840:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT2TE23400:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE06625:TAIR10#DNA/En-Spm , 40)
+# skipped short sequence (AT2TE54075:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE17820:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT2TE23215:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE41845:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE04855:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE26235:TAIR10#LTR/Copia , 40)
+# skipped short sequence (AT2TE25730:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT2TE21465:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT3TE48985:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE67270:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE63835:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT3TE63925:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE68360:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE44970:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE66155:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT3TE00010:TAIR10#DNA , 40)
+# skipped short sequence (AT3TE55090:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT3TE64555:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE60585:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE92290:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT3TE92035:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT3TE53650:TAIR10#LINE/L1 , 40)
+# skipped short sequence (AT3TE67570:TAIR10#DNA/HAT , 40)
+# skipped short sequence (AT3TE29350:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT3TE68115:TAIR10#DNA/Pogo , 40)
+# skipped short sequence (AT3TE78555:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT3TE67275:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT3TE53210:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT3TE32185:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE54735:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE25575:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT4TE15085:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE23230:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE51000:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT4TE13340:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT4TE81115:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE24685:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE21995:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE29725:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE01550:TAIR10#DNA/MuDR , 40)
+# skipped short sequence (AT4TE08725:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT4TE17675:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE48610:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE50670:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT4TE13925:TAIR10#LTR/Copia , 40)
+# skipped short sequence (AT4TE08145:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE27210:TAIR10#DNA , 40)
+# skipped short sequence (AT4TE80945:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT4TE16195:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT4TE09230:TAIR10#LTR/Copia , 40)
+# skipped short sequence (AT4TE09260:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE22810:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE45195:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT5TE34975:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE36090:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT5TE69980:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE42050:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT5TE18590:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE21990:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE36835:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT5TE57885:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE43380:TAIR10#DNA/En-Spm , 40)
+# skipped short sequence (AT5TE31590:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE11830:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT5TE43195:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT5TE31550:TAIR10#LINE/L1 , 40)
+# skipped short sequence (AT5TE56120:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE68910:TAIR10#RC/Helitron , 40)
+# skipped short sequence (AT5TE55550:TAIR10#LTR/Gypsy , 40)
+# skipped short sequence (AT1TE38785:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT1TE34010:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT1TE67505:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE53920:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT1TE61650:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT1TE42645:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE51130:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT1TE76910:TAIR10#DNA , 39)
+# skipped short sequence (AT1TE40100:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE30445:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE91145:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT1TE62690:TAIR10#RathE1_cons , 39)
+# skipped short sequence (AT1TE26715:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE66580:TAIR10#DNA/Pogo , 39)
+# skipped short sequence (AT1TE56660:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE77130:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE98100:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE58160:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE45810:TAIR10#LTR/Copia , 39)
+# skipped short sequence (AT1TE65320:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE23285:TAIR10#DNA , 39)
+# skipped short sequence (AT1TE69450:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE43710:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE72030:TAIR10#DNA/HAT , 39)
+# skipped short sequence (AT1TE53865:TAIR10#DNA/Harbinger , 39)
+# skipped short sequence (AT1TE26620:TAIR10#DNA/Harbinger , 39)
+# skipped short sequence (AT1TE71730:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE44880:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE12550:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT2TE19080:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE30345:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE47595:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE28195:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE36590:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE09930:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE07615:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE19830:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE27495:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE26195:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE24845:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE31830:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE25175:TAIR10#LTR/Copia , 39)
+# skipped short sequence (AT2TE08485:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE19930:TAIR10#DNA/En-Spm , 39)
+# skipped short sequence (AT2TE23760:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT2TE35725:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE04115:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT2TE19820:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT2TE17065:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE26095:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE11830:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT2TE18600:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT3TE53040:TAIR10#DNA/En-Spm , 39)
+# skipped short sequence (AT3TE64155:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT3TE34460:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE54035:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT3TE45280:TAIR10#DNA/HAT , 39)
+# skipped short sequence (AT3TE60815:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE45805:TAIR10#LTR/Copia , 39)
+# skipped short sequence (AT3TE50395:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE45930:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE82245:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT3TE11970:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT3TE66710:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE79230:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT3TE41960:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT3TE41965:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE55065:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE68230:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT3TE50150:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT4TE78595:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE59470:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT4TE35790:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT4TE76160:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT4TE11820:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE40045:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE68760:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE38110:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE15505:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT4TE20465:TAIR10#DNA/En-Spm , 39)
+# skipped short sequence (AT4TE25020:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE41330:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE51735:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE31295:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT4TE62395:TAIR10#DNA , 39)
+# skipped short sequence (AT4TE13410:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT5TE81770:TAIR10#DNA/MuDR , 39)
+# skipped short sequence (AT5TE34800:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE54250:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE48695:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE43245:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT5TE31890:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE23240:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE48165:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE88965:TAIR10#DNA/Tc1 , 39)
+# skipped short sequence (AT5TE33400:TAIR10#LTR/Gypsy , 39)
+# skipped short sequence (AT5TE31430:TAIR10#LTR/Copia , 39)
+# skipped short sequence (AT5TE13610:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE52015:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE51785:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE28855:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE56445:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE81000:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE05465:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT5TE31295:TAIR10#RC/Helitron , 39)
+# skipped short sequence (AT1TE35960:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE43935:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT1TE44685:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT1TE38025:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE42520:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE86530:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT1TE52785:TAIR10#DNA , 38)
+# skipped short sequence (AT1TE28335:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT1TE41840:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE28410:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT1TE28465:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT1TE28515:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT1TE41205:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE34055:TAIR10#LINE/L1 , 38)
+# skipped short sequence (AT1TE62120:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE56655:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE54125:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE63455:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE53290:TAIR10#LTR/Copia , 38)
+# skipped short sequence (AT1TE79930:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE38745:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT1TE52645:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT2TE64515:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT2TE49225:TAIR10#DNA , 38)
+# skipped short sequence (AT2TE01020:TAIR10#SINE , 38)
+# skipped short sequence (AT2TE07565:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT2TE01900:TAIR10#DNA , 38)
+# skipped short sequence (AT2TE02155:TAIR10#LTR/Copia , 38)
+# skipped short sequence (AT2TE68525:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT2TE46720:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT2TE45620:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT2TE25325:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT2TE23355:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT2TE15540:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT2TE41375:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT2TE06290:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT3TE37970:TAIR10#DNA/HAT , 38)
+# skipped short sequence (AT3TE88025:TAIR10#DNA/Pogo , 38)
+# skipped short sequence (AT3TE67150:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT3TE68635:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT3TE62070:TAIR10#DNA/En-Spm , 38)
+# skipped short sequence (AT3TE64395:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT3TE50310:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT3TE63100:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT3TE72855:TAIR10#LTR/Copia , 38)
+# skipped short sequence (AT3TE30855:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT3TE92810:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT3TE89085:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT3TE70470:TAIR10#DNA/Pogo , 38)
+# skipped short sequence (AT3TE45995:TAIR10#LINE/L1 , 38)
+# skipped short sequence (AT3TE54785:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE34220:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE30825:TAIR10#DNA/Harbinger , 38)
+# skipped short sequence (AT4TE51025:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT4TE18230:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT4TE00680:TAIR10#DNA/HAT , 38)
+# skipped short sequence (AT4TE13830:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT4TE12565:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT4TE32985:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE41335:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE50925:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT4TE39300:TAIR10#DNA , 38)
+# skipped short sequence (AT4TE12360:TAIR10#LTR/Copia , 38)
+# skipped short sequence (AT4TE28000:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE14885:TAIR10#DNA , 38)
+# skipped short sequence (AT4TE17025:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE63705:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT4TE38105:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT4TE16835:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT4TE15140:TAIR10#LTR/Copia , 38)
+# skipped short sequence (AT4TE30615:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE49735:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT5TE55505:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE66780:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE55920:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT5TE14845:TAIR10#DNA , 38)
+# skipped short sequence (AT5TE47835:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE40305:TAIR10#DNA/En-Spm , 38)
+# skipped short sequence (AT5TE01700:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE48090:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE31955:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT5TE40250:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT5TE45990:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT5TE47545:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE37520:TAIR10#DNA/HAT , 38)
+# skipped short sequence (AT5TE53890:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE44350:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT5TE58195:TAIR10#DNA/MuDR , 38)
+# skipped short sequence (AT5TE43065:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT5TE46065:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT5TE55720:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE69350:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE34970:TAIR10#DNA , 38)
+# skipped short sequence (AT5TE65530:TAIR10#RC/Helitron , 38)
+# skipped short sequence (AT5TE58300:TAIR10#DNA/En-Spm , 38)
+# skipped short sequence (AT5TE60335:TAIR10#LTR/Gypsy , 38)
+# skipped short sequence (AT1TE67905:TAIR10#LTR/Copia , 37)
+# skipped short sequence (AT1TE06475:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE69810:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT1TE37040:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE76525:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE40670:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT1TE73195:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE57170:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE42960:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE45470:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT1TE42905:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT1TE34505:TAIR10#LTR/Copia , 37)
+# skipped short sequence (AT1TE67640:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT1TE83225:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE71545:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE44745:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE53980:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT1TE56240:TAIR10#DNA/Harbinger , 37)
+# skipped short sequence (AT1TE02555:TAIR10#DNA/Pogo , 37)
+# skipped short sequence (AT1TE33330:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE54830:TAIR10#LTR/Copia , 37)
+# skipped short sequence (AT1TE47045:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT1TE49585:TAIR10#DNA , 37)
+# skipped short sequence (AT1TE81080:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT1TE00605:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE41405:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE17460:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT2TE17035:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE17260:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE22800:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE57950:TAIR10#DNA/Pogo , 37)
+# skipped short sequence (AT2TE40970:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE51165:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE29505:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT2TE28740:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT2TE79670:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE29345:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE47645:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE08065:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT2TE09210:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT2TE48880:TAIR10#DNA , 37)
+# skipped short sequence (AT2TE10420:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE64695:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE52685:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE47480:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE89815:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE37425:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT3TE66675:TAIR10#DNA , 37)
+# skipped short sequence (AT3TE22470:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE70350:TAIR10#DNA/HAT , 37)
+# skipped short sequence (AT3TE61885:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE45165:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE17315:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE23750:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT3TE54215:TAIR10#LTR/Copia , 37)
+# skipped short sequence (AT3TE61340:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT3TE52375:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT3TE70450:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE57170:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT3TE47355:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE46360:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE64275:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT3TE77795:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT3TE39525:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT3TE23590:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE25585:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE39025:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE06685:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE02425:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE10520:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE09830:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT4TE73100:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE26025:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE51500:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT4TE76700:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE30600:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE56965:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT4TE23880:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT4TE14810:TAIR10#DNA , 37)
+# skipped short sequence (AT4TE23550:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT5TE33910:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE37030:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT5TE27885:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE60365:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE44520:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE48050:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT5TE43900:TAIR10#LTR/Gypsy , 37)
+# skipped short sequence (AT5TE35450:TAIR10#DNA/MuDR , 37)
+# skipped short sequence (AT5TE61430:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE78645:TAIR10#LINE/L1 , 37)
+# skipped short sequence (AT5TE67690:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE39675:TAIR10#DNA , 37)
+# skipped short sequence (AT5TE36780:TAIR10#DNA/Pogo , 37)
+# skipped short sequence (AT5TE30075:TAIR10#DNA/HAT , 37)
+# skipped short sequence (AT5TE23660:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE38985:TAIR10#DNA/HAT , 37)
+# skipped short sequence (AT5TE82310:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT5TE93865:TAIR10#DNA/HAT , 37)
+# skipped short sequence (AT5TE93330:TAIR10#RC/Helitron , 37)
+# skipped short sequence (AT1TE73025:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE29145:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT1TE45325:TAIR10#LTR/Copia , 36)
+# skipped short sequence (AT1TE54090:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE76390:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE62920:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT1TE57645:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE50950:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT1TE39530:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE03185:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE59410:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE55140:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE00610:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE46240:TAIR10#DNA/HAT , 36)
+# skipped short sequence (AT1TE80930:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE42060:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE55695:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT2TE10795:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT2TE04870:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT2TE23725:TAIR10#DNA/HAT , 36)
+# skipped short sequence (AT2TE17475:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT2TE26485:TAIR10#DNA , 36)
+# skipped short sequence (AT2TE16855:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT2TE14325:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT2TE12045:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT2TE18060:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT2TE16380:TAIR10#DNA/En-Spm , 36)
+# skipped short sequence (AT2TE47605:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT2TE82795:TAIR10#DNA/Pogo , 36)
+# skipped short sequence (AT2TE20920:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT2TE20785:TAIR10#DNA , 36)
+# skipped short sequence (AT2TE10865:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT2TE39515:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT2TE11800:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT2TE21840:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE68265:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE43885:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE16795:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE64745:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE44690:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT3TE46460:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE22710:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE32740:TAIR10#LTR/Copia , 36)
+# skipped short sequence (AT3TE60165:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT3TE82730:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT3TE63190:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT3TE62435:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT3TE59665:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT3TE52315:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT3TE58005:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT3TE59925:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT3TE41495:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE22680:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT4TE68370:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE16225:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT4TE23225:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE29835:TAIR10#LTR/Copia , 36)
+# skipped short sequence (AT4TE24000:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT4TE79490:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT4TE10275:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE21510:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT4TE23740:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT4TE40375:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE26055:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE39795:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE76150:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT4TE34075:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE39585:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT4TE12240:TAIR10#DNA/Pogo , 36)
+# skipped short sequence (AT4TE18290:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT4TE10645:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE10520:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE49910:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE50135:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE53215:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE48425:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE46330:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT5TE54915:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE41210:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE46665:TAIR10#LTR/Copia , 36)
+# skipped short sequence (AT5TE96650:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE35720:TAIR10#DNA , 36)
+# skipped short sequence (AT5TE40360:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT5TE59620:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE46285:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT5TE44680:TAIR10#LTR/Gypsy , 36)
+# skipped short sequence (AT5TE32295:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE46395:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE48340:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE65290:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE23320:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT5TE31560:TAIR10#LINE/L1 , 36)
+# skipped short sequence (AT5TE61985:TAIR10#DNA , 36)
+# skipped short sequence (AT5TE52975:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE39175:TAIR10#DNA/MuDR , 36)
+# skipped short sequence (AT5TE44015:TAIR10#RC/Helitron , 36)
+# skipped short sequence (AT1TE42785:TAIR10#DNA/Pogo , 35)
+# skipped short sequence (AT1TE46705:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT1TE51400:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT1TE64230:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT1TE51060:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT1TE54140:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE43300:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE37045:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE45420:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT1TE50820:TAIR10#DNA , 35)
+# skipped short sequence (AT1TE41430:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT1TE25255:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE56295:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE57195:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT1TE46670:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT1TE36040:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT1TE51165:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT1TE42675:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE42695:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE41455:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT1TE80935:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE42425:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE03925:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE55505:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE88910:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE30200:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT1TE57850:TAIR10#DNA/HAT , 35)
+# skipped short sequence (AT1TE27360:TAIR10#DNA/HAT , 35)
+# skipped short sequence (AT1TE11545:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE35440:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE36500:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE27545:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE46160:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT1TE90565:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT1TE68780:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE17930:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT2TE09275:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE43390:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT2TE39500:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE38415:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE84700:TAIR10#LINE/L1 , 35)
+# skipped short sequence (AT2TE26300:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT2TE38895:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE06860:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE01175:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT2TE00150:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT2TE39075:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE09435:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT2TE11190:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT2TE09780:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE20210:TAIR10#DNA/En-Spm , 35)
+# skipped short sequence (AT2TE19330:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT2TE12325:TAIR10#DNA/En-Spm , 35)
+# skipped short sequence (AT3TE42780:TAIR10#DNA , 35)
+# skipped short sequence (AT3TE48355:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT3TE51665:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT3TE45510:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT3TE76755:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT3TE43860:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT3TE65640:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT3TE61150:TAIR10#DNA/En-Spm , 35)
+# skipped short sequence (AT3TE47070:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT3TE50690:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT3TE58695:TAIR10#LINE/L1 , 35)
+# skipped short sequence (AT3TE91185:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT3TE91220:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT3TE49145:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT3TE51815:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT3TE51115:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT3TE15760:TAIR10#DNA , 35)
+# skipped short sequence (AT3TE36780:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE23340:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT4TE39520:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE01415:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT4TE16105:TAIR10#DNA/En-Spm , 35)
+# skipped short sequence (AT4TE25770:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE02150:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT4TE28880:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE40055:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE23240:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE11000:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE41450:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE10625:TAIR10#SINE , 35)
+# skipped short sequence (AT4TE08750:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE25230:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT4TE06670:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT4TE29400:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT5TE54330:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT5TE47535:TAIR10#DNA/En-Spm , 35)
+# skipped short sequence (AT5TE43415:TAIR10#LTR/Gypsy , 35)
+# skipped short sequence (AT5TE35535:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT5TE50760:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT5TE36725:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE50285:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE17305:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE21980:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE39860:TAIR10#DNA/En-Spm , 35)
+# skipped short sequence (AT5TE72010:TAIR10#DNA , 35)
+# skipped short sequence (AT5TE47745:TAIR10#LINE/L1 , 35)
+# skipped short sequence (AT5TE94610:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT5TE33275:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE30150:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE22360:TAIR10#DNA/MuDR , 35)
+# skipped short sequence (AT5TE78990:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE43465:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT5TE71230:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE49115:TAIR10#LINE/L1 , 35)
+# skipped short sequence (AT5TE38855:TAIR10#LTR/Copia , 35)
+# skipped short sequence (AT5TE62000:TAIR10#RC/Helitron , 35)
+# skipped short sequence (AT5TE30465:TAIR10#DNA/HAT , 35)
+# skipped short sequence (AT1TE80820:TAIR10#DNA , 34)
+# skipped short sequence (AT1TE80945:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE03870:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE56580:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE49985:TAIR10#DNA , 34)
+# skipped short sequence (AT1TE57760:TAIR10#LTR/Copia , 34)
+# skipped short sequence (AT1TE45935:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE44415:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE46060:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE87640:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE42525:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE59315:TAIR10#LINE/L1 , 34)
+# skipped short sequence (AT1TE57435:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE52800:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE51715:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT1TE46730:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT1TE66665:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE39750:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE58135:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE93315:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE83330:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE14900:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE12270:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE45450:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE67790:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE94235:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE49760:TAIR10#DNA , 34)
+# skipped short sequence (AT1TE61570:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE42715:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE50360:TAIR10#DNA , 34)
+# skipped short sequence (AT1TE45105:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE52355:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT1TE96400:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT2TE51525:TAIR10#DNA/Pogo , 34)
+# skipped short sequence (AT2TE13135:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT2TE15910:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT2TE07610:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT2TE19235:TAIR10#DNA/En-Spm , 34)
+# skipped short sequence (AT2TE19470:TAIR10#DNA/En-Spm , 34)
+# skipped short sequence (AT2TE17445:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT2TE15505:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT2TE25065:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT2TE63795:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT2TE08430:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT2TE41355:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT2TE26630:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT2TE51075:TAIR10#DNA/En-Spm , 34)
+# skipped short sequence (AT2TE59520:TAIR10#LTR/Copia , 34)
+# skipped short sequence (AT2TE40400:TAIR10#LINE/L1 , 34)
+# skipped short sequence (AT2TE10125:TAIR10#DNA , 34)
+# skipped short sequence (AT2TE13600:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT2TE24930:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT2TE37090:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT2TE22100:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT2TE28940:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE68650:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE61055:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT3TE45530:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE85250:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE64170:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE75400:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE16690:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE29000:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE19200:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE81330:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE49185:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE51040:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT3TE18200:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE38510:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE35690:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE52175:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT3TE44830:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE09735:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE59345:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT3TE51905:TAIR10#LTR/Copia , 34)
+# skipped short sequence (AT3TE53725:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT3TE68365:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT3TE40685:TAIR10#DNA/HAT , 34)
+# skipped short sequence (AT3TE58500:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT3TE52990:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT4TE15465:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT4TE18960:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE21635:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT4TE21640:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE14695:TAIR10#DNA , 34)
+# skipped short sequence (AT4TE12185:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT4TE13265:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT4TE12270:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE79350:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE19000:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT4TE14465:TAIR10#LINE/L1 , 34)
+# skipped short sequence (AT4TE13520:TAIR10#LTR/Copia , 34)
+# skipped short sequence (AT4TE68060:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE06060:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE33440:TAIR10#DNA/HAT , 34)
+# skipped short sequence (AT4TE03520:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE06305:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT4TE02745:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE09115:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT4TE28720:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE42425:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT5TE36670:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE70845:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT5TE50275:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE35255:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT5TE51780:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE52010:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE49410:TAIR10#DNA/HAT , 34)
+# skipped short sequence (AT5TE38435:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE78445:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE50425:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE26580:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE73735:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE54825:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT5TE25130:TAIR10#LTR/Copia , 34)
+# skipped short sequence (AT5TE12455:TAIR10#LINE/L1 , 34)
+# skipped short sequence (AT5TE80020:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE04730:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE50660:TAIR10#RC/Helitron , 34)
+# skipped short sequence (AT5TE52545:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT5TE42375:TAIR10#LTR/Gypsy , 34)
+# skipped short sequence (AT5TE48785:TAIR10#DNA/MuDR , 34)
+# skipped short sequence (AT1TE53235:TAIR10#RathE1_cons , 33)
+# skipped short sequence (AT1TE62940:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE53340:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT1TE13305:TAIR10#DNA/Mariner , 33)
+# skipped short sequence (AT1TE37285:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE87360:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE62295:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE37895:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE91795:TAIR10#DNA , 33)
+# skipped short sequence (AT1TE96060:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT1TE46965:TAIR10#DNA/En-Spm , 33)
+# skipped short sequence (AT1TE46460:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE49350:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT1TE30345:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT1TE26360:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE20660:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE53240:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE53345:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT1TE56165:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE46815:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT1TE62985:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE36030:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT1TE72975:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT1TE41515:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT1TE27695:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE27825:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE35940:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT1TE95890:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE52130:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT1TE52115:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT1TE22715:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE19095:TAIR10#DNA , 33)
+# skipped short sequence (AT1TE64020:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE67885:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT2TE89035:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE13810:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE40260:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE32310:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE25105:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT2TE25170:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT2TE15915:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT2TE10775:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE01890:TAIR10#DNA/HAT , 33)
+# skipped short sequence (AT2TE28100:TAIR10#DNA/En-Spm , 33)
+# skipped short sequence (AT2TE11510:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT2TE43120:TAIR10#DNA/HAT , 33)
+# skipped short sequence (AT2TE24740:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE08730:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE08505:TAIR10#RathE1_cons , 33)
+# skipped short sequence (AT2TE27700:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT2TE46160:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE58100:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE10695:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE26930:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT2TE23865:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT2TE76415:TAIR10#LINE/L1 , 33)
+# skipped short sequence (AT2TE28275:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT2TE16460:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT2TE12420:TAIR10#LINE/L1 , 33)
+# skipped short sequence (AT2TE17385:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT2TE18085:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE92425:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE42070:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT3TE31075:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE77615:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT3TE24790:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT3TE62505:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT3TE43790:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE18190:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE48385:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE26865:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE08030:TAIR10#RathE1_cons , 33)
+# skipped short sequence (AT3TE68515:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE15490:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE50415:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT3TE83370:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT3TE57570:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT3TE33540:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE70030:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE84005:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE65880:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE91195:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT3TE51925:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT3TE24155:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE70380:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT3TE36775:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE63645:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT3TE62755:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE54365:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE33235:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE31635:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE68480:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE43335:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT3TE32480:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE67450:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE18170:TAIR10#DNA/En-Spm , 33)
+# skipped short sequence (AT4TE22965:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE03300:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE13960:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT4TE48745:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE23030:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE23440:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE24065:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE11405:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE10365:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT4TE21120:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE70855:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE39825:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE16155:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT4TE33490:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE08845:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT4TE36840:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT4TE14720:TAIR10#DNA , 33)
+# skipped short sequence (AT4TE22240:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT4TE20790:TAIR10#DNA/En-Spm , 33)
+# skipped short sequence (AT4TE20240:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT4TE15530:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT4TE15645:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT4TE11230:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE61615:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE60905:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE36960:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE50905:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE76215:TAIR10#LTR/Copia , 33)
+# skipped short sequence (AT5TE58400:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE87455:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE58315:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE76910:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE73085:TAIR10#DNA , 33)
+# skipped short sequence (AT5TE70270:TAIR10#DNA , 33)
+# skipped short sequence (AT5TE33065:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE49275:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE37195:TAIR10#DNA/HAT , 33)
+# skipped short sequence (AT5TE35490:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE49470:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE54345:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE57995:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE68280:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE06860:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE44115:TAIR10#LTR/Gypsy , 33)
+# skipped short sequence (AT5TE68680:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE49040:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE93850:TAIR10#DNA/MuDR , 33)
+# skipped short sequence (AT5TE36170:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT5TE43320:TAIR10#DNA/En-Spm , 33)
+# skipped short sequence (AT5TE68845:TAIR10#DNA , 33)
+# skipped short sequence (AT5TE02715:TAIR10#RC/Helitron , 33)
+# skipped short sequence (AT1TE78215:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE51015:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT1TE74080:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT1TE35285:TAIR10#DNA , 32)
+# skipped short sequence (AT1TE42720:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE70160:TAIR10#RathE2_cons , 32)
+# skipped short sequence (AT1TE69840:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE45890:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE63055:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE61070:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT1TE34330:TAIR10#LTR/Copia , 32)
+# skipped short sequence (AT1TE02565:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE51610:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE37315:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE62900:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT1TE44665:TAIR10#LINE/L1 , 32)
+# skipped short sequence (AT1TE27330:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE45685:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT1TE45700:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT1TE51720:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT1TE49365:TAIR10#DNA , 32)
+# skipped short sequence (AT1TE15105:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE64440:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE53055:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT1TE20155:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE51865:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT1TE62225:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT1TE39510:TAIR10#DNA/En-Spm , 32)
+# skipped short sequence (AT2TE26375:TAIR10#DNA/En-Spm , 32)
+# skipped short sequence (AT2TE08475:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT2TE26985:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT2TE19940:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT2TE64030:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT2TE21675:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT2TE21810:TAIR10#LINE/L1 , 32)
+# skipped short sequence (AT2TE27240:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT2TE63440:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT2TE89890:TAIR10#DNA , 32)
+# skipped short sequence (AT2TE14975:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT2TE17670:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT2TE54190:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT2TE05735:TAIR10#DNA , 32)
+# skipped short sequence (AT2TE72385:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT3TE00190:TAIR10#DNA , 32)
+# skipped short sequence (AT3TE09470:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE50935:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT3TE62995:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE64585:TAIR10#LTR/Copia , 32)
+# skipped short sequence (AT3TE61090:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE67555:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT3TE66635:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT3TE54505:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT3TE52185:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT3TE57305:TAIR10#DNA/En-Spm , 32)
+# skipped short sequence (AT3TE43475:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT3TE55450:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT3TE47455:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE32815:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE49205:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE45315:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE66115:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT3TE57245:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT3TE90875:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT3TE11225:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT4TE09885:TAIR10#LINE/L1 , 32)
+# skipped short sequence (AT4TE24665:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE24745:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE20630:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE24275:TAIR10#DNA , 32)
+# skipped short sequence (AT4TE21515:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT4TE14680:TAIR10#DNA , 32)
+# skipped short sequence (AT4TE28635:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT4TE19085:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE14785:TAIR10#DNA , 32)
+# skipped short sequence (AT4TE09725:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE20480:TAIR10#DNA/En-Spm , 32)
+# skipped short sequence (AT4TE84920:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT4TE18710:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE34400:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT4TE31780:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT4TE13385:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE14270:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT4TE32980:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT4TE22355:TAIR10#DNA/Pogo , 32)
+# skipped short sequence (AT4TE51015:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT5TE71900:TAIR10#DNA/HAT , 32)
+# skipped short sequence (AT5TE55310:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE69750:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT5TE46240:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT5TE54315:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE37295:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT5TE69665:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT5TE33590:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE55260:TAIR10#DNA/En-Spm , 32)
+# skipped short sequence (AT5TE34435:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE71465:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE72435:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE37150:TAIR10#DNA/MuDR , 32)
+# skipped short sequence (AT5TE40220:TAIR10#LTR/Gypsy , 32)
+# skipped short sequence (AT5TE17760:TAIR10#DNA/HAT , 32)
+# skipped short sequence (AT5TE32750:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE23510:TAIR10#DNA , 32)
+# skipped short sequence (AT5TE59185:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT5TE38395:TAIR10#RC/Helitron , 32)
+# skipped short sequence (AT1TE49685:TAIR10#DNA/En-Spm , 31)
+# skipped short sequence (AT1TE03195:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE44170:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE94195:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE39395:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE70655:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE62580:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE55065:TAIR10#LTR/Copia , 31)
+# skipped short sequence (AT1TE96415:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE59225:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE57660:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT1TE40945:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE65845:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE49965:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT1TE50410:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT1TE93305:TAIR10#DNA/HAT , 31)
+# skipped short sequence (AT1TE76755:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE38815:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE41110:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE44015:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE46875:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE58800:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE72300:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE46920:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT1TE04715:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE47185:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT1TE47405:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT1TE76135:TAIR10#DNA , 31)
+# skipped short sequence (AT1TE23275:TAIR10#DNA , 31)
+# skipped short sequence (AT1TE49905:TAIR10#DNA , 31)
+# skipped short sequence (AT1TE63040:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE66765:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE41670:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE39115:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE19210:TAIR10#DNA/En-Spm , 31)
+# skipped short sequence (AT2TE41855:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE21685:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT2TE46410:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE24380:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT2TE75570:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE12175:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE04860:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE45500:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE43160:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE32550:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE04065:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE13090:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE16515:TAIR10#DNA/En-Spm , 31)
+# skipped short sequence (AT2TE48205:TAIR10#DNA , 31)
+# skipped short sequence (AT2TE31260:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE09095:TAIR10#LTR/Copia , 31)
+# skipped short sequence (AT2TE76270:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE31640:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE40670:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE57495:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE20225:TAIR10#LINE/L1 , 31)
+# skipped short sequence (AT2TE10315:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT2TE11915:TAIR10#DNA/En-Spm , 31)
+# skipped short sequence (AT2TE12305:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT2TE25990:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT2TE56140:TAIR10#DNA/Pogo , 31)
+# skipped short sequence (AT2TE23775:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE59810:TAIR10#LTR/Copia , 31)
+# skipped short sequence (AT3TE65485:TAIR10#DNA/HAT , 31)
+# skipped short sequence (AT3TE43855:TAIR10#DNA/Pogo , 31)
+# skipped short sequence (AT3TE48760:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT3TE30325:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE83510:TAIR10#DNA/Pogo , 31)
+# skipped short sequence (AT3TE26860:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE39200:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE69480:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT3TE43455:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT3TE63000:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE69990:TAIR10#DNA , 31)
+# skipped short sequence (AT3TE43390:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE60850:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE49155:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE46745:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE73170:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT3TE58035:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT3TE83290:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE11170:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE48440:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE33480:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE47750:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE66555:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT3TE52565:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE22405:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE27340:TAIR10#LTR/Copia , 31)
+# skipped short sequence (AT4TE31415:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE68030:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE09610:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE22710:TAIR10#DNA/Pogo , 31)
+# skipped short sequence (AT4TE17155:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE08385:TAIR10#DNA/En-Spm , 31)
+# skipped short sequence (AT4TE14250:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE18895:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE15125:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE16740:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE39490:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE20980:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE20080:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT4TE17905:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE17485:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE09440:TAIR10#DNA/En-Spm , 31)
+# skipped short sequence (AT4TE13970:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT4TE86065:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE22090:TAIR10#DNA/HAT , 31)
+# skipped short sequence (AT4TE86310:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT4TE21705:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT5TE50650:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT5TE03875:TAIR10#DNA/HAT , 31)
+# skipped short sequence (AT5TE50625:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT5TE43755:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT5TE42430:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT5TE89340:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT5TE44695:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT5TE37020:TAIR10#RC/Helitron , 31)
+# skipped short sequence (AT5TE29260:TAIR10#DNA/HAT , 31)
+# skipped short sequence (AT5TE36820:TAIR10#LTR/Gypsy , 31)
+# skipped short sequence (AT5TE53445:TAIR10#LTR/Copia , 31)
+# skipped short sequence (AT5TE50595:TAIR10#DNA/MuDR , 31)
+# skipped short sequence (AT1TE54695:TAIR10#DNA , 30)
+# skipped short sequence (AT1TE53780:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE36600:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE50045:TAIR10#DNA , 30)
+# skipped short sequence (AT1TE48855:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT1TE48715:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT1TE60735:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE69825:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE59540:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE44110:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE22700:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE98645:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE08410:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE55025:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE49995:TAIR10#DNA , 30)
+# skipped short sequence (AT1TE44565:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE38825:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE45230:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE32750:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE74295:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE52955:TAIR10#DNA/En-Spm , 30)
+# skipped short sequence (AT1TE88960:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE29470:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE37615:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE53015:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT1TE50520:TAIR10#DNA , 30)
+# skipped short sequence (AT1TE32650:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT1TE25035:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE49170:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE49885:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE07575:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE09445:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE49530:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT2TE17470:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT2TE28360:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT2TE06270:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT2TE29745:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE63930:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE30545:TAIR10#DNA/En-Spm , 30)
+# skipped short sequence (AT2TE04500:TAIR10#DNA/HAT , 30)
+# skipped short sequence (AT2TE03215:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE06665:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE42710:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE11380:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT2TE21285:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT2TE07180:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT2TE09335:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT2TE16630:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT2TE37425:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE19100:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT2TE40120:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE14545:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT2TE11450:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT2TE11335:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT2TE63935:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE47370:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE56840:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE27130:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT2TE09860:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT2TE17690:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT3TE36820:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE62445:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT3TE61110:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE39225:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT3TE62005:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT3TE59215:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT3TE35820:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT3TE51560:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT3TE34090:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT3TE53125:TAIR10#DNA/En-Spm , 30)
+# skipped short sequence (AT3TE79305:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT3TE46535:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE67630:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT3TE64180:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT3TE46895:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE47720:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT3TE62900:TAIR10#LINE/L1 , 30)
+# skipped short sequence (AT3TE64535:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE38570:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT3TE44645:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE64370:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE73695:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE32475:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE43805:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT3TE76620:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT3TE59150:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT4TE10065:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE38985:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE49530:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE09970:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE19895:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT4TE59550:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT4TE20495:TAIR10#DNA/En-Spm , 30)
+# skipped short sequence (AT4TE00370:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE09520:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT4TE03280:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT4TE19605:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE28415:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE19490:TAIR10#DNA/En-Spm , 30)
+# skipped short sequence (AT4TE15560:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT4TE46795:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE07130:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT4TE27015:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE35005:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE38295:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT4TE71320:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT5TE64610:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE69580:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT5TE54625:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE76745:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE58530:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE19695:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE27100:TAIR10#DNA , 30)
+# skipped short sequence (AT5TE46500:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE54465:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT5TE52490:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE48815:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT5TE77615:TAIR10#LTR/Copia , 30)
+# skipped short sequence (AT5TE29245:TAIR10#RC/Helitron , 30)
+# skipped short sequence (AT5TE43925:TAIR10#LTR/Gypsy , 30)
+# skipped short sequence (AT5TE50825:TAIR10#DNA , 30)
+# skipped short sequence (AT5TE34105:TAIR10#DNA , 30)
+# skipped short sequence (AT5TE27110:TAIR10#DNA , 30)
+# skipped short sequence (AT5TE65195:TAIR10#DNA/MuDR , 30)
+# skipped short sequence (AT1TE62205:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE19790:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE69715:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE34050:TAIR10#LINE/L1 , 29)
+# skipped short sequence (AT1TE44815:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE58435:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT1TE55185:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT1TE39355:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE42000:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE56790:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE77555:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE55550:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE56485:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE71335:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE33205:TAIR10#LINE/L1 , 29)
+# skipped short sequence (AT1TE75080:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT1TE45865:TAIR10#DNA/En-Spm , 29)
+# skipped short sequence (AT1TE74640:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE63175:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE60410:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE46010:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT1TE44610:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT1TE41155:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE55430:TAIR10#LINE/L1 , 29)
+# skipped short sequence (AT1TE61075:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE45040:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT1TE50405:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT1TE55905:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE54995:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT1TE80325:TAIR10#LINE/L1 , 29)
+# skipped short sequence (AT1TE43465:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT1TE42005:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE39925:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE32900:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE55350:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT1TE63865:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE57395:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT2TE68100:TAIR10#DNA/En-Spm , 29)
+# skipped short sequence (AT2TE15680:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT2TE08770:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE02825:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE17990:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT2TE30985:TAIR10#RathE3_cons , 29)
+# skipped short sequence (AT2TE05625:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT2TE06570:TAIR10#DNA/HAT , 29)
+# skipped short sequence (AT2TE18425:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT2TE06100:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE18065:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT2TE08270:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE18900:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT2TE05660:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE08170:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT2TE73140:TAIR10#DNA/Pogo , 29)
+# skipped short sequence (AT2TE09365:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT2TE07245:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE26370:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT3TE46650:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE54060:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE65780:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE53235:TAIR10#DNA/En-Spm , 29)
+# skipped short sequence (AT3TE64995:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE44770:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT3TE30905:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT3TE64085:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE28160:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE52070:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT3TE56620:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT3TE51295:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT3TE45075:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE69040:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE52780:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT3TE88125:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE14875:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT3TE53925:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE25130:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE58545:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE53390:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT3TE17775:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE49010:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE46365:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE41570:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT3TE48575:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT3TE59090:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT3TE64930:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE31145:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE02600:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE15340:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT4TE44235:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE19165:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT4TE07980:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT4TE09920:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE37690:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE86445:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE10900:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT4TE26190:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT4TE14900:TAIR10#DNA , 29)
+# skipped short sequence (AT4TE25195:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT4TE23115:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT4TE16635:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE28850:TAIR10#RathE2_cons , 29)
+# skipped short sequence (AT4TE58710:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE10505:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT4TE61530:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE19695:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE12700:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE35190:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT4TE20985:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT5TE53955:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE66955:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE62990:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE50740:TAIR10#DNA/HAT , 29)
+# skipped short sequence (AT5TE17140:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE61215:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT5TE52945:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT5TE43775:TAIR10#LTR/Copia , 29)
+# skipped short sequence (AT5TE42945:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT5TE34610:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE33310:TAIR10#LTR/Gypsy , 29)
+# skipped short sequence (AT5TE74310:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE94380:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT5TE64545:TAIR10#DNA/MuDR , 29)
+# skipped short sequence (AT5TE28780:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE59140:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE48910:TAIR10#RC/Helitron , 29)
+# skipped short sequence (AT5TE50555:TAIR10#DNA/Harbinger , 29)
+# skipped short sequence (AT5TE34005:TAIR10#DNA/HAT , 29)
+# skipped short sequence (AT1TE75250:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE50940:TAIR10#DNA , 28)
+# skipped short sequence (AT1TE42260:TAIR10#RathE1_cons , 28)
+# skipped short sequence (AT1TE02550:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE70965:TAIR10#DNA , 28)
+# skipped short sequence (AT1TE81205:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE40245:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE37970:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE56195:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE39450:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT1TE67680:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE66980:TAIR10#SINE , 28)
+# skipped short sequence (AT1TE63775:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE58145:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE45000:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE52455:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE45825:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT1TE40875:TAIR10#DNA/HAT , 28)
+# skipped short sequence (AT1TE30355:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE24965:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE18415:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT1TE82095:TAIR10#DNA/En-Spm , 28)
+# skipped short sequence (AT1TE58485:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE35570:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE40790:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE42075:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE52185:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE71990:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE71880:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE33050:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE64925:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT1TE09295:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE48840:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT2TE15625:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE17760:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT2TE47065:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE09310:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE43280:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE29965:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT2TE19030:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT2TE20715:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE22045:TAIR10#DNA/En-Spm , 28)
+# skipped short sequence (AT2TE26160:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE14550:TAIR10#LINE/L1 , 28)
+# skipped short sequence (AT2TE60270:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE12585:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE07480:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE40830:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE02830:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE21735:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT2TE35295:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT2TE18525:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT2TE18470:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT2TE35690:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE27350:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE19320:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE89045:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT2TE10950:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT3TE65975:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE47045:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE64140:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE36725:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE05645:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT3TE47660:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE78560:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE60275:TAIR10#DNA/En-Spm , 28)
+# skipped short sequence (AT3TE44635:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE65405:TAIR10#DNA , 28)
+# skipped short sequence (AT3TE58910:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT3TE58705:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT3TE78880:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE62740:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE45795:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT3TE34425:TAIR10#DNA/HAT , 28)
+# skipped short sequence (AT3TE62040:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT3TE39740:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE45505:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE33240:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE61720:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE33445:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT3TE64080:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE40215:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT3TE73030:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT4TE26085:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT4TE44050:TAIR10#DNA , 28)
+# skipped short sequence (AT4TE34855:TAIR10#DNA/Pogo , 28)
+# skipped short sequence (AT4TE10670:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT4TE25720:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT4TE24320:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT4TE21905:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT4TE46870:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT4TE05245:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT4TE00965:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT4TE03210:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT4TE21175:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT4TE09860:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT4TE10880:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE18980:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE60910:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE62330:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE52240:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE39450:TAIR10#DNA/Pogo , 28)
+# skipped short sequence (AT5TE42675:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT5TE52930:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT5TE30245:TAIR10#LTR/Copia , 28)
+# skipped short sequence (AT5TE49225:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE58240:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE50735:TAIR10#DNA/HAT , 28)
+# skipped short sequence (AT5TE30480:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE58010:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE51080:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE86740:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE56310:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE43335:TAIR10#DNA/En-Spm , 28)
+# skipped short sequence (AT5TE45085:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT5TE04430:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE55740:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE34880:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE77155:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE53915:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE36135:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE77215:TAIR10#DNA , 28)
+# skipped short sequence (AT5TE42370:TAIR10#LTR/Gypsy , 28)
+# skipped short sequence (AT5TE17915:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE78440:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE34330:TAIR10#DNA/MuDR , 28)
+# skipped short sequence (AT5TE77745:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT5TE29675:TAIR10#RC/Helitron , 28)
+# skipped short sequence (AT1TE38760:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE70795:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE55165:TAIR10#DNA/En-Spm , 27)
+# skipped short sequence (AT1TE93270:TAIR10#DNA/HAT , 27)
+# skipped short sequence (AT1TE21510:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT1TE68115:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT1TE57830:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT1TE41010:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE51095:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT1TE54220:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE61460:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE37230:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE42230:TAIR10#DNA/En-Spm , 27)
+# skipped short sequence (AT1TE07295:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE43550:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE39700:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE32720:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT1TE55815:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE76210:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT1TE72665:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE41810:TAIR10#DNA/HAT , 27)
+# skipped short sequence (AT1TE71625:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT1TE29480:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE80635:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE95290:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE29055:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT1TE58730:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE39555:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE52485:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE55940:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE69705:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT1TE47755:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT1TE52580:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE57220:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE81010:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE48220:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE07050:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE24205:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE60125:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE29750:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE02150:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE26565:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE20580:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT2TE19315:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE25060:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE57490:TAIR10#DNA/Pogo , 27)
+# skipped short sequence (AT2TE65225:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT2TE46350:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE42060:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE54130:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT2TE24595:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT2TE26500:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT2TE24815:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE18705:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT2TE19690:TAIR10#DNA/HAT , 27)
+# skipped short sequence (AT2TE23195:TAIR10#DNA/En-Spm , 27)
+# skipped short sequence (AT2TE56030:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT2TE23695:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT2TE23600:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT2TE03330:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE17045:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE41450:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT2TE08370:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT2TE40980:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE58945:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE23610:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE59715:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE65345:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE58640:TAIR10#DNA/En-Spm , 27)
+# skipped short sequence (AT3TE50740:TAIR10#DNA/En-Spm , 27)
+# skipped short sequence (AT3TE50845:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT3TE47080:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE04920:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE51010:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT3TE89885:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT3TE62920:TAIR10#LINE/L1 , 27)
+# skipped short sequence (AT3TE62510:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE37115:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT3TE33120:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT3TE65300:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE60125:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE48235:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT3TE89380:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE12475:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE73020:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE49955:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE59035:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE64605:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT3TE57105:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT3TE50745:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE13700:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE18820:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE58770:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT3TE83265:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE82570:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE43205:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE51310:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT3TE43010:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE11085:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE61495:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT3TE20795:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE23935:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE26500:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE44385:TAIR10#DNA/HAT , 27)
+# skipped short sequence (AT4TE36215:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE67015:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE51970:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE45430:TAIR10#DNA/En-Spm , 27)
+# skipped short sequence (AT4TE40210:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE20590:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT4TE27525:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE24330:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE23190:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE27005:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE11460:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE35565:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE54015:TAIR10#LTR/Copia , 27)
+# skipped short sequence (AT4TE16450:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT4TE30720:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE49190:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE14725:TAIR10#DNA , 27)
+# skipped short sequence (AT4TE11935:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT4TE22615:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT4TE61985:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE47740:TAIR10#LINE/L1 , 27)
+# skipped short sequence (AT5TE69810:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE46525:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE43250:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT5TE41830:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT5TE07940:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE66725:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE01255:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE11840:TAIR10#DNA/MuDR , 27)
+# skipped short sequence (AT5TE06890:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE57220:TAIR10#DNA/Pogo , 27)
+# skipped short sequence (AT5TE39455:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE36525:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE90740:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE70955:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE50795:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE36325:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE68685:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE46275:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT5TE43955:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE36660:TAIR10#RC/Helitron , 27)
+# skipped short sequence (AT5TE11820:TAIR10#LTR/Gypsy , 27)
+# skipped short sequence (AT5TE50875:TAIR10#DNA , 27)
+# skipped short sequence (AT5TE36850:TAIR10#DNA/HAT , 27)
+# skipped short sequence (AT1TE86160:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT1TE48725:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT1TE51455:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE35025:TAIR10#DNA/HAT , 26)
+# skipped short sequence (AT1TE84845:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT1TE49400:TAIR10#DNA , 26)
+# skipped short sequence (AT1TE62405:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE42330:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT1TE58220:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE50310:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT1TE50770:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT1TE29915:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT1TE57165:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE01980:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE69275:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE66630:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT1TE36045:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT1TE32320:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE83425:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE11390:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE39705:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE37695:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE56310:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE73830:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE65395:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE53515:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE97395:TAIR10#DNA/En-Spm , 26)
+# skipped short sequence (AT1TE51145:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT1TE23125:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE43840:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE55840:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT1TE69490:TAIR10#DNA/Harbinger , 26)
+# skipped short sequence (AT1TE24960:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT2TE07835:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE58215:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE35265:TAIR10#DNA/Tc1 , 26)
+# skipped short sequence (AT2TE16720:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT2TE35120:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE28265:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE25330:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT2TE07545:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT2TE21540:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT2TE07375:TAIR10#LINE/L1 , 26)
+# skipped short sequence (AT2TE18660:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT2TE11660:TAIR10#LINE/L1 , 26)
+# skipped short sequence (AT2TE08105:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE06320:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE15485:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT2TE27375:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT2TE52390:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT2TE18565:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE41050:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE45520:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE48035:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE54085:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE49220:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE54625:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT3TE44910:TAIR10#DNA/En-Spm , 26)
+# skipped short sequence (AT3TE58830:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE57260:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT3TE45565:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT3TE17760:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE66645:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT3TE52015:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT3TE64220:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE57585:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT3TE91190:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT3TE50755:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT3TE19720:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT3TE64500:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT3TE60775:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT3TE48505:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT4TE16505:TAIR10#DNA/HAT , 26)
+# skipped short sequence (AT4TE29270:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE15455:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT4TE19345:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT4TE27180:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE16985:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT4TE21545:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT4TE07560:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE60040:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE51410:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE22915:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT4TE40610:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE53985:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE25400:TAIR10#RathE2_cons , 26)
+# skipped short sequence (AT4TE20395:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT4TE28500:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE19375:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT4TE68765:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT4TE28510:TAIR10#LINE/L1 , 26)
+# skipped short sequence (AT5TE48430:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE50505:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE74775:TAIR10#DNA , 26)
+# skipped short sequence (AT5TE47915:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE63995:TAIR10#DNA , 26)
+# skipped short sequence (AT5TE47975:TAIR10#LTR/Copia , 26)
+# skipped short sequence (AT5TE36900:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE32045:TAIR10#DNA/HAT , 26)
+# skipped short sequence (AT5TE53295:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT5TE68930:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE54740:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE74030:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE41215:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE54205:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE43495:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT5TE27850:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE68840:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE38430:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE72570:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE53500:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE41400:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE36540:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE38175:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE37080:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE44360:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT5TE08530:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE63655:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE87350:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE49705:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE22120:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE49020:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE37100:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE62030:TAIR10#DNA/MuDR , 26)
+# skipped short sequence (AT5TE43675:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT5TE46490:TAIR10#LTR/Gypsy , 26)
+# skipped short sequence (AT5TE57700:TAIR10#RC/Helitron , 26)
+# skipped short sequence (AT5TE61995:TAIR10#DNA , 26)
+# skipped short sequence (AT1TE72605:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE56410:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE51935:TAIR10#DNA/En-Spm , 25)
+# skipped short sequence (AT1TE35110:TAIR10#DNA , 25)
+# skipped short sequence (AT1TE55745:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE34900:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE95455:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE44245:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT1TE55950:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE49970:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT1TE50420:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT1TE58365:TAIR10#DNA/Pogo , 25)
+# skipped short sequence (AT1TE36065:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE19810:TAIR10#LINE/L1 , 25)
+# skipped short sequence (AT1TE50555:TAIR10#DNA , 25)
+# skipped short sequence (AT1TE70185:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT1TE36490:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE04705:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE68510:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE76900:TAIR10#DNA , 25)
+# skipped short sequence (AT1TE78625:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE80760:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE59530:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE58695:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT1TE27820:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE64175:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE54095:TAIR10#DNA/Harbinger , 25)
+# skipped short sequence (AT1TE08425:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE51955:TAIR10#DNA/En-Spm , 25)
+# skipped short sequence (AT1TE65195:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT1TE85150:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT2TE17160:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT2TE01555:TAIR10#LINE/L1 , 25)
+# skipped short sequence (AT2TE08585:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE08955:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT2TE25835:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE02340:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE38810:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT2TE51920:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE38570:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT2TE73425:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE22325:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT2TE06345:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE13675:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT2TE13690:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT2TE26040:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE15430:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT2TE11365:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT2TE31235:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT2TE09700:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT2TE17560:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT2TE06890:TAIR10#LINE/L1 , 25)
+# skipped short sequence (AT2TE12765:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE24800:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE47375:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE53435:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE57945:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT3TE60545:TAIR10#DNA/En-Spm , 25)
+# skipped short sequence (AT3TE42085:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE25630:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE63610:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE50440:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE43710:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE46445:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE51575:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT3TE35625:TAIR10#DNA , 25)
+# skipped short sequence (AT3TE54590:TAIR10#LINE/L1 , 25)
+# skipped short sequence (AT3TE57220:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT3TE91210:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT3TE57840:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT3TE58060:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT3TE43935:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT3TE69520:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE62885:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT3TE64325:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE59965:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE81080:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE45825:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE32420:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT3TE32430:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE74005:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT3TE45575:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT4TE27675:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE31155:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT4TE22465:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT4TE27930:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE04670:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE15715:TAIR10#DNA/HAT , 25)
+# skipped short sequence (AT4TE20065:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT4TE15710:TAIR10#DNA/HAT , 25)
+# skipped short sequence (AT4TE89600:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE16755:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT4TE58135:TAIR10#LINE/L1 , 25)
+# skipped short sequence (AT4TE19570:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE21015:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT4TE21130:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT4TE10160:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT4TE11805:TAIR10#DNA/Pogo , 25)
+# skipped short sequence (AT4TE18210:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT4TE19385:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT4TE16770:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE74025:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT4TE14560:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT4TE24890:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE02550:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT4TE22610:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE33660:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE57570:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT5TE58290:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE39040:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT5TE37840:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE48025:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT5TE37505:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE17730:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE84830:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE35290:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE14350:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE40820:TAIR10#DNA/En-Spm , 25)
+# skipped short sequence (AT5TE56440:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE41940:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT5TE58350:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE41495:TAIR10#LTR/Copia , 25)
+# skipped short sequence (AT5TE43525:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT5TE92740:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE63015:TAIR10#LINE/L1 , 25)
+# skipped short sequence (AT5TE27490:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE20330:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE35445:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE66000:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE30950:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE26465:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT5TE66185:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE42325:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT5TE33040:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE39065:TAIR10#LTR/Gypsy , 25)
+# skipped short sequence (AT5TE16165:TAIR10#RC/Helitron , 25)
+# skipped short sequence (AT5TE49530:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT5TE34345:TAIR10#DNA/MuDR , 25)
+# skipped short sequence (AT1TE64950:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE66390:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT1TE18300:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE65860:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE34320:TAIR10#DNA/En-Spm , 24)
+# skipped short sequence (AT1TE26280:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE55160:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE45140:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT1TE71360:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE78730:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE84005:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT1TE33055:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE70650:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT1TE46745:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT1TE43785:TAIR10#LINE/L1 , 24)
+# skipped short sequence (AT1TE41855:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE40860:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT1TE40600:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE90550:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT1TE73185:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE34525:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE19435:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT1TE65265:TAIR10#DNA , 24)
+# skipped short sequence (AT1TE24240:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT1TE46605:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE59965:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT1TE40115:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE53905:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE45085:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE88915:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE60610:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE35815:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE56780:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE73860:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT1TE09370:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT2TE17150:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE20565:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT2TE18990:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE09305:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE27105:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE07150:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT2TE18765:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE03910:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE02345:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE45300:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE40010:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE50780:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE46050:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE09620:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE27770:TAIR10#LINE/L1 , 24)
+# skipped short sequence (AT2TE11565:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE06250:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT2TE25505:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE19840:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE04015:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE05830:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE13035:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT2TE42705:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE17895:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT2TE29110:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE41360:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE60110:TAIR10#DNA/Pogo , 24)
+# skipped short sequence (AT2TE20090:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE05890:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT2TE13555:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT2TE67960:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT3TE59690:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE44445:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE52785:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE43760:TAIR10#DNA , 24)
+# skipped short sequence (AT3TE53335:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE64095:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE19330:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE49735:TAIR10#DNA/En-Spm , 24)
+# skipped short sequence (AT3TE62030:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE72630:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT3TE53905:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE41805:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE89540:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE59435:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE52255:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE91995:TAIR10#DNA/Harbinger , 24)
+# skipped short sequence (AT3TE70550:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE48400:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT3TE59510:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE63415:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT3TE63530:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT3TE51520:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT3TE84545:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE15090:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE22485:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE09150:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE23760:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT4TE00555:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE09170:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE21045:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT4TE19620:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE88415:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE34300:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT4TE00695:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT4TE19580:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE02720:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT4TE14415:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT4TE48590:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE43005:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE33680:TAIR10#DNA/En-Spm , 24)
+# skipped short sequence (AT4TE16340:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT4TE21535:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT4TE15275:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT4TE44750:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE38465:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT4TE33645:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT4TE06845:TAIR10#DNA/Pogo , 24)
+# skipped short sequence (AT4TE36755:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE14910:TAIR10#DNA , 24)
+# skipped short sequence (AT4TE52635:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT4TE05250:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT4TE49620:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE36280:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE51060:TAIR10#DNA/Pogo , 24)
+# skipped short sequence (AT5TE69250:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT5TE32350:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT5TE35370:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE34030:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE14365:TAIR10#DNA , 24)
+# skipped short sequence (AT5TE43735:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT5TE49965:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT5TE46730:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT5TE53505:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE55015:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT5TE34725:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT5TE40470:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT5TE40595:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT5TE44765:TAIR10#LTR/Copia , 24)
+# skipped short sequence (AT5TE53490:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT5TE48375:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE31245:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE34095:TAIR10#DNA/MuDR , 24)
+# skipped short sequence (AT5TE32035:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE38910:TAIR10#LINE/L1 , 24)
+# skipped short sequence (AT5TE74840:TAIR10#RC/Helitron , 24)
+# skipped short sequence (AT5TE54970:TAIR10#DNA , 24)
+# skipped short sequence (AT5TE43445:TAIR10#LTR/Gypsy , 24)
+# skipped short sequence (AT1TE00835:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE71760:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE12440:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE20115:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE12710:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE52820:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE35435:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE54800:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT1TE59865:TAIR10#LTR/Copia , 23)
+# skipped short sequence (AT1TE43850:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE43110:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE72125:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE31785:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE53040:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT1TE79260:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE41150:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE26530:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE67500:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE46800:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT1TE54985:TAIR10#LTR/Copia , 23)
+# skipped short sequence (AT1TE51110:TAIR10#DNA/En-Spm , 23)
+# skipped short sequence (AT1TE43745:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE54210:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE68040:TAIR10#DNA , 23)
+# skipped short sequence (AT1TE80955:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE48870:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE45725:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE86805:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE55080:TAIR10#LTR/Copia , 23)
+# skipped short sequence (AT1TE49275:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT1TE90030:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT1TE04670:TAIR10#DNA/Harbinger , 23)
+# skipped short sequence (AT1TE27025:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE92155:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT1TE45755:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT2TE65925:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE25015:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE25640:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE15685:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT2TE24730:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT2TE28480:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE01655:TAIR10#LTR/Copia , 23)
+# skipped short sequence (AT2TE50110:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT2TE21215:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE49865:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT2TE19815:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT2TE19425:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT2TE10235:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT2TE16655:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE17315:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE20215:TAIR10#DNA/En-Spm , 23)
+# skipped short sequence (AT2TE19490:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT2TE03645:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE50560:TAIR10#DNA , 23)
+# skipped short sequence (AT2TE63805:TAIR10#DNA/En-Spm , 23)
+# skipped short sequence (AT2TE05915:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE13425:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT2TE65780:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT2TE34905:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT2TE08850:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT2TE55605:TAIR10#LTR/Copia , 23)
+# skipped short sequence (AT2TE69520:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE21205:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT2TE20385:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE63455:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE59790:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT3TE64710:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE46120:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE43340:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE30645:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE63325:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE46105:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE37030:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE28215:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE77410:TAIR10#LINE? , 23)
+# skipped short sequence (AT3TE42515:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE48550:TAIR10#DNA/En-Spm , 23)
+# skipped short sequence (AT3TE62300:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE57080:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT3TE49380:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE67725:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE89135:TAIR10#DNA/HAT , 23)
+# skipped short sequence (AT3TE50160:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT3TE44385:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE52395:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE49915:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE64420:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE59320:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE58715:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT3TE52615:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE53775:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT3TE81075:TAIR10#DNA/Pogo , 23)
+# skipped short sequence (AT3TE49810:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT3TE45955:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE61105:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE65000:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT3TE55350:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT4TE14935:TAIR10#DNA , 23)
+# skipped short sequence (AT4TE14920:TAIR10#DNA , 23)
+# skipped short sequence (AT4TE21625:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE54705:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT4TE30620:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT4TE51720:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE38375:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE17170:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT4TE10250:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT4TE10750:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE08765:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE25870:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT4TE50045:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE23610:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT4TE24730:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT4TE24805:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT4TE19205:TAIR10#DNA/En-Spm , 23)
+# skipped short sequence (AT4TE41280:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE25410:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE39050:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE21955:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE26185:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE86215:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE39180:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE17720:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT4TE47230:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE30295:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT5TE47330:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE48400:TAIR10#LINE/L1 , 23)
+# skipped short sequence (AT5TE44065:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT5TE62450:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE54405:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE74380:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE51205:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE41260:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT5TE46620:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE41160:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT5TE36955:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE37205:TAIR10#DNA/HAT , 23)
+# skipped short sequence (AT5TE73040:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE35880:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT5TE37830:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT5TE55360:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE36100:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT5TE20380:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE52985:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE54460:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT5TE46480:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT5TE36905:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE78980:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE70670:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT5TE63130:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE41390:TAIR10#LTR/Copia , 23)
+# skipped short sequence (AT5TE64295:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE50745:TAIR10#DNA/MuDR , 23)
+# skipped short sequence (AT5TE37365:TAIR10#LTR/Gypsy , 23)
+# skipped short sequence (AT5TE54090:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE51795:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE52025:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE73600:TAIR10#DNA/Harbinger , 23)
+# skipped short sequence (AT5TE38515:TAIR10#RC/Helitron , 23)
+# skipped short sequence (AT5TE38500:TAIR10#DNA , 23)
+# skipped short sequence (AT1TE36900:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE46345:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT1TE39015:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE39200:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE55930:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE56200:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE38560:TAIR10#RathE3_cons , 22)
+# skipped short sequence (AT1TE01660:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE42460:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT1TE86335:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE43965:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE33950:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE66085:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE52410:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT1TE62605:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE41195:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE41085:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE75325:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE67690:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE43385:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE46695:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT1TE57995:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE49290:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT1TE11115:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE33040:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE87960:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE55045:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE41035:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE95925:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE82690:TAIR10#DNA/En-Spm , 22)
+# skipped short sequence (AT1TE57605:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE11540:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE81995:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE00660:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE39455:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT1TE43280:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT1TE40140:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE05480:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE12915:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT2TE26305:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT2TE32710:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE27550:TAIR10#DNA/HAT , 22)
+# skipped short sequence (AT2TE49545:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE35200:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE43360:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE23230:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT2TE00735:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE16370:TAIR10#DNA/En-Spm , 22)
+# skipped short sequence (AT2TE24455:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT2TE16590:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT2TE19570:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT2TE22165:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT2TE04020:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE67355:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE56780:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE11045:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT2TE19740:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE21630:TAIR10#SINE , 22)
+# skipped short sequence (AT2TE25560:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE35010:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT2TE30825:TAIR10#DNA , 22)
+# skipped short sequence (AT2TE22630:TAIR10#LINE/L1 , 22)
+# skipped short sequence (AT2TE26530:TAIR10#DNA , 22)
+# skipped short sequence (AT3TE65120:TAIR10#DNA/Harbinger , 22)
+# skipped short sequence (AT3TE42880:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE47680:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE61255:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE53815:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE45375:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE16145:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE69160:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE92410:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE67705:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE54925:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE49550:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT3TE56750:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE52360:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE57530:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE75660:TAIR10#DNA/Harbinger , 22)
+# skipped short sequence (AT3TE62980:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE55210:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT3TE52545:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE39810:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE70780:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE60045:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE66695:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE92005:TAIR10#DNA/Harbinger , 22)
+# skipped short sequence (AT3TE60765:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE65060:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE15800:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE65450:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE55215:TAIR10#DNA/En-Spm , 22)
+# skipped short sequence (AT3TE49970:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE51055:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE47950:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE46415:TAIR10#RathE2_cons , 22)
+# skipped short sequence (AT3TE58840:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE60530:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE54395:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE59010:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE49890:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE55445:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT3TE77880:TAIR10#DNA/Pogo , 22)
+# skipped short sequence (AT3TE46290:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT3TE77980:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT3TE65165:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE82635:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT4TE08855:TAIR10#LINE/L1 , 22)
+# skipped short sequence (AT4TE39030:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE20585:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT4TE00315:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE60600:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE05820:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT4TE05310:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE50020:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE31225:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT4TE20235:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT4TE19555:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT4TE03360:TAIR10#LINE/L1 , 22)
+# skipped short sequence (AT4TE14455:TAIR10#LINE/L1 , 22)
+# skipped short sequence (AT4TE10635:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE61980:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE83655:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE27020:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE16145:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT4TE23305:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT4TE45040:TAIR10#LTR/Copia , 22)
+# skipped short sequence (AT4TE12115:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE56430:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE36270:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE44800:TAIR10#DNA/En-Spm , 22)
+# skipped short sequence (AT5TE48105:TAIR10#RathE3_cons , 22)
+# skipped short sequence (AT5TE96755:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT5TE58585:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE68765:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE33345:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE41515:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT5TE47125:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT5TE44085:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT5TE76195:TAIR10#LINE/L1 , 22)
+# skipped short sequence (AT5TE46375:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT5TE65925:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE75715:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE36995:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE33405:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT5TE26085:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE95740:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE05405:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE44420:TAIR10#DNA/Harbinger , 22)
+# skipped short sequence (AT5TE41560:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT5TE42140:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT5TE17965:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE54120:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT5TE10545:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT5TE58015:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT5TE49190:TAIR10#DNA/MuDR , 22)
+# skipped short sequence (AT5TE43810:TAIR10#LTR/Gypsy , 22)
+# skipped short sequence (AT5TE71025:TAIR10#RC/Helitron , 22)
+# skipped short sequence (AT1TE42990:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE58720:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE55440:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT1TE71800:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT1TE14755:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT1TE77220:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT1TE18745:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT1TE77225:TAIR10#DNA/Pogo , 21)
+# skipped short sequence (AT1TE38750:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE40070:TAIR10#DNA/Pogo , 21)
+# skipped short sequence (AT1TE73215:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT1TE45405:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT1TE55725:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE69265:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE42805:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE60430:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE44695:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT1TE88490:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE53845:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT1TE41870:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE73420:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT1TE46285:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT1TE28170:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT1TE25740:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE44735:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE77450:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE51630:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE79815:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT1TE40420:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE43875:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT1TE39980:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT1TE49445:TAIR10#DNA , 21)
+# skipped short sequence (AT1TE43945:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT2TE20410:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT2TE18340:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE07960:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE08380:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT2TE20470:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE42160:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT2TE17325:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE58195:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE28525:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE08025:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT2TE07435:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT2TE24515:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT2TE21770:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT2TE18970:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT2TE10765:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT2TE25040:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE50575:TAIR10#DNA , 21)
+# skipped short sequence (AT2TE33020:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE38915:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT2TE03950:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT2TE35885:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT2TE16770:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT2TE03065:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE05415:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE14660:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT2TE61850:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE28050:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE09945:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE13100:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT2TE18490:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT2TE31385:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT2TE40470:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE68885:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE57205:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT3TE05785:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE39060:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE48050:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE64310:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE45920:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE65280:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE52910:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE60570:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE63760:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT3TE65750:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE54410:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE52950:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE37160:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE35075:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE62165:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE54010:TAIR10#DNA/En-Spm , 21)
+# skipped short sequence (AT3TE63150:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT3TE49315:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE23745:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT3TE06055:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT3TE54945:TAIR10#DNA/En-Spm , 21)
+# skipped short sequence (AT3TE69165:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT3TE74910:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT3TE53635:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT3TE73265:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT3TE59615:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT3TE46190:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT3TE85995:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT3TE44795:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT3TE64350:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT3TE66205:TAIR10#DNA/Harbinger , 21)
+# skipped short sequence (AT3TE82220:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE25390:TAIR10#RathE2_cons , 21)
+# skipped short sequence (AT4TE06545:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE22520:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE41065:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE22470:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE09235:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE34765:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE14350:TAIR10#DNA/Pogo , 21)
+# skipped short sequence (AT4TE24415:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE14750:TAIR10#DNA , 21)
+# skipped short sequence (AT4TE89335:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE14805:TAIR10#DNA , 21)
+# skipped short sequence (AT4TE65435:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE14485:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT4TE19665:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT4TE31280:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE09650:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT4TE28155:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE89590:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE18800:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE59635:TAIR10#DNA , 21)
+# skipped short sequence (AT4TE05010:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE16290:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT4TE89340:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE06295:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE60695:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE16950:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT4TE29995:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE50075:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT4TE45205:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE24410:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE09530:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT4TE33345:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT4TE29370:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT4TE08965:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT5TE82855:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT5TE38040:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE77550:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE25110:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE42960:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT5TE36060:TAIR10#DNA/Pogo , 21)
+# skipped short sequence (AT5TE53460:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT5TE20325:TAIR10#DNA , 21)
+# skipped short sequence (AT5TE41930:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE22435:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE51135:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT5TE34480:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE14370:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE52245:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE69845:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE41450:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT5TE23280:TAIR10#LTR/Copia , 21)
+# skipped short sequence (AT5TE52535:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE43515:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT5TE55325:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE60975:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE47885:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE02440:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE50040:TAIR10#DNA/HAT , 21)
+# skipped short sequence (AT5TE25470:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE37315:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE27525:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE23380:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE69865:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE32945:TAIR10#DNA/MuDR , 21)
+# skipped short sequence (AT5TE21810:TAIR10#RC/Helitron , 21)
+# skipped short sequence (AT5TE55645:TAIR10#LINE/L1 , 21)
+# skipped short sequence (AT5TE43210:TAIR10#LTR/Gypsy , 21)
+# skipped short sequence (AT1TE53130:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT1TE58225:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE62630:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE44480:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE59990:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE37845:TAIR10#LINE/L1 , 20)
+# skipped short sequence (AT1TE73290:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE24725:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE44860:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE53830:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE27020:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE95460:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE79220:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE32010:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT1TE92645:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE42685:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE81715:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE41520:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT1TE69730:TAIR10#DNA/Pogo , 20)
+# skipped short sequence (AT1TE71455:TAIR10#DNA , 20)
+# skipped short sequence (AT1TE71060:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT1TE67760:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE63015:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT1TE46720:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT1TE21780:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE27245:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE11305:TAIR10#LINE/L1 , 20)
+# skipped short sequence (AT2TE64205:TAIR10#DNA , 20)
+# skipped short sequence (AT2TE21800:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT2TE37855:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE20700:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE20775:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE33095:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE08895:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE23915:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE00420:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE26320:TAIR10#DNA/HAT , 20)
+# skipped short sequence (AT2TE17950:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE24260:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE05350:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT2TE16185:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT2TE56785:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT2TE07595:TAIR10#DNA , 20)
+# skipped short sequence (AT2TE03455:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT3TE91740:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT3TE48220:TAIR10#LINE/L1 , 20)
+# skipped short sequence (AT3TE84415:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT3TE61660:TAIR10#DNA , 20)
+# skipped short sequence (AT3TE63770:TAIR10#RathE3_cons , 20)
+# skipped short sequence (AT3TE30765:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT3TE62425:TAIR10#DNA/HAT , 20)
+# skipped short sequence (AT3TE55045:TAIR10#RathE3_cons , 20)
+# skipped short sequence (AT3TE54975:TAIR10#DNA/En-Spm , 20)
+# skipped short sequence (AT3TE49960:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT3TE52220:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT3TE48800:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT3TE39955:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT3TE37770:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT4TE13500:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT4TE45145:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT4TE14955:TAIR10#DNA , 20)
+# skipped short sequence (AT4TE25435:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT4TE30220:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT4TE36850:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT4TE25095:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT4TE38245:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT4TE16700:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT4TE11650:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT4TE19155:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT4TE16995:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT4TE21080:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT4TE17935:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT4TE17745:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT4TE14755:TAIR10#DNA , 20)
+# skipped short sequence (AT4TE22275:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT5TE34570:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE72865:TAIR10#DNA/HAT , 20)
+# skipped short sequence (AT5TE39510:TAIR10#DNA/En-Spm , 20)
+# skipped short sequence (AT5TE86435:TAIR10#DNA/En-Spm , 20)
+# skipped short sequence (AT5TE49255:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE33995:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE67890:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE39725:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE36340:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT5TE41365:TAIR10#LTR/Copia , 20)
+# skipped short sequence (AT5TE48495:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE43440:TAIR10#LTR/Gypsy , 20)
+# skipped short sequence (AT5TE10000:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE07945:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE39400:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE35750:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE46940:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE63180:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE57615:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE56250:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE18890:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE49995:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE33970:TAIR10#DNA/MuDR , 20)
+# skipped short sequence (AT5TE32010:TAIR10#RC/Helitron , 20)
+# skipped short sequence (AT5TE57730:TAIR10#DNA/HAT , 20)
+# skipped short sequence (AT4TE25130:TAIR10#LTR/Copia , 19)
+# skipped short sequence (AT2TE22745:TAIR10#LINE/L1 , 17)
+# skipped short sequence (AT1TE54810:TAIR10#LTR/Gypsy , 16)
+# skipped short sequence (AT3TE61655:TAIR10#DNA/MuDR , 15)
+# skipped short sequence (AT1TE47555:TAIR10#LTR/Gypsy , 14)
+# skipped short sequence (AT1TE53965:TAIR10#LTR/Copia , 12)
+# skipped short sequence (AT3TE50585:TAIR10#DNA/MuDR , 12)
+# skipped short sequence (AT5TE46180:TAIR10#DNA/MuDR , 11)
+# skipped short sequence (AT5TE31540:TAIR10#LINE/L1 , 10)
 
-# 18 genomes, 701544 sequences
+# 22 genomes, 768192 sequences
 
-# taxa considered = 18 sequences = 701544 residues = 1599617732
+# taxa considered = 22 sequences = 768192 residues = 1804169415
 
 # mask=SINEs_isoover100_0taxa_algOMCL_e0_ (_isoover100_0taxa_algOMCL)
 
-# running makeblastdb with repeats_est_homologues/SINEs.plants.fna.gz.nucl.fasta
+# skipped transcriptome parsing (repeats_est_homologues/tmp/selected.genomes)
 
-# running makeblastdb with repeats_est_homologues/arabidopsis_thaliana.cdna.fna.gz.nucl.fasta
+# skip BLAST searches and parsing
 
-# running makeblastdb with repeats_est_homologues/brachypodium_distachyon.cdna.fna.gz.nucl.fasta
+# WARNING: please remove/rename results directory:
+# '/home/contrera/devel/repeat_libs/repeats_est_homologues/'
+# if you change the sequences in your .fna/.faa files or want to re-run
 
-# running makeblastdb with repeats_est_homologues/brassica_napus.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/glycine_max.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/helianthus_annuus.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/hordeum_vulgare.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/medicago_truncatula.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/mipsREdat_9.3p_ALL.fasta.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/oryza_sativa_japonica.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/phaseolus_vulgaris.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/populus_trichocarpa.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/repetDB.Mar2020.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/solanum_lycopersicum.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/sorghum_bicolor.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/trep-db_nr_Rel-19.fasta.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/vitis_vinifera.cdna.fna.gz.nucl.fasta
-
-# running makeblastdb with repeats_est_homologues/zea_mays.cdna.fna.gz.nucl.fasta
-
-# running BLAST searches ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# done
-
-# concatenating and sorting blast results...
-# sorting _SINEs.plants.fna.gz.nucl results (0.036MB)
-# sorting _arabidopsis_thaliana.cdna.fna.gz.nucl results (14MB)
-# sorting _brachypodium_distachyon.cdna.fna.gz.nucl results (42MB)
-# sorting _brassica_napus.cdna.fna.gz.nucl results (60MB)
-# sorting _glycine_max.cdna.fna.gz.nucl results (67MB)
-# sorting _helianthus_annuus.cdna.fna.gz.nucl results (40MB)
-# sorting _hordeum_vulgare.cdna.fna.gz.nucl results (1e+02MB)
-# sorting _medicago_truncatula.cdna.fna.gz.nucl results (39MB)
-# sorting _mipsREdat_9.3p_ALL.fasta.gz.nucl results (3.2e+04MB)
-# sorting _oryza_sativa_japonica.cdna.fna.gz.nucl results (30MB)
-# sorting _phaseolus_vulgaris.cdna.fna.gz.nucl results (16MB)
-# sorting _populus_trichocarpa.cdna.fna.gz.nucl results (21MB)
-# sorting _repetDB.Mar2020.fna.gz.nucl results (7.3e+03MB)
-# sorting _solanum_lycopersicum.cdna.fna.gz.nucl results (25MB)
-# sorting _sorghum_bicolor.cdna.fna.gz.nucl results (1.2e+02MB)
-# sorting _trep-db_nr_Rel-19.fasta.gz.nucl results (75MB)
-# sorting _vitis_vinifera.cdna.fna.gz.nucl results (13MB)
-# sorting _zea_mays.cdna.fna.gz.nucl results (93MB)
-# done
-
-
-# parsing blast result! (repeats_est_homologues/tmp/all.blast , 3.8e+04MB)
-# parsing file finished
-
-# making temporary indexes required for clustering isoforms
-# construct_taxa_indexes: number of taxa found = 18
-# number of file addresses/BLAST queries = 7.0e+05
-
-# submitting isoform jobs to cluster ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-
-# clustering redundant isoforms in SINEs.plants.fna.gz.nucl
+# re-using previous isoform clusters
 # SINEs.plants.fna.gz.nucl : 0 sequences
-
-# clustering redundant isoforms in arabidopsis_thaliana.cdna.fna.gz.nucl
+# SoyBaseTE.fna.gz.nucl : 161 sequences
+# TAIR10_TE.fna.gz.nucl : 300 sequences
 # arabidopsis_thaliana.cdna.fna.gz.nucl : 350 sequences
-
-# clustering redundant isoforms in brachypodium_distachyon.cdna.fna.gz.nucl
 # brachypodium_distachyon.cdna.fna.gz.nucl : 311 sequences
-
-# clustering redundant isoforms in brassica_napus.cdna.fna.gz.nucl
 # brassica_napus.cdna.fna.gz.nucl : 1260 sequences
-
-# clustering redundant isoforms in glycine_max.cdna.fna.gz.nucl
 # glycine_max.cdna.fna.gz.nucl : 526 sequences
-
-# clustering redundant isoforms in helianthus_annuus.cdna.fna.gz.nucl
 # helianthus_annuus.cdna.fna.gz.nucl : 860 sequences
-
-# clustering redundant isoforms in hordeum_vulgare.cdna.fna.gz.nucl
 # hordeum_vulgare.cdna.fna.gz.nucl : 1775 sequences
-
-# clustering redundant isoforms in medicago_truncatula.cdna.fna.gz.nucl
+# maizeTE11122019.fna.gz.nucl : 2 sequences
 # medicago_truncatula.cdna.fna.gz.nucl : 524 sequences
-
-# clustering redundant isoforms in mipsREdat_9.3p_ALL.fasta.gz.nucl
 # mipsREdat_9.3p_ALL.fasta.gz.nucl : 523 sequences
-
-# clustering redundant isoforms in oryza_sativa_japonica.cdna.fna.gz.nucl
 # oryza_sativa_japonica.cdna.fna.gz.nucl : 738 sequences
-
-# clustering redundant isoforms in phaseolus_vulgaris.cdna.fna.gz.nucl
 # phaseolus_vulgaris.cdna.fna.gz.nucl : 102 sequences
-
-# clustering redundant isoforms in populus_trichocarpa.cdna.fna.gz.nucl
 # populus_trichocarpa.cdna.fna.gz.nucl : 338 sequences
-
-# clustering redundant isoforms in repetDB.Mar2020.fna.gz.nucl
 # repetDB.Mar2020.fna.gz.nucl : 210 sequences
-
-# clustering redundant isoforms in solanum_lycopersicum.cdna.fna.gz.nucl
+# rice6.9.5.liban.fna.gz.nucl : 2 sequences
 # solanum_lycopersicum.cdna.fna.gz.nucl : 355 sequences
-
-# clustering redundant isoforms in sorghum_bicolor.cdna.fna.gz.nucl
 # sorghum_bicolor.cdna.fna.gz.nucl : 336 sequences
-
-# clustering redundant isoforms in trep-db_nr_Rel-19.fasta.gz.nucl
 # trep-db_nr_Rel-19.fasta.gz.nucl : 25 sequences
-
-# clustering redundant isoforms in vitis_vinifera.cdna.fna.gz.nucl
 # vitis_vinifera.cdna.fna.gz.nucl : 63 sequences
-
-# clustering redundant isoforms in zea_mays.cdna.fna.gz.nucl
 # zea_mays.cdna.fna.gz.nucl : 407 sequences
 
-# redundancy-filtering blast file
-# created nr blast file
+# creating indexes, this might take some time (lines=2.26e+08) ...
 
-# parsing blast result! (repeats_est_homologues/tmp/all.blast.nr , 3.8e+04MB)
-# parsing file finished
-
-# creating indexes, this might take some time (lines=1.05e+08) ...
-
-# construct_taxa_indexes: number of taxa found = 18
-# number of file addresses/BLAST queries = 6.9e+05
+# construct_taxa_indexes: number of taxa found = 22
+# number of file addresses/BLAST queries = 7.6e+05
 
 # clustering orthologous sequences
+# find_OMCL_clusters: re-using previous results (same parameters)
 
-# submitting inparalogues jobs to cluster ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
+# find_OMCL_clusters: parsing clusters (/home/contrera/devel/repeat_libs/repeats_est_homologues/tmp/all_ortho.mcl)
 
-# submitting orthologues jobs to cluster ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
-# check_cluster_jobs: waiting ...
 
-# identifying orthologs between SINEs.plants.fna.gz.nucl and arabidopsis_thaliana.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and brachypodium_distachyon.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and brassica_napus.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and glycine_max.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and helianthus_annuus.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and hordeum_vulgare.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 7 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 6 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 1 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between SINEs.plants.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying inparalogs in SINEs.plants.fna.gz.nucl
-# 0 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and brachypodium_distachyon.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and brassica_napus.cdna.fna.gz.nucl (1)
-# 88 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and glycine_max.cdna.fna.gz.nucl (1)
-# 5 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and helianthus_annuus.cdna.fna.gz.nucl (1)
-# 28 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and hordeum_vulgare.cdna.fna.gz.nucl (1)
-# 16 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 65 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 208 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 39 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between arabidopsis_thaliana.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 7 sequences
-
-# identifying inparalogs in arabidopsis_thaliana.cdna.fna.gz.nucl
-# 531 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and brassica_napus.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and glycine_max.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and helianthus_annuus.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and hordeum_vulgare.cdna.fna.gz.nucl (1)
-# 93 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 23 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 182 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 33 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 1 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 14 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 21 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 109 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 1 sequences
-
-# identifying orthologs between brachypodium_distachyon.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 51 sequences
-
-# identifying inparalogs in brachypodium_distachyon.cdna.fna.gz.nucl
-# 1065 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and glycine_max.cdna.fna.gz.nucl (1)
-# 7 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and helianthus_annuus.cdna.fna.gz.nucl (1)
-# 20 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and hordeum_vulgare.cdna.fna.gz.nucl (1)
-# 15 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 16 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 6 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 16 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 697 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 11 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 11 sequences
-
-# identifying orthologs between brassica_napus.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying inparalogs in brassica_napus.cdna.fna.gz.nucl
-# 27995 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and helianthus_annuus.cdna.fna.gz.nucl (1)
-# 7 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and hordeum_vulgare.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 13 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 487 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 68 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 7 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 5 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 1 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 5 sequences
-
-# identifying orthologs between glycine_max.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying inparalogs in glycine_max.cdna.fna.gz.nucl
-# 7580 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and hordeum_vulgare.cdna.fna.gz.nucl (1)
-# 22 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 10 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 9 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 15 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 12 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 30 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 20 sequences
-
-# identifying orthologs between helianthus_annuus.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 14 sequences
-
-# identifying inparalogs in helianthus_annuus.cdna.fna.gz.nucl
-# 10191 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and medicago_truncatula.cdna.fna.gz.nucl (1)
-# 68 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 751 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 90 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 6 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 11 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 91 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 13 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 38 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 130 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 7 sequences
-
-# identifying orthologs between hordeum_vulgare.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 116 sequences
-
-# identifying inparalogs in hordeum_vulgare.cdna.fna.gz.nucl
-# 10088 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and mipsREdat_9.3p_ALL.fasta.gz.nucl (1)
-# 1055 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 23 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 6 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 25 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 30 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 9 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 1 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 9 sequences
-
-# identifying orthologs between medicago_truncatula.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 20 sequences
-
-# identifying inparalogs in medicago_truncatula.cdna.fna.gz.nucl
-# 3554 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and oryza_sativa_japonica.cdna.fna.gz.nucl (1)
-# 106 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 14 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 19465 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 329 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 1014 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 1486 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 6 sequences
-
-# identifying orthologs between mipsREdat_9.3p_ALL.fasta.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 175 sequences
-
-# identifying inparalogs in mipsREdat_9.3p_ALL.fasta.gz.nucl
-# 163844 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and phaseolus_vulgaris.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 18 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 21 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 48 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between oryza_sativa_japonica.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 73 sequences
-
-# identifying inparalogs in oryza_sativa_japonica.cdna.fna.gz.nucl
-# 4493 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and populus_trichocarpa.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 4 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 1 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between phaseolus_vulgaris.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying inparalogs in phaseolus_vulgaris.cdna.fna.gz.nucl
-# 1111 sequences
-
-# identifying orthologs between populus_trichocarpa.cdna.fna.gz.nucl and repetDB.Mar2020.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between populus_trichocarpa.cdna.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between populus_trichocarpa.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between populus_trichocarpa.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between populus_trichocarpa.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 5 sequences
-
-# identifying orthologs between populus_trichocarpa.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying inparalogs in populus_trichocarpa.cdna.fna.gz.nucl
-# 4464 sequences
-
-# identifying orthologs between repetDB.Mar2020.fna.gz.nucl and solanum_lycopersicum.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying orthologs between repetDB.Mar2020.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 12 sequences
-
-# identifying orthologs between repetDB.Mar2020.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 147 sequences
-
-# identifying orthologs between repetDB.Mar2020.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 521 sequences
-
-# identifying orthologs between repetDB.Mar2020.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 776 sequences
-
-# identifying inparalogs in repetDB.Mar2020.fna.gz.nucl
-# 3806 sequences
-
-# identifying orthologs between solanum_lycopersicum.cdna.fna.gz.nucl and sorghum_bicolor.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between solanum_lycopersicum.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between solanum_lycopersicum.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 6 sequences
-
-# identifying orthologs between solanum_lycopersicum.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 5 sequences
-
-# identifying inparalogs in solanum_lycopersicum.cdna.fna.gz.nucl
-# 2247 sequences
-
-# identifying orthologs between sorghum_bicolor.cdna.fna.gz.nucl and trep-db_nr_Rel-19.fasta.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between sorghum_bicolor.cdna.fna.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 3 sequences
-
-# identifying orthologs between sorghum_bicolor.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 1035 sequences
-
-# identifying inparalogs in sorghum_bicolor.cdna.fna.gz.nucl
-# 1594 sequences
-
-# identifying orthologs between trep-db_nr_Rel-19.fasta.gz.nucl and vitis_vinifera.cdna.fna.gz.nucl (1)
-# 0 sequences
-
-# identifying orthologs between trep-db_nr_Rel-19.fasta.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 8 sequences
-
-# identifying inparalogs in trep-db_nr_Rel-19.fasta.gz.nucl
-# 305 sequences
-
-# identifying orthologs between vitis_vinifera.cdna.fna.gz.nucl and zea_mays.cdna.fna.gz.nucl (1)
-# 2 sequences
-
-# identifying inparalogs in vitis_vinifera.cdna.fna.gz.nucl
-# 3285 sequences
-
-# identifying inparalogs in zea_mays.cdna.fna.gz.nucl
-# 12655 sequences
-
-# running MCL (inflation=1.5) ...
-# running MCL finished
-
-# find_OMCL_clusters: parsing clusters (repeats_est_homologues/tmp/all_ortho.mcl)
-
-
-# add_unmatched_singletons : 549535 sequences, 18 taxa
+# add_unmatched_singletons : 586759 sequences, 22 taxa
 
 
 # looking for valid sequence clusters (n_of_taxa=0)...
 
-# number_of_clusters = 602746
+# number_of_clusters = 644675
 # cluster_list = repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_.cluster_list
 # cluster_directory = repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_
 
-# runtime: 178888 wallclock secs (20027.26 usr 26106.92 sys + 12740.54 cusr 35693.40 csys = 94568.12 CPU)
-# RAM use: 2535.2 MB
+# runtime: 2537 wallclock secs (2402.95 usr 98.06 sys + 28.44 cusr  3.12 csys = 2532.57 CPU)
+# RAM use: 2756.4 MB

@@ -2,7 +2,7 @@
 
 # nrTEplants
 
-This Markdown document explains how to produce a library of non-redundant transposable elements (TE) found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats/](./repeats/): 
+This document explains how to produce a library of non-redundant transposable elements (TE) found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats/](./repeats/): 
 
 |library|files downloaded|sequences|publication|
 |-------|----------------|---------|-----------|
@@ -10,6 +10,11 @@ This Markdown document explains how to produce a library of non-redundant transp
 |[SINEbase](http://sines.eimb.ru)|http://sines.eimb.ru/banks/SINEs.bnk|60|https://www.ncbi.nlm.nih.gov/pubmed/23203982|
 |[REdat](https://pgsb.helmholtz-muenchen.de/plant/recat)|ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz|61730|https://www.ncbi.nlm.nih.gov/pubmed/23203886|
 |[RepetDB](http://urgi.versailles.inra.fr/repetdb/begin.do)|Exported all Viridiplantae in i) FASTA and ii) TSV formats|33416|https://www.ncbi.nlm.nih.gov/pubmed/30719103|
+|[EDTArice](https://github.com/oushujun/EDTA)|https://github.com/oushujun/EDTA/blob/master/database/rice6.9.5.liban|2431|https://europepmc.org/article/MED/31843001|
+|[EDTAmaize](https://github.com/oushujun/EDTA)|https://github.com/oushujun/EDTA/blob/master/database/maizeTE11122019|1362|
+|[SoyBaseTE](https://www.soybase.org/soytedb)|https://www.soybase.org/soytedb/#bulk|http://www.biomedcentral.com/1471-2164/11/113|38664|
+|[TAIR10TE](https://www.arabidopsis.org)|https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_transposable_elements/TAIR10_TE.fas||31189|
+
 
 ## cDNA sequences
 
@@ -25,7 +30,7 @@ cd ~/soft/github
 git clone https://github.com/eead-csic-compbio/get_homologues.git
 ```
 
-Now, in file *get_homologues-est.pl* modify lines [L36-7](https://github.com/eead-csic-compbio/get_homologues/blob/0dce095527ba059c69fba3aa267162e17374f86d/get_homologues-est.pl#L36):
+Now, in file *get_homologues-est.pl* modify lines [L36-7](https://github.com/eead-csic-compbio/get_homologues/blob/04d3937fff2331705ef4d713f932b630a245a368/get_homologues-est.pl#L36):
 ```
 set my $MAXSEQLENGTH = 55000;
 set my $MINSEQLENGTH = 90;
@@ -40,10 +45,10 @@ Sequence clustering can be done with the following commands:
 perl get_homologues-est.pl -d repeats -m cluster -M -t 0 -i 100 &> log.M
 
 # produce pangenome matrix in folder all_clusters
-perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n
+perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n &> log.compare
 
 # intersection output directory: all_clusters
-# intersection size = 602746 clusters
+# intersection size = 644,675 clusters
 
 # pangenome_file = all_clusters/pangenome_matrix_t0.tab transposed = all_clusters/pangenome_matrix_t0.tr.tab
 # pangenome_genes = all_clusters/pangenome_matrix_genes_t0.tab transposed = all_clusters/pangenome_matrix_genes_t0.tr.tab
@@ -52,7 +57,7 @@ perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMC
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 
 # intersection pangenome matrix: all_clusters/pangenome_matrix_t0__intersection.tab
-# mean %cluster intersection: 5.70
+# mean %cluster intersection: 4.73
 
 # heatmap of cluster intersection
 ./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
@@ -61,7 +66,7 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeats/cdna.list -B repeats/TE.list -a
 
 # finding genes which are absent in B ...
-# file with genes absent in B (532793): all_clusters/pangenome_matrix_t0__pangenes_list.txt
+# file with genes absent in B (531150): all_clusters/pangenome_matrix_t0__pangenes_list.txt
 ```
 
 ## Align TE clusters and annotate Pfam domains

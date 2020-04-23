@@ -11,7 +11,7 @@ use warnings;
 my $SQL1 =  "SELECT probe.probe_seq_id FROM array INNER JOIN array_chip USING (array_id) INNER JOIN probe USING (array_chip_id) WHERE array.is_probeset_array = false GROUP BY array.name, probe.name   having COUNT(distinct probe.probe_id) > 1";
 
 # get probe_id of duplicated probes
-my $SQL1_1 =  "SELECT probe_id FROM probe WHERE probe.probe_seq_id=";
+my $SQL1_1 =  "SELECT probe_id FROM probe WHERE probe_seq_id=";
 
 # delete probe_ids from several tables
 my $SQL2_1 =  "DELETE FROM probe_transcript WHERE probe_id=";

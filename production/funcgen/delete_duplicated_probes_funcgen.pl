@@ -17,6 +17,7 @@ my $SQL1_1 =  "SELECT probe_id FROM probe WHERE probe.probe_seq_id=";
 my $SQL2_1 =  "DELETE FROM probe_transcript WHERE probe_id=";
 my $SQL2_2 =  "DELETE pf, pft FROM probe_feature pf INNER JOIN probe_feature_transcript pft ON pf.probe_feature_id=pft.probe_feature_id WHERE pf.probe_id=";
 my $SQL2_3 =  "DELETE FROM probe WHERE probe_id=";
+my $SQL2_4 =  "DELETE t1 FROM probe_feature t1 LEFT JOIN probe t2 ON t1.probe_id = t2.probe_id WHERE t1.probe_id IS NOT NULL AND t2.probe_id IS NULL";
 
 if(!$ARGV[1]){ die "# $0 <dbserver-w> <funcgen schema>\n" }
 my ($dbserver, $fschema) = @ARGV;
@@ -32,7 +33,7 @@ foreach my $probe_seq_id (@dup_probe_seqs){
 
 		# skip first probe_id, delete the rest
 		if($reps > 0){
-			print "$probe_seq_id $probe_id\n";
+			print "# $probe_seq_id $probe_id\n";
 
 			# delete repeated probe across tables
 			get_first_col_sql_query($dbserver,$fschema,$SQL2_1.$probe_id);
@@ -42,6 +43,9 @@ foreach my $probe_seq_id (@dup_probe_seqs){
 		$reps++;
 	}
 }
+
+# finally clean orphan probe_ids
+get_first_col_sql_query($dbserver,$fschema,$SQL2_4);
 
 # returns 1st column of results from SQL query
 sub get_first_col_sql_query {

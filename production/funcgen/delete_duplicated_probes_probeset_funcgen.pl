@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-# This script deletes duplicated probes in arrays marked as probeset arrays
+# This script deletes duplicated probes (same probe_seq_id) in arrays marked as probeset arrays
 # and failed datacheck UniqueProbe for this reason
 #
 # See https://m.ensembl.org/info/docs/api/funcgen

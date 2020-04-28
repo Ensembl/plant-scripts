@@ -19,7 +19,7 @@ cd ../../compara
 ./ens_sequences.pl -t cdna -c hordeum_vulgare -f hordeum_vulgare.cdna.fna
 ./ens_sequences.pl -t cdna -c brachypodium_distachyon -f brachypodium_distachyon.cdna.fna
 
-# plus TE libraries repetDB, trep, mips and SINE
+# plus TE libraries
 
 contents:
 
@@ -30,6 +30,7 @@ cdna.list
 glycine_max.cdna.fna.gz
 helianthus_annuus.cdna.fna.gz
 hordeum_vulgare.cdna.fna.gz
+maizeTE11122019.fna.gz
 medicago_truncatula.cdna.fna.gz
 mipsREdat_9.3p_ALL.fasta.gz
 oryza_sativa_japonica.cdna.fna.gz
@@ -37,10 +38,14 @@ phaseolus_vulgaris.cdna.fna.gz
 populus_trichocarpa.cdna.fna.gz
 repetDB.Mar2020.fna.gz
 repetDB.Mar2020.tsv
+rice6.9.5.liban.fna.gz
 SINEs.plants.fna.gz
 solanum_lycopersicum.cdna.fna.gz
 sorghum_bicolor.cdna.fna.gz
+SoyBaseTE.fna.gz
+TAIR10_TE.fna.gz
 TE.list
 trep-db_nr_Rel-19.fasta.gz
 vitis_vinifera.cdna.fna.gz
 zea_mays.cdna.fna.gz
+

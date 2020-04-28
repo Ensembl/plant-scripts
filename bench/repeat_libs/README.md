@@ -1,5 +1,4 @@
 
-
 # nrTEplants
 
 This document explains how to produce a library of non-redundant transposable elements (TE) found in plants and annotated in the following libraries, contained in FASTA format in folder [repeats/](./repeats/): 
@@ -13,7 +12,7 @@ This document explains how to produce a library of non-redundant transposable el
 |[EDTArice](https://github.com/oushujun/EDTA)|https://github.com/oushujun/EDTA/blob/master/database/rice6.9.5.liban|2431|https://europepmc.org/article/MED/31843001|
 |[EDTAmaize](https://github.com/oushujun/EDTA)|https://github.com/oushujun/EDTA/blob/master/database/maizeTE11122019|1362|
 |[SoyBaseTE](https://www.soybase.org/soytedb)|https://www.soybase.org/soytedb/#bulk|38664|http://www.biomedcentral.com/1471-2164/11/113|
-|[TAIR10TE](https://www.arabidopsis.org)|https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_transposable_elements/TAIR10_TE.fas|31189||
+|[TAIR10_TE](https://www.arabidopsis.org)|https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_transposable_elements/TAIR10_TE.fas|31189||
 
 
 ## cDNA sequences
@@ -22,7 +21,7 @@ In order to gauge the overlap between TE libraries and coding sequences, transcr
 
 ## Clustering sequences
 
-All TE sequences and cDNA were clustered with [GET_HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues). This software runs BLASTN and the MCL algorithm, and computes coverage by combining local alignments. 
+All TE sequences and cDNA were clustered with [GET_HOMOLOGUES-EST](https://github.com/eead-csic-compbio/get_homologues). This software runs BLASTN and the MCL algorithm, and computes coverage by combining local alignments. 
 
 ```
 cd ~/soft/github
@@ -68,22 +67,28 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeat
 # finding genes which are absent in B ...
 # file with genes absent in B (531150): all_clusters/pangenome_matrix_t0__pangenes_list.txt
 ```
+![Heatmap of sahred clusters among libraries](./pics/pangenome_matrix_t0__intersection_heatmap.png)
 
 ## Align TE clusters and annotate Pfam domains
 
-We now concentrate on the subset of clusters containing TE sequences. Note that over two thousand clusters contain TE and cDNA sequences, and are thus called 'mixed clusters':
+We now concentrate on the subset of clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called 'mixed clusters':
 
 ```
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot
 
-perl get_ambiguous_Pfam_domains.pl log.annot > Pfam.tsv
+perl get_ambiguous_Pfam_domains.pl log.annot control_pos.list control_neg_NLR.list  > Pfam.tsv
 
-# TEclusters=69953
-# mixedclusters=2109
+# TEclusters=113525
+# mixedclusters=3556
 ```
+ 
+The resulting TSV file [Pfam.tsv](./Pfam.tsv) contains these columns, from 0 to 9: domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters
 
-The resulting file *Pfam.tsv* was then imported to Google Sheets, and columns 'frac_potgenes', 'TElibs_per_cluster' and 'notes'. Note that 'frac_potgenes' is rounded to two decimals and captures the fraction of clustered sequences that share a Pfam domain and have been annotated as 'PotentialHostGene' (PHG) in library RepetDB. 
-The resulting TSV file is [Pfam_notes.tsv](./Pfam_notes.tsv).
+We'll test TElibs > 2 && frac_potgenes <= 0 as predictors of Pfam domains truly related to TEs
+
+These are domains
+i) identified in at least 3 different clusters from different TE libraries and
+ii) have less than 0.00 fraction of sequences marked as potential host gene (in RepetDB)
 
 ![Sample aligned cluster](./pics/269_AT4G16920.2.png)
 

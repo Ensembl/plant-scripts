@@ -147,7 +147,6 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 ```
 
 Check the log file [log.select](./log.select) for stats of the resulting nr library.
-```
 
 ## Clustering sequences from TE libraries with CD-HIT
 

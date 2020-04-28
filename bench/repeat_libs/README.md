@@ -84,9 +84,8 @@ perl get_ambiguous_Pfam_domains.pl log.annot control_pos.list control_neg_NLR.li
  
 The resulting TSV file [Pfam.tsv](./Pfam.tsv) contains these columns, from 0 to 9: domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters
 
-We'll test TElibs > 2 && frac_potgenes <= 0 as predictors of Pfam domains truly related to TEs
+We'll test TElibs > 2 && frac_potgenes <= 0 as predictors of Pfam domains truly related to TEs. These are domains:
 
-These are domains
 i) identified in at least 3 different clusters from different TE libraries and
 ii) have less than 0.00 fraction of sequences marked as potential host gene (in RepetDB)
 
@@ -108,34 +107,35 @@ Both files were used to compute the performance of removing TE sequences cluster
 #TN = True negative = correctly rejected
 #FN = False negative = incorrectly rejected
 
-# check control +, column [7] is frac_potgenes
-grep -f control_pos.list Pfam_notes.tsv | wc
-22   
-grep -f control_pos.list Pfam_notes.tsv | perl -F"\t" -lane 'print if($F[7]>0)' | wc
-3     
+# check positive control, these are
+grep positive_control Pfam.tsv | wc
+22
+perl -F"\t" -lane 'print if($F[4]>2 && $F[7]==0 && $F[8] eq 'positive_control')' Pfam.tsv | wc
+20
 
-#TP = 19
-#FN = 3
+TP = 20
+FN =  2
 
-# check control -
-grep -f control_neg_NLR.list Pfam_notes.tsv | wc
-25
-grep -f control_neg_NLR.list Pfam_notes.tsv | perl -F"\t" -lane 'print if($F[7]>0)' | wc
-21 
+# check negative control
+grep negative_control Pfam.tsv | wc
+33
+perl -F"\t" -lane 'print if($F[4]>2 && $F[7]==0 && $F[8] eq 'negative_control')' Pfam.tsv | wc
+1
 
-#TN = 21
-#FP = 4
+TN = 32
+FP =  1
 
-#sensitivity = TP / (TP + FN) = 19 / (19 + 3) = 0.86
-#specificity = TN / (TN + FP) = 21 / 21 + 4) = 0.84
+sensitivity = TP / (TP + FN) = 20 / (20 + 1) = 0.95
+specificity = TN / (TN + FP) = 32 / 32 + 1) = 0.96
 ```
 
-Based on this benchmark we decided to filter out TE sequences with Pfam associated to PHGs:
+Based on this benchmark a list of TE sequences (clusters) to be removed was compiled:
 ```
-perl -F"\t" -lane 'print if ($F[7]>0)' Pfam_notes.tsv  | wc
-332
+# clusters/Pfam domains to remove from TE boa finde list
+perl -F"\t" -lane 'if($F[4]<3 ||$F[7]>0){ foreach $cl (split(/,/,$F[9])){print $cl}}' Pfam.tsv | sort -u > clusters2remove.list
 
-perl -F"\t" -lane 'if($F[7]>0){ foreach $cl (split(/,/,$F[10])){print $cl}}' Pfam_notes.tsv | sort -u > clusters2remove.list
+wc clusters2remove.list
+1677
 ```
 
 ## Producing a nonredundant TE library
@@ -143,81 +143,10 @@ perl -F"\t" -lane 'if($F[7]>0){ foreach $cl (split(/,/,$F[10])){print $cl}}' Pfa
 Finally, a non-redundant library of plant TEs was produced as follows:
 
 ```
-./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsMar2020 &> log.select 
+./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsApril2020.fna > log.select
 ```
 
-The resulting library contains 69,209 sequences from 4 TE collections and has the following contents:
-
-```
-# clusters=69209 sequences=69209
-mipsREdat_9.3p_ALL      41848
-repetDB.Mar2020 26495
-trep-db_nr_Rel-19       819
-SINEs.plants    47
-
-LTR/Gypsy       19291
-LTR     16445
-LTR/Copia       8797
-TIR     5372
-MobileElement   4022
-LINE    3229
-Unclassified    2758
-DNA     892
-Helitron        743
-SINE    704
-DIRS    685
-MITE    662
-rRNA    568
-DNA/En-Spm      548
-Other   431
-DNA/Mite        414
-TRIM    397
-Retroelement    393
-LARD    298
-TIR/hAT 297
-DNA/MuDR        284
-DNA/TcMar       242
-Other/Simple    187
-TIR/PIF-Harbinger       176
-nonLTR  173
-DNA/Stowaway    169
-Satellite       160
-TIR/Mutator     149
-DNA/Harbinger   119
-TIR/Mariner     89
-TIR/Harbinger   72
-DNA/hAT 60
-TIR/CACTA       51
-non-LTR(SINE)   43
-Helitron/Helitron       32
-DNA/Tourist     32
-non-LTR(SINE)/I 32
-Maverick        29
-TIR/EnSpm/CACTA 25
-LARD|TRIM       25
-SINE|TRIM       10
-non-LTR(SINE)/Jokey     10
-LTR|TIR 10
-DNA/hAT-Ac      9
-non-LTR(SINE)/L1        8
-non-LTR(SINE)/Pan       8
-RC/Helitron     8
-DIRS|TIR        7
-Helitron|LARD   7
-LTR/Echo        5
-LTR/Halcyon     5
-Other/Centromeric       5
-PLE     5
-Helitron|TRIM   3
-LTR|DIRS        3
-TIR/PiggyBac    2
-TIR|Maverick    2
-SINE|LARD       2
-DNA/TcMar-Pogo  1
-TIR/P   1
-non-LTR(SINE)/R2        1
-Crypton 1
-non-LTR(SINE)/Chronos   1
+Check the log file [log.select](./log.select) for stats of the resulting nr library.
 ```
 
 ## Clustering sequences from TE libraries with CD-HIT

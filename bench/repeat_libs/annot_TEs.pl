@@ -21,7 +21,7 @@ my %TElibs = (
    'TAIR10_TE.fna.gz.nucl'            => 1
 );
 
-my $annotEXE = '~/soft/github/get_homologues/annotate_cluster.pl';
+my $annotEXE = '/path/to/get_homologues/annotate_cluster.pl';
 
 my $panmatfile;
 if(!defined($ARGV[0])){ die "# usage: $0 <pangenome_matrix_genes_t0.tr.tab>\n" }

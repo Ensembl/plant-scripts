@@ -22,7 +22,11 @@ my %TElibs = (
 	'SINEs.plants.fna.gz', 'repeats/SINEs.plants.fna.gz',
 	'mipsREdat_9.3p_ALL.fasta.gz', 'repeats/mipsREdat_9.3p_ALL.fasta.gz',
 	'trep-db_nr_Rel-19.fasta.gz', 'repeats/trep-db_nr_Rel-19.fasta.gz',
-	'repetDB.Mar2020.fna.gz', 'repeats/repetDB.Mar2020.fna.gz'
+	'repetDB.Mar2020.fna.gz', 'repeats/repetDB.Mar2020.fna.gz',
+	'maizeTE11122019.fna.gz', 'repeats/maizeTE11122019.fna.gz',
+	'rice6.9.5.liban.fna.gz', 'repeats/rice6.9.5.liban.fna.gz',
+	'SoyBaseTE.fna.gz', 'repeats/SoyBaseTE.fna.gz',
+	'TAIR10_TE.fna.gz', 'repeats/TAIR10_TE.fna.gz'
 ); 
 
 # numbers are columns: taxonomy, full header (id) , classification, respectively
@@ -47,14 +51,18 @@ foreach my $lib (keys(%TElibs)){
 	while(<LIB>){
 		if(/^>(.*)/){
 			$fullheader = $1;
-			$fullheader =~ s/\s\-$//; # fixes RepetDB headers
-			push(@{ $TE_FASTA_headers{$lib} }, $fullheader);
+
+			# lib-specific header fixes
+			if($lib eq 'repetDB.Mar2020.fna.gz'){ $fullheader =~ s/\s\-$// }
+
+			push(@{ $TE_FASTA_headers{$lib} }, $fullheader); #print "$fullheader\n" if($lib =~ /maize/);;
 		}
 	}
 	close(LIB);	
 	printf("# library %s: %d sequences\n",
 		$lib,scalar(@{ $TE_FASTA_headers{$lib} }));
 }
+
 
 # parse TE annotation TSV files
 my ($taxon,$class,%TE_annot);
@@ -117,7 +125,7 @@ printf("\n# clusters to remove: %d\n\n",scalar(keys(%skip)));
 # loop through cluster files and output selected TE seqs
 my $n_of_TE_clusters = 0;
 my $n_of_TE_seqs = 0;
-my ($file,$header,$filtheader,$libname,$fullname,$TEok,$len1st);
+my ($file,$header,$newheader,$filtheader,$libname,$fullname,$TEok,$len1st);
 my (%stats_lib,%stats_class);
 
 open(OUTFASTA,">",$outfile) || die "# error: cannot create $outfile\n"; 
@@ -133,7 +141,7 @@ while(<LOG>){
 			next;
 		}
 
-		#next if($file ne '68144_CDY33691.fna'); # debugging
+		#next if($file ne '309858_vuna_AC193505-121#LTR-unknown.fna'); # debugging
 
 		# select best sequence(s) from cluster with 1 or more seqs
 		# i) pre-aligned clusters contain 1+ seqs, the 1st being the best representative;
@@ -149,7 +157,7 @@ while(<LOG>){
 					if($line =~ /^>([^\[\s]+)\s*\[([^\]]+)/){ 
 
 						# note header was shortened in script #1 annot_TEs.pl
-						($header,$libname) = ($1, $2);
+						($header,$libname) = ($1, $2); 
 					
 						# is this a TE sequence?	
 						$fullname = $libname;
@@ -196,6 +204,7 @@ while(<LOG>){
 
 			## take 1st sequence in cluster by default
 			$header = $clustord[0];
+			$newheader = '';
 			$len1st = $clustlen{$header};
 			$taxon  = 'root';
 			$class  = 'Unclassified';
@@ -232,7 +241,7 @@ while(<LOG>){
 				#unknown, unknown, unknown
 				my @cldata = split(/,/,$tmpdata[1]);
             # skip 1st elem, not in RepBase FASTA headers
-            if($cldata[1] =~ 'unknown' || !defined($cldata[1])){ $class = 'Unclassified' }
+            if(!defined($cldata[1]) || $cldata[1] =~ 'unknown'){ $class = 'Unclassified' }
             else{
 					$class = $cldata[1];
 					if($cldata[2] !~ 'unknown'){ $class .= "/$cldata[2]" }
@@ -252,25 +261,61 @@ while(<LOG>){
 					$taxon = $TE_annot{$clustfulllib{$header}}{$clustfull{$header}}{'taxon'}
 				}
          }
+			elsif($clustfulllib{$header} eq 'maizeTE11122019.fna.gz'){
+				#Hip6_5#DNA/Helitron			
+				($newheader,$class) = split(/#/,$header);
+				$class =~ s/\/unknown//;
+				$taxon = 'Zea_mays';
+			}
+			elsif($clustfulllib{$header} eq 'rice6.9.5.liban.fna.gz'){
+				#RST-Osativa-Cluster_4#SINE/unknown
+				($newheader,$class) = split(/#/,$header);
+				$class =~ s/\/unknown//;	
+				$taxon = 'Oryza_sativa';
+         }
+			elsif($clustfulllib{$header} eq 'SoyBaseTE.fna.gz'){
+				#DHH_uuu_Gm1-1:SoyBaseTE#Helitron/Helitron
+				($newheader,$class) = split(/#/,$header);
+				$newheader = (split(/:/,$newheader))[0];
+            $class =~ s/\/unknown//;
+				$taxon = 'Glycine_max';
+         }
+			elsif($clustfulllib{$header} eq 'TAIR10_TE.fna.gz'){
+				#AT1TE52125:TAIR10#LTR/Gypsy			
+				($newheader,$class) = split(/#/,$header);
+            $newheader = (split(/:/,$newheader))[0];
+            $class =~ s/\/unknown//;
+				$taxon = 'Arabidopsis_thaliana';
+         }	
 
 			# final fixes
 			$taxon =~ s/\.//g;
          $taxon =~ s/\s+/_/g;
 
-			# actually add this header and sequence to output file
-			print OUTFASTA ">$header:$clustlib{$header}#$class \@$taxon [S:]\n";
+			# actually add this header to output file
+			if($newheader ne ''){
+				print OUTFASTA ">$newheader:$clustlib{$header}#$class \@$taxon [S:]\n";
+			} else {
+				print OUTFASTA ">$header:$clustlib{$header}#$class \@$taxon [S:]\n";
+			}
+
+			# add sequence to output file
 			$clustseq{$header} =~ s/\-//g;
-			print OUTFASTA "$clustseq{$header}\n";
+			print OUTFASTA uc($clustseq{$header})."\n";
 
 			# log
-			print "$header:$clustlib{$header}#$class \@$taxon : $clustlen{$header} : $file\n";
+			if($newheader ne ''){
+				print "$newheader:$clustlib{$header}#$class \@$taxon : $clustlen{$header} : $file\n";
+			} else {
+				print "$header:$clustlib{$header}#$class \@$taxon : $clustlen{$header} : $file\n";
+			}
 
 			$stats_class{$class}++;
 			$stats_lib{$clustlib{$header}}++;
 			
 			$n_of_TE_seqs++;
 
-			# 2nd sequence only if $DIFFLENRATIO shorter,
+			# UNTESTED: 2nd sequence only if $DIFFLENRATIO shorter,
 			# avoids missing boa fide TE components clustered with large TE complexes
 			#foreach $header (@clustord){
 			#	if($clustlen{$header} < $DIFFLENRATIO * $len1st){
@@ -287,7 +332,7 @@ while(<LOG>){
 }
 close(LOG);
 
-close(OUTFASTA);
+close(OUTFASTA); 
 
 # print overall stats to log
 print "# clusters=$n_of_TE_clusters sequences=$n_of_TE_seqs\n";

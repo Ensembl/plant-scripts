@@ -153,23 +153,7 @@ Check the log file [log.select](./log.select) for stats of the resulting nr libr
 In order to put the previous results in context a similar clustering experiment, including only TEs and no cDNAs, was carried out with [CD-HIT](http://weizhongli-lab.org/cd-hit):
 
 ```
-cat mipsREdat_9.3p_ALL.fasta SINEs.bnk.fna trep-db_complete_Rel-19.fasta repetDB.Mar2020.fna >
-all.fna
+zcat ../repeats/repetDB.Mar2020.fna.gz ../repeats/trep-db_nr_Rel-19.fasta.gz ../repeats/SINEs.plants.fna.gz ../repeats/mipsREdat_9.3p_ALL.fasta.gz ../repeats/maizeTE11122019.fna.gz ../repeats/rice6.9.5.liban.fna.gz ../repeats/TAIR10_TE.fna.gz ../repeats/SoyBaseTE.fna.gz > all.fna
 
-~/soft/cd-hit-v4.8.1-2019-0228/cd-hit-est -i all.fna -c 0.95 -T 3 -o TE.nr.fna
-
-total seq: 99538
-longest and shortest : 54107 and 25
-Total letters: 632259937
-Sequences have been sorted
-
-# comparing sequences from          0  to         18
-...
-# comparing sequences from      98665  to      99538
-..................---------- new table with      552 representatives
-
-    99538  finished      84944  clusters
-
-Approximated maximum memory consumption: 837M
-Total CPU time 17598.12
+~/soft/cd-hit-v4.8.1-2019-0228/cd-hit-est -i all.fna -c 0.95 -T 8 -o TE.nr.fna
 ```

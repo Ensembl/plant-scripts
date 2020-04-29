@@ -73,6 +73,12 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeat
 
 We now concentrate on the subset of clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called *mixed clusters*:
 
+![Sample mixed cluster](./pics/269_AT4G16920.2.png)
+
+*Fig. 1. Aligned cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology)*
+
+The next script was used to annotate Pfam domains encoded in sequences within these clusters:
+
 ```
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot
 
@@ -88,10 +94,6 @@ The resulting TSV file [Pfam.tsv](./Pfam.tsv) summarizes mixed clusters in terms
 
 * identified in at least 3 different clusters from different TE libraries (3 replicates)
 * with fraction of sequences marked as Potential Host Gene in [RepetDB](http://urgi.versailles.inra.fr/repetdb/begin.do) <= 0.00
-
-![Sample aligned cluster](./pics/269_AT4G16920.2.png)
-
-*Fig. 1. Aligned cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology)*
 
 ## Removing ambiguous TE sequences
 

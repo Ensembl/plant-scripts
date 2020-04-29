@@ -18,7 +18,7 @@ while(<POS>){
 	if(/^(PF\d+)/){ $pos_pfam{ $1 } = 1 }
 }
 close(POS);
-printf("# positive Pfam domains = %d\n",scalar(keys(%pos_pfam)));
+printf(STDERR "# positive Pfam domains = %d\n",scalar(keys(%pos_pfam)));
 
 ## parse list of negative Pfam domains, know to be part of non-TE protein coding genes
 my %neg_pfam;
@@ -27,7 +27,7 @@ while(<NEG>){
    if(/^(PF\d+)/){ $neg_pfam{ $1 } = 1 }
 }
 close(NEG);
-printf("# negative Pfam domains = %d\n",scalar(keys(%neg_pfam)));
+printf(STDERR "# negative Pfam domains = %d\n",scalar(keys(%neg_pfam)));
 
 ## parse input log and compute stats
 my $n_of_TE_clusters = 0;
@@ -111,8 +111,8 @@ close(LOG);
 # print overall stats
 my ($note, $frac_potgenes);
 
-print "# TEclusters=$n_of_TE_clusters\n";
-print "# mixedclusters=$n_of_mixed_clusters\n";
+print STDERR "# TEclusters=$n_of_TE_clusters\n";
+print STDERR "# mixedclusters=$n_of_mixed_clusters\n";
 
 print "domain\ttotclusters\toccurrences\ttotseqs\tTElibs\tcDNAlibs\tpotgenes\tfrac_potgenes\tnotes\tclusters\n";
 foreach $dom (sort {$stats{$b}{'totalclusters'}<=>$stats{$a}{'totalclusters'}} keys(%stats)){

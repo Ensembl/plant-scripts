@@ -1,7 +1,6 @@
-nohup: ignoring input
 # INFO: no cluster config file
 
-# /home/contrera/soft/github/get_homologues/get_homologues-est.pl -d repeats -o 0 -i 100 -e 0 -r 0 -t 0 -c 0 -z 0 -I 0 -m cluster -n 2 -M 1 -C 75 -S 95 -E 1e-05 -F 1.5 -b 0 -s 0 -D 0 -R 0 -L 0 -A 0 -P 0
+# get_homologues/get_homologues-est.pl -d repeats -o 0 -i 100 -e 0 -r 0 -t 0 -c 0 -z 0 -I 0 -m cluster -n 2 -M 1 -C 75 -S 95 -E 1e-05 -F 1.5 -b 0 -s 0 -D 0 -R 0 -L 0 -A 0 -P 0
 
 # computer cluster settings
 # CHKEXE	qstat
@@ -15,7 +14,7 @@ nohup: ignoring input
 # TYPE	sge
 
 # version 10042020
-# results_directory=/home/contrera/devel/repeat_libs/repeats_est_homologues
+# results_directory=repeats_est_homologues
 # parameters: MAXEVALUEBLASTSEARCH=0.01 MAXPFAMSEQS=250 BATCHSIZE=1000 MINSEQLENGTH=90 MAXSEQLENGTH=55000
 
 # checking input files...
@@ -9823,7 +9822,7 @@ nohup: ignoring input
 # skip BLAST searches and parsing
 
 # WARNING: please remove/rename results directory:
-# '/home/contrera/devel/repeat_libs/repeats_est_homologues/'
+# 'repeats_est_homologues/'
 # if you change the sequences in your .fna/.faa files or want to re-run
 
 # re-using previous isoform clusters
@@ -9858,7 +9857,7 @@ nohup: ignoring input
 # clustering orthologous sequences
 # find_OMCL_clusters: re-using previous results (same parameters)
 
-# find_OMCL_clusters: parsing clusters (/home/contrera/devel/repeat_libs/repeats_est_homologues/tmp/all_ortho.mcl)
+# find_OMCL_clusters: parsing clusters (repeats_est_homologues/tmp/all_ortho.mcl)
 
 
 # add_unmatched_singletons : 586759 sequences, 22 taxa

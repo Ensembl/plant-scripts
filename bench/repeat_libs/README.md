@@ -75,7 +75,7 @@ We now concentrate on the subset of clusters containing TE sequences. Note that 
 
 ![Sample mixed cluster](./pics/269_AT4G16920.2.png)
 
-*Fig. 1. Cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, NB-ARC, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology) from cluster [269_AT4G16920.2.fna](./TE_alignments/269_AT4G16920.2.fna)*
+*Fig. 1. Cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain [PF00931](https://pfam.xfam.org/family/PF00931), NB-ARC, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology) from cluster [269_AT4G16920.2.fna](./TE_alignments/269_AT4G16920.2.fna)*
 
 The next scripts were used to annotate Pfam domains encoded in sequences within these clusters:
 
@@ -152,11 +152,18 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 
 ```
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsApril2020.fna > log.select
+
+# mipsREdat_9.3p_ALL      39533
+# repetDB.Mar2020 26012
+# SoyBaseTE       21766
+# TAIR10_TE       21069
+# rice6.9.5.liban 1835
+# maizeTE11122019 805
+# trep-db_nr_Rel-19       785
+# SINEs.plants    44
 ```
 
-This is a stats summary
-
-Check [log.select](./log.select) for the complete log and stats report of the resulting nr library.
+Check [log.select](./log.select) for the complete report of the resulting nr library.
 
 ## Clustering sequences from TE libraries with CD-HIT
 

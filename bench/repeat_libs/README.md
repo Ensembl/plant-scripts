@@ -71,20 +71,20 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeat
 
 ## Align TE clusters and annotate Pfam domains
 
-We now concentrate on the subset of clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called 'mixed clusters':
+We now concentrate on the subset of clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called *mixed clusters*:
 
 ```
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot
 
-perl get_ambiguous_Pfam_domains.pl log.annot control_pos.list control_neg_NLR.list  > Pfam.tsv
+perl get_ambiguous_Pfam_domains.pl log.annot control_pos.list control_neg_NLR.list > Pfam.tsv
 
+# positive Pfam domains = 22
+# negative Pfam domains = 43
 # TEclusters=113525
 # mixedclusters=3556
 ```
  
-The resulting TSV file [Pfam.tsv](./Pfam.tsv) contains these columns, from 0 to 9: domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters
-
-We'll test TElibs > 2 && frac_potgenes <= 0 as predictors of Pfam domains truly related to TEs. These are domains:
+The resulting TSV file [Pfam.tsv](./Pfam.tsv) summarizes mixed clusters in terms of Pfam domains called after translating sequences in 6 frames. This TSV file contains 10 column: domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes and clusters. We'll test TElibs > 2 && frac_potgenes <= 0 as predictors of Pfam domains truly related to TEs. These are domains:
 
 i) identified in at least 3 different clusters from different TE libraries and
 ii) have less than 0.00 fraction of sequences marked as potential host gene (in RepetDB)
@@ -146,7 +146,9 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsApril2020.fna > log.select
 ```
 
-Check the log file [log.select](./log.select) for stats of the resulting nr library.
+This is a stats summary
+
+Check [log.select](./log.select) for the complete log and stats report of the resulting nr library.
 
 ## Clustering sequences from TE libraries with CD-HIT
 

@@ -75,9 +75,9 @@ We now concentrate on the subset of clusters containing TE sequences. Note that 
 
 ![Sample mixed cluster](./pics/269_AT4G16920.2.png)
 
-*Fig. 1. Aligned cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology)*
+*Fig. 1. Cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, NB-ARC, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology)*
 
-The next script was used to annotate Pfam domains encoded in sequences within these clusters:
+The next scripts were used to annotate Pfam domains encoded in sequences within these clusters:
 
 ```
 perl annot_TEs.pl all_clusters/pangenome_matrix_genes_t0.tr.tab &>log.annot
@@ -115,8 +115,8 @@ grep positive_control Pfam.tsv | wc
 perl -F"\t" -lane 'print if($F[4]>2 && $F[7]==0 && $F[8] eq 'positive_control')' Pfam.tsv | wc
 20
 
-TP = 20
-FN =  2
+# TP = 20
+# FN =  2
 
 # check negative control
 grep negative_control Pfam.tsv | wc
@@ -124,20 +124,26 @@ grep negative_control Pfam.tsv | wc
 perl -F"\t" -lane 'print if($F[4]>2 && $F[7]==0 && $F[8] eq 'negative_control')' Pfam.tsv | wc
 1
 
-TN = 32
-FP =  1
+# TN = 32
+# FP =  1
 
-sensitivity = TP / (TP + FN) = 20 / (20 + 1) = 0.95
-specificity = TN / (TN + FP) = 32 / 32 + 1) = 0.96
+# sensitivity = TP / (TP + FN) = 20 / (20 + 1) = 0.95
+# specificity = TN / (TN + FP) = 32 / 32 + 1) = 0.96
 ```
 
-Based on this benchmark a list of TE sequences (clusters) to be removed was compiled:
+Based on this benchmark, a list of TE sequences (clusters) to be removed was compiled:
 ```
-# clusters/Pfam domains to remove from TE boa finde list
+# clusters to remove from TE bona finde list
 perl -F"\t" -lane 'if($F[4]<3 ||$F[7]>0){ foreach $cl (split(/,/,$F[9])){print $cl}}' Pfam.tsv | sort -u > clusters2remove.list
 
 wc clusters2remove.list
 1677
+
+# and the equivalent list of Pfam domains
+perl -F"\t" -lane 'if($F[4]<3 ||$F[7]>0){ print "$F[0]"}' Pfam.tsv > Pfam2remove.list
+
+wc Pfam2remove.list
+1084
 ```
 
 ## Producing a nonredundant TE library

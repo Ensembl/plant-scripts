@@ -84,10 +84,10 @@ perl get_ambiguous_Pfam_domains.pl log.annot control_pos.list control_neg_NLR.li
 # mixedclusters=3556
 ```
  
-The resulting TSV file [Pfam.tsv](./Pfam.tsv) summarizes mixed clusters in terms of Pfam domains called after translating sequences in 6 frames. This TSV file contains 10 columns: *domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters*. We'll test *TElibs* > 2 && *frac_potgenes* <= 0 as predictors of Pfam domains truly related to TEs, which are domains:
+The resulting TSV file [Pfam.tsv](./Pfam.tsv) summarizes mixed clusters in terms of Pfam domains called after translating sequences in 6 frames. This TSV file contains 10 columns: *domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters*. We'll test *TElibs* > 2 && *frac_potgenes* <= 0.00 as predictors of Pfam domains truly related to TEs, which are domains:
 
-i) identified in at least 3 different clusters from different TE libraries
-ii) with fraction of sequences marked as Potential Host Gene in [RepetDB](http://urgi.versailles.inra.fr/repetdb/begin.do) <= 0.00
++ i) identified in at least 3 different clusters from different TE libraries (3 replicates)
++ ii) with fraction of sequences marked as Potential Host Gene in [RepetDB](http://urgi.versailles.inra.fr/repetdb/begin.do) <= 0.00
 
 ![Sample aligned cluster](./pics/269_AT4G16920.2.png)
 

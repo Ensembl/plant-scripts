@@ -58,7 +58,8 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 # intersection pangenome matrix: all_clusters/pangenome_matrix_t0__intersection.tab
 # mean %cluster intersection: 4.73
 
-# heatmap of cluster intersection
+# heatmap of cluster intersection, produces file ![pangenome_matrix_t0__intersection_heatmap.png](./pics/pangenome_matrix_t0__intersection_heatmap.png)
+
 ./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
 
 # count how many clusters do not contain TEs
@@ -67,7 +68,6 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeat
 # finding genes which are absent in B ...
 # file with genes absent in B (531150): all_clusters/pangenome_matrix_t0__pangenes_list.txt
 ```
-![Heatmap of sahred clusters among libraries](./pics/pangenome_matrix_t0__intersection_heatmap.png)
 
 ## Align TE clusters and annotate Pfam domains
 

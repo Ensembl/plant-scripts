@@ -75,7 +75,7 @@ We now concentrate on the subset of clusters containing TE sequences. Note that 
 
 ![Sample mixed cluster](./pics/269_AT4G16920.2.png)
 
-*Fig. 1. Cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, NB-ARC, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology)*
+*Fig. 1. Cluster with two Arabidopsis thaliana cDNA sequences (AT4G16920.2 and AT4G16950.1) and transposable element TEdenovo-B-R2288-Map4 from library repetDB.Mar2020. These sequences contain Pfam domain PF00931, NB-ARC, which is part of NLR defense proteins.  Figure generated with [Bioedit](https://www.researchgate.net/publication/258565830_BioEdit_An_important_software_for_molecular_biology) from cluster [269_AT4G16920.2.fna](./TE_alignments/269_AT4G16920.2.fna)*
 
 The next scripts were used to annotate Pfam domains encoded in sequences within these clusters:
 

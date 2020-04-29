@@ -71,7 +71,7 @@ The produced output includes files [log.m](./log.M), pangenomes matrices in fold
 
 ## Align TE clusters and annotate Pfam domains
 
-We now concentrate on the subset of clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called *mixed clusters*:
+We now concentrate on the subset of 113525 clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called *mixed clusters*:
 
 ![Sample mixed cluster](./pics/269_AT4G16920.2.png)
 
@@ -153,14 +153,16 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 ```
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsApril2020.fna > log.select
 
-# mipsREdat_9.3p_ALL      39533
-# repetDB.Mar2020 26012
-# SoyBaseTE       21766
-# TAIR10_TE       21069
-# rice6.9.5.liban 1835
-# maizeTE11122019 805
-# trep-db_nr_Rel-19       785
-# SINEs.plants    44
+# clusters=111849 sequences=111849
+
+mipsREdat_9.3p_ALL      39533
+repetDB.Mar2020 26012
+SoyBaseTE       21766
+TAIR10_TE       21069
+rice6.9.5.liban 1835
+maizeTE11122019 805
+trep-db_nr_Rel-19       785
+SINEs.plants    44
 ```
 
 Check [log.select](./log.select) for the complete report of the resulting nr library.

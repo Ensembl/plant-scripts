@@ -18,16 +18,35 @@ echo
 # 1) download peptide sequences in FASTA format
 
 FASTAPEP=${SPECIES}*pep.all.fa.gz
-wget -c ${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP} .
+URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP}
+echo "# downloading $URL"
+wget -c $URL 
 
-# 2) download transcripts in FASTA format
+# 2) download CDS nucleotide sequences in FASTA format
 
+FASTACDS=${SPECIES}*cds.all.fa.gz
+URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cds/${FASTACDS}
+echo "# downloading $URL"
+wget -c $URL 
 
+# 3) download transcripts (cDNA) in FASTA format
 
-# 3) download raw and repeat-masked genomic sequence
+FASTACDNA=${SPECIES}*cdna.all.fa.gz
+URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cdna/${FASTACDNA}
+echo "# downloading $URL"
+wget -c $URL 
 
-# x) download all homologies in a single TSV file, several GBs
+# 4) download soft-masked genomic sequences
+
+FASTASM=${SPECIES}*.dna_sm.toplevel.fa.gz
+URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}
+echo "# downloading $URL"
+wget -c $URL
+
+# 5) download all homologies in a single TSV file, several GBs
 
 TSVFILE=Compara.${RELEASE}.protein_default.homologies.tsv.gz
-wget -c ${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE} .
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}
+echo "# downloading $URL"
+wget -c $URL 
 

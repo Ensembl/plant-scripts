@@ -1,6 +1,4 @@
 # Example in Perl of queries to the Ensembl REST endpoints 
-#
-# Check https://www.ncbi.nlm.nih.gov/taxonomy for taxonomy ids
 
 use strict;
 use warnings;

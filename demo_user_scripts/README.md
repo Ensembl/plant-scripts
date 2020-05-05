@@ -11,6 +11,10 @@ Some of the scripts depend on additional software packages, see below to learn h
 
 The examples for bulk downloads from the FTP site require the software [wget](https://www.gnu.org/software/wget/), which is usually installed on most Linux distributions. For macOS it is available on [Homebrew](https://brew.sh). For Windows it ships with [MobaXterm](https://mobaxterm.mobatek.net).
 
+### MySQL
+
+The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client.
+
 ### Perl
 
 As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny)

@@ -2,10 +2,11 @@
 use strict;
 use warnings;
 
-# add genes to a GFF file containing transcript, exon and CDS features
+# add genes to a GTF file containing transcript, exon and CDS features
+# and output GFF format
 # by Bruno Contreras Moreira EMBL-EBI 2020
 
-if(!$ARGV[0]){ die "# usage: $0 <GFF>\n" }
+if(!$ARGV[0]){ die "# usage: $0 <GTF>\n" }
 
 my ($fparent, $tparent, $tname, $fname, $feature, $gene, $transcript);
 
@@ -25,23 +26,32 @@ while(<GFF>){
 		$gene = $_;
 		$gene =~ s/\ttranscript\t/\tgene\t/;
 		$gene =~ s/transcript_id "[^"]+";//;
-		if($gene =~ /gene_id "([^"]+)"/){ $tparent = $1 }
+		if($gene =~ /gene_id "([^"]+)"/){ 
+			$gene =~ s/gene_id "([^"]+)"/ID=$1/;
+			$tparent = $1; 
+		}
 		print $gene;
 		
 		# now take care of transcript
 		$transcript = $_;
+		$transcript =~ s/gene_id "[^"]+";//;
 		if($col[8] =~ m/transcript_id "([^"]+)"/){
-
 			$tname = $1 . ':mrna';
 			$fparent = $tname;
-			$transcript =~ s/transcript_id "[^"]+";/transcript_id "$tname"; parent "$tparent";/;
+			$transcript =~ s/transcript_id "[^"]+";\s*/ID=$tname;Parent=$tparent;\n/;
 			print $transcript;
 		}
 	} elsif(defined($col[2]) && ($col[2] eq 'exon' || $col[2] eq 'CDS')){
 		
 		$feature = $_;
-	
-		$feature =~ s/transcript_id "[^"]+";/transcript_id "$tname"; parent "$fparent";/;	
+		$feature =~ s/gene_id "[^"]+";//;
+
+		if($feature =~ m/exon_number "(\d+)";/){
+			$fname = $fparent . ":exon$1";
+			$feature =~ s/transcript_id "[^"]+";/ID=$fname";Parent=$fparent;/;
+			$feature =~ s/exon_number "[^"]+";//;
+			$feature =~ s/exon_id "[^"]+";//;
+		}
 		print $feature;
 		
 	} else {

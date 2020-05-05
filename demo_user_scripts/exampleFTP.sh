@@ -51,7 +51,14 @@ URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-# 5) get indexed, bgzipped VCF file with variants mapped,
+# 5) get mappings to UniProt proteins
+
+UNIPTSV=${SPECIES}*.uniprot.tsv.gz
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/${SPECIES,,}//$UNIPTSV
+echo "# downloading $URL"
+wget $OPTARG -c $URL
+
+# 6) get indexed, bgzipped VCF file with variants mapped,
 # note this contains all variants known to Ensembl Plants,
 # no individual genotypes are conserved
 
@@ -60,14 +67,16 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-# 6) download all homologies in a single TSV file, several GBs
+##############################################################
+
+# 7) download all homologies in a single TSV file, several GBs
 
 TSVFILE=Compara.${RELEASE}.protein_default.homologies.tsv.gz
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-# 7) download UniProt report of Ensembl Plants, 
+# 8) download UniProt report of Ensembl Plants, 
 # summarized how many protein sequences from each species
 # have been annotated in SwissProt & TrEMBL
 
@@ -76,7 +85,7 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-# 8) retrieve list of new species in current release
+# 9) retrieve list of new species in current release
 
 NEWLIST=new_genomes.txt
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST

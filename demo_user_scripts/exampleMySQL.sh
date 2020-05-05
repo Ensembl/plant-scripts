@@ -1,3 +1,9 @@
+#!/bin/bash
+
+# Your usage of the data returned by the REST service is
+# subject to same conditions as laid out on the Ensembl website.
+#
+# Copyright [2020] EMBL-European Bioinformatics Institute
 
 # documentation about Ensembl schemas can be found at 
 # http://www.ensembl.org/info/docs/api/index.html
@@ -20,12 +26,18 @@ echo "EGRELEASE=${EGRELEASE}"
 echo
 
 
-# 1) check currently supported species and schemas
+# 1) check currently supported Ensembl Genomes (EG) core schemas,
+# note it includes non-plants as well
+
+mysql --host $SERVER --user $USER --port $PORT \
+	-e "show databases" | grep "core_${EGRELEASE}_${RELEASE}"
+
+# 2) count protein-coding genes of a particular species
 
 SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
-	-e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}"`
-
-# 2) count protein-coding genes
+    -e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}"`
 
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
+
+

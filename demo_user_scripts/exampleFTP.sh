@@ -15,10 +15,12 @@ EGRELEASE=47
 
 RELEASE=$(( $EGRELEASE + 53)); # do not change
 
+OPTARG=$1
+
 # set example species
 SPECIES=Brachypodium_distachyon
 
-echo "EGRELEASE=${EGRELEASE}"
+echo "EGRELEASE=${EGRELEASE} OPTARG=$OPTARG"
 echo
 
 # 1) download peptide sequences in FASTA format
@@ -26,37 +28,58 @@ echo
 FASTAPEP=${SPECIES}*pep.all.fa.gz
 URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP}
 echo "# downloading $URL"
-wget -c $URL 
+wget $OPTARG -c $URL 
 
 # 2) download CDS nucleotide sequences in FASTA format
 
 FASTACDS=${SPECIES}*cds.all.fa.gz
 URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cds/${FASTACDS}
 echo "# downloading $URL"
-wget -c $URL 
+wget $OPTARG -c $URL 
 
 # 3) download transcripts (cDNA) in FASTA format
 
 FASTACDNA=${SPECIES}*cdna.all.fa.gz
 URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cdna/${FASTACDNA}
 echo "# downloading $URL"
-wget -c $URL 
+wget $OPTARG -c $URL 
 
 # 4) download soft-masked genomic sequences
 
 FASTASM=${SPECIES}*.dna_sm.toplevel.fa.gz
 URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}
 echo "# downloading $URL"
-wget -c $URL
+wget $OPTARG -c $URL
 
-# 5) download all homologies in a single TSV file, several GBs
+# 5) get indexed, bgzipped VCF file with variants mapped,
+# note this contains all variants known to Ensembl Plants,
+# no individual genotypes are conserved
+
+VCF=${SPECIES,,}.vcf.gz*
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}
+echo "# downloading $URL"
+wget $OPTARG -c $URL
+
+# 6) download all homologies in a single TSV file, several GBs
 
 TSVFILE=Compara.${RELEASE}.protein_default.homologies.tsv.gz
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}
 echo "# downloading $URL"
-wget -c $URL 
+wget $OPTARG -c $URL
 
-if test -f "$TSVFILE"; then
-	echo "# got $TSVFILE"
-fi
+# 7) download UniProt report of Ensembl Plants, 
+# summarized how many protein sequences from each species
+# have been annotated in SwissProt & TrEMBL
+
+UNIPFILE=uniprot_report_EnsemblPlants.txt
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE
+echo "# downloading $URL"
+wget $OPTARG -c $URL
+
+# 8) retrieve list of new species in current release
+
+NEWLIST=new_genomes.txt
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST
+echo "# downloading $URL"
+wget $OPTARG -c $URL
 

@@ -1,10 +1,16 @@
+#!/usr/bin/env perl
+
 # Example in Perl of queries to the Ensembl REST endpoints 
-# 
+# Your usage of the data returned by the REST service is 
+# subject to same conditions as laid out on the Ensembl website.
+#
 # The full set of endpoints is documented 
 # at http://rest.ensembl.org
 #
 # See https://github.com/Ensembl/ensembl-rest/wiki for
 # examples in other programming languages
+
+# Copyright [2017-2020] EMBL-European Bioinformatics Institute
 
 use strict;
 use warnings;

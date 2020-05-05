@@ -1,0 +1,18 @@
+os: linux
+dist: bionic
+language: perl
+perl:
+  - "5.26"
+
+before_install:
+  - "sudo apt-get update"
+  - "sudo apt-get install -y wget mysql-client python3"
+  - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
+
+script:
+  - "make test"
+  - "make clean"
+
+notifications:
+  email:
+    on_failure: always

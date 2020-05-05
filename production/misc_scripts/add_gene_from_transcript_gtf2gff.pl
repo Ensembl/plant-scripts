@@ -47,8 +47,8 @@ while(<GFF>){
 		$feature =~ s/gene_id "[^"]+";//;
 
 		if($feature =~ m/exon_number "(\d+)";/){
-			$fname = $fparent . ":exon$1";
-			$feature =~ s/transcript_id "[^"]+";/ID=$fname";Parent=$fparent;/;
+			$fname = $fparent . ":$col[2]:$1";
+			$feature =~ s/transcript_id "[^"]+";/ID=$fname;Parent=$fparent;/;
 			$feature =~ s/exon_number "[^"]+";//;
 			$feature =~ s/exon_id "[^"]+";//;
 		}

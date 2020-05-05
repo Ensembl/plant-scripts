@@ -4,9 +4,12 @@ language: perl
 perl:
   - "5.26"
 
+services:
+  - "mysql"
+
 before_install:
   - "sudo apt-get update"
-  - "sudo apt-get install -y wget mysql-client python3"
+  - "sudo apt-get install -y wget python3"
   - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
 
 script:

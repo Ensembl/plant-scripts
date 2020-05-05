@@ -6,4 +6,4 @@ ok( eval{ `perl exampleREST.pl` } =~ /zea_mays/ , 'exampleREST.pl' );
 
 ok( eval{ `bash exampleFTP.sh` } =~ /# got Compara/ , 'exampleFTP.sh' );
 
-ok( eval{ `bash exampleFTP.sh` } =~ /COUNT/ , 'exampleMySQL.sh' );
+ok( eval{ `bash exampleMySQL.sh` } =~ /COUNT/ , 'exampleMySQL.sh' );

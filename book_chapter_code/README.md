@@ -13,6 +13,10 @@ The examples for bulk downloads from the FTP site require the software [wget](ht
 
 ### Perl
 
+As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny)
+
 ### Python3
+
+
 
 ### R

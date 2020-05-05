@@ -56,3 +56,7 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFI
 echo "# downloading $URL"
 wget -c $URL 
 
+if test -f "$TSVFILE"; then
+	echo "# got $TSVFILE"
+fi
+

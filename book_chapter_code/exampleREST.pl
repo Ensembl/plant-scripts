@@ -1,4 +1,7 @@
 # Example in Perl of queries to the Ensembl REST endpoints 
+# 
+# The full set of endpoints is documented 
+# at http://rest.ensembl.org
 
 use strict;
 use warnings;

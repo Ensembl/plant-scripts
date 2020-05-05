@@ -2,6 +2,9 @@
 # 
 # The full set of endpoints is documented 
 # at http://rest.ensembl.org
+#
+# See https://github.com/Ensembl/ensembl-rest/wiki for
+# examples in other programming languages
 
 use strict;
 use warnings;

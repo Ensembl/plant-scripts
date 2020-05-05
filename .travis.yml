@@ -10,7 +10,7 @@ before_install:
   - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
 
 script:
-  - "make test"
+  - "make test_demo_user_scripts"
   - "make clean"
 
 notifications:

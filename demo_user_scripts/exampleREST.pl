@@ -49,10 +49,11 @@ my $metadata = call_endpoint($url);
 
 # parse the data from the response
 foreach my $sp (@$metadata){
-	printf("%s\t%s\t%s\t%d\t%d\t%d\t%d\n",
+	printf("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\n",
 		$sp->{name},
 		$sp->{strain} ||'NA', 
 		$sp->{assembly_accession},
+		$sp->{assembly_level},
 		$sp->{has_peptide_compara},
 		$sp->{has_variations},
 		$sp->{has_genome_alignments},

@@ -92,3 +92,8 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
+# 10) get current plant species tree (cladogram)
+TREEFILE=/plants_protein-trees_default.nh
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE
+echo "# downloading $URL"
+wget $OPTARG -c $URL

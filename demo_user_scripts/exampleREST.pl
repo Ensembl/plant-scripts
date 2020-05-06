@@ -38,23 +38,42 @@ sub call_endpoint {
 	return decode_json($response->{content});
 }
 
-## 2. Find features overlapping genomic region, full list at
+## 2. Get metadata for all plant species 
+my $url =
+    join('/', $server, '/info/genomes/division/EnsemblPlants').
+	    "?content-type=application/json";
+
+# call url endpoint and get an array back,
+# note that actual data structure changes across endpoints
+my $metadata = call_endpoint($url);
+
+# parse the data from the response
+foreach my $sp (@$metadata){
+	printf("%s\t%s\t%s\t%d\t%d\t%d\t%d\n",
+		$sp->{name},
+		$sp->{strain} ||'NA', 
+		$sp->{assembly_accession},
+		$sp->{has_peptide_compara},
+		$sp->{has_variations},
+		$sp->{has_genome_alignments},
+		$sp->{has_synteny});
+}
+
+## 3. Find features overlapping genomic region, full list at
 ## https://rest.ensembl.org/documentation/info/overlap_region
 
 my $species = 'triticum_aestivum';
 my $region = '3D:379400000-379540000';
 
 # genes
-my $url =
+$url =
     join('/', $server, 'overlap/region', $species, $region).
 	"?feature=gene;content-type=application/json";
 
 print "# check it on the browser: $url\n\n";
 
-# call url endpoint and get a hash back
 my $overlap_data = call_endpoint($url);
 
-# parse the data from the response
 foreach my $overlap_feat (@$overlap_data){
 	printf("%s\t%s\t%s\n",$overlap_feat->{id},
 		$overlap_feat->{start}, $overlap_feat->{end});
@@ -85,10 +104,10 @@ foreach my $overlap_feat (@$overlap_data){
 	print $overlap_feat->{id}."\n";
 }
 
-## 3. Find homologues of A. thaliana DEAR3 gene
+## 4. Find homologues of A. thaliana DEAR3 gene
 $species = 'arabidopsis_thaliana';
-my $gene = 'DEAR3';
 my $division = 'plants';
+my $gene = 'DEAR3';
 my $homoltype = 'ortholog';
 
 # optional define a target clade, such as 4479
@@ -115,14 +134,14 @@ if(defined($homoltype)){
 	} @homologies;
 }
 
-## 4. Print some information about the orthologous protein
+## 5. Print some information about the orthologous protein
 for my $homolog (@homologies) {
 
 	my $target_species = $homolog->{target}{species};
 	my $target_id = $homolog->{target}{protein_id};
 	print "$target_species $homolog->{type} $target_id\n";
 
-	# 4. For each translation, print information about GO annotation
+	# For each translation, print GO annotation
 	# using the xrefs/id endpoint:
 	$url = join('/', $server, "xrefs/id/$target_id").
 		"?content-type=application/json;external_db=GO;all_levels=1";

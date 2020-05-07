@@ -8,7 +8,7 @@ require Exporter;
   download_FASTA_file parse_isoform_FASTA_file
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
   perform_rest_action transverse_tree_json
-  write_boxplot_file factorial fisher_yates_shuffle
+  minimize_MSA write_boxplot_file factorial fisher_yates_shuffle
   @DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $FTPURL
 );
 
@@ -454,6 +454,38 @@ sub transverse_tree_json {
     foreach $child ( @{ $tree->{'children'} } ) {
         transverse_tree_json( $child, $ref_hash );
     }
+}
+
+# takes a two-key hash with aligned sequences
+# and returns a hash ref with minimized aligned seqs,
+# after removing gap-only columns
+sub minimize_MSA {
+
+    my ( $ref_hash ) = @_;
+
+    my $n_of_seqs = scalar( keys( %$ref_hash ));
+    my ( %gap, %minMSA, $key1, $key2, $pos );
+
+    # save position of observed gaps
+    foreach $key1 (keys( %$ref_hash )) {
+        foreach $key2 (keys( %{$ref_hash->{$key1}} )) {
+            while($ref_hash->{$key1}{$key2} =~ m/-/g) {
+                $gap{ pos($ref_hash->{$key1}{$key2})-1 }++;
+            } 
+        }
+    }
+
+    # copy sequences to output array but skip gap-only columns
+    foreach $key1 (keys( %$ref_hash )) {
+        foreach $key2 (keys( %{$ref_hash->{$key1}} )) {
+            foreach $pos (0 .. length($ref_hash->{$key1}{$key2})-1) {
+                next if($gap{ $pos } && $gap{ $pos } == $n_of_seqs);
+                $minMSA{$key1}{$key2} .= substr($ref_hash->{$key1}{$key2},$pos,1); 
+            }
+        }
+    }
+
+    return \%minMSA;
 }
 
 1;

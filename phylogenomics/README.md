@@ -22,6 +22,9 @@ sudo cpan -i App::cpanminus
 cpanm JSON HTTP::Tiny
 ```
 
+In addition the scripts import module [PlantCompUtils.pm](./PlantCompUtils.pm), 
+which is included in this folder.
+
 ### ens_pangene_analysis.pl
 
 This script can be used to analyse a clade-specific pan-gene set, with several options:

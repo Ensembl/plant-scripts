@@ -21,7 +21,7 @@ The examples for SQL queries to Ensembl Genomes database servers require the [My
 
 ### Perl
 
-As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny)
+As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them as explained in [phylogenomics/README.md](../phylogenomics/README.md)
 
 ### Python3
 

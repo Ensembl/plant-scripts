@@ -11,14 +11,14 @@ use FindBin '$Bin';
 use lib $Bin;
 use PlantCompUtils qw(
   download_compara_TSV_file perform_rest_action transverse_tree_json
-  $REQUEST_COUNT $COMPARADIR @DIVISIONS
+  minimize_MSA $REQUEST_COUNT $COMPARADIR @DIVISIONS
 );
 
 # Retrieves single-copy orthologous genes/proteins shared by (plant) species in clade
 # by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
-# # Copyright [2019-2020] EMBL-European Bioinformatics Institute
+# Copyright [2019-2020] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
 my $RESTURL   = 'http://rest.ensembl.org';
@@ -401,10 +401,10 @@ foreach $gene_stable_id (@sorted_ids) {
             }
         }
 
-        # save cluster to file
+        # minimize alignment and save cluster to file
         if ( scalar( keys(%align) ) == $n_of_species ) {
 
-            # TODO : minimize MSA
+            my $min_align = minimize_MSA( \%align );
 
             open( FASTA, ">", "$outfolder/$filename" )
               || die "# ERROR: cannot create $outfolder/$filename\n";
@@ -414,7 +414,7 @@ foreach $gene_stable_id (@sorted_ids) {
                     @{ $core{$gene_stable_id}{$hom_species} } )
                 {
                     print FASTA ">$hom_species $hom_prot_stable_id\n".
-                          "$align{ $hom_species }{ $hom_prot_stable_id }\n";
+                          "$min_align->{ $hom_species }{ $hom_prot_stable_id }\n";
                 }
             }
 

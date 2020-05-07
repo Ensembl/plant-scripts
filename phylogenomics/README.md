@@ -1,7 +1,7 @@
 
 # Plant phylogenomics scripts
 
-These scripts interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org) and the FTP site to export data that might be useful for phylogenomic and pangenome studies.
+These scripts interrogate Ensembl Plants through [REST endpoints](https://rest.ensembl.org) and the FTP site to export data that might be useful for phylogenomic and pangenome studies.
 
 ## Documentation and examples
 
@@ -24,6 +24,44 @@ cpanm JSON HTTP::Tiny
 
 In addition the scripts import module [PlantCompUtils.pm](./PlantCompUtils.pm), 
 which is included in this folder.
+
+
+### ens_single-copy_core_genes.pl
+
+This script can be used to obtain single-copy core genes present within a clade.
+Example calls include:
+
+```
+perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
+perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao
+perl ens_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
+perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
+```
+
+Note option -f produces FASTA files of aligned peptide sequences, one per cluster. Such a task takes usually takes over an hour over the Ensembl REST API.
+
+
+### ens_synthelogs.pl
+
+This script is related to [ens_single-copy_core_genes.pl](ens_single-copy_core_genes.pl) but explicitely considers only orthogroups with Gene Order Conservation (GOC) score >= 75 by default. The output matrix contains also the genomic coordinates of genes of the reference genome:
+
+```
+perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae
+
+```
+
+A sample output matrix is available in [Brassicaceae.synthelogs.GOC75.tsv](./bench/Brassicaceae.synthelogs.GOC75.tsv).
+A benchmark is described in folder [bench](./bench).
+
+### ens_sequences.pl
+
+Produces a FASTA file with the longest cds/pep sequences of species in a clade in Ensembl Plants:
+```
+perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae.fna
+
+```
+
+
 
 ### ens_pangene_analysis.pl
 
@@ -105,22 +143,6 @@ Left) all sequences; right) after excluding unclustered sequences (singletons).*
 *Fig. 4. Percent conserved sequence matrix of 11 Oryza species, generated with get_homologues/plot_matrix_heatmap.sh*
 
 
-
-
-
-
-### ens_single-copy_core_genes.pl
-
-This scripts can be used to obtain single-copy core genes present within a clade. 
-Example calls include:
-
-```
- perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
- perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao
- perl ens_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
- perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
-
-```
 ### ens_synthelogs.pl
 
 This script is related to [ens_single-copy_core_genes.pl](ens_single-copy_core_genes.pl) but explicitely considers only orthogroups with Gene Order Conservation (GOC) score >= 75 by default. The output matrix contains also the genomic coordinates of genes of the reference genomes:

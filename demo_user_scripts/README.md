@@ -3,8 +3,6 @@
 
 This folder contains code examples for interrogating Ensembl Plants from your own scripts.
 
-Note that you can also find some ready to use scripts for phylogenomic studies in folder [phylogenomics](../phylogenomics)
-
 [![Build Status](https://travis-ci.com/Ensembl/plant_tools.svg?branch=master)](https://travis-ci.com/Ensembl/plant_tools)
 
 ## Dependencies
@@ -28,3 +26,9 @@ As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://
 
 
 ### R
+
+
+
+## Phylogenomics
+
+A few scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)

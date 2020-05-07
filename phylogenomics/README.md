@@ -19,7 +19,7 @@ which can be installed with:
 sudo cpan -i App::cpanminus  
 
 # actually install modules
-cpanm JSON HTTP::Tiny
+cpanm JSON JSON::XS HTTP::Tiny
 ```
 
 In addition the scripts import module [PlantCompUtils.pm](./PlantCompUtils.pm), 

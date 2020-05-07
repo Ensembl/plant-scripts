@@ -1,10 +1,7 @@
 
-# Compara
+# Plant phylogenomics scripts
 
-These scripts interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org) and 
-the FTP site.
-
-The scripts in folder 'API' use directly the [Perl API](https://www.ensembl.org/info/docs/api/index.html) and thus have Ensembl dependencies.
+These scripts interrogate Ensembl Genomes Compara through [REST endpoints](https://rest.ensembl.org) and the FTP site to export data that might be useful for phylogenomic and pangenome studies.
 
 ## Documentation and examples
 
@@ -56,10 +53,8 @@ The following options are only available for some clades:
 Read about GOC and WGA at https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 
 
-These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and 
-produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log).
-The output folders contain pan-gene clusters, pangenome matrices in several formats and also a matrix of
-Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
+These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log).
+The output folders contain pan-gene clusters, pangenome matrices in several formats and also a matrix of Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
 ```
 perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
 perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -S > Oryza.nosingletons.log

@@ -33,7 +33,7 @@ Example calls include:
 
 ```
 perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
-perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao
+perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao_criollo
 perl ens_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
 perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
 ```

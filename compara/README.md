@@ -1,1 +1,1 @@
-This folder has been renamed as 'phylogenomics'
+This folder has been renamed as [phylogenomics](../phylogenomics/)

@@ -14,13 +14,10 @@ use ComparaUtils qw(
    $REQUEST_COUNT $COMPARADIR $FASTADIR @DIVISIONS
 );
 
-# Produces pangenome analysis based on clusters of orthologous genes shared by (plant) species in clade 
-# by querying pre-computed Compara data from Ensembl Genomes
+# Produces pangene analyses based on clusters of orthologous genes shared by 
+# species in a plant clade by querying pre-computed Compara data from Ensembl
 #
-# Produces output compatible with scripts at 
-# https://github.com/eead-csic-compbio/get_homologues
-#
-# Bruno Contreras Moreira 2019
+# Copyright [2019-2020] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
 my $RESTURL    = 'http://rest.ensembl.org';

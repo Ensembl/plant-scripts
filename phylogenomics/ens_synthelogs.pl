@@ -11,7 +11,7 @@ use FindBin '$Bin';
 use lib $Bin;
 use PlantCompUtils qw(
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
-  perform_rest_action transverse_tree_json
+  perform_rest_action transverse_tree_json minimize_MSA
   $REQUEST_COUNT $COMPARADIR $GTFDIR @DIVISIONS
 );
 
@@ -326,8 +326,7 @@ if ($outfolder) {
 
 foreach $gene_stable_id (@sorted_ids) {
 
-    next
-      if ( $allowPAV == 0
+    next if ( $allowPAV == 0
         && scalar( keys( %{ $synth{$gene_stable_id} } ) ) < $n_of_species );
 
     my ( %valid_prots, %align );
@@ -348,7 +347,7 @@ foreach $gene_stable_id (@sorted_ids) {
     }
 
     # print a matrix row in TSV format
-    printf( "%s\t%s", $filename, $chrcoords{$filename} );
+    printf( "%s\t%s", $filename, $chrcoords{$gene_stable_id} );
     foreach $hom_species (@supported_species) {
 
         if ( $synth{$gene_stable_id}{$hom_species} ) {
@@ -393,10 +392,10 @@ foreach $gene_stable_id (@sorted_ids) {
             }
         }
 
-        # save cluster to file
+        # minimize alignment and save cluster to file
         if ( scalar( keys(%align) ) == $n_of_species ) {
 
-            # TODO : minimize MSA
+			my $min_align = minimize_MSA( \%align );
 
             open( FASTA, ">", "$outfolder/$filename" )
               || die "# ERROR: cannot create $outfolder/$filename\n";
@@ -406,7 +405,7 @@ foreach $gene_stable_id (@sorted_ids) {
                     @{ $synth{$gene_stable_id}{$hom_species} } )
                 {
                     print FASTA ">$hom_species $hom_prot_stable_id\n".
-                          "$align{ $hom_species }{ $hom_prot_stable_id }\n";
+                          "$min_align->{ $hom_species }{ $hom_prot_stable_id }\n";
                 }
             }
 

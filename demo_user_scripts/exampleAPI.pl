@@ -9,15 +9,17 @@
 
 # full, instruction at https://ensembl.org/info/docs/api/api_git.html
 # summary:
+# cd $HOME
+#mkdir src
+#cd src
 #git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git
 #git clone https://github.com/Ensembl/ensembl.git
 #cd ensembl
 #git checkout release/100
-#cd ..
-
-PERL5LIB=${PERL5LIB}:${HOME}/src/bioperl-1.6.924
-PERL5LIB=${PERL5LIB}:${HOME}/src/ensembl/modules
-export PERL5LIB
+#cd ../..
+#PERL5LIB=${PERL5LIB}:${HOME}/src/bioperl-1.6.924
+#PERL5LIB=${PERL5LIB}:${HOME}/src/ensembl/modules
+#export PERL5LIB
 
 # 2. Load the Registry object with details of genomes available
 # from the public Ensembl Genomes servers:

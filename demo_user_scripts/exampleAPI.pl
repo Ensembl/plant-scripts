@@ -1,6 +1,11 @@
-# Example adapted from https://europepmc.org/article/MED/27987162
+#!/usr/bin/env perl
 
-# 1. Install the Ensembl Perl API ( see Note 28 )
+# Examples of queries to Ensembl Plants using the native Perl API
+#
+# Copyright [2017-2020] EMBL-European Bioinformatics Institute
+
+# 1. Install the Ensembl Perl API as explained in
+# http://www.ensembl.org/info/docs/api/api_installation.html
 
 # full, instruction at https://ensembl.org/info/docs/api/api_git.html
 # summary:
@@ -39,6 +44,15 @@ my $species = 'arabidopsis_thaliana';
 my $gene_adaptor = Bio::EnsEMBL::Registry->
 	get_adaptor($species, 'core', 'gene');
 
+#KASP markers,
+#https://plants.ensembl.org/Triticum_aestivum/Variation/Explore?db=core;r=3D:2585940-2634711;source=EMS-induced%20mutation;v=Cadenza1641.chr3D.2596518;vdb=variation;vf=38257209
+#https://plants.ensembl.org/Triticum_aestivum/Marker/Details?db=core;m=Cadenza1641.chr3D.2596518;r=3D:2585940-2634711;v=Cadenza1641.chr3D.2596518;vdb=variation;vf=38257209
+#core.marker
+#https://m.ensembl.org/info/docs/api/core/core_tutorial.html
+
+
+
+exit;	
 # find the gene with the specifi ed name using
 # the adaptor
 my ($gene_obj) = @{$gene_adaptor->

@@ -4,11 +4,13 @@
 #
 # Copyright [2017-2020] EMBL-European Bioinformatics Institute
 
+# 0. API dependencies
+#sudo apt-get install libmysqlclient-dev
+#cpanm install DBI DBD::mysql
+
 # 1. Install the Ensembl Perl API as explained in
 # http://www.ensembl.org/info/docs/api/api_installation.html
-
-# full, instruction at https://ensembl.org/info/docs/api/api_git.html
-# summary:
+# https://m.ensembl.org/info/docs/api/debug_installation_guide.html
 # cd $HOME
 #mkdir src
 #cd src
@@ -33,6 +35,7 @@ Bio::EnsEMBL::Registry->load_registry_from_db(
 	-PORT => '4157',
 );
 
+
 # 3. Find the DEAR3 gene from A. thaliana :
 
 # gene to look for
@@ -46,19 +49,20 @@ my $species = 'arabidopsis_thaliana';
 my $gene_adaptor = Bio::EnsEMBL::Registry->
 	get_adaptor($species, 'core', 'gene');
 
-#KASP markers,
-#https://plants.ensembl.org/Triticum_aestivum/Variation/Explore?db=core;r=3D:2585940-2634711;source=EMS-induced%20mutation;v=Cadenza1641.chr3D.2596518;vdb=variation;vf=38257209
-#https://plants.ensembl.org/Triticum_aestivum/Marker/Details?db=core;m=Cadenza1641.chr3D.2596518;r=3D:2585940-2634711;v=Cadenza1641.chr3D.2596518;vdb=variation;vf=38257209
-#core.marker
+# find the gene with the specified name using
+# the adaptor
+my ($gene_obj) = @{$gene_adaptor->
+   fetch_all_by_external_name($gene_name)};
+
+## TO BE ADDED
+
+# repeats
+
+# markers
+
 #https://m.ensembl.org/info/docs/api/core/core_tutorial.html
 
 
-
-exit;	
-# find the gene with the specifi ed name using
-# the adaptor
-my ($gene_obj) = @{$gene_adaptor->
-	fetch_all_by_external_name($gene_name)};
 
 # 4. Find all orthologues from Tracheophytes in the plant Compara:
 

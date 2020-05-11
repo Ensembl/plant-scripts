@@ -11,16 +11,15 @@
 # 1. Install the Ensembl Perl API as explained in
 # http://www.ensembl.org/info/docs/api/api_installation.html
 # https://m.ensembl.org/info/docs/api/debug_installation_guide.html
-# cd $HOME
-#mkdir src
-#cd src
+#
+#cd $INSTALLPATH
 #git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git
 #git clone https://github.com/Ensembl/ensembl.git
-#cd ensembl
-#git checkout release/100
-#cd ../..
-#PERL5LIB=${PERL5LIB}:${HOME}/src/bioperl-live
-#PERL5LIB=${PERL5LIB}:${HOME}/src/ensembl/modules
+#git clone https://github.com/Ensembl/ensembl-compara.git
+#cd 
+#PERL5LIB=${PERL5LIB}:${$INSTALLPATH}/bioperl-live
+#PERL5LIB=${PERL5LIB}:${$INSTALLPATH}/ensembl/modules
+#PERL5LIB=${PERL5LIB}:${$INSTALLPATH}/ensembl-compara/modules
 #export PERL5LIB
 
 # 2. Load the Registry object with details of genomes available
@@ -86,9 +85,15 @@ my $homology_adaptor = Bio::EnsEMBL::Registry->
 my @homologies = @{$homology_adaptor->
 	fetch_all_by_Member($gene_member)};
 
+foreach my $h (@homologies){
+	print $h->taxonomy_level."\n";
+}
+
+exit;
+
 # filter out homologues based on taxonomy and type
 @homologies = grep {
-	$_->taxonomy_level eq 'Tracheophyta' &&
+	#$_->taxonomy_level eq 'Brassicaceae' &&
 	$_->description =~ m/ortholog/
 } @homologies;
 

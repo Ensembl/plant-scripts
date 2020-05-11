@@ -19,7 +19,7 @@
 #cd ensembl
 #git checkout release/100
 #cd ../..
-#PERL5LIB=${PERL5LIB}:${HOME}/src/bioperl-1.6.924
+#PERL5LIB=${PERL5LIB}:${HOME}/src/bioperl-live
 #PERL5LIB=${PERL5LIB}:${HOME}/src/ensembl/modules
 #export PERL5LIB
 

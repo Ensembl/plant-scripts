@@ -35,7 +35,7 @@ A few scripts for phylogenomic studies are documented in folder [phylogenomics](
 
 ## List of recipes
 
-``
+```
 grep -P "^## \w\d+" example*
 
 ```

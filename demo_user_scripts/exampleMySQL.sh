@@ -22,13 +22,13 @@ RELEASE=$(( $EGRELEASE + 53)); # do not change
 echo "EGRELEASE=${EGRELEASE}"
 echo
 
-## 1) check currently supported Ensembl Genomes (EG) core schemas,
+## S1) check currently supported Ensembl Genomes (EG) core schemas,
 ##  note it includes non-plants as well
 
 mysql --host $SERVER --user $USER --port $PORT \
 	-e "show databases" | grep "core_${EGRELEASE}_${RELEASE}"
 
-## 2) count protein-coding genes of a particular species
+## S2) count protein-coding genes of a particular species
 
 SPECIES=arabidopsis_thaliana
 SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
@@ -37,7 +37,7 @@ SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
 
-## 3) get Triticum aestivum homeologous genes across A,B & D subgenomes
+## S3) get Triticum aestivum homeologous genes across A,B & D subgenomes
 ## Compara schema is described at 
 ## https://m.ensembl.org/info/docs/api/compara/compara_schema.html
 

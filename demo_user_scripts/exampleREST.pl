@@ -139,7 +139,7 @@ if(defined($homoltype)){
 	} @homologies;
 }
 
-## R5) Print GO annotation of the orthologous proteins
+## R5) Get annotation of orthologous proteins
 
 for my $homolog (@homologies) {
 
@@ -155,7 +155,30 @@ for my $homolog (@homologies) {
 	my $go_data = call_endpoint($url);
 	for my $go (@{$go_data}) {
 		print $go->{display_id}, ' ', $go->{description} || 'NA',
-		' Evidence: ', join(', ', @{$go->{linkage_types}}),
-		"\n";
+			' Evidence: ', join(', ', @{$go->{linkage_types}}),
+			"\n";
+	}
+
+	# now check Plant Reactome annotation
+	$url = join('/', $server, "xrefs/id/$target_id").
+		"?content-type=application/json;;external_db=Plant_Reactome_Reaction";
+
+	my $PR_data = call_endpoint($url);
+	for my $prr (@{$PR_data}) {
+		next if(!defined($prr->{display_id}));
+		print $prr->{display_id},
+			$prr->{info_type},
+			"\n";
+	}
+
+	$url = join('/', $server, "xrefs/id/$target_id").
+		"?content-type=application/json;;external_db=Plant_Reactome_Pathway";
+
+	$PR_data = call_endpoint($url);
+	for my $prr (@{$PR_data}) {
+		next if(!defined($prr->{display_id}));
+		print $prr->{display_id},
+			$prr->{info_type},
+			"\n";
 	}
 }

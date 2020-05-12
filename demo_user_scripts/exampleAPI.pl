@@ -1,26 +1,19 @@
 #!/usr/bin/env perl
 
 # Examples of queries to Ensembl Plants using the native Perl API
+# Check the tutorial fore more examples:
+# https://m.ensembl.org/info/docs/api/core/core_tutorial.html
 #
 # Copyright [2017-2020] EMBL-European Bioinformatics Institute
 
-# 0. API dependencies
-#sudo apt-get install libmysqlclient-dev
-#cpanm install DBI DBD::mysql
 
-# 1. Install the Ensembl Perl API as explained in
+# 1. Install the Ensembl Perl API and updated env as explained in
 # http://www.ensembl.org/info/docs/api/api_installation.html
+# http://www.ensembl.org/info/docs/api/api_git.html
 # https://m.ensembl.org/info/docs/api/debug_installation_guide.html
-#
-#cd $INSTALLPATH
-#git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git
-#git clone https://github.com/Ensembl/ensembl.git
-#git clone https://github.com/Ensembl/ensembl-compara.git
-#cd 
-#PERL5LIB=${PERL5LIB}:${$INSTALLPATH}/bioperl-live
-#PERL5LIB=${PERL5LIB}:${$INSTALLPATH}/ensembl/modules
-#PERL5LIB=${PERL5LIB}:${$INSTALLPATH}/ensembl-compara/modules
-#export PERL5LIB
+# Note you might need some dependencies, such as libmysqlclient-dev
+# or Perl modules DBI & DBD::mysql
+
 
 # 2. Load the Registry object with details of genomes available
 # from the public Ensembl Genomes servers:
@@ -32,15 +25,14 @@ Bio::EnsEMBL::Registry->load_registry_from_db(
 	-USER => 'anonymous',
 	-HOST => 'mysql-eg-publicsql.ebi.ac.uk',
 	-PORT => '4157',
+	#-VERBOSE => 1 # uncomment to see dbs loaded
 );
 
 
-# 3. Find the DEAR3 gene from A. thaliana :
+# 3. Find the DEAR3 gene from Arabidopsis thaliana
 
-# gene to look for
+# gene of interest and species
 my $gene_name = 'DEAR3';
-
-# species to look for
 my $species = 'arabidopsis_thaliana';
 
 # get a gene adaptor to work with genes from
@@ -53,17 +45,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-## TO BE ADDED
-
-# repeats
-
-# markers
-
-#https://m.ensembl.org/info/docs/api/core/core_tutorial.html
-
-
-
-# 4. Find all orthologues from Tracheophytes in the plant Compara:
+# 4. Find all orthologues among rosids
 
 # compara database to search in
 my $division = 'plants';
@@ -74,8 +56,7 @@ my $gene_member_adaptor = Bio::EnsEMBL::Registry->
 
 # find the corresponding gene in compara
 my $gene_member = $gene_member_adaptor->
-	fetch_by_source_stable_id('ENSEMBLGENE',
-		$gene_obj->stable_id);
+	fetch_by_stable_id($gene_obj->stable_id());
 
 # get an adaptor to work with homologues in compara
 my $homology_adaptor = Bio::EnsEMBL::Registry->
@@ -85,19 +66,12 @@ my $homology_adaptor = Bio::EnsEMBL::Registry->
 my @homologies = @{$homology_adaptor->
 	fetch_all_by_Member($gene_member)};
 
-foreach my $h (@homologies){
-	print $h->taxonomy_level."\n";
-}
-
-exit;
-
 # filter out homologues based on taxonomy and type
 @homologies = grep {
-	#$_->taxonomy_level eq 'Brassicaceae' &&
+	$_->taxonomy_level eq 'rosids' &&
 	$_->description =~ m/ortholog/
 } @homologies;
 
-# 5. Find each orthologous protein:
 foreach my $homology (@homologies) {
 
 	# get the protein from the target
@@ -105,20 +79,30 @@ foreach my $homology (@homologies) {
 	
 	my $translation = $target->get_Translation;
 	
-	print $target->genome_db->name, ' orthologue ',
-		$translation->stable_id, "\n";
-	
-# 6. For each translation, print information about GO annotation:
-
-	# find all the GO terms for this translation
-	foreach my $go_term (@{$translation->get_all_DBEntries('GO')}) {
-	
-	# print some information about each GO annotation
-	print $go_term->primary_id, ' ', $go_term->description;
-	
-	# print the evidence for the GO annotation
-	print ' Evidence: ', (join ', ', map {$_->[0]}
-		@{$go_term->get_all_linkage_info}), "\n";
-	}
+	printf("%s\t%\t%s\t%s\n",
+		$gene_obj->stable_id(), 
+		$species, 
+		$translation->stable_id(),
+		$target->genome_db->name, 
+		$translation->stable_id );
 }
+
+# 5. get BED coordinates of all repeats in chr1 
+my $chrname = 'chr1';
+my $slice_adaptor = Bio::EnsEMBL::Registry->
+	get_adaptor( $species, 'Core', 'Slice' );
+my $slice = $slice_adaptor->
+	fetch_by_region( 'chromosome', $chrname );
+
+my @repeats = @{ $slice->get_all_RepeatFeatures() };
+
+foreach my $repeat (@repeats) {
+	printf("%s\t%d\t%d\t%s\n",
+		$chrname,
+		$repeat->start(), 
+		$repeat->end(), 
+		$repeat->display_id() );
+}
+
+# 6. markers
 

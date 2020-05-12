@@ -110,18 +110,19 @@ foreach my $overlap_feat (@$overlap_data){
 
 ## R4) Find homologues of A. thaliana DEAR3 gene
 
-$species = 'arabidopsis_thaliana';
+$species = 'triticum_aestivum'; #arabidopsis_thaliana';
 my $division = 'plants';
-my $gene = 'DEAR3';
+my $gene = 'TraesCS1B02G195200'; #DEAR3';
 my $homoltype = 'ortholog';
 
 # optional define a target clade, such as 4479
 # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
-my $target_clade = 4479; 
+my $target_clade=4479; 
 
 $url = 
 	join('/', $server, 'homology/symbol', $species, $gene).
 	"?content-type=application/json&compara=$division";
+
 
 # restrict to homologues from this clade/taxon
 if(defined($target_clade)){
@@ -145,7 +146,7 @@ for my $homolog (@homologies) {
 
 	my $target_species = $homolog->{target}{species};
 	my $target_id = $homolog->{target}{protein_id};
-	print "$target_species $homolog->{type} $target_id\n";
+	print "$gene\t$species\t$target_id\t$target_species\n";
 
 	# For each translation, print GO annotation
 	# using the xrefs/id endpoint:
@@ -159,26 +160,20 @@ for my $homolog (@homologies) {
 			"\n";
 	}
 
-	# now check Plant Reactome annotation
+	# now check Plant Reactome / KEGG Enzyme  annotation
 	$url = join('/', $server, "xrefs/id/$target_id").
-		"?content-type=application/json;;external_db=Plant_Reactome_Reaction";
+		"?content-type=application/json";
 
 	my $PR_data = call_endpoint($url);
-	for my $prr (@{$PR_data}) {
-		next if(!defined($prr->{display_id}));
-		print $prr->{display_id},
-			$prr->{info_type},
-			"\n";
-	}
-
-	$url = join('/', $server, "xrefs/id/$target_id").
-		"?content-type=application/json;;external_db=Plant_Reactome_Pathway";
-
-	$PR_data = call_endpoint($url);
-	for my $prr (@{$PR_data}) {
-		next if(!defined($prr->{display_id}));
-		print $prr->{display_id},
-			$prr->{info_type},
-			"\n";
+	for my $pr (@{$PR_data}) {
+		if(defined($pr->{display_id}) &&
+			$pr->{dbname} =~ /Reactome/ || 
+			$pr->{dbname} =~ /KEGG/) {
+				print $pr->{dbname}, ' ', 
+					$pr->{display_id}, ' ', 
+					$pr->{description} || 'NA', ' ',
+					'Evidence: ', $pr->{info_type},
+					"\n";
+		}
 	}
 }

@@ -74,8 +74,7 @@ my @homologies = @{$homology_adaptor->
 foreach my $homology (@homologies) {
 
 	# get the protein from the target
-	my $target = $homology->get_all_Members->[1];
-	
+	my $target = $homology->get_all_Members->[1];	
 	my $translation = $target->get_Translation;
 	
 	printf("%s\t%s\t%s\t%s\n",
@@ -85,11 +84,13 @@ foreach my $homology (@homologies) {
 		$target->genome_db->name() );
 }
 
-# A4) Get BED coordinates of all repeats in chr1 
+# A4) Get BED coordinates of all repeats in chr4 
 
-my $chrname = 'chr1';
+my $chrname = 'chr4';
+
 my $slice_adaptor = Bio::EnsEMBL::Registry->
 	get_adaptor( $species, 'Core', 'Slice' );
+
 my $slice = $slice_adaptor->
 	fetch_by_region( 'chromosome', $chrname );
 
@@ -103,29 +104,32 @@ foreach my $repeat (@repeats) {
 		$repeat->display_id() );
 }
 
-# A5) Get markers mapped on chr1A of bread wheat
+# A5) Get markers mapped on chr1D of bread wheat
 
-# Note: only a few plants have markers:
+# Note: only a few plants have markers
+# As of release EG47/100:
 # triticum_aestivum, oryza_indica, brassica_rapa
 
 $species = 'triticum_aestivum';
-$chrname = '1A';
+$chrname = '1D';
 
 $slice_adaptor = Bio::EnsEMBL::Registry->
-   get_adaptor( $species, 'Core', 'Slice' );
+	get_adaptor( $species, 'Core', 'Slice' );
+
 $slice = $slice_adaptor->
-   fetch_by_region( 'chromosome', $chrname );
+	fetch_by_region( 'chromosome', $chrname );
 
 my $marker_features = $slice->get_all_MarkerFeatures();
-while ( my $marker_feature = shift @{$marker_features} ) {
-    printf("%s\t%d\t%d\t%s\t%s\t%s\t%d\n",
-		  $marker_feature->seq_region_name(),
-        $marker_feature->start(),      
-		  $marker_feature->end(), 
-		  $marker_feature->display_id(),
-		  $marker_feature->marker()->left_primer(),
-		  $marker_feature->marker()->right_primer(),
-        $marker_feature->marker()->max_primer_dist() );
+while ( my $mf = shift @{$marker_features} ) {
+
+	my $marker = $marker_feature->marker(); 
+
+	printf("%s\t%d\t%d\t%s\t%s\t%s\t%d\n",
+		$mf->seq_region_name(),
+		$mf->start(),      
+		$mf->end(), 
+		$mf->display_id(),
+		$marker->left_primer(),
+		$marker->marker()->right_primer(),
+		$marker->marker()->max_primer_dist() );
 }
-
-

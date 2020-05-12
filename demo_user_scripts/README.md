@@ -32,3 +32,10 @@ As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://
 ## Phylogenomics
 
 A few scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)
+
+## List of recipes
+
+``
+grep -P "^## \w\d+" example*
+
+```

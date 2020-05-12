@@ -122,7 +122,7 @@ $slice = $slice_adaptor->
 my $marker_features = $slice->get_all_MarkerFeatures();
 while ( my $mf = shift @{$marker_features} ) {
 
-	my $marker = $marker_feature->marker(); 
+	my $marker = $mf->marker(); 
 
 	printf("%s\t%d\t%d\t%s\t%s\t%s\t%d\n",
 		$mf->seq_region_name(),
@@ -130,6 +130,6 @@ while ( my $mf = shift @{$marker_features} ) {
 		$mf->end(), 
 		$mf->display_id(),
 		$marker->left_primer(),
-		$marker->marker()->right_primer(),
-		$marker->marker()->max_primer_dist() );
+		$marker->right_primer(),
+		$marker->max_primer_dist() );
 }

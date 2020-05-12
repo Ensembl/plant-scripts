@@ -18,8 +18,8 @@ use JSON;
 use HTTP::Tiny;
 use Data::Dumper;
 
-## 1. Create an HTTP client and a helper function for invoking a
-##  REST endpoint:
+## R1) Create an HTTP client and a helper function for invoking a
+##     REST endpoint:
 
 # create an HTTP client
 my $http = HTTP::Tiny->new;
@@ -38,7 +38,8 @@ sub call_endpoint {
 	return decode_json($response->{content});
 }
 
-## 2. Get metadata for all plant species 
+## R2) Get metadata for all plant species 
+
 my $url =
     join('/', $server, '/info/genomes/division/EnsemblPlants').
 	    "?content-type=application/json";
@@ -60,8 +61,10 @@ foreach my $sp (@$metadata){
 		$sp->{has_synteny});
 }
 
-## 3. Find features overlapping genomic region, full list at
-## https://rest.ensembl.org/documentation/info/overlap_region
+## R3) Find features overlapping genomic region
+
+# full list at
+# https://rest.ensembl.org/documentation/info/overlap_region
 
 my $species = 'triticum_aestivum';
 my $region = '3D:379400000-379540000';
@@ -105,7 +108,8 @@ foreach my $overlap_feat (@$overlap_data){
 	print $overlap_feat->{id}."\n";
 }
 
-## 4. Find homologues of A. thaliana DEAR3 gene
+## R4) Find homologues of A. thaliana DEAR3 gene
+
 $species = 'arabidopsis_thaliana';
 my $division = 'plants';
 my $gene = 'DEAR3';
@@ -135,7 +139,8 @@ if(defined($homoltype)){
 	} @homologies;
 }
 
-## 5. Print some information about the orthologous protein
+## R5) Print GO annotation of the orthologous proteins
+
 for my $homolog (@homologies) {
 
 	my $target_species = $homolog->{target}{species};

@@ -17,7 +17,7 @@
 
 
 ## A1) Load the Registry object with details of genomes available
-#      from the public Ensembl Genomes server:
+
 use warnings;
 use strict;
 use Bio::EnsEMBL::Registry;
@@ -47,7 +47,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-# A3) Find all orthologues among rosids
+## A3) Find all orthologues among rosids
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->
@@ -84,7 +84,7 @@ foreach my $homology (@homologies) {
 		$target->genome_db->name() );
 }
 
-# A4) Get BED coordinates of all repeats in chr4 
+## A4) Get BED coordinates of all repeats in chr4 
 
 my $chrname = 'chr4';
 
@@ -104,7 +104,7 @@ foreach my $repeat (@repeats) {
 		$repeat->display_id() );
 }
 
-# A5) Get markers mapped on chr1D of bread wheat
+## A5) Get markers mapped on chr1D of bread wheat
 
 # Note: only a few plants have markers
 # As of release EG47/100:

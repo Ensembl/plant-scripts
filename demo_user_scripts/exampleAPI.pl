@@ -1,13 +1,14 @@
 #!/usr/bin/env perl
 
 # Examples of queries to Ensembl Plants using the native Perl API
-# Check the tutorial fore more examples:
+# Check the tutorials for more examples:
 # https://m.ensembl.org/info/docs/api/core/core_tutorial.html
+# https://www.ensembl.org/info/docs/api/compara/compara_tutorial.html
 #
 # Copyright [2017-2020] EMBL-European Bioinformatics Institute
 
 
-# 1. Install the Ensembl Perl API and updated env as explained in
+# Install the Ensembl Perl API and updated env as explained in
 # http://www.ensembl.org/info/docs/api/api_installation.html
 # http://www.ensembl.org/info/docs/api/api_git.html
 # https://m.ensembl.org/info/docs/api/debug_installation_guide.html
@@ -15,8 +16,8 @@
 # or Perl modules DBI & DBD::mysql
 
 
-# 2. Load the Registry object with details of genomes available
-# from the public Ensembl Genomes servers:
+## A1) Load the Registry object with details of genomes available
+#      from the public Ensembl Genomes server:
 use warnings;
 use strict;
 use Bio::EnsEMBL::Registry;
@@ -29,11 +30,12 @@ Bio::EnsEMBL::Registry->load_registry_from_db(
 );
 
 
-# 3. Find the DEAR3 gene from Arabidopsis thaliana
+## A2) Find the DEAR3 gene from Arabidopsis thaliana
 
 # gene of interest and species
 my $gene_name = 'DEAR3';
 my $species = 'arabidopsis_thaliana';
+my $division = 'plants';
 
 # get a gene adaptor to work with genes from
 # the species
@@ -45,10 +47,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-# 4. Find all orthologues among rosids
-
-# compara database to search in
-my $division = 'plants';
+# A3) Find all orthologues among rosids
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->
@@ -79,15 +78,15 @@ foreach my $homology (@homologies) {
 	
 	my $translation = $target->get_Translation;
 	
-	printf("%s\t%\t%s\t%s\n",
+	printf("%s\t%s\t%s\t%s\n",
 		$gene_obj->stable_id(), 
 		$species, 
 		$translation->stable_id(),
-		$target->genome_db->name, 
-		$translation->stable_id );
+		$target->genome_db->name() );
 }
 
-# 5. get BED coordinates of all repeats in chr1 
+# A4) Get BED coordinates of all repeats in chr1 
+
 my $chrname = 'chr1';
 my $slice_adaptor = Bio::EnsEMBL::Registry->
 	get_adaptor( $species, 'Core', 'Slice' );
@@ -104,5 +103,29 @@ foreach my $repeat (@repeats) {
 		$repeat->display_id() );
 }
 
-# 6. markers
+# A5) Get markers mapped on chr1A of bread wheat
+
+# Note: only a few plants have markers:
+# triticum_aestivum, oryza_indica, brassica_rapa
+
+$species = 'triticum_aestivum';
+$chrname = '1A';
+
+$slice_adaptor = Bio::EnsEMBL::Registry->
+   get_adaptor( $species, 'Core', 'Slice' );
+$slice = $slice_adaptor->
+   fetch_by_region( 'chromosome', $chrname );
+
+my $marker_features = $slice->get_all_MarkerFeatures();
+while ( my $marker_feature = shift @{$marker_features} ) {
+    printf("%s\t%d\t%d\t%s\t%s\t%s\t%d\n",
+		  $marker_feature->seq_region_name(),
+        $marker_feature->start(),      
+		  $marker_feature->end(), 
+		  $marker_feature->display_id(),
+		  $marker_feature->marker()->left_primer(),
+		  $marker_feature->marker()->right_primer(),
+        $marker_feature->marker()->max_primer_dist() );
+}
+
 

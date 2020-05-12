@@ -3,7 +3,7 @@
 
 This folder contains code examples for interrogating Ensembl Plants from your own scripts.
 
-[![Build Status](https://travis-ci.com/Ensembl/plant_tools.svg?branch=master)](https://travis-ci.com/Ensembl/plant_tools)
+<!-- [![Build Status](https://travis-ci.com/Ensembl/plant_tools.svg?branch=master)](https://travis-ci.com/Ensembl/plant_tools) -->
 
 ## Dependencies
 

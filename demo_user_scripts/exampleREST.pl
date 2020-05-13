@@ -38,6 +38,15 @@ sub call_endpoint {
 	return decode_json($response->{content});
 }
 
+# function to post data to endpoint 
+sub post_endpoint {
+	my ($url, $ref_data, $verbose) = @_;
+
+	print "Posting to $url\n" if($verbose);
+	
+	
+}
+
 ## R2) Get metadata for all plant species 
 
 my $url =
@@ -79,8 +88,10 @@ print "# check it on the browser: $url\n\n";
 my $overlap_data = call_endpoint($url);
 
 foreach my $overlap_feat (@$overlap_data){
-	printf("%s\t%s\t%s\n",$overlap_feat->{id},
-		$overlap_feat->{start}, $overlap_feat->{end});
+	printf("%s\t%s\t%s\n",
+		$overlap_feat->{id},
+		$overlap_feat->{start}, 
+		$overlap_feat->{end});
 }
 
 # now LTR repeats 
@@ -93,8 +104,10 @@ foreach my $overlap_feat (@$overlap_data){
 
 	next if($overlap_feat->{description} !~ 'LTR');
 
-	printf("%s\t%s\t%s\n", $overlap_feat->{description},
-		$overlap_feat->{start}, $overlap_feat->{end});
+	printf("%s\t%s\t%s\n", 
+		$overlap_feat->{description},
+		$overlap_feat->{start}, 
+		$overlap_feat->{end});
 }
 
 # finally get EMS variants
@@ -108,12 +121,37 @@ foreach my $overlap_feat (@$overlap_data){
 	print $overlap_feat->{id}."\n";
 }
 
-## R4) Find homologues of A. thaliana DEAR3 gene
+## R4) Fetch phenotypes overlapping genomic region
 
-$species = 'triticum_aestivum'; #arabidopsis_thaliana';
+$species = 'arabidopsis_thaliana';
+$region = '3:19431095-19434450';
+my $p_cutoff = 0.0001; 
+
+$url = join('/', $server, 'phenotype/region', $species, $region).
+        "?content-type=application/json;feature_type=Variation";
+
+my $pheno_data = call_endpoint($url);
+
+foreach my $feat (@$pheno_data){
+
+	foreach my $assoc (@{ $feat->{phenotype_associations} }) {
+		
+		next if($assoc->{attributes}{p_value} > $p_cutoff);
+
+		printf("%s\t%s\t%s\n",
+		$feat->{id},
+		$assoc->{location},
+		$assoc->{description});
+	}
+}
+
+
+## R5) Find homologues of selected gene
+
+$species = 'triticum_aestivum'; 
 my $division = 'plants';
-my $gene = 'TraesCS1B02G195200'; #DEAR3';
-my $homoltype = 'ortholog';
+my $gene = 'TraesCS1B02G195200'; 
+my $homoltype = 'ortholog'; #paralog
 
 # optional define a target clade, such as 4479
 # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
@@ -142,7 +180,7 @@ if(defined($homoltype)){
 	} @homologies;
 }
 
-## R5) Get annotation of orthologous genes/proteins
+## R6) Get annotation of orthologous genes/proteins
 
 # using the xrefs/id endpoint
 # https://rest.ensembl.org/documentation/info/xref_id
@@ -198,3 +236,16 @@ for my $homolog (@homologies) {
 			"\n";
 	}
 }
+
+## R7) Fetch variant consequences for multiple ids
+#
+#
+#my $ext = '/vep/human/id';
+#my $response = $http->request('POST', $server.$ext, {
+#      headers => {
+#                      'Content-type' => 'application/json',
+#                                          'Accept' => 'application/json'
+#                                                                },
+#                                                                                        content => '{ "ids" : ["rs56116432", "COSM476" ] }'
+#                                                                                        });
+#

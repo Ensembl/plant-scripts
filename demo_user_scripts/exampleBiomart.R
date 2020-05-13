@@ -10,38 +10,107 @@
 #
 # Copyright [2020] EMBL-European Bioinformatics Institute
 
-# uncomment to install package biomaRt
+# uncomment to install package biomaRt package
 # if(!requireNamespace("BiocManager", quietly = TRUE))
 # 	install.packages("BiocManager")
 # BiocManager::install("biomaRt")
 
 library("biomaRt")
 
-## 1) download GO terms associated to genes
-mart <- useMart(host="plants.ensembl.org", biomart="plants_mart", 
-	dataset="taestivum_eg_gene")
-go <- getBM(attributes=c("ensembl_gene_id", "go_id"), mart=mart) 
-head(go_e46)
+## B1) Check plant biomarts and select dataset
+
+listMarts( host="plants.ensembl.org" )
+
+EPmart = useEnsembl( biomart="plants_mart", 
+			host="plants.ensembl.org")
+
+dsets = listDatasets(EPmart)
+
+dsets[grep("Triticum aestivum", dsets$description),]
+#              dataset                     description version
+# 69 taestivum_eg_gene Triticum aestivum genes (IWGSC)   IWGSC
+
+# take a note of the dataset name 'taestivum_eg_gene'
 
 
-## 2)  
-The other common task is to look at the effects of the SNPs, I was doing a global analysis, and it was timing out (I couldn't figure out how to do it in an SQL query). So my solution was like this:
+## B2) Check available filters and attributes
 
-				v_source <- c("EMS-induced mutation")
-				snps <- NULL
-				for(chr in listFilterValues(mart = varmart, filter = "chr_name")){
-					    print(chr)
-						    for(pred in c("tolerated", "deleterious")){
-								        print(pred)
-										        tmp_s <- getBM(attributes=c("refsnp_id", "refsnp_source", "ensembl_gene_stable_id", "consequence_type_tv","sift_prediction","sift_score"), 
-												              filters=c( "variation_source", "chr_name","sift_prediction"),
-															                values=list(variation_source=v_source, chr_name=chr, sift_prediction=c(pred)),
-																			              mart=varmart)
-												        if(is.null(snps)){
-															            snps<-tmp_s
-																		        }else{
-																					        snps<-rbind(snps,tmp_s)
-																							        }
-																									    }
-				}
-				snps
+EPmart = useMart(  biomart="plants_mart",
+        host="plants.ensembl.org",
+		        dataset="taestivum_eg_gene")
+
+head( listFilters(EPmart) )
+
+head( listAttributes(EPmart) )
+
+
+## B3) Download GO terms associated to genes
+
+# Note genes might appear in several rows
+
+go = getBM( 
+		attributes=c("ensembl_gene_id", "go_id"), 
+		mart=EPmart) 
+
+head(go)
+
+
+
+
+## B5) Get SNP consequences from a selected variation source
+
+# Note this requires connecting to a different mart (snp)
+# Note this query takes a few minutes to run
+
+EPVar = useMart( biomart="plants_variations",
+        	host="plants.ensembl.org", 
+			dataset="taestivum_eg_snp")
+
+snp_source = c("EMS-induced mutation")
+
+chrs = listFilterValues(mart=EPVar,
+		filter="chr_name")
+
+attribs = c(
+	"refsnp_id", 
+	"refsnp_source",
+	"ensembl_gene_stable_id",
+	"consequence_type_tv",
+	"sift_prediction",
+	"sift_score")
+
+filts = c( 
+	"variation_source", 
+	"chr_name",
+    "sift_prediction")
+
+preds = c(
+	"tolerated", # comment if unwanted
+	"deleterious")
+
+snps <- NULL
+for(chr in chrs){
+	print(chr) # show progress 
+
+	for(pred in preds){
+		print(pred) # show progress
+
+		tmp_s <- getBM(
+			attributes=attribs,
+			filters=filts,
+			values=list(
+				variation_source=snp_source, 
+				chr_name=chr, 
+				sift_prediction=c(pred)),
+			mart=EPVar)
+		
+		# append SNP batches to object snps
+		if(is.null(snps)){
+			snps<-tmp_s
+		}else{
+		    snps<-rbind(snps,tmp_s)
+		}																			
+	}
+}
+
+head(snps)

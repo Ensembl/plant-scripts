@@ -23,7 +23,8 @@ echo "EGRELEASE=${EGRELEASE}"
 echo
 
 ## S1) check currently supported Ensembl Genomes (EG) core schemas,
-##  note it includes non-plants as well
+
+# note it includes non-plants as well
 
 mysql --host $SERVER --user $USER --port $PORT \
 	-e "show databases" | grep "core_${EGRELEASE}_${RELEASE}"
@@ -37,9 +38,29 @@ SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
 
-## S3) get Triticum aestivum homeologous genes across A,B & D subgenomes
-## Compara schema is described at 
-## https://m.ensembl.org/info/docs/api/compara/compara_schema.html
+## S3) get variants significantly associated to phenotypes
+
+# Variation schema documented at 
+# http://www.ensembl.org/info/docs/api/variation/variation_schema.html
+
+SPECIESVAR=`mysql --host $SERVER --user $USER --port $PORT \
+	-e "show databases" | grep "${SPECIES}_variation_${EGRELEASE}_${RELEASE}"`
+
+mysql --host $SERVER --user $USER --port $PORT \
+    $SPECIESVAR<<SQL
+	SELECT f.object_id, s.name, f.seq_region_start, 
+		f.seq_region_end, p.description
+    FROM phenotype p 
+		JOIN phenotype_feature f ON p.phenotype_id = f.phenotype_id  
+		JOIN seq_region s ON f.seq_region_id = s.name
+    WHERE f.type = 'Variation' AND f.is_significant=1 LIMIT 10
+SQL
+
+
+## S4) get Triticum aestivum homeologous genes across A,B & D subgenomes
+
+# Compara schema is described at 
+# https://m.ensembl.org/info/docs/api/compara/compara_schema.html
 
 # find out correct method_link_species_set.name
 mysql --host $SERVER --user $USER --port $PORT \

@@ -18,8 +18,7 @@ use JSON;
 use HTTP::Tiny;
 use Data::Dumper;
 
-## R1) Create an HTTP client and a helper function for invoking a
-##     REST endpoint:
+## R1) Create an HTTP client and a helper functions 
 
 # create an HTTP client
 my $http = HTTP::Tiny->new;

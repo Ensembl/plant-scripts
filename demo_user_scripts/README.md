@@ -64,7 +64,7 @@ exampleMySQL.sh:## S1) check currently supported Ensembl Genomes (EG) core schem
 exampleMySQL.sh:## S2) count protein-coding genes of a particular species
 exampleMySQL.sh:## S3) get variants significantly associated to phenotypes
 exampleMySQL.sh:## S4) get Triticum aestivum homeologous genes across A,B & D subgenomes
-exampleREST.pl:## R1) Create an HTTP client and a helper function for invoking a
+exampleREST.pl:## R1) Create an HTTP client and a helper functions
 exampleREST.pl:## R2) Get metadata for all plant species 
 exampleREST.pl:## R3) Find features overlapping genomic region
 exampleREST.pl:## R4) Fetch phenotypes overlapping genomic region

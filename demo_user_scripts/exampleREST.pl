@@ -119,6 +119,8 @@ my $homoltype = 'ortholog';
 # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
 my $target_clade=4479; 
 
+#see endpoint doc at 
+#https://rest.ensembl.org/documentation/info/homology_symbol
 $url = 
 	join('/', $server, 'homology/symbol', $species, $gene).
 	"?content-type=application/json&compara=$division";
@@ -140,40 +142,59 @@ if(defined($homoltype)){
 	} @homologies;
 }
 
-## R5) Get annotation of orthologous proteins
+## R5) Get annotation of orthologous genes/proteins
+
+# using the xrefs/id endpoint
+# https://rest.ensembl.org/documentation/info/xref_id
 
 for my $homolog (@homologies) {
 
 	my $target_species = $homolog->{target}{species};
-	my $target_id = $homolog->{target}{protein_id};
+	my $target_id = $homolog->{target}{id};
+	my $target_prot_id = $homolog->{target}{protein_id};
+	
 	print "$gene\t$species\t$target_id\t$target_species\n";
 
-	# For each translation, print GO annotation
-	# using the xrefs/id endpoint:
-	$url = join('/', $server, "xrefs/id/$target_id").
+	# GO annotation (protein)
+	$url = join('/', $server, "xrefs/id/$target_prot_id").
 		"?content-type=application/json;external_db=GO;all_levels=1";
 
 	my $go_data = call_endpoint($url);
 	for my $go (@{$go_data}) {
-		print $go->{display_id}, ' ', $go->{description} || 'NA',
-			' Evidence: ', join(', ', @{$go->{linkage_types}}),
+		print $go->{dbname},': ', 
+			$go->{display_id}, ' ', 
+			$go->{description} || 'NA',
+			' Evidence: ', 
+			join(', ', @{$go->{linkage_types}}),
 			"\n";
 	}
 
-	# now check Plant Reactome / KEGG Enzyme  annotation
+	# check KEGG Enzyme annotation (protein)
+	$url = join('/', $server, "xrefs/id/$target_prot_id").
+	        "?content-type=application/json;".
+			"external_db=KEGG_Enzyme";
+
+	my $KE_data = call_endpoint($url);
+	for my $ke (@{$KE_data}) {
+		if(defined($ke->{description})){
+			print $ke->{dbname}, ': ',
+				$ke->{display_id}, ' ',
+				$ke->{description}, ' ',
+				'Evidence: ', $ke->{info_type},
+				"\n";
+		}
+	}
+
+	# now check Plant Reactome annotation (gene)
 	$url = join('/', $server, "xrefs/id/$target_id").
-		"?content-type=application/json";
+		"?content-type=application/json;".
+		"external_db=Plant_Reactome_Pathway";
 
 	my $PR_data = call_endpoint($url);
 	for my $pr (@{$PR_data}) {
-		if(defined($pr->{display_id}) &&
-			$pr->{dbname} =~ /Reactome/ || 
-			$pr->{dbname} =~ /KEGG/) {
-				print $pr->{dbname}, ' ', 
-					$pr->{display_id}, ' ', 
-					$pr->{description} || 'NA', ' ',
-					'Evidence: ', $pr->{info_type},
-					"\n";
-		}
+		print $pr->{dbname}, ': ', 
+			$pr->{display_id}, ' ', 
+			'Evidence: ', $pr->{info_type},
+			"\n";
 	}
 }

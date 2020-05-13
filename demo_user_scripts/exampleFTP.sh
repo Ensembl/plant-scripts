@@ -19,6 +19,7 @@ OPTARG=$1
 
 # set example species
 SPECIES=Brachypodium_distachyon
+SPECIESBIOMART=bdistachyon_eg_genes
 
 echo "EGRELEASE=${EGRELEASE} OPTARG=$OPTARG"
 echo
@@ -96,4 +97,5 @@ TREEFILE=/plants_protein-trees_default.nh
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE
 echo "# downloading $URL"
 wget $OPTARG -c $URL
+
 

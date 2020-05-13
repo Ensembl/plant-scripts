@@ -27,7 +27,7 @@ As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://
 
 ### R
 
-
+You will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html). See installation instructions [here](https://www.ensembl.org/info/data/biomart/biomart_r_package.html).
 
 ## Phylogenomics
 

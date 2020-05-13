@@ -32,8 +32,9 @@ sub call_endpoint {
 	
 	print "Invoking $url (GET)\n" if($verbose);
 
-	my $response = $http-> get($url, {headers =>	
-		{'Content-type' => 'application/json'} });
+	my $response = $http->get($url, {
+		headers => 
+			{'Content-type' => 'application/json'} });
 	
 	die "# Failed GET request $url\n" unless $response->{success};
 
@@ -46,8 +47,6 @@ sub post_endpoint {
 	my ($http, $url, $data, $verbose) = @_;
 
 	print "Invoking $url (POST)\n" if($verbose);
-
-	foreach my $i
 
 	my $response = $http->request('POST', $url, {	
 		headers => { 
@@ -252,19 +251,20 @@ for my $homolog (@homologies) {
 	}
 }
 
-## R7) Fetch variant consequences for multiple ids
+## R7) Fetch variant consequences for multiple variant ids
 
 # Note: unless previous examples, this is a POST REST request, 
 # where user data is posted to the server and after some time
 # a response in parsed. Read more at:
 # https://github.com/Ensembl/ensembl-rest/wiki/POST-Requests
 
-my $ext = '/vep/human/id';
-my $response = $http->request('POST', $server.$ext, {
-      headers => {
-                   'Content-type' => 'application/json',
-                                          'Accept' => 'application/json'
-                                                                },
-                                                                                        content => '{ "ids" : ["rs56116432", "COSM476" ] }'
-                                                                                        });
-{ "ids" : ["rs56116432", "COSM476" ] }
+$species = 'oryza_sativa';
+
+$url = join('/', $server, "/vep/$species/id");
+
+# max one thousand ids
+my $variants = '{ "ids" : [ "10522356134" ] }';
+
+my $vep_data = post_endpoint($http,$url,$variants);
+
+print Dumper $vep_data;

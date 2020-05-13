@@ -28,23 +28,38 @@ my $server = 'http://rest.ensembl.org';
 # function for invoking endpoint, see other options at
 # https://github.com/Ensembl/ensembl-rest/wiki
 sub call_endpoint {
-	my ($url, $verbose) = @_;
+	my ($http, $url, $verbose) = @_;
 	
-	print "Invoking $url\n" if($verbose);
+	print "Invoking $url (GET)\n" if($verbose);
 
 	my $response = $http-> get($url, {headers =>	
 		{'Content-type' => 'application/json'} });
 	
+	die "# Failed GET request $url\n" unless $response->{success};
+
 	return decode_json($response->{content});
 }
 
-# function to post data to endpoint 
+# function to post data to endpoint and 
+# wait for response
 sub post_endpoint {
-	my ($url, $ref_data, $verbose) = @_;
+	my ($http, $url, $data, $verbose) = @_;
 
-	print "Posting to $url\n" if($verbose);
+	print "Invoking $url (POST)\n" if($verbose);
+
+	foreach my $i
+
+	my $response = $http->request('POST', $url, {	
+		headers => { 
+			'Content-type' => 'application/json',
+			'Accept' => 'application/json'
+		},
+		content => $data
+	});
 	
-	
+	die "# Failed POST request $url\n" unless $response->{success};
+
+	return decode_json($response->{content});
 }
 
 ## R2) Get metadata for all plant species 
@@ -55,7 +70,7 @@ my $url =
 
 # call url endpoint and get an array back,
 # note that actual data structure changes across endpoints
-my $metadata = call_endpoint($url);
+my $metadata = call_endpoint($http,$url);
 
 # parse the data from the response
 foreach my $sp (@$metadata){
@@ -85,7 +100,7 @@ $url =
 
 print "# check it on the browser: $url\n\n";
 
-my $overlap_data = call_endpoint($url);
+my $overlap_data = call_endpoint($http,$url);
 
 foreach my $overlap_feat (@$overlap_data){
 	printf("%s\t%s\t%s\n",
@@ -98,7 +113,7 @@ foreach my $overlap_feat (@$overlap_data){
 $url = join('/', $server, 'overlap/region', $species, $region).
 		"?feature=repeat;content-type=application/json";
 
-$overlap_data = call_endpoint($url);
+$overlap_data = call_endpoint($http,$url);
 
 foreach my $overlap_feat (@$overlap_data){
 
@@ -114,7 +129,7 @@ foreach my $overlap_feat (@$overlap_data){
 $url = join('/', $server, 'overlap/region', $species, $region).
 	"?feature=variation;content-type=application/json";
 
-$overlap_data = call_endpoint($url);
+$overlap_data = call_endpoint($http,$url);
 
 foreach my $overlap_feat (@$overlap_data){
 	next if($overlap_feat->{source} ne 'EMS-induced mutation');
@@ -130,7 +145,7 @@ my $p_cutoff = 0.0001;
 $url = join('/', $server, 'phenotype/region', $species, $region).
         "?content-type=application/json;feature_type=Variation";
 
-my $pheno_data = call_endpoint($url);
+my $pheno_data = call_endpoint($http,$url);
 
 foreach my $feat (@$pheno_data){
 
@@ -169,7 +184,7 @@ if(defined($target_clade)){
 	$url .= "&target_taxon=$target_clade";
 }
 
-my $homology_data = call_endpoint($url);
+my $homology_data = call_endpoint($http,$url);
 
 my @homologies = @{$homology_data->{data}[0]{homologies}};
 
@@ -197,7 +212,7 @@ for my $homolog (@homologies) {
 	$url = join('/', $server, "xrefs/id/$target_prot_id").
 		"?content-type=application/json;external_db=GO;all_levels=1";
 
-	my $go_data = call_endpoint($url);
+	my $go_data = call_endpoint($http,$url);
 	for my $go (@{$go_data}) {
 		print $go->{dbname},': ', 
 			$go->{display_id}, ' ', 
@@ -212,7 +227,7 @@ for my $homolog (@homologies) {
 	        "?content-type=application/json;".
 			"external_db=KEGG_Enzyme";
 
-	my $KE_data = call_endpoint($url);
+	my $KE_data = call_endpoint($http,$url);
 	for my $ke (@{$KE_data}) {
 		if(defined($ke->{description})){
 			print $ke->{dbname}, ': ',
@@ -228,7 +243,7 @@ for my $homolog (@homologies) {
 		"?content-type=application/json;".
 		"external_db=Plant_Reactome_Pathway";
 
-	my $PR_data = call_endpoint($url);
+	my $PR_data = call_endpoint($http,$url);
 	for my $pr (@{$PR_data}) {
 		print $pr->{dbname}, ': ', 
 			$pr->{display_id}, ' ', 
@@ -238,14 +253,18 @@ for my $homolog (@homologies) {
 }
 
 ## R7) Fetch variant consequences for multiple ids
-#
-#
-#my $ext = '/vep/human/id';
-#my $response = $http->request('POST', $server.$ext, {
-#      headers => {
-#                      'Content-type' => 'application/json',
-#                                          'Accept' => 'application/json'
-#                                                                },
-#                                                                                        content => '{ "ids" : ["rs56116432", "COSM476" ] }'
-#                                                                                        });
-#
+
+# Note: unless previous examples, this is a POST REST request, 
+# where user data is posted to the server and after some time
+# a response in parsed. Read more at:
+# https://github.com/Ensembl/ensembl-rest/wiki/POST-Requests
+
+my $ext = '/vep/human/id';
+my $response = $http->request('POST', $server.$ext, {
+      headers => {
+                   'Content-type' => 'application/json',
+                                          'Accept' => 'application/json'
+                                                                },
+                                                                                        content => '{ "ids" : ["rs56116432", "COSM476" ] }'
+                                                                                        });
+{ "ids" : ["rs56116432", "COSM476" ] }

@@ -31,7 +31,7 @@ You will need BioConductor package [biomaRt](http://www.bioconductor.org/package
 
 ## Upstream/downstream sequences
 
-You can obtained these in [Biomart](http://plants.ensembl.org/biomart/martview) by constructing iqeuries which result in URLs such as this:
+You can obtained these in [Biomart](http://plants.ensembl.org/biomart/martview) by constructing iqueries which result in URLs such as this for *Coffea canephora*:
 
 http://plants.ensembl.org/biomart/martview?VIRTUALSCHEMANAME=plants_mart&ATTRIBUTES=ccanephora_eg_gene.default.sequences.ensembl_transcript_id|ccanephora_eg_gene.default.sequences.5utr|ccanephora_eg_gene.default.sequences.upstream_flank."500"&FILTERS=&VISIBLEPANEL=resultspanel
 

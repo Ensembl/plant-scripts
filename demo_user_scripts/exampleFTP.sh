@@ -52,14 +52,24 @@ URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F5) get mappings to UniProt proteins
+
+## F5) Upstream/downstream sequences
+
+# You can obtained these in http://plants.ensembl.org/biomart/martview
+# by constructing queries which result in URLs such as this for 
+# Coffea canephora:
+
+#http://plants.ensembl.org/biomart/martview?VIRTUALSCHEMANAME=plants_mart&ATTRIBUTES=ccanephora_eg_gene.default.sequences.ensembl_transcript_id|ccanephora_eg_gene.default.sequences.5utr|ccanephora_eg_gene.default.sequences.upstream_flank."500"&FILTERS=&VISIBLEPANEL=resultspanel
+
+
+## F6) get mappings to UniProt proteins
 
 UNIPTSV=${SPECIES}*.uniprot.tsv.gz
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/${SPECIES,,}//$UNIPTSV
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F6) get indexed, bgzipped VCF file with variants mapped
+## F7) get indexed, bgzipped VCF file with variants mapped
 
 # Note: this contains all variants known to Ensembl Plants,
 # no individual genotypes are conserved
@@ -69,14 +79,14 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F7) download all homologies in a single TSV file, several GBs
+## F8) download all homologies in a single TSV file, several GBs
 
 TSVFILE=Compara.${RELEASE}.protein_default.homologies.tsv.gz
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F8) download UniProt report of Ensembl Plants, 
+## F9) download UniProt report of Ensembl Plants, 
 # summarized how many protein sequences from each species
 # have been annotated in SwissProt & TrEMBL
 
@@ -85,14 +95,14 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F9) retrieve list of new species in current release
+## F10) retrieve list of new species in current release
 
 NEWLIST=new_genomes.txt
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F10) get current plant species tree (cladogram)
+## F11) get current plant species tree (cladogram)
 TREEFILE=/plants_protein-trees_default.nh
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE
 echo "# downloading $URL"

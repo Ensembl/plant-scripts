@@ -17,14 +17,14 @@
 
 library("biomaRt")
 
-## B1) Check plant biomarts and select dataset
+## B1) Check plant marts and select dataset
 
 listMarts( host="plants.ensembl.org" )
 
-EPmart = useEnsembl( biomart="plants_mart", 
+EPgenes = useEnsembl( biomart="plants_mart", 
 			host="plants.ensembl.org")
 
-dsets = listDatasets(EPmart)
+dsets = listDatasets(EPgenes)
 
 dsets[grep("Triticum aestivum", dsets$description),]
 #              dataset                     description version
@@ -35,13 +35,14 @@ dsets[grep("Triticum aestivum", dsets$description),]
 
 ## B2) Check available filters and attributes
 
-EPmart = useMart(  biomart="plants_mart",
-        host="plants.ensembl.org",
-		        dataset="taestivum_eg_gene")
+EPgenes = useMart( 
+	biomart="plants_mart",
+  	host="plants.ensembl.org",
+	dataset="taestivum_eg_gene")
 
-head( listFilters(EPmart) )
+head( listFilters(EPgenes) )
 
-head( listAttributes(EPmart) )
+head( listAttributes(EPgenes) )
 
 
 ## B3) Download GO terms associated to genes
@@ -50,25 +51,35 @@ head( listAttributes(EPmart) )
 
 go = getBM( 
 		attributes=c("ensembl_gene_id", "go_id"), 
-		mart=EPmart) 
+		mart=EPgenes) 
 
 head(go)
 
+## B4) Get Pfam domains annotated in genes
 
+EPgenes = useMart(  
+	biomart="plants_mart",
+	host="plants.ensembl.org",
+	dataset="hannuus_eg_gene")
 
+pfam = getBM(
+		attributes=c("ensembl_gene_id", "pfam"),
+		mart=EPgenes)
+
+head(pfam)
 
 ## B5) Get SNP consequences from a selected variation source
 
 # Note this requires connecting to a different mart (snp)
 # Note this query takes a few minutes to run
 
-EPVar = useMart( biomart="plants_variations",
+EPvar = useMart( biomart="plants_variations",
         	host="plants.ensembl.org", 
 			dataset="taestivum_eg_snp")
 
 snp_source = c("EMS-induced mutation")
 
-chrs = listFilterValues(mart=EPVar,
+chrs = listFilterValues(mart=EPvar,
 		filter="chr_name")
 
 attribs = c(
@@ -102,7 +113,7 @@ for(chr in chrs){
 				variation_source=snp_source, 
 				chr_name=chr, 
 				sift_prediction=c(pred)),
-			mart=EPVar)
+			mart=EPvar)
 		
 		# append SNP batches to object snps
 		if(is.null(snps)){

@@ -29,6 +29,11 @@ As listed in [cpanfile](./cpanfile), three modules are required: [JSON](https://
 
 You will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html). See installation instructions [here](https://www.ensembl.org/info/data/biomart/biomart_r_package.html).
 
+## Upstream/downstream sequences
+
+You can obtained these in [Biomart](http://plants.ensembl.org/biomart/martview) by constructing iqeuries which result in URLs such as this: 
+http://plants.ensembl.org/biomart/martview?VIRTUALSCHEMANAME=plants_mart&ATTRIBUTES=ccanephora_eg_gene.default.sequences.ensembl_transcript_id|ccanephora_eg_gene.default.sequences.5utr|ccanephora_eg_gene.default.sequences.upstream_flank."500"&FILTERS=&VISIBLEPANEL=resultspanel
+
 ## Phylogenomics
 
 A few scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)

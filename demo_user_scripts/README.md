@@ -32,12 +32,12 @@ You will need BioConductor package [biomaRt](http://www.bioconductor.org/package
 
 ## List of recipes
 
+A few scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)
+
+These are the recipes in this folder, obtained with:
+
 ```
 grep -P "^## \w\d+" example*
-
-```
-
-A few scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)
 
 exampleAPI.pl:## A1) Load the Registry object with details of genomes available
 exampleAPI.pl:## A2) Find the DEAR3 gene from Arabidopsis thaliana
@@ -71,3 +71,4 @@ exampleREST.pl:## R4) Fetch phenotypes overlapping genomic region
 exampleREST.pl:## R5) Find homologues of selected gene
 exampleREST.pl:## R6) Get annotation of orthologous genes/proteins
 exampleREST.pl:## R7) Fetch variant consequences for multiple variant ids
+```

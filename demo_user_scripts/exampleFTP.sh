@@ -81,7 +81,7 @@ wget $OPTARG -c $URL
 
 ## F8) get precomputed VEP cache files
 
-VEPCACHE=${SPECIES,,}.tar.gz*
+VEPCACHE=${SPECIES,,}*.tar.gz*
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vep/${VEPCACHE}
 echo "# downloading $URL"
 wget $OPTARG -c $URL

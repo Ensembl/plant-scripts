@@ -39,8 +39,9 @@ grep sift ${SPECIES}/${{EGRELEASE}_*/info.txt
 
 ## V3) Call effect of variants 
 
-# See options at 
+# See more options and examples at 
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
+# http://www.ensembl.org/info/docs/tools/vep/script/vep_example.html
 
 VCFILE=
 
@@ -55,4 +56,16 @@ ensembl-vep/vep --genomes \ # Ensembl Genomes
 	--distance 5000 \       # dist between variant and transcript
 	--biotype               # sow biotype of neighbor transcript
 
+## V4) Call effect of variants for species not in Ensembl
 
+# GFF file must be sorted and indexed with BGZIP and TABIX, see 
+# http://www.ensembl.org/info/docs/tools/vep/script/vep_cache.html#gff
+
+FASTAGZFILE=      # GZIP-compressed file of genome FASTA file
+GFFILE=           # gene models matching sequences in FASTAGZFILE
+GZGFFILE=$GFFILE.sorted.gz
+
+grep -v "#" $GFFILE | sort -k1,1 -k4,4n -k5,5n -t$'\t' | bgzip -c > $GZGFFILE
+tabix -p gff $GZGFFILE
+
+ensembl-vep/vep -i $VCFILE -gff $GZGFFILE -fasta $FASTAGZFILE

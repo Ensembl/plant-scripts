@@ -27,4 +27,32 @@ echo
 #git checkout release/$RELEASE
 #perl INSTALL.pl
 
+## V2) Unpack downloaded cache file, check SIFT support 
+
+# Note: look for "sift  b"
+
+SPECIES=arabidopsis_thaliana
+VEPCACHE=${SPECIES}*.tar.gz*
+tar xfz $VEPCACHE
+grep sift ${SPECIES}/${{EGRELEASE}_*/info.txt
+
+
+## V3) Call effect of variants 
+
+# See options at 
+# http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
+
+VCFILE=
+
+ensembl-vep/vep --genomes \ # Ensembl Genomes
+	--species $SPECIES \
+	--cache \               # use local cache file, opposed to --database
+	--dir_cache ./ \        # location of unpacked cache $SPECIES folder
+	--cache_version $EGRELEASE \
+	--input_file $VCFILE \
+	--output_file ${VCFILE}.vep \
+	--check_existing \      # co-located known variants
+	--distance 5000 \       # dist between variant and transcript
+	--biotype               # sow biotype of neighbor transcript
+
 

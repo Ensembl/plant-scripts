@@ -19,7 +19,6 @@ OPTARG=$1
 
 # set example species
 SPECIES=Brachypodium_distachyon
-SPECIESBIOMART=bdistachyon_eg_genes
 
 echo "EGRELEASE=${EGRELEASE} OPTARG=$OPTARG"
 echo
@@ -81,6 +80,7 @@ wget $OPTARG -c $URL
 
 ## F8) get precomputed VEP cache files
 
+SPECIES=arabidopsis_thaliana
 VEPCACHE=${SPECIES,,}*.tar.gz*
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vep/${VEPCACHE}
 echo "# downloading $URL"

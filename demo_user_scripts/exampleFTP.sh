@@ -79,14 +79,29 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F8) download all homologies in a single TSV file, several GBs
+## F8) get precomputed VEP cache files
+
+VEPCACHE=${SPECIES,,}.tar.gz*
+URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vep/${VEPCACHE}
+echo "# downloading $URL"
+wget $OPTARG -c $URL
+
+# Note: you can get indexed cached files instead from 
+# URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/indexed_vep_cache/${VEPCACHE}
+
+## F9) download all homologies in a single TSV file, several GBs
 
 TSVFILE=Compara.${RELEASE}.protein_default.homologies.tsv.gz
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F9) download UniProt report of Ensembl Plants, 
+# Note: you can extract homologies from this file by parsing it
+# in the command line. Example:
+# zcat $TSVFILE | grep triticum_aestivum | grep oryza_sativa | grep ortholog 
+
+
+## F10) download UniProt report of Ensembl Plants, 
 # summarized how many protein sequences from each species
 # have been annotated in SwissProt & TrEMBL
 
@@ -95,17 +110,16 @@ URL=${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F10) retrieve list of new species in current release
+## F11) retrieve list of new species in current release
 
 NEWLIST=new_genomes.txt
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST
 echo "# downloading $URL"
 wget $OPTARG -c $URL
 
-## F11) get current plant species tree (cladogram)
+## F12) get current plant species tree (cladogram)
 TREEFILE=/plants_protein-trees_default.nh
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE
 echo "# downloading $URL"
 wget $OPTARG -c $URL
-
 

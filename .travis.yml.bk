@@ -6,7 +6,7 @@ perl:
 
 before_install:
   - "sudo apt-get update"
-  - "sudo apt-get install -y wget python3 mysql-client"
+  - "sudo apt-get install -y wget python3 mysql-client libmysqlclient-dev"
   - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
 
 script:

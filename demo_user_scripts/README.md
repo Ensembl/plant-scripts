@@ -80,6 +80,7 @@ exampleREST.pl:## R4) Fetch phenotypes overlapping genomic region
 exampleREST.pl:## R5) Find homologues of selected gene
 exampleREST.pl:## R6) Get annotation of orthologous genes/proteins
 exampleREST.pl:## R7) Fetch variant consequences for multiple variant ids
+exampleREST.pl:## R8) Check consequences of single SNP within CDS sequence
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file, check SIFT support 

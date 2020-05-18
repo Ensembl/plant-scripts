@@ -20,12 +20,13 @@ use Data::Dumper;
 
 ## R1) Create an HTTP client and a helper functions 
 
-# create an HTTP client
-my $http = HTTP::Tiny->new;
+# create a new HTTP client
+my $http = HTTP::Tiny->new();
 my $server = 'http://rest.ensembl.org';
 
-# function for invoking endpoint, see other options at
-# https://github.com/Ensembl/ensembl-rest/wiki
+# function for invoking endpoint, 
+# see how to cope with failed request and retries at 
+# https://github.com/Ensembl/ensembl-rest/wiki/Example-Perl-Client
 sub call_endpoint {
 	my ($http, $url, $verbose) = @_;
 	
@@ -267,3 +268,55 @@ my $variants = '{ "ids" : [ "10522356134" ] }';
 my $vep_data = post_endpoint($http,$url,$variants);
 
 print Dumper $vep_data;
+
+
+## R8) Check consequences of single SNP within CDS sequence
+
+# Note: you need the relevant transcript id from species of interest
+
+$species = 'triticum_aestivum';
+my $transcript_id = 'TraesCS4B02G042700.1';
+my $SNPCDScoord = 812;
+my $SNPbase = 'T'; 
+
+# convert CDS coords to genomic coords
+$url = join('/', $server, "map/cds/$transcript_id/$SNPCDScoord..$SNPCDScoord").
+        "?content-type=application/json;species=$species";
+
+my $map_cds = call_endpoint($http,$url);
+
+if(defined($map_cds->{mappings}->[0]->{seq_region_name})){
+
+	my $SNPgenome_coord = 
+		$map_cds->{mappings}->[0]->{seq_region_name} . 
+		':' .
+		$map_cds->{mappings}->[0]->{start} .
+		'-' .
+		$map_cds->{mappings}->[0]->{end};
+	
+	# fetch VEP consequences for this region
+	$url = join('/', $server, "vep/$species/region/$SNPgenome_coord/$SNPbase").
+	        "?content-type=application/json";
+
+	my $conseq = call_endpoint($http,$url);
+
+	if(defined($conseq->[0]->{allele_string})){
+		
+		foreach my $tcons ($conseq->[0]->{transcript_consequences}){
+			
+			printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+				$transcript_id,
+				$SNPCDScoord,
+				$conseq->[0]->{allele_string},
+				$tcons->[0]->{biotype},
+				$tcons->[0]->{codons} || 'NA',
+				$tcons->[0]->{amino_acids} || 'NA',
+				$tcons->[0]->{protein_start} || 'NA',
+				$tcons->[0]->{impact},
+				# not all variants have SIFT scores precomputed
+				$tcons->[0]->{sift_prediction} || 'NA',
+				$tcons->[0]->{sift_score} || 'NA' 
+			);
+		}
+	} 
+}

@@ -125,14 +125,20 @@ foreach my $overlap_feat (@$overlap_data){
 }
 
 # finally get EMS variants
+
+my $source_variation = 'EMS-induced mutation';
+#$source_variation = 'CerealsDB';
+
 $url = join('/', $server, 'overlap/region', $species, $region).
 	"?feature=variation;content-type=application/json";
 
 $overlap_data = call_endpoint($http,$url);
 
 foreach my $overlap_feat (@$overlap_data){
-	next if($overlap_feat->{source} ne 'EMS-induced mutation');
-	print $overlap_feat->{id}."\n";
+	next if($overlap_feat->{source} ne $source_variation);
+	printf("%s\t%s\n",
+		$overlap_feat->{id},
+		$overlap_feat->{source});
 }
 
 ## R4) Fetch phenotypes overlapping genomic region

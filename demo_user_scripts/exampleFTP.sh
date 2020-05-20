@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Your usage of the data returned by the REST service is
-# subject to same conditions as laid out on the Ensembl website.
-#
 # Copyright [2020] EMBL-European Bioinformatics Institute
 
-# set FTP server & division
+# The recipes below use wget to download files, 
+# you could use curl instead
+
+# set servers & division
 SERVER=ftp://ftp.ensemblgenomes.org/pub
 DIV=plants
+BIOMARTSERVICE=http://plants.ensembl.org/biomart/martservice
 
 # set Ensembl Plants release number, check it 
 # at the bottom of http://plants.ensembl.org
@@ -54,12 +55,27 @@ wget $OPTARG -c $URL
 
 ## F5) Upstream/downstream sequences
 
-# You can obtained these in http://plants.ensembl.org/biomart/martview
-# by constructing queries which result in URLs such as this for 
-# Coffea canephora:
+# Note: this is actually a BioMart query.
+# You can construct your queries at 
+# http://plants.ensembl.org/biomart/martview
+# and then export them as XML
 
-#http://plants.ensembl.org/biomart/martview?VIRTUALSCHEMANAME=plants_mart&ATTRIBUTES=ccanephora_eg_gene.default.sequences.ensembl_transcript_id|ccanephora_eg_gene.default.sequences.5utr|ccanephora_eg_gene.default.sequences.upstream_flank."500"&FILTERS=&VISIBLEPANEL=resultspanel
-
+BIOMARTQUERY=$(cat <<XMLQUERY
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "plants_mart" formatter = "FASTA" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+	<Dataset name = "bdistachyon_eg_gene" interface = "default" >
+		<Filter name = "upstream_flank" value = "500"/>
+		<Attribute name = "ensembl_gene_id" />
+		<Attribute name = "5utr" />
+	</Dataset>
+</Query>
+XMLQUERY
+)
+FASTAUP=${SPECIES}.upstream_flank500.fa
+URL=${BIOMARTSERVICE}?query=$BIOMARTQUERY
+echo "# downloading $URL"
+wget $OPTARG -c "$URL" -O $FASTAUP
 
 ## F6) get mappings to UniProt proteins
 

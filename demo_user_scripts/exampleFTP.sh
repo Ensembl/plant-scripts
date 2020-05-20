@@ -87,12 +87,22 @@ wget $OPTARG -c $URL
 ## F7) get indexed, bgzipped VCF file with variants mapped
 
 # Note: this contains all variants known to Ensembl Plants,
-# no individual genotypes are conserved
+# individual genotypes are not necessarily conserved
 
 VCF=${SPECIES,,}.vcf.gz*
 URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}
 echo "# downloading $URL"
 wget $OPTARG -c $URL
+
+# wheat is an exception, as you can tell from the VCF file which EMS lines
+# share a certain mutation, as in this excerpt:
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+#1A      238016  Cadenza0202.chr1A.238016        G       A       .       .       EMS-induced mutation;TSA=SNV
+#1A      238016  Cadenza0230.chr1A.238016        G       A       .       .       EMS-induced mutation;TSA=SNV
+#1A      238016  Cadenza1874.chr1A.238016        G       A       .       .       EMS-induced mutation;TSA=SNV
+#1A      406098  Cadenza0148.chr1A.406098        T       C       .       .       EMS-induced mutation;TSA=SNV
+#1A      406098  Cadenza0877.chr1A.406098        T       C       .       .       EMS-induced mutation;TSA=SNV
+#1A      406098  Cadenza1340.chr1A.406098        T       C       .       .       EMS-induced mutation;TSA=SNV
 
 ## F8) get precomputed VEP cache files
 

@@ -43,7 +43,7 @@ grep sift ${SPECIES}/${{EGRELEASE}_*/info.txt
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_example.html
 
-VCFILE=
+VCFILE=ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf
 
 ensembl-vep/vep --genomes \ # Ensembl Genomes
 	--species $SPECIES \
@@ -53,7 +53,7 @@ ensembl-vep/vep --genomes \ # Ensembl Genomes
 	--input_file $VCFILE \
 	--output_file ${VCFILE}.vep \
 	--check_existing \      # co-located known variants
-	--distance 5000 \       # dist between variant and transcript
+	--distance 5000 \       # max dist between variant and transcript
 	--biotype               # sow biotype of neighbor transcript
 
 ## V4) Call effect of variants for species not in Ensembl

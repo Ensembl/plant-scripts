@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript 
 
 # Examples of R queries to Ensembl Plants Biomart
-# Your usage of the data returned by the REST service is
+# Your usage of the data returned by the Biomart service is
 # subject to same conditions as laid out on the Ensembl website.
 #
 # See documentation at 

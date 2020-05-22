@@ -5,12 +5,20 @@ use Bio::EnsEMBL::Registry;
 
 # prints FASTA sequence of toplevel coord_system
 
-my ($dbname, $species, $servercmd, $server_details);
+my ($dbname, $species, $servercmd, $mask, $server_details);
 my ($host,$user,$port) = ('','',''); 
+my $usage = "# usage: $0 <dbname> <species> <server cmd> <mask: none, hard, soft>";
 
-if(!$ARGV[2]){ die "# usage: $0 <dbname> <species> <server cmd>\n" }
+if(!$ARGV[3]){ die "$usage\n" }
 else {
-	($dbname, $species, $servercmd) = @ARGV;
+	($dbname, $species, $servercmd, $mask) = @ARGV;
+
+	# check mask
+	if($mask ne 'none' && 
+			$mask ne 'hard' &&
+			$mask ne 'soft'){
+		die "$usage\n"
+	}
 
 	# get db server connection details
 	chomp( $server_details = `$servercmd -details script` );
@@ -33,10 +41,20 @@ my $slice_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, 'Core', 'Slice
 my @slices = @{ $slice_adaptor->fetch_all('toplevel') };
 
 foreach my $slice (@slices){
-	printf(">%s %s %d-%d\n",	
+	printf(">%s %s %d-%d %s\n",	
 		$slice->seq_region_name(),
 		$slice->coord_system_name(),
-		$slice->start(), $slice->end());
-	print $slice->seq();
+		$slice->start(), 
+		$slice->end(),
+		$mask );
+
+	if($mask eq 'hard'){
+		print $slice->get_repeatmasked_seq()->seq();
+	} elsif($mask eq 'soft'){
+		print $slice->get_repeatmasked_seq( undef, 1 )->seq();
+	} else {
+		print $slice->seq();
+	}
+
 	print "\n";
 }

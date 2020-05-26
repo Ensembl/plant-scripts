@@ -29,13 +29,33 @@ Bio::EnsEMBL::Registry->load_registry_from_db(
 	#-VERBOSE => 1 # uncomment to see dbs loaded
 );
 
+## A2) Get soft masked sequences from Arabidopsis thaliana
 
-## A2) Find the DEAR3 gene from Arabidopsis thaliana
+my $division = 'plants';
+my $species = 'arabidopsis_thaliana';
+
+my $slice_adaptor = Bio::EnsEMBL::Registry->
+    get_adaptor($species, 'core', 'Slice');
+
+my ($total,$masked, $softseq) = (0,0);
+foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') } ){
+
+	next if($slice->seq_region_name() ne 'Pt'); #for brevity
+
+	printf(">%s %s %d-%d\n",
+		$slice->seq_region_name(),
+		$slice->coord_system_name(),
+		$slice->start(),
+		$slice->end());
+	
+	# only first 50b shown for brevity
+	print substr($slice->get_repeatmasked_seq( undef, 1 )->seq(),0,50), "\n";
+}
+
+## A3) Find the DEAR3 gene
 
 # gene of interest and species
 my $gene_name = 'DEAR3';
-my $species = 'arabidopsis_thaliana';
-my $division = 'plants';
 
 # get a gene adaptor to work with genes from
 # the species
@@ -47,7 +67,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-## A3) Find all orthologues among rosids
+## A4) Find all orthologues among rosids
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->
@@ -84,19 +104,21 @@ foreach my $homology (@homologies) {
 		$target->genome_db->name() );
 }
 
-## A4) Get BED coordinates of all repeats in chr4 
+## A5) Get BED coordinates of all repeats in chr4 
 
 my $chrname = 'chr4';
-
-my $slice_adaptor = Bio::EnsEMBL::Registry->
-	get_adaptor( $species, 'Core', 'Slice' );
 
 my $slice = $slice_adaptor->
 	fetch_by_region( 'chromosome', $chrname );
 
 my @repeats = @{ $slice->get_all_RepeatFeatures() };
 
+my $total_repeats = 0;
+
 foreach my $repeat (@repeats) {
+
+	last if($total_repeats++ > 10);
+
 	printf("%s\t%d\t%d\t%s\n",
 		$chrname,
 		$repeat->start(), 
@@ -104,7 +126,7 @@ foreach my $repeat (@repeats) {
 		$repeat->display_id() );
 }
 
-## A5) Get markers mapped on chr1D of bread wheat
+## A6) Get markers mapped on chr1D of bread wheat
 
 # Note: only a few plants have markers
 # As of release EG47/100:
@@ -119,8 +141,10 @@ $slice_adaptor = Bio::EnsEMBL::Registry->
 $slice = $slice_adaptor->
 	fetch_by_region( 'chromosome', $chrname );
 
-my $marker_features = $slice->get_all_MarkerFeatures();
-while ( my $mf = shift @{$marker_features} ) {
+my $total_markers = 0;
+foreach my $mf (@{ $slice->get_all_MarkerFeatures() }) {
+
+	last if($total_markers++ > 10); #for brevity
 
 	my $marker = $mf->marker(); 
 

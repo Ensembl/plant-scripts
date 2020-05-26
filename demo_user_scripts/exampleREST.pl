@@ -205,7 +205,11 @@ if(defined($homoltype)){
 # using the xrefs/id endpoint
 # https://rest.ensembl.org/documentation/info/xref_id
 
+my $total_annots = 0;
+
 for my $homolog (@homologies) {
+
+	last if($total_annots++ > 5); # for brevity
 
 	my $target_species = $homolog->{target}{species};
 	my $target_id = $homolog->{target}{id};
@@ -257,11 +261,7 @@ for my $homolog (@homologies) {
 	}
 }
 
-## R7) Get orthologs with residue R in position P
-
-# to be done
-
-## R8) Fetch variant consequences for multiple variant ids
+## R7) Fetch variant consequences for multiple variant ids
 
 # Note: unless previous examples, this is a POST REST request, 
 # where user data is posted to the server and after some time
@@ -280,7 +280,7 @@ my $vep_data = post_endpoint($http,$url,$variants);
 print Dumper $vep_data;
 
 
-## R9) Check consequences of single SNP within CDS sequence
+## R8) Check consequences of single SNP within CDS sequence
 
 # Note: you need the relevant transcript id from species of interest
 # This query involves 2 consecutive REST calls

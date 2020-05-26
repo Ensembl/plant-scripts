@@ -27,8 +27,9 @@ echo
 #git checkout release/$RELEASE
 #perl INSTALL.pl
 
-## V2) Unpack downloaded cache file, check SIFT support 
+## V2) Unpack downloaded cache file & check SIFT support 
 
+# Note: cache downloaded in recipe F8
 # Note: look for "sift  b"
 
 SPECIES=arabidopsis_thaliana

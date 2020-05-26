@@ -27,7 +27,7 @@ The software VEP has the following Perl dependencies: [DBI](https://metacpan.org
 
 ### Python3
 
-
+The REST recipes written in python3 require library [requests](https://pypi.org/project/requests).
 
 ### R
 
@@ -44,10 +44,11 @@ These are the recipes in this folder, obtained with:
 grep -P "^## \w\d+" example*
 
 exampleAPI.pl:## A1) Load the Registry object with details of genomes available
-exampleAPI.pl:## A2) Find the DEAR3 gene from Arabidopsis thaliana
-exampleAPI.pl:## A3) Find all orthologues among rosids
-exampleAPI.pl:## A4) Get BED coordinates of all repeats in chr4 
-exampleAPI.pl:## A5) Get markers mapped on chr1D of bread wheat
+exampleAPI.pl:## A2) Get soft masked sequences from Arabidopsis thaliana
+exampleAPI.pl:## A3) Find the DEAR3 gene
+exampleAPI.pl:## A4) Find all orthologues among rosids
+exampleAPI.pl:## A5) Get BED coordinates of all repeats in chr4
+exampleAPI.pl:## A6) Get markers mapped on chr1D of bread wheat
 
 exampleBiomart.R:## B1) Check plant marts and select dataset
 exampleBiomart.R:## B2) Check available filters and attributes

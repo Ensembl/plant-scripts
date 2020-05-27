@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use Bio::EnsEMBL::Registry;
 
+my $FASTAWIDTH = 60;
+
 # prints FASTA sequence of toplevel coord_system
 
 my ($dbname, $species, $servercmd, $mask, $server_details);
@@ -41,20 +43,25 @@ my $slice_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, 'Core', 'Slice
 my @slices = @{ $slice_adaptor->fetch_all('toplevel') };
 
 foreach my $slice (@slices){
-	printf(">%s %s %d-%d %s\n",	
+	printf(">%s dna:%s %s:%d:%d:%s %s\n",	
 		$slice->seq_region_name(),
 		$slice->coord_system_name(),
+		$slice->name(),
 		$slice->start(), 
 		$slice->end(),
+		$slice->strand(),
 		$mask );
 
+	my $seq;
 	if($mask eq 'hard'){
-		print $slice->get_repeatmasked_seq()->seq();
+		$seq = $slice->get_repeatmasked_seq()->seq();
 	} elsif($mask eq 'soft'){
-		print $slice->get_repeatmasked_seq( undef, 1 )->seq();
+		$seq = $slice->get_repeatmasked_seq( undef, 1 )->seq();
 	} else {
-		print $slice->seq();
+		$seq = $slice->seq();
 	}
 
-	print "\n";
+	while($seq =~ m/(.{1,$FASTAWIDTH})/g){
+		print "$1\n"
+	}
 }

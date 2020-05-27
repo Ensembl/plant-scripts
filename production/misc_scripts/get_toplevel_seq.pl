@@ -43,13 +43,10 @@ my $slice_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, 'Core', 'Slice
 my @slices = @{ $slice_adaptor->fetch_all('toplevel') };
 
 foreach my $slice (@slices){
-	printf(">%s dna:%s %s:%d:%d:%s %s\n",	
+	printf(">%s dna:%s %s %s\n",	
 		$slice->seq_region_name(),
 		$slice->coord_system_name(),
 		$slice->name(),
-		$slice->start(), 
-		$slice->end(),
-		$slice->strand(),
 		$mask );
 
 	my $seq;

@@ -25,9 +25,9 @@ For the recipes using the Ensembl Perl API please follow the installation [instr
 
 The software VEP has the following Perl dependencies: [DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip). See full documentation at https://github.com/Ensembl/ensembl-vep
 
-### Python3
+### Python
 
-The REST recipes written in python3 require library [requests](https://pypi.org/project/requests).
+The REST recipes written in python require library [requests](https://pypi.org/project/requests).
 
 ### R
 

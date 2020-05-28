@@ -19,7 +19,7 @@ def get_json(ext):
 #======================================== 
     server = "https://rest.ensembl.org"
     url = server+ext
-    print url
+    print(url)
     r = requests.get(url, headers={ "Content-Type" : "application/json"})
     
     if not r.ok:
@@ -35,7 +35,7 @@ def get_json_post(ext,ids):
 #======================================== 
     server = "https://rest.ensembl.org"
     url = server+ext
-    print url
+    print(url)
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
     r = requests.post(server+ext, headers=headers, data=ids)
     
@@ -211,7 +211,7 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
         if map_cds['mappings'][0]['seq_region_name']:
             mapping = map_cds['mappings'][0]
     except:
-        print "missing data in API call - try different a different call"
+        print("missing data in API call - try different a different call")
         return
 
     # fetch VEP consequences for this region
@@ -284,11 +284,4 @@ transcript_id = 'TraesCS4B02G042700.1'
 SNPCDScoord = '812'
 SNPbase = 'T'
 check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase)
-
-
-
-
-
-
-
 

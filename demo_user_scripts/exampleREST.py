@@ -1,7 +1,7 @@
 import requests, sys
 import re
 
-# Example in python queries to the Ensembl REST endpoints
+# Example of python queries to the Ensembl REST endpoints
 # Your usage of the data returned by the REST service is
 # subject to same conditions as laid out on the Ensembl website.
 #
@@ -30,7 +30,7 @@ def get_json(ext):
     return decoded
 
 #======================================== 
-# Create helper functions for fetching JSON
+# Create helper functions for fetching JSON posts
 def get_json_post(ext,ids):
 #======================================== 
     server = "https://rest.ensembl.org"
@@ -55,7 +55,8 @@ def get_metadata():
 
     for d in decoded:
         
-        ##Printing relevant info, notice some items have been converted to str for easier printing
+        ##Printing relevant info, notice some items have been 
+        ##converted to str for easier printing
         meta = (d['name'],d['assembly_accession'],d['assembly_level'],
             str(d['has_peptide_compara']),str(d['has_variations']),
             str(d['has_genome_alignments']),str(d['has_synteny']));
@@ -80,7 +81,8 @@ def get_overlapping_features(species,region):
     for overlap_feat in overlap_data:
         ltr_match = re.search('LTR', overlap_feat['description'])
         if ltr_match:
-            print("%s\t%s\t%s" % (overlap_feat['description'],overlap_feat['start'],overlap_feat['end']))
+            print("%s\t%s\t%s" % (overlap_feat['description'],overlap_feat['start'],
+                overlap_feat['end']))
 
 
     ## search for a specific variation source
@@ -98,7 +100,8 @@ def get_overlapping_features(species,region):
 #========================================= 
 def get_phenotypes(species,region,p_cutoff):
 #========================================= 
-    ext = ('/phenotype/region/' + species + "/" + region + "?feature_type=Variation;content-type=application/json")
+    ext = ('/phenotype/region/' + species + "/" + region + 
+              "?feature_type=Variation;content-type=application/json")
     pheno_data = get_json(ext)
     
     for feat in pheno_data:
@@ -110,19 +113,18 @@ def get_phenotypes(species,region,p_cutoff):
 
 
 #========================================= 
-def find_homologues(species,division,gene,homoltype):
+def find_homologues(species,division,gene,homoltype,target_clade=None):
 #========================================= 
-    # optional define a target clade, such as 4479
-    # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
-    target_clade='4479'; 
-
     #see endpoint doc at 
     #https://rest.ensembl.org/documentation/info/homology_symbol
 
-    ext = ('/homology/symbol/' + species + "/" + gene + "?content-type=application/json&compara="+division)
+    ext = ('/homology/symbol/' + species + "/" + gene + 
+             "?content-type=application/json&compara="+division)
+
     if target_clade:
         ext = ext + "&target_taxon=" + target_clade
-    homology_data = get_json(ext)
+    
+	homology_data = get_json(ext)
     homologies = homology_data['data'][0]['homologies']
     
     ##create a filtered list of homolgies according to homoltype
@@ -141,7 +143,9 @@ def parse_homologies(homologies):
         target_prot_id = homolog['target']['protein_id']
         
         #GO annotation (protein)
-        ext = "/xrefs/id/" + target_prot_id + "?content-type=application/json;external_db=GO;all_levels=1"
+        ext = ( "/xrefs/id/" + target_prot_id +
+                "?content-type=application/json;external_db=GO;all_levels=1" )
+
         go_data = get_json(ext)
         for go in go_data:
             separator = ','
@@ -156,7 +160,8 @@ def parse_homologies(homologies):
 
 
         #check KEGG Enzyme annotation (protein)
-        ext = "/xrefs/id/" + target_prot_id + "?content-type=application/json;external_db=KEGG_Enzyme"
+        ext = ( "/xrefs/id/" + target_prot_id + 
+                "?content-type=application/json;external_db=KEGG_Enzyme" )
         KE_data = get_json(ext)
         for ke in KE_data:
             if  'description' in ke and  ke['description']:
@@ -164,39 +169,27 @@ def parse_homologies(homologies):
                 print("%s: %s,%s Evidence: %s" % ke_vars)
             
         #now check Plant Reactome annotation (gene)
-        ext = "/xrefs/id/" + target_id + "?content-type=application/json;external_db=Plant_Reactome_Pathway"
+        ext = ( "/xrefs/id/" + target_id + 
+                "?content-type=application/json;external_db=Plant_Reactome_Pathway" )
 
         PR_data = get_json(ext)
         for pr in PR_data:
             print (pr['dbname'] + ': ' + pr['display_id'] + ' ' +
                         'Evidence: ' + pr['info_type'])
 
-## R8) Fetch variant consequences for multiple variant ids
-
 # Note: unless previous examples, this is a POST REST request, 
 # where user data is posted to the server and after some time
 # a response in parsed. Read more at:
 # https://github.com/Ensembl/ensembl-rest/wiki/POST-Requests
 #======================================== 
-def get_vep_data(species):
+def get_vep_data(species,variants_ids):
 #======================================== 
-    variants = '{ "ids" : [ "10522356134" ] }'
 
     ext = "/vep/" + species + "/id"
-    #$url = join('/', $server, "/vep/$species/id");
 
-    # max one thousand ids - what does this mean?
-    variants = '{ "ids" : [ "10522356134" ] }'
-
-    vep_data = get_json_post(ext,variants)
+    vep_data = get_json_post(ext,variants_ids)
 
     print (vep_data)
-
-## R8) Check consequences of single SNP within CDS sequence
-
-# Note: you need the relevant transcript id from species of interest
-# This query involves 2 consecutive REST calls
-
 
 #========================================= 
 def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
@@ -215,15 +208,18 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
         return
 
     # fetch VEP consequences for this region
-    SNPgenome_coord = mapping['seq_region_name'] + ':' + str(mapping['start']) + '-' + str(mapping['end'])
-    ext = ("/vep/"+ species + "/region/" + SNPgenome_coord + "/" + SNPbase + "?content-type=application/json")
+    SNPgenome_coord = ( mapping['seq_region_name'] + ':' + 
+        str(mapping['start']) + '-' + str(mapping['end']) )
+    ext = ("/vep/"+ species + "/region/" + SNPgenome_coord + "/" + 
+        SNPbase + "?content-type=application/json")
     conseq = get_json(ext)
     
     if conseq[0]['allele_string']:
         for tcons in conseq[0]['transcript_consequences']:
             
-            ##Making sure NA is default in variant that don't have values
-            defaults = ['codons', 'amino_acids', 'protein_start', 'sift_prediction', 'sift_score']
+            ##Making sure NA is default in void variants
+            defaults = ['codons', 'amino_acids', 'protein_start', 
+                'sift_prediction', 'sift_score']
             for d in defaults:
                 if d not in tcons or tcons[d] is '':
                     tcons[d] = 'NA'
@@ -244,10 +240,11 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
 #======================================== 
 #Main
 
-# Get metadata for all plant species
+## R2) Get metadata for all plant species
 get_metadata()
 
-#1) Find features overlapping genomic region
+## R3) Find features overlapping genomic region
+
 # full list at
 # https://rest.ensembl.org/documentation/info/overlap_region
 species = 'triticum_aestivum';
@@ -255,30 +252,40 @@ region = '3D:379400000-379540000';
 get_overlapping_features(species,region)
 
 
-#2) Fetch phenotypes overlapping genomic region
+## R4) Fetch phenotypes overlapping genomic region
 species  = 'arabidopsis_thaliana'
 region   = '3:19431095-19434450'
 p_cutoff = 0.0001
 get_phenotypes(species,region,p_cutoff)
 
 
-#3) Find homologues of selected gene
+## R5) Find homologues of selected gene
 species   = 'triticum_aestivum' 
 division  = 'plants'
 gene      = 'TraesCS1B02G195200'
 homoltype = 'ortholog' #can also be paralog
 
-#4) Get the list of the homolgies which we can then use
-homologies = find_homologues(species,division,gene,homoltype)
+# optionally define a target clade, such as 4479
+# for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
+target_clade = '4479' 
 
-#5) Parse homologies and get annotation of orthologous genes/proteins
+homologies = find_homologues(species,division,gene,homoltype,target_clade)
+
+## R5) Parse homologies and get annotation of orthologous genes/proteins
 parse_homologies(homologies)
 
-#6)Fetch variant consequences for multiple variant ids
+## R7) Fetch variant consequences for multiple variant ids
 species   = 'oryza_sativa' 
-get_vep_data(species)
+# no more than 1000 ids in one call, please
+variants_json = '{ "ids" : [ "10522356134" ] }'
 
-#7)Check consequences of single SNP within CDS sequence
+get_vep_data(species,variants_json)
+
+## R8) Check consequences of single SNP within CDS sequence
+
+# Note: you need the relevant transcript id from species of interest
+# This query involves 2 consecutive REST calls
+
 species = 'triticum_aestivum'
 transcript_id = 'TraesCS4B02G042700.1'
 SNPCDScoord = '812'

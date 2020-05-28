@@ -75,13 +75,13 @@ exampleMySQL.sh:## S3) get variants significantly associated to phenotypes
 exampleMySQL.sh:## S4) get Triticum aestivum homeologous genes across A,B & D subgenomes
 
 exampleREST.pl:## R1) Create an HTTP client and a helper functions 
-exampleREST.pl:## R2) Get metadata for all plant species 
-exampleREST.pl:## R3) Find features overlapping genomic region
-exampleREST.pl:## R4) Fetch phenotypes overlapping genomic region
-exampleREST.pl:## R5) Find homologues of selected gene
-exampleREST.pl:## R6) Get annotation of orthologous genes/proteins
-exampleREST.pl:## R7) Fetch variant consequences for multiple variant ids
-exampleREST.pl:## R8) Check consequences of single SNP within CDS sequence
+exampleREST.p[ly]:## R2) Get metadata for all plant species 
+exampleREST.p[ly]:## R3) Find features overlapping genomic region
+exampleREST.p[ly]:## R4) Fetch phenotypes overlapping genomic region
+exampleREST.p[ly]:## R5) Find homologues of selected gene
+exampleREST.p[ly]:## R6) Get annotation of orthologous genes/proteins
+exampleREST.p[ly]:## R7) Fetch variant consequences for multiple variant ids
+exampleREST.p[ly]:## R8) Check consequences of single SNP within CDS sequence
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file, check SIFT support 

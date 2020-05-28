@@ -1,6 +1,17 @@
 import requests, sys
 import re
 
+# Example in python queries to the Ensembl REST endpoints
+# Your usage of the data returned by the REST service is
+# subject to same conditions as laid out on the Ensembl website.
+#
+# The full set of endpoints is documented
+# at http://rest.ensembl.org
+#
+# See https://github.com/Ensembl/ensembl-rest/wiki for
+# examples in other programming languages
+
+# Copyright [2020] EMBL-European Bioinformatics Institute
 
 #======================================== 
 # Create helper functions for fetching JSON

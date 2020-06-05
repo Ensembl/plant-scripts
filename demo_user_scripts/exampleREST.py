@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function ##Allow Python 3.X printing for Python 2
 import requests, sys
 import re
 
@@ -20,7 +20,6 @@ def get_json(ext):
 #======================================== 
     server = "https://rest.ensembl.org"
     url = server+ext
-    print(url)
     r = requests.get(url, headers={ "Content-Type" : "application/json"})
     
     if not r.ok:
@@ -36,7 +35,6 @@ def get_json_post(ext,ids):
 #======================================== 
     server = "https://rest.ensembl.org"
     url = server+ext
-    print(url)
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
     r = requests.post(server+ext, headers=headers, data=ids)
     
@@ -198,10 +196,11 @@ def get_vep_data(species,variants_ids):
     print (vep_data)
 
 #========================================= 
-#More examples: https://rest.ensembl.org/documentation/info/vep_region_post
+#More examples: https://rest.ensembl.org/documentation/info/vep_region_get
 def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
 #========================================= 
     # convert CDS coords to genomic coords
+    # using: https://rest.ensembl.org/documentation/info/assembly_cds
     ext = ("/map/cds/" + transcript_id + "/" + SNPCDScoord + ".." + SNPCDScoord 
            + "?content-type=application/json;species=" + species)
     map_cds = get_json(ext)
@@ -211,7 +210,7 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
         if map_cds['mappings'][0]['seq_region_name']:
             mapping = map_cds['mappings'][0]
     except:
-        print("missing data in API call - try different a different call")
+        print("missing data in API call - try doing a different call")
         return
 
     # fetch VEP consequences for this region
@@ -220,11 +219,12 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
     ext = ("/vep/"+ species + "/region/" + SNPgenome_coord + "/" + 
         SNPbase + "?content-type=application/json")
     conseq = get_json(ext)
-    
+ 
+    ##Print all the relevant info for the given variant
     if conseq[0]['allele_string']:
         for tcons in conseq[0]['transcript_consequences']:
             
-            ##Making sure NA is default in void variants
+            ##Making sure NA is default in void parameters
             defaults = ['codons', 'amino_acids', 'protein_start', 
                 'sift_prediction', 'sift_score']
             for d in defaults:

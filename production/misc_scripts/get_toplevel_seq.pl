@@ -8,12 +8,12 @@ my $FASTAWIDTH = 60;
 # prints FASTA sequence of toplevel coord_system
 
 my ($dbname, $species, $servercmd, $mask, $server_details);
-my ($host,$user,$port) = ('','',''); 
-my $usage = "# usage: $0 <dbname> <species> <server cmd> <mask: none, hard, soft>";
+my ($host,$user,$port,$logic_name) = ('','','',''); 
+my $usage = "# usage: $0 <dbname> <species> <server cmd> <mask: none, hard, soft> [repeats logic_name, default=RepeatMasker]";
 
 if(!$ARGV[3]){ die "$usage\n" }
 else {
-	($dbname, $species, $servercmd, $mask) = @ARGV;
+	($dbname, $species, $servercmd, $mask, $logic_name) = @ARGV;
 
 	# check mask
 	if($mask ne 'none' && 
@@ -51,13 +51,22 @@ foreach my $slice (@slices){
 
 	my $seq;
 	if($mask eq 'hard'){
-		$seq = $slice->get_repeatmasked_seq()->seq();
+		if($logic_name ne ''){
+			$seq = $slice->get_repeatmasked_seq( [$logic_name] )->seq();
+		} else {
+			$seq = $slice->get_repeatmasked_seq()->seq();
+		}
 	} elsif($mask eq 'soft'){
-		$seq = $slice->get_repeatmasked_seq( undef, 1 )->seq();
-	} else {
+		if($logic_name ne ''){
+			$seq = $slice->get_repeatmasked_seq( [$logic_name], 1 )->seq();
+		} else {
+			$seq = $slice->get_repeatmasked_seq( undef, 1 )->seq();	
+		}
+	}
+	else {
 		$seq = $slice->seq();
 	}
-
+	
 	while($seq =~ m/(.{1,$FASTAWIDTH})/g){
 		print "$1\n"
 	}

@@ -3,7 +3,8 @@ use strict;
 use warnings;
 use Bio::EnsEMBL::Registry;
 
-# compute percentage of masked toplevel sequence
+# Compute percentage of RepeatMasker masked toplevel sequence
+# You might choose other analyses by passing their logic_name
 
 my ($dbname, $species, $servercmd, $analysis, $server_details);
 my ($host,$user,$port) = ('','',''); 

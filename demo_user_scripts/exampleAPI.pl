@@ -48,6 +48,8 @@ foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') } ){
 		$slice->start(),
 		$slice->end());
 	
+	# by default only RepeatMasker sequences; you can indicate other analyses:
+	# $slice->get_repeatmasked_seq( ['repeatdetector_curated'], 1 )
 	# only first 50b shown for brevity
 	print substr($slice->get_repeatmasked_seq( undef, 1 )->seq(),0,50), "\n";
 }

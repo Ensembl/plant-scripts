@@ -63,7 +63,7 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 # mean %cluster intersection: 4.00
 
 # heatmap of cluster intersection
-./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
+./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf -H 20 -W 31
 
 # count how many clusters do not contain TEs
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeats/cdna.list -B repeats/TE.list -a
@@ -167,7 +167,7 @@ SINEs.plants    44
 sunrep1.0       43
 ```
 
-Check [log.select](./log.select) for the complete report of the resulting nr library.
+Check log.select for the complete report of the resulting nr library.
 
 ## Clustering sequences from TE libraries with CD-HIT
 

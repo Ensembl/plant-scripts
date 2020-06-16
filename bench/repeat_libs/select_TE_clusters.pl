@@ -26,14 +26,46 @@ my %TElibs = (
 	'maizeTE11122019.fna.gz', 'repeats/maizeTE11122019.fna.gz',
 	'rice6.9.5.liban.fna.gz', 'repeats/rice6.9.5.liban.fna.gz',
 	'SoyBaseTE.fna.gz', 'repeats/SoyBaseTE.fna.gz',
-	'TAIR10_TE.fna.gz', 'repeats/TAIR10_TE.fna.gz'
+	'TAIR10_TE.fna.gz', 'repeats/TAIR10_TE.fna.gz',
+	'sunflowerTE.fna.gz', 'repeats/sunflowerTE.fna.gz',
+	'melonV4_teannot_refTEs.fa.gz', 'repeats/melonV4_teannot_refTEs.fa.gz',
+	'RosaTE.fna.gz', 'repeats/RosaTE.fna.gz',
+	'sunrep1.0.fna.gz', 'repeats/sunrep1.0.fna.gz'
 ); 
 
 # numbers are columns: taxonomy, full header (id) , classification, respectively
 # set to -1 if void
 my %TEtsvs = (
-	'repetDB.Mar2020.fna.gz', [ 'repeats/repetDB.Mar2020.tsv', 0, 1, 5 ]
+	'repetDB.Mar2020.fna.gz', [ 'repeats/repetDB.Mar2020.tsv', 0, 1, 5 ],
+	'melonV4_teannot_refTEs.fa.gz', [ 'repeats/melonV4_teannot_refTEs_classif.txt', -1, 0, 5 ]
 );
+
+# Wicker classification synonyms from
+# repetDB (http://urgi.versailles.inra.fr/repetdb)
+# and https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1479-0/tables/1
+my %synonyms = (
+	'DTA' => 'hAT',
+	'DTH' => 'Harbinger',
+	'DTM' => 'Mutator',
+	'DTT' => 'TIR/Tc1-Mariner',
+	'DTX' => 'TIR',
+	'DTC' => 'TIR/CACTA',
+	'DHX' => 'Helitron',
+	'DXX' => 'DNAtransposon',
+	'RIL' => 'LINE',
+	'RIX' => 'LINE',
+	'RLC' => 'LTR/Copia',
+	'RLG' => 'LTR/Gypsy',
+	'RLR' => 'Retrovirus',
+	'RLX' => 'LTR',
+	'RSX' => 'SINE',
+	'RXX' => 'Retrotransposons',
+	'XXX' => 'Unclassified',
+	'noCat' => 'Unclassified'
+);
+
+my %lib_synonyms;
+$lib_synonyms{'sunflowerTE.fna.gz.nucl'}{'non'} = 'SINE';
 
 #my $DIFFLENRATIO = 0.50; # length diff to consider short redundant TEs, not used
 my $VERBOSE = 0;
@@ -90,13 +122,17 @@ foreach my $lib (keys(%TEtsvs)){
             }
          }
 			else{
-				my @cldata = split(/ : /,$data[$classcol]);
-				# skip 1st elem, not in RepBase FASTA headers
-				if($cldata[1] eq '?'){ $class = 'Unclassified' }
-				else{ 
-					$class = $cldata[1];
-					if($cldata[2] ne '?'){ $class .= "/$cldata[2]" }
-					$class =~ s/\s+//g;
+				if($data[$classcol] =~ /:/){
+					my @cldata = split(/ : /,$data[$classcol]);
+					# skip 1st elem, not in RepBase FASTA headers
+					if($cldata[1] eq '?'){ $class = 'Unclassified' }
+					else{ 
+						$class = $cldata[1];
+						if($cldata[2] ne '?'){ $class .= "/$cldata[2]" }
+						$class =~ s/\s+//g;
+					}
+				} else {
+					$class = $data[$classcol];
 				}
 			}
 
@@ -141,6 +177,7 @@ while(<LOG>){
 			next;
 		}
 
+		#next if($file ne '218005_OTG08741.fna');
 		#next if($file ne '309858_vuna_AC193505-121#LTR-unknown.fna'); # debugging
 
 		# select best sequence(s) from cluster with 1 or more seqs
@@ -201,6 +238,9 @@ while(<LOG>){
 				}				
 			}
 			close(FASTA);
+
+			# skip cluster if no TEs found
+			next if(scalar(@clustord) == 0 );
 
 			## take 1st sequence in cluster by default
 			$header = $clustord[0];
@@ -286,11 +326,48 @@ while(<LOG>){
             $newheader = (split(/:/,$newheader))[0];
             $class =~ s/\/unknown//;
 				$taxon = 'Arabidopsis_thaliana';
-         }	
+         }
+			elsif($clustfulllib{$header} eq 'sunflowerTE.fna.gz' ||
+					$clustfulllib{$header} eq 'sunrep1.0.fna.gz'){
+				#>Ha10_34085618_34086926:Sunflower#DTA
+				#>1:SUNREP#RLG
+				($newheader,$class) = split(/#/,$header);
+            $newheader = (split(/:/,$newheader))[0];
+
+				# only sunflower has a specific rule defined above
+				if($lib_synonyms{$clustfulllib{$header}}{$class}){
+					$class =~ $lib_synonyms{$clustfulllib{$header}}{$class};
+				} 
+
+				if($class =~ /helitron\d+/){
+					$class = 'Helitron';
+				}
+
+            $taxon = 'Helianthus_annuus';
+			}
+			elsif($clustfulllib{$header} eq 'RosaTE.fna.gz'){
+				#>Chr00-19138857-19140663:RosaTE#XXX
+				($newheader,$class) = split(/#/,$header);
+            $newheader = (split(/:/,$newheader))[0];
+
+				$class = $synonyms{$class} || $class;
+				$taxon = 'Rosa_chinensis'; 
+         }
+			elsif($clustfulllib{$header} eq 'melonV4_teannot_refTEs.fa.gz'){
+				# this actually needs extra data from TSV file
+				$class = $TE_annot{$clustfulllib{$header}}{$clustfull{$header}}{'class'} || 'Unclassified';
+				$taxon = 'Cucumis_melo';
+			}
 
 			# final fixes
+			$class = $synonyms{$class} || $class; 
 			$taxon =~ s/\.//g;
          $taxon =~ s/\s+/_/g;
+
+			# skip sequences annotated as PHG (Potential Host Gene)
+			if($class =~ /PHG/ || $class =~ /PotentialHost/){
+				next;
+			}
 
 			# actually add this header to output file
 			if($newheader ne ''){

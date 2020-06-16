@@ -18,10 +18,14 @@ my %TElibs = (
 	'rice6.9.5.liban.fna.gz.nucl'      => 1,
 	'maizeTE11122019.fna.gz.nucl'      => 1,
 	'SoyBaseTE.fna.gz.nucl'            => 1,
-   'TAIR10_TE.fna.gz.nucl'            => 1
+	'TAIR10_TE.fna.gz.nucl'            => 1,
+	'sunflowerTE.fna.gz.nucl'          => 1,
+	'melonV4_teannot_refTEs.fa.gz.nucl'=> 1,
+	'RosaTE.fna.gz'                    => 1, 
+	'sunrep1.0.fna.gz'                 => 1
 );
 
-my $annotEXE = '/path/to/get_homologues/annotate_cluster.pl';
+my $annotEXE = '~/soft/github/get_homologues/annotate_cluster.pl';
 
 my $panmatfile;
 if(!defined($ARGV[0])){ die "# usage: $0 <pangenome_matrix_genes_t0.tr.tab>\n" }

@@ -13,6 +13,10 @@ This document explains how to produce a library of non-redundant transposable el
 |[EDTAmaize](https://github.com/oushujun/EDTA)|https://github.com/oushujun/EDTA/blob/master/database/maizeTE11122019|1362|
 |[SoyBaseTE](https://www.soybase.org/soytedb)|https://www.soybase.org/soytedb/#bulk|38664|http://www.biomedcentral.com/1471-2164/11/113|
 |[TAIR10_TE](https://www.arabidopsis.org)|https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_transposable_elements/TAIR10_TE.fas|31189||
+|[SunflowerTE](https://www.sunflowergenome.org/annotations-data)|https://www.sunflowergenome.org/annotations-data/assets/data/annotations/transposons/Ha412v1r1_transposons_v1.0.fasta.gz|73627|https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-313X.2012.05072.x|
+|[SUNREP](pgagl.agr.unipi.it/sequence-repository)|http://pgagl.agr.unipi.it/wp-content/uploads/Plantgenetgenomlab/sunrep_1_0.zip|47441|https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-14-686|
+|MelonTE||1560|https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-14-686|
+|[RosaTE](https://iris.angers.inra.fr/obh/downloads)|https://iris.angers.inra.fr/obh/downloads/OBDH_1.0_TE.gff3.gz|355304|
 
 
 ## cDNA sequences
@@ -44,10 +48,10 @@ Sequence clustering can be done with the following commands:
 perl get_homologues-est.pl -d repeats -m cluster -M -t 0 -i 100 &> log.M
 
 # produce pangenome matrix in folder all_clusters
-perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n &> log.compare
+perl compare_clusters.pl -d repeats_est_homologues/RosaTE_isoover100_0taxa_algOMCL_e0_ -o all_clusters -m -n &> log.compare
 
 # intersection output directory: all_clusters
-# intersection size = 644,675 clusters
+# intersection size = 994349 clusters
 
 # pangenome_file = all_clusters/pangenome_matrix_t0.tab transposed = all_clusters/pangenome_matrix_t0.tr.tab
 # pangenome_genes = all_clusters/pangenome_matrix_genes_t0.tab transposed = all_clusters/pangenome_matrix_genes_t0.tr.tab
@@ -56,7 +60,7 @@ perl compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMC
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 
 # intersection pangenome matrix: all_clusters/pangenome_matrix_t0__intersection.tab
-# mean %cluster intersection: 4.73
+# mean %cluster intersection: 4.00
 
 # heatmap of cluster intersection
 ./plot_matrix_heatmap.sh -i pangenome_matrix_t0__intersection.tab -t "cDNAs from EG46 plants vs TE libraries" -o pdf
@@ -65,13 +69,13 @@ perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -s -x
 perl parse_pangenome_matrix.pl -m all_clusters/pangenome_matrix_t0.tab -A repeats/cdna.list -B repeats/TE.list -a
 
 # finding genes which are absent in B ...
-# file with genes absent in B (531150): all_clusters/pangenome_matrix_t0__pangenes_list.txt
+# file with genes absent in B (527506): all_clusters/pangenome_matrix_t0__pangenes_list.txt
 ```
-The produced output includes files [log.m](./log.M), pangenomes matrices in folder [all_clusters/](./all_clusters/) and [pangenome_matrix_t0__intersection_heatmap.png](./pics/pangenome_matrix_t0__intersection_heatmap.png). 
+The produced output includes files [log.M](./log.M), pangenomes matrices in folder [all_clusters/](./all_clusters/) and [pangenome_matrix_t0__intersection_heatmap.png](./pics/pangenome_matrix_t0__intersection_heatmap.png). 
 
 ## Align TE clusters and annotate Pfam domains
 
-We now concentrate on the subset of 113525 clusters containing TE sequences. Note that 3556 clusters contain TE and cDNA sequences, and are thus called *mixed clusters*:
+We now concentrate on the subset of 174426 clusters containing TE sequences. Note that 8910 clusters contain TE and cDNA sequences, and are thus called *mixed clusters*:
 
 ![Sample mixed cluster](./pics/269_AT4G16920.2.png)
 
@@ -86,13 +90,14 @@ perl get_ambiguous_Pfam_domains.pl log.annot control_pos.list control_neg_NLR.li
 
 # positive Pfam domains = 22
 # negative Pfam domains = 43
-# TEclusters=113525
-# mixedclusters=3556
+# TEclusters=174426
+# mixedclusters=8910
+
 ```
  
-The resulting TSV file [Pfam.tsv](./Pfam.tsv) summarizes mixed clusters in terms of Pfam domains called after translating sequences in 6 frames. This TSV file contains 10 columns: *domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters*. We'll test *TElibs* > 2 && *frac_potgenes* <= 0.00 as predictors of Pfam domains truly related to TEs, which are domains:
+The resulting TSV file [Pfam.tsv](./Pfam.tsv) summarizes mixed clusters in terms of Pfam domains called after translating sequences in 6 frames. This TSV file contains 10 columns: *domain, totclusters, occurrences, totseqs, TElibs, cDNAlibs, potgenes, frac_potgenes, notes, clusters*. We'll test *TElibs* > 6 && *frac_potgenes* <= 0.00 as predictors of Pfam domains truly related to TEs, which are domains:
 
-* identified in at least 3 different clusters from different TE libraries (3 replicates)
+* identified in at least 6 different clusters from different TE libraries (6 replicates)
 * with fraction of sequences marked as Potential Host Gene in [RepetDB](http://urgi.versailles.inra.fr/repetdb/begin.do) <= 0.00
 
 ## Removing ambiguous TE sequences
@@ -112,38 +117,32 @@ Both files were used to compute the performance of removing TE sequences cluster
 # check positive control, these are
 grep positive_control Pfam.tsv | wc
 22
-perl -F"\t" -lane 'print if($F[4]>2 && $F[7]==0 && $F[8] eq 'positive_control')' Pfam.tsv | wc
+perl -F"\t" -lane 'print if($F[4]>=6 && $F[7]==0 && $F[8] eq 'positive_control')' Pfam.tsv | wc
 20
 
-# TP = 20
-# FN =  2
+TP = 20
+FN =  2
 
 # check negative control
 grep negative_control Pfam.tsv | wc
-33
-perl -F"\t" -lane 'print if($F[4]>2 && $F[7]==0 && $F[8] eq 'negative_control')' Pfam.tsv | wc
-1
+38
+perl -F"\t" -lane 'print if($F[4]>=6 && $F[7]==0 && $F[8] eq 'negative_control')' Pfam.tsv | wc
+2
 
-# TN = 32
-# FP =  1
+TN = 36
+FP =  2
 
-# sensitivity = TP / (TP + FN) = 20 / (20 + 1) = 0.95
-# specificity = TN / (TN + FP) = 32 / 32 + 1) = 0.96
+sensitivity = TP / (TP + FN) = 20 / (20 + 2) = 0.909
+specificity = TN / (TN + FP) = 36 / 36 + 2) = 0.947
 ```
 
 Based on this benchmark, a list of TE sequences (clusters) to be removed was compiled:
 ```
 # clusters to remove from TE bona finde list
-perl -F"\t" -lane 'if($F[4]<3 ||$F[7]>0){ foreach $cl (split(/,/,$F[9])){print $cl}}' Pfam.tsv | sort -u > clusters2remove.list
+perl -F"\t" -lane 'if($F[4]<6 ||$F[7]>0){ foreach $cl (split(/,/,$F[9])){print $cl}}' Pfam.tsv | sort -u > clusters2remove.list
 
 wc clusters2remove.list
-1677
-
-# and the equivalent list of Pfam domains
-perl -F"\t" -lane 'if($F[4]<3 ||$F[7]>0){ print "$F[0]"}' Pfam.tsv > Pfam2remove.list
-
-wc Pfam2remove.list
-1084
+3189
 ```
 
 ## Producing a nonredundant TE library
@@ -153,16 +152,19 @@ Finally, a non-redundant library of plant TEs was produced as follows:
 ```
 ./select_TE_clusters.pl log.annot clusters2remove.list nrTEplantsApril2020.fna > log.select
 
-# clusters=111849 sequences=111849
-
-mipsREdat_9.3p_ALL      39533
-repetDB.Mar2020 26012
+...
+# clusters=171104 sequences=171104
+sunflowerTE     58071
+mipsREdat_9.3p_ALL      39509
+repetDB.Mar2020 26006
 SoyBaseTE       21766
-TAIR10_TE       21069
-rice6.9.5.liban 1835
+TAIR10_TE       21056
+rice6.9.5.liban 1844
+melonV4_teannot_refTEs  1171
 maizeTE11122019 805
-trep-db_nr_Rel-19       785
+trep-db_nr_Rel-19       789
 SINEs.plants    44
+sunrep1.0       43
 ```
 
 Check [log.select](./log.select) for the complete report of the resulting nr library.

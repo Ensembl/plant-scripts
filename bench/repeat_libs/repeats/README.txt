@@ -24,6 +24,7 @@ cd ../../compara
 contents:
 
 arabidopsis_thaliana.cdna.fna.gz
+bits
 brachypodium_distachyon.cdna.fna.gz
 brassica_napus.cdna.fna.gz
 cdna.list
@@ -32,6 +33,8 @@ helianthus_annuus.cdna.fna.gz
 hordeum_vulgare.cdna.fna.gz
 maizeTE11122019.fna.gz
 medicago_truncatula.cdna.fna.gz
+melonV4_teannot_refTEs_classif.txt
+melonV4_teannot_refTEs.fa.gz
 mipsREdat_9.3p_ALL.fasta.gz
 oryza_sativa_japonica.cdna.fna.gz
 phaseolus_vulgaris.cdna.fna.gz
@@ -39,13 +42,15 @@ populus_trichocarpa.cdna.fna.gz
 repetDB.Mar2020.fna.gz
 repetDB.Mar2020.tsv
 rice6.9.5.liban.fna.gz
+RosaTE.fna.gz
 SINEs.plants.fna.gz
 solanum_lycopersicum.cdna.fna.gz
 sorghum_bicolor.cdna.fna.gz
 SoyBaseTE.fna.gz
+sunflowerTE.fna.gz
+sunrep1.0.fna.gz
 TAIR10_TE.fna.gz
 TE.list
 trep-db_nr_Rel-19.fasta.gz
 vitis_vinifera.cdna.fna.gz
 zea_mays.cdna.fna.gz
-

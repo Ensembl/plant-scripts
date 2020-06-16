@@ -27,7 +27,8 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $libpath = '/nfs/panda/ensemblgenomes/external/data/repeats_libraries/';
-my $nrTEplants_lib = $libpath . 'nrTEplants/nrTEplantsApril2020.fna'; 
+my $nrTEplants_lib = $libpath . 'nrTEplants/nrTEplantsJune2020.fna'; 
+#my $nrTEplants_lib = $libpath . 'nrTEplants/nrTEplantsApril2020.fna';
 
 my ($rerun,$overwrite,$nrTEplants,$sensitivity) = (0,0,0,'');
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
@@ -44,7 +45,7 @@ GetOptions(
 	"pipedir|P=s" => \$pipeline_dir,
 	"prodb|D=s"   => \$prodbname,
 	"nrplants|n"  => $nrTEplants,
-	"sensit|S=s"  => $sensitivity
+	"sensitivity|T=s" => \$sensitivity
 ) || help_message(); 
 
 if($help){ help_message() }
@@ -58,7 +59,7 @@ sub help_message {
 		"-D ensembl_production db name               (required, example: -D ensembl_production)\n".	
 		"-H hive database command                    (optional, default: $hive_db_cmd)\n".
 		"-n use nrTEplants library                   (optional, default: REdat)\n".
-		"-S RepeatMasker sensitivy                   (optional, example: -S low|medium|high)\n".
+		"-S RepeatMasker sensitivity of -n           (optional, example: -S low|medium|high)\n".
 		"-w over-write db (hive_force_init)          (optional, useful when a previous run failed)\n".
 		"-r re-run jump to beekeper.pl               (optional, default: run init script from scratch)\n\n";
 	exit(0);
@@ -105,17 +106,22 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::DNAFeature
 	"$species_cmd ".
 	"--hive_force_init $overwrite ";
 
+if(defined($sensitivity) && $sensitivity ne ''){
+	$initcmd .= "-repeatmasker_sensitivity all=$sensitivity ";
+}
+
 if(defined($nrTEplants)){
 	$initcmd .= "-repeatmasker_library all=$nrTEplants_lib ";
 	$initcmd .= "-repeatmasker_logic_name all=repeatmask_nrplants ";
 
+	if(defined($sensitivity) && $sensitivity ne ''){
+		$initcmd .= "-repeatmasker_sensitivity all=$sensitivity ";
+	}
 } else {
 	$initcmd .= "--redatrepeatmasker 1 ";
 }
 
-if($sensitivity){
-	$initcmd .= "--repeatmasker_sensitivity all=$sensitivity ";
-}
+
 
 if($rerun == 0){
 	print "# $initcmd\n\n";

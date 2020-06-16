@@ -143,6 +143,11 @@ perl -F"\t" -lane 'if($F[4]<6 ||$F[7]>0){ foreach $cl (split(/,/,$F[9])){print $
 
 wc clusters2remove.list
 3189
+
+# and the equivalent list of Pfam domains
+perl -F"\t" -lane 'if($F[4]<6 ||$F[7]>0){ print "$F[0]"}' Pfam.tsv > Pfam2remove.list
+wc Pfam2remove.list
+1632
 ```
 
 ## Producing a nonredundant TE library

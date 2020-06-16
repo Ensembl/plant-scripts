@@ -1,13 +1,15 @@
-# get_homologues/compare_clusters.pl -d repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ -o all_clusters -n 1 -m 1 -t 0 -I  -r 0 -s 0 -x 0 -T 0
+nohup: ignoring input
+
+# get_homologues/compare_clusters.pl -d repeats_est_homologues/RosaTE_isoover100_0taxa_algOMCL_e0_ -o all_clusters -n 1 -m 1 -t 0 -I  -r 0 -s 0 -x 0 -T 0
 
 # number of input cluster directories = 1
 
-# parsing clusters in repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_ ...
-# cluster_list in place, will parse it (repeats_est_homologues/SINEs_isoover100_0taxa_algOMCL_e0_.cluster_list)
-# number of clusters = 644675
+# parsing clusters in repeats_est_homologues/RosaTE_isoover100_0taxa_algOMCL_e0_ ...
+# cluster_list in place, will parse it (repeats_est_homologues/RosaTE_isoover100_0taxa_algOMCL_e0_.cluster_list)
+# number of clusters = 994349
 
 # intersection output directory: all_clusters
-# intersection size = 644675 clusters
+# intersection size = 994349 clusters
 
 # intersection list = all_clusters/intersection_t0.cluster_list
 

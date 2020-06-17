@@ -16,11 +16,17 @@ my $registry = 'Bio::EnsEMBL::Registry';
 $registry->load_all($regfile);
     
 # fetch a gene by its stable identifier
-my $gene_adaptor = $registry->get_adaptor($species, "core", "gene");
-my $gene = $gene_adaptor->fetch_by_stable_id($stable_id);
-my $transcript = $gene->canonical_transcript();
+my $t_adaptor = $registry->get_adaptor($species, "core", "Transcript");
+my $transcript = $t_adaptor->fetch_by_stable_id($stable_id);
 
-printf("gene\t%s\n\n",$gene->seq());
 printf("cDNA\t%s\n\n",$transcript->spliced_seq());
 
+foreach my $exon ( @{ $transcript->get_all_Exons() } ) {
+	print  "exon: ", $exon->start(), " ", $exon->end(), "\n";
+}
+
+printf("CDS \t%s\n\n",$transcript->translateable_seq());
+
+
+printf("pep \t%s\n\n",$transcript->translate()->seq());
 

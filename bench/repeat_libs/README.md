@@ -179,16 +179,20 @@ Check log.select for the complete report of the resulting nr library.
 In order to put the previous results in context, a similar clustering experiment, including only TEs and no cDNAs, was carried out with [CD-HIT](http://weizhongli-lab.org/cd-hit):
 
 ```
-zcat ../repeats/repetDB.Mar2020.fna.gz ../repeats/trep-db_nr_Rel-19.fasta.gz ../repeats/SINEs.plants.fna.gz ../repeats/mipsREdat_9.3p_ALL.fasta.gz ../repeats/maizeTE11122019.fna.gz ../repeats/rice6.9.5.liban.fna.gz ../repeats/TAIR10_TE.fna.gz ../repeats/SoyBaseTE.fna.gz > all.fna
+zcat ../repeats/repetDB.Mar2020.fna.gz ../repeats/trep-db_nr_Rel-19.fasta.gz \
+	../repeats/SINEs.plants.fna.gz ../repeats/mipsREdat_9.3p_ALL.fasta.gz \
+	../repeats/maizeTE11122019.fna.gz ../repeats/rice6.9.5.liban.fna.gz \
+	../repeats/TAIR10_TE.fna.gz ../repeats/SoyBaseTE.fna.gz ../repeats/sun* \
+	../repeats/melonV4_teannot_refTEs.fa.gz ../repeats/RosaTE.fna.gz > all.fna
 
 ~/soft/cd-hit-v4.8.1-2019-0228/cd-hit-est -i all.fna -c 0.95 -T 8 -o TE.nr.fna
 
 ...
-total seq: 170716
-longest and shortest : 54107 and 11
-Total letters: 825935165
+total seq: 648648
+longest and shortest : 60212 and 11
+Total letters: 1575037386
 Sequences have been sorted
 ...
 
-   170716  finished     140300  clusters
+   648648  finished     561996  clusters
 ```

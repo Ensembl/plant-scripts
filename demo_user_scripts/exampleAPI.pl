@@ -29,18 +29,32 @@ Bio::EnsEMBL::Registry->load_registry_from_db(
 	#-VERBOSE => 1 # uncomment to see dbs loaded
 );
 
-## A2) Get soft masked sequences from Arabidopsis thaliana
+## A2) Check which analyses are available for a species
+
+# Note: logic_names are printed for each analysis
 
 my $division = 'plants';
 my $species = 'arabidopsis_thaliana';
+
+my $analysis_adaptor = Bio::EnsEMBL::Registry->
+	get_adaptor( $species, "core", "analysis" );
+
+foreach my $analysis (sort 
+	{$a->logic_name() cmp $b->logic_name()} 
+		@{ $analysis_adaptor->fetch_all() }){
+		print $analysis->logic_name(), "\n";
+} 
+
+## A3) Get soft masked sequences from Arabidopsis thaliana
 
 my $slice_adaptor = Bio::EnsEMBL::Registry->
     get_adaptor($species, 'core', 'Slice');
 
 my ($total,$masked, $softseq) = (0,0);
-foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') } ){
+foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') }){
 
-	next if($slice->seq_region_name() ne 'Pt'); #for brevity
+	# for brevity consider only the plastome
+	next if($slice->seq_region_name() ne 'Pt'); 
 
 	printf(">%s %s %d-%d\n",
 		$slice->seq_region_name(),
@@ -48,13 +62,39 @@ foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') } ){
 		$slice->start(),
 		$slice->end());
 	
-	# by default only RepeatMasker sequences; you can indicate other analyses:
-	# $slice->get_repeatmasked_seq( ['repeatdetector_curated'], 1 )
-	# only first 50b shown for brevity
-	print substr($slice->get_repeatmasked_seq( undef, 1 )->seq(),0,50), "\n";
+	# By default repeatmask* analyses, see recipe A2 to list others
+	# Repeat analyses include 'repeatmask_redat', 
+	# 'repeatmask_nrplants' or 'repeatdetector_curated'
+	# $slice->get_repeatmasked_seq( ['repeatmask_redat'], 1 )
+	# only print a 50b segment for brevity
+	print substr($slice->get_repeatmasked_seq( undef, 1 )->seq(),80,50), "\n";
 }
 
-## A3) Find the DEAR3 gene
+## A4) Get BED file with repeats in chr4
+
+my $chrname = 'chr4';
+
+my $slice = $slice_adaptor->
+	fetch_by_region( 'chromosome', $chrname );
+
+	my @repeats = @{ $slice->get_all_RepeatFeatures() };
+	my $total_repeats = 0;
+
+foreach my $repeat (@repeats) {
+
+	# for brevity
+	last if($total_repeats++ > 10);
+
+	printf("%s\t%d\t%d\t%s\t%s\t%s\n",
+		$chrname,
+		$repeat->start(),
+		$repeat->end(),
+		$repeat->analysis()->logic_name(),
+		$repeat->repeat_consensus()->repeat_class(),
+		$repeat->repeat_consensus()->repeat_type() );
+}
+
+## A5) Find the DEAR3 gene
 
 # gene of interest and species
 my $gene_name = 'DEAR3';
@@ -69,7 +109,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-## A4) Find all orthologues among rosids
+## A6) Find all orthologues among rosids
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->
@@ -106,29 +146,7 @@ foreach my $homology (@homologies) {
 		$target->genome_db->name() );
 }
 
-## A5) Get BED coordinates of all repeats in chr4 
-
-my $chrname = 'chr4';
-
-my $slice = $slice_adaptor->
-	fetch_by_region( 'chromosome', $chrname );
-
-my @repeats = @{ $slice->get_all_RepeatFeatures() };
-
-my $total_repeats = 0;
-
-foreach my $repeat (@repeats) {
-
-	last if($total_repeats++ > 10);
-
-	printf("%s\t%d\t%d\t%s\n",
-		$chrname,
-		$repeat->start(), 
-		$repeat->end(), 
-		$repeat->display_id() );
-}
-
-## A6) Get markers mapped on chr1D of bread wheat
+## A7) Get markers mapped on chr1D of bread wheat
 
 # Note: only a few plants have markers
 # As of release EG47/100:

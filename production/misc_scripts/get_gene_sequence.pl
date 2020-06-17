@@ -21,4 +21,4 @@ my $gene = $gene_adaptor->fetch_by_stable_id($stable_id);
 my $transcript = $gene->canonical_transcript();
 
 printf("gene\t%s\n\n",$gene->seq());
-printf("mrna\t%s\n\n",$transcript->seq());
+printf("cDNA\t%s\n\n",$transcript->spliced_seq());

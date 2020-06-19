@@ -20,7 +20,7 @@ use Bio::EnsEMBL::Registry;
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my ($rerun,$overwrite) = (0,0);
 my ($help,$reg_file,@species,$species_cmd,$ensembl_version,$pipeline_dir);
-my ($hive_args,$hive_url,$hive_db,$prodbname);      
+my ($hive_args,$hive_url,$hive_db,$prodbname,$egpipeline_dir);      
 
 GetOptions(	
 		"help|?"      => \$help,
@@ -31,6 +31,7 @@ GetOptions(
 		"hivecmd|H=s" => \$hive_db_cmd,    
 		"regfile|R=s" => \$reg_file,
 		"pipedir|P=s" => \$pipeline_dir,
+		"egpipe|e=s"  => \$egpipeline_dir,
 		"prodb|D=s"   => \$prodbname
 ) || help_message(); 
 
@@ -68,6 +69,8 @@ if(!$reg_file || !-e $reg_file){ die "# EXIT : need a valid -R file, such as -R 
 
 if(!$pipeline_dir || !-e $pipeline_dir){ die "# EXIT : need a valid -P path, such as -P \$reptmp\n" }
 
+if(!$egpipeline_dir || !-e $egpipeline_dir){ die "# EXIT : need a valid -e path, such as -e \$ENSAPIPATH/eg-pipelines\n" }
+
 if(!$prodbname){ die "# EXIT : need a valid -D value, such as -D ensembl_production_97\n" }
 
 if($rerun && $overwrite){
@@ -75,7 +78,7 @@ if($rerun && $overwrite){
 }
 
 chomp( $hive_args = `$hive_db_cmd details script` );
-$hive_db = $ENV{'USER'}."_all_xref_$ensembl_version";
+$hive_db = $ENV{'USER'}."_rna_features_$ensembl_version";
 chomp( $hive_url  = `$hive_db_cmd --details url` );
 $hive_url .= $hive_db;
 
@@ -86,6 +89,7 @@ my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::RNAFeature
 		"$hive_args ".
 		"--registry $reg_file ".
 		"--pipeline_dir $pipeline_dir ".
+		"--eg_pipelines_dir $egpipeline_dir ".
 		"--production_db $prodbname ".
 		"$species_cmd ".
 		"--hive_force_init $overwrite";

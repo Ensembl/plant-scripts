@@ -8,6 +8,6 @@ There are also scripts that do specific queries to Ensembl databases that might 
 
 * comparative genomics and pan-gene sets, in folder [compara](./compara/)
 
-![Plant species tree](./EnsemblPlants46.png)
+![Plant species tree](./EnsemblPlants49.png)
 
-*Fig. 1. Species tree of Ensembl Plants release 46, figure generated with [iTOL](https://itol.embl.de)*
+*Fig. 1. Species tree of Ensembl Plants release 49, figure generated with [iTOL](https://itol.embl.de)*

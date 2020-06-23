@@ -2,11 +2,9 @@
 
 This repository contains scripts and documentation written in [Ensembl Plants](http://plants.ensembl.org)
 
-Scripts and protocols used during the release cycle are in folder [production](./production/)
+Check the source code at folder [demo_user_scripts/](./demo_user_scripts/) to learn how to carry out programmatic analyses of plant genomes with Ensembl Plants.
 
-There are also scripts that do specific queries to Ensembl databases that might be of interest to users:
-
-* comparative genomics and pan-gene sets, in folder [compara](./compara/)
+Scripts and protocols used during the release cycle, for internal use, are in folder [production](./production/)
 
 ![Plant species tree](./EnsemblPlants49.png)
 

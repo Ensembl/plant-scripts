@@ -57,9 +57,10 @@ def get_metadata():
         
         ##Printing relevant info, notice some items have been 
         ##converted to str for easier printing
-        meta = (d['name'],d['assembly_accession'],d['assembly_level'],
-            str(d['has_peptide_compara']),str(d['has_variations']),
-            str(d['has_genome_alignments']),str(d['has_synteny']));
+        meta = (d['name'],d['assembly_accession'],str(d['base_count']),
+            d['assembly_level'],str(d['has_peptide_compara']),
+            str(d['has_variations']),str(d['has_genome_alignments']),
+            str(d['has_synteny']));
         separator = '\t'
         print(separator.join(meta))
 

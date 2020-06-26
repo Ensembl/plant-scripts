@@ -22,14 +22,14 @@ RELEASE=$(( $EGRELEASE + 53)); # do not change
 echo "EGRELEASE=${EGRELEASE}"
 echo
 
-## S1) check currently supported Ensembl Genomes (EG) core schemas,
+## S1) Check currently supported Ensembl Genomes (EG) core schemas,
 
-# note it includes non-plants as well
+# Note: includes non-plants as well
 
 mysql --host $SERVER --user $USER --port $PORT \
 	-e "show databases" | grep "core_${EGRELEASE}_${RELEASE}"
 
-## S2) count protein-coding genes of a particular species
+## S2) Count protein-coding genes of a particular species
 
 SPECIES=arabidopsis_thaliana
 SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
@@ -38,7 +38,18 @@ SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
 
-## S3) get variants significantly associated to phenotypes
+## S3) Get canonical transcript stable_ids
+
+# The canonical transcript is used in the gene tree analysis,
+# which usually is the longest translation with no stop codons.
+# This file can be combined to that obtained in recipe F3 to
+# obtain the sequences
+
+mysql --host $SERVER --user $USER --port $PORT \
+    $SPECIESCORE -e "SELECT t.stable_id from gene g, transcript t \
+	WHERE g.canonical_transcript_id = t.transcript_id LIMIT 10"
+
+## S4) Get variants significantly associated to phenotypes
 
 # Variation schema documented at 
 # http://www.ensembl.org/info/docs/api/variation/variation_schema.html
@@ -57,7 +68,7 @@ mysql --host $SERVER --user $USER --port $PORT \
 SQL
 
 
-## S4) get Triticum aestivum homeologous genes across A,B & D subgenomes
+## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
 
 # Compara schema is described at 
 # https://m.ensembl.org/info/docs/api/compara/compara_schema.html

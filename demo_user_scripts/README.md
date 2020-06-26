@@ -48,8 +48,9 @@ exampleAPI.pl:## A2) Check which analyses are available for a species
 exampleAPI.pl:## A3) Get soft masked sequences from Arabidopsis thaliana
 exampleAPI.pl:## A4) Get BED file with repeats in chr4
 exampleAPI.pl:## A5) Find the DEAR3 gene
-exampleAPI.pl:## A6) Find all orthologues among rosids
-exampleAPI.pl:## A7) Get markers mapped on chr1D of bread wheat
+exampleAPI.pl:## A6) Get its canonical sequence
+exampleAPI.pl:## A7) Find all orthologues among rosids
+exampleAPI.pl:## A8) Get markers mapped on chr1D of bread wheat
 
 exampleBiomart.R:## B1) Check plant marts and select dataset
 exampleBiomart.R:## B2) Check available filters and attributes
@@ -70,27 +71,20 @@ exampleFTP.sh:## F10) download UniProt report of Ensembl Plants,
 exampleFTP.sh:## F11) retrieve list of new species in current release
 exampleFTP.sh:## F12) get current plant species tree (cladogram)
 
-exampleMySQL.sh:## S1) check currently supported Ensembl Genomes (EG) core schemas,
-exampleMySQL.sh:## S2) count protein-coding genes of a particular species
-exampleMySQL.sh:## S3) get variants significantly associated to phenotypes
-exampleMySQL.sh:## S4) get Triticum aestivum homeologous genes across A,B & D subgenomes
+exampleMySQL.sh:## S1) Check currently supported Ensembl Genomes (EG) core schemas,
+exampleMySQL.sh:## S2) Count protein-coding genes of a particular species
+exampleMySQL.sh:## S3) Get canonical transcript stable_ids
+exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
+exampleMySQL.sh:## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
 
-exampleREST.pl:## R1) Create a HTTP client and a helper functions 
-exampleREST.pl:## R2) Get metadata for all plant species 
-exampleREST.pl:## R3) Find features overlapping genomic region
-exampleREST.pl:## R4) Fetch phenotypes overlapping genomic region
-exampleREST.pl:## R5) Find homologues of selected gene
-exampleREST.pl:## R6) Get annotation of orthologous genes/proteins
-exampleREST.pl:## R7) Fetch variant consequences for multiple variant ids
-exampleREST.pl:## R8) Check consequences of single SNP within CDS sequence
-
-exampleREST.py:## R2) Get metadata for all plant species
-exampleREST.py:## R3) Find features overlapping genomic region
-exampleREST.py:## R4) Fetch phenotypes overlapping genomic region
-exampleREST.py:## R5) Find homologues of selected gene
-exampleREST.py:## R6) Parse homologies and get annotation of orthologous genes/proteins
-exampleREST.py:## R7) Fetch variant consequences for multiple variant ids
-exampleREST.py:## R8) Check consequences of single SNP within CDS sequence
+exampleREST.p[ly]:## R1) Create a HTTP client and a helper functions 
+exampleREST.p[ly]:## R2) Get metadata for all plant species 
+exampleREST.p[ly]:## R3) Find features overlapping genomic region
+exampleREST.p[ly]:## R4) Fetch phenotypes overlapping genomic region
+exampleREST.p[ly]:## R5) Find homologues of selected gene
+exampleREST.p[ly]:## R6) Get annotation of orthologous genes/proteins
+exampleREST.p[ly]:## R7) Fetch variant consequences for multiple variant ids
+exampleREST.p[ly]:## R8) Check consequences of single SNP within CDS sequence
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file & check SIFT support 

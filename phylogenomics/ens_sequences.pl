@@ -9,11 +9,14 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use PlantCompUtils qw(
+  list_ensembl_mysql_dbs get_canonical_transcript_ids
   download_FASTA_file parse_isoform_FASTA_file perform_rest_action
   $REQUEST_COUNT $FASTADIR @DIVISIONS
 );
 
-# Downloads longest cds/pep sequences of species in a clade from Ensembl Plants
+# Downloads cds/pep sequences of species in a clade from Ensembl Plants.
+# Uses canonical transcripts, used in the gene tree analysis,
+# which usually are the longest translation with no stop codons
 #
 # Copyright [2019-2020] EMBL-European Bioinformatics Institute
 
@@ -186,7 +189,26 @@ if ($out_genome) {
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
-## 2) get sequences for selected (plant) species
+## 2) connect to public Ensembl server and retrieve
+##    canonical transcript ids for all species
+
+my $ref_dbs = list_ensembl_mysql_dbs();
+print scalar(@$ref_dbs);
+foreach $sp (@supported_species) {
+  foreach my $db (@$ref_dbs) {
+    if($db =~ /$sp\_core_\d+/) {
+      print "$db\n";
+    } 
+  }
+}
+
+exit;
+#get_canonical_transcript_ids
+
+
+
+
+## 3) get sequences for selected (plant) species
 
 open( OUTFILE, ">", $outfile ) || die "# ERROR: cannot create $outfile\n";
 

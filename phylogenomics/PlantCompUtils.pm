@@ -5,6 +5,7 @@ require Exporter;
 
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(
+  list_ensembl_mysql_dbs get_canonical_transcript_ids 
   download_FASTA_file parse_isoform_FASTA_file
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
   perform_rest_action transverse_tree_json
@@ -17,6 +18,7 @@ use warnings;
 use Net::FTP;
 use Time::HiRes;
 use HTTP::Tiny;
+use DBI;
 
 # Fungi Protists Metazoa have collections and one all-vs-all TSV file
 # This code won't work there
@@ -26,9 +28,44 @@ our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
 our $GTFDIR     = '/pub/current/xxx/gtf';
 
+my  $MYSQLURL   = 'mysql-eg-publicsql.ebi.ac.uk';
+my  $MYSQLPORT  = 4157; 
+my  $MYSQLUSER  = 'anonymous';
+
 our $REQUEST_COUNT = 0;
 
-my $GZIPEXE = 'gzip'; #default system gzip
+my $GZIPEXE = 'gzip';  #default system gzip
+
+# Connects to Ensembl public mysql server,
+# returns reference to list of available databases
+sub list_ensembl_mysql_dbs {
+
+  my $dbh = DBI->connect("DBI:mysql:host=$MYSQLURL;port=$MYSQLPORT",$MYSQLUSER)
+    or die "# ERROR: cannot connect to MySQL server $MYSQLURL\n".
+      "# Make sure port $MYSQLPORT is open\n";
+
+  my $sth = $dbh->prepare("show databases");
+  my $sth->execute();
+  my $ref_dbs = $sth->fetchall_arrayref();
+
+  $dbh->disconnect();
+
+  return $ref_dbs;
+}
+
+sub get_canonical_transcript_ids {
+
+  my ($ref_dbs,$species) = @_;
+  my ($ref_canon_isofs);
+
+  my $dbh = DBI->connect("DBI:mysql:host=$MYSQLURL;port=$MYSQLPORT",$MYSQLUSER)
+    or die "# ERROR: cannot connect to MySQL server $MYSQLURL\n".
+      "# Make sure port $MYSQLPORT is open\n";
+
+  $ref_dbs = $dbh->do("show databases");
+
+  $dbh->disconnect();
+}
 
 # parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file
 # returns:

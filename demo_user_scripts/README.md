@@ -36,13 +36,9 @@ You will need BioConductor package [biomaRt](http://www.bioconductor.org/package
 
 ## List of recipes
 
-A few scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)
-
-These are the recipes in this folder, obtained with:
+These are the recipes in this folder, obtained with grep -P "^## \w\d+" example*:
 
 ```
-grep -P "^## \w\d+" example*
-
 exampleAPI.pl:## A1) Load the Registry object with details of genomes available
 exampleAPI.pl:## A2) Check which analyses are available for a species
 exampleAPI.pl:## A3) Get soft masked sequences from Arabidopsis thaliana
@@ -91,3 +87,5 @@ exampleVEP.sh:## V2) Unpack downloaded cache file & check SIFT support
 exampleVEP.sh:## V3) Call effect of variants 
 exampleVEP.sh:## V4) Call effect of variants for species not in Ensembl
 ```
+
+A few more advanced scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)

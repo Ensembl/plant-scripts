@@ -12,6 +12,8 @@ Run any of the scripts with argument -h to get instructions and examples.
 The scripts require the following non-core Perl modules:
 * [HTTP::Tiny](https://metacpan.org/release/HTTP-Tiny)
 * [JSON](https://metacpan.org/release/JSON)
+* [DBI](https://metacpan.org/pod/DBI)
+* [DBD::mysql](https://metacpan.org/pod/DBD::mysql)
 
 which can be installed with: 
 ```
@@ -19,7 +21,8 @@ which can be installed with:
 sudo cpan -i App::cpanminus  
 
 # actually install modules
-cpanm JSON JSON::XS HTTP::Tiny
+sudo apt-get install -y mysql-client libmysqlclient-dev
+cpanm JSON JSON::XS HTTP::Tiny DBI DBD::mysql
 ```
 
 In addition the scripts import module [PlantCompUtils.pm](./PlantCompUtils.pm), 

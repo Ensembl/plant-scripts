@@ -109,7 +109,24 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-## A6) Find all orthologues among rosids
+## A6) Get its canonical sequence
+
+# The canonical transcript is used in the gene tree analysis,
+# which usually is the longest translation with no stop codons
+
+printf(">DEAR3 %s\n%s\n",
+	$gene_obj->canonical_transcript()->stable_id(),
+	$gene_obj->canonical_transcript()->spliced_seq() );
+
+printf(">DEAR3 %s CDS\n%s\n",
+    $gene_obj->canonical_transcript()->stable_id(),
+	$gene_obj->canonical_transcript()->translateable_seq() );
+
+printf(">DEAR3 %s\n%s\n\n",
+    $gene_obj->canonical_transcript()->translation->stable_id(),
+    $gene_obj->canonical_transcript()->translate->seq() );
+
+## A7) Find all orthologues among rosids
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->
@@ -146,7 +163,7 @@ foreach my $homology (@homologies) {
 		$target->genome_db->name() );
 }
 
-## A7) Get markers mapped on chr1D of bread wheat
+## A8) Get markers mapped on chr1D of bread wheat
 
 # Note: only a few plants have markers
 # As of release EG47/100:

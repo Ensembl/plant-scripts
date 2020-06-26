@@ -73,10 +73,11 @@ my $metadata = call_endpoint($http,$url);
 
 # parse the data from the response
 foreach my $sp (@$metadata){
-	printf("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\n",
+	printf("%s\t%s\t%s\t%d\t%s\t%d\t%d\t%d\t%d\n",
 		$sp->{name},
 		$sp->{strain} ||'NA', 
 		$sp->{assembly_accession},
+		$sp->{base_count}, #golden path genome size
 		$sp->{assembly_level},
 		$sp->{has_peptide_compara},
 		$sp->{has_variations},

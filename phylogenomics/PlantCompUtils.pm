@@ -40,31 +40,46 @@ my $GZIPEXE = 'gzip';  #default system gzip
 # returns reference to list of available databases
 sub list_ensembl_mysql_dbs {
 
-  my $dbh = DBI->connect("DBI:mysql:host=$MYSQLURL;port=$MYSQLPORT",$MYSQLUSER)
-    or die "# ERROR: cannot connect to MySQL server $MYSQLURL\n".
-      "# Make sure port $MYSQLPORT is open\n";
+  my $dbh = DBI->connect("dbi:mysql:host=$MYSQLURL;port=$MYSQLPORT",$MYSQLUSER)
+    || die "# ERROR: cannot connect to MySQL server $MYSQLURL port $MYSQLPORT\n";
 
-  my $sth = $dbh->prepare("show databases");
-  my $sth->execute();
-  my $ref_dbs = $sth->fetchall_arrayref();
+  my $res = $dbh->selectall_arrayref('SHOW DATABASES');
+  my @dbnames = map { $_->[0] } @$res;
 
   $dbh->disconnect();
 
-  return $ref_dbs;
+  return \@dbnames;
 }
 
+## Connects to Ensembl public mysql server, 
+## queries species core schema,
+## returns reference to hash of canonical transcript stable_ids
 sub get_canonical_transcript_ids {
 
-  my ($ref_dbs,$species) = @_;
-  my ($ref_canon_isofs);
+  my ($species_core_db, $verbose) = @_;
+  
+  my (@tmpdata,%canon_isofs);
 
-  my $dbh = DBI->connect("DBI:mysql:host=$MYSQLURL;port=$MYSQLPORT",$MYSQLUSER)
-    or die "# ERROR: cannot connect to MySQL server $MYSQLURL\n".
-      "# Make sure port $MYSQLPORT is open\n";
+  my $dbh = DBI->connect("DBI:mysql:$species_core_db:host=$MYSQLURL;port=$MYSQLPORT",$MYSQLUSER)
+    || die "# ERROR: cannot connect to MySQL server $MYSQLURL port $MYSQLPORT\n";
 
-  $ref_dbs = $dbh->do("show databases");
+  my $sth = $dbh->prepare( 
+    "SELECT t.stable_id FROM gene g, transcript t ".
+    "WHERE g.canonical_transcript_id = t.transcript_id"
+  );
 
+  $sth->execute() ||
+  	die "# ERROR: cannot query $MYSQLURL port $MYSQLPORT\n";
+
+  while(@tmpdata = $sth->fetchrow_array()) {
+    $canon_isofs{$tmpdata[0]} = 1;
+    if($verbose){ print "$tmpdata[0]\n" }
+  }
+
+  $sth->finish();
   $dbh->disconnect();
+
+  return \%canon_isofs;
 }
 
 # parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file

@@ -213,6 +213,10 @@ foreach $sp (@supported_species) {
 	# get list of canonical transcripts for this species
 	my $ref_canon_isofs = get_canonical_transcript_ids($species2db{$sp});
 
+	printf("# %s canonical isoforms=%d\n",
+		$sp,
+	    scalar(keys(%$ref_canon_isofs)));
+
     # now get FASTA file and parse it, selected/longest isoforms are read
     my $stored_sequence_file =
       download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );

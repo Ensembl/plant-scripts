@@ -189,24 +189,19 @@ if ($out_genome) {
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
-## 2) connect to public Ensembl server and retrieve
-##    canonical transcript ids for all species
+## 2) connect to public Ensembl server and 
+##    find latest database schema for each species
 
 my $ref_dbs = list_ensembl_mysql_dbs();
-print scalar(@$ref_dbs);
+
+my %species2db;
 foreach $sp (@supported_species) {
   foreach my $db (@$ref_dbs) {
     if($db =~ /$sp\_core_\d+/) {
-      print "$db\n";
+      $species2db{$sp} = $db;
     } 
   }
 }
-
-exit;
-#get_canonical_transcript_ids
-
-
-
 
 ## 3) get sequences for selected (plant) species
 
@@ -215,11 +210,15 @@ open( OUTFILE, ">", $outfile ) || die "# ERROR: cannot create $outfile\n";
 # iteratively get and parse FASTA files
 foreach $sp (@supported_species) {
 
+	# get list of canonical transcripts for this species
+	my $ref_canon_isofs = get_canonical_transcript_ids($species2db{$sp});
+
     # now get FASTA file and parse it, selected/longest isoforms are read
     my $stored_sequence_file =
       download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
+
     my ( $ref_sequence, $ref_header ) =
-      parse_isoform_FASTA_file($stored_sequence_file);
+      parse_isoform_FASTA_file($stored_sequence_file, $ref_canon_isofs);
 
     foreach $id ( keys(%$ref_sequence) ) {
         print OUTFILE ">$id $ref_header->{$id} [$sp]\n$ref_sequence->{$id}\n";

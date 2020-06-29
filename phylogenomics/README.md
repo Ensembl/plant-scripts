@@ -59,7 +59,7 @@ Note option -f produces FASTA files of aligned peptide sequences, one per cluste
 
 ### ens_sequences.pl
 
-Produces a FASTA file with the longest cds/pep sequences of species in a clade in Ensembl Plants:
+Produces a FASTA file with the canonical cds/pep sequences of species in a clade in Ensembl Plants:
 ```
 perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae.fna
 

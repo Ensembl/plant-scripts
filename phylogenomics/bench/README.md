@@ -1,8 +1,9 @@
 # Benchmark
 
-This section summarizes a benchmark experiment carried out to evaluate Ensembl Compara synthelogs.
-These are obtained by i) computing [tree-based](https://www.ensembl.org/info/genome/compara/homology_method.html) orthologous genes 
-and ii) filtering those with Gene Order Conservation (GOC) scores >= 75. GOC is computed on the four closest neighbours of a gene.
+This section summarizes a experiment carried out to evaluate GOC-based synthelogs.
+These are obtained by i) computing [tree-based](https://www.ensembl.org/info/genome/compara/homology_method.html) orthologous genes and 
+ii) filtering those with Gene Order Conservation (GOC) scores >= 75. 
+GOC is computed on the four closest neighbours of a gene.
 
 Our gold standard was a list of 22 genomic blocks building up the Ancestral Crucifer Karyotype (ACK), reported in https://europepmc.org/article/MED/26945766. Blocks are defined by *A. thaliana* intervals and the BAC clones that contain them. Those BAC clones were used to design chromosome painting probes used for comparative cytogenetics and define intervals that can be shorter than the gene-based intervals. Blocks are listed in file [Athaliana_blocks.uc.tsv](Athaliana_blocks.uc.tsv).
 

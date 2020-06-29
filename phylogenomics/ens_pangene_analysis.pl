@@ -14,7 +14,7 @@ use PlantCompUtils qw(
   $REQUEST_COUNT $COMPARADIR $FASTADIR @DIVISIONS
 );
 
-# Produces pangene analyses based on clusters of orthologous genes shared by
+# Produces pan-gene analyses based on clusters of orthologous genes shared by
 # species in a plant clade by querying pre-computed Compara data from Ensembl
 #
 # Copyright [2019-2020] EMBL-European Bioinformatics Institute
@@ -24,6 +24,7 @@ my $RESTURL   = 'http://rest.ensembl.org';
 my $INFOPOINT = $RESTURL . '/info/genomes/division/';
 my $TAXOPOINT = $RESTURL . '/info/genomes/taxonomy/';
 
+my $GZIPEXE   = 'gzip' ;
 my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
@@ -302,7 +303,7 @@ print "# total selected species : $n_of_species\n\n";
 ## 2) get orthologous (plant) genes shared by selected species
 
 # columns of TSV file
-# NOTE: high_conf might not be available for some divisions
+# NOTE: high_conf are not be available for some divisions
 my (
     $gene_stable_id,     $prot_stable_id, $species,
     $identity,           $homology_type,  $hom_gene_stable_id,
@@ -321,7 +322,7 @@ foreach $sp (@supported_species) {
 
     # uncompress on the fly and parse
     my %compara_isoform;
-    open( TSV, "gzip -dc $stored_compara_file |" )
+    open( TSV, "$GZIPEXE -dc $stored_compara_file |" )
       || die "# ERROR: cannot open $stored_compara_file\n";
     while ( my $line = <TSV> ) {
 
@@ -343,8 +344,8 @@ foreach $sp (@supported_species) {
             if ( $LOWCONF == 0
                 && ( $high_confidence eq 'NULL' || $high_confidence == 0 ) )
             {
-                print
-"# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n"
+                print 
+                  "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n"
                   if ($verbose);
                 next;
             }
@@ -398,11 +399,12 @@ foreach $sp (@supported_species) {
             $compara_isoform{$prot_stable_id} = 1;
         }
     }
-    close(TSV);
+    close(TSV); 
 
     # now get FASTA file and parse it, selected/longest isoforms are read
     my $stored_sequence_file =
       download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
+
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 

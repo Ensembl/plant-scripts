@@ -81,6 +81,7 @@ exampleREST.p[ly]:## R5) Find homologues of selected gene
 exampleREST.p[ly]:## R6) Get annotation of orthologous genes/proteins
 exampleREST.p[ly]:## R7) Fetch variant consequences for multiple variant ids
 exampleREST.p[ly]:## R8) Check consequences of single SNP within CDS sequence
+exampleREST.p[ly]:## R9) Retrieve variation sources of a species
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file & check SIFT support 

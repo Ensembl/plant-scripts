@@ -332,3 +332,17 @@ if(defined($map_cds->{mappings}->[0]->{seq_region_name})){
 		}
 	} 
 }
+
+## R9) Retrieve variation sources of a species
+
+$url = join('/', $server, "info/variation/$species") .
+		"?content-type=application/json";
+
+my $var_source_data = call_endpoint($http,$url);
+
+for my $pr (@{$var_source_data}) {
+	printf("%s\t%s\t%s\n", 
+		$species, 
+		$pr->{name},
+		$pr->{description} );
+}

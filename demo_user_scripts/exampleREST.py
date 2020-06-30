@@ -241,6 +241,18 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
                 print (val, end="\t")
             print()
 
+#=========================================
+def get_variation_sources(species):
+#=========================================
+    ext = ('/info/variation/' + species + 
+        "?content-type=application/json")
+    var_source_data = get_json(ext)
+
+    for source in var_source_data:
+        print("%s\t%s\t%s" % (species, 
+            source['name'], source['description']))
+
+
 #======================================== 
 #Main
 
@@ -290,5 +302,9 @@ species = 'triticum_aestivum'
 transcript_id = 'TraesCS4B02G042700.1'
 SNPCDScoord = '812'
 SNPbase = 'T'
-check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase) #function call
+check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase) 
+
+## R9) Retrieve variation sources of a species
+
+get_variation_sources(species)
 

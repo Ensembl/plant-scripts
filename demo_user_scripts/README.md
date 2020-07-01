@@ -21,7 +21,7 @@ The examples for SQL queries to Ensembl Genomes database servers require the [My
 
 As listed in [cpanfile](./cpanfile), three modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them as explained in [phylogenomics/README.md](../phylogenomics/README.md). 
 
-For the recipes using the Ensembl Perl API please follow the installation [instructions](http://www.ensembl.org/info/docs/api/api_installation.html). If you use git please follow [these](http://www.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](https://m.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql).
+For the recipes using the Ensembl Perl API please follow the installation [instructions](http://plants.ensembl.org/info/docs/api/api_installation.html). If you use git please follow [these](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql).
 
 The software VEP has the following Perl dependencies: [DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip). See full documentation at https://github.com/Ensembl/ensembl-vep
 

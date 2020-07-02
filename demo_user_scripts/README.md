@@ -73,7 +73,7 @@ exampleMySQL.sh:## S3) Get canonical transcript stable_ids
 exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
 exampleMySQL.sh:## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
 
-exampleREST.p[ly]:## R1) Create a HTTP client and a helper functions 
+exampleREST.pl:## R1) Create a HTTP client and a helper functions 
 exampleREST.p[ly]:## R2) Get metadata for all plant species 
 exampleREST.p[ly]:## R3) Find features overlapping genomic region
 exampleREST.p[ly]:## R4) Fetch phenotypes overlapping genomic region

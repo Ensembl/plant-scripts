@@ -211,7 +211,7 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
         if map_cds['mappings'][0]['seq_region_name']:
             mapping = map_cds['mappings'][0]
     except:
-        print("missing data in API call - try doing a different call")
+        print("# ERROR: failed mapping CDS coords")
         return
 
     # fetch VEP consequences for this region

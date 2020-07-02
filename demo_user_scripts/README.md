@@ -31,7 +31,7 @@ The REST recipes written in python require library [requests](https://pypi.org/p
 
 ### R
 
-You will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html). See installation instructions [here](https://www.ensembl.org/info/data/biomart/biomart_r_package.html).
+You will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html). See installation instructions [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
 
 
 ## List of recipes

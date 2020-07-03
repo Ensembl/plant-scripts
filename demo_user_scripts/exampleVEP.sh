@@ -38,7 +38,7 @@ tar xfz $VEPCACHE
 grep sift ${SPECIES}/${{EGRELEASE}_*/info.txt
 
 
-## V3) Call effect of variants 
+## V3) Predict effect of variants 
 
 # See more options and examples at 
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
@@ -57,7 +57,7 @@ ensembl-vep/vep --genomes \ # Ensembl Genomes
 	--distance 5000 \       # max dist between variant and transcript
 	--biotype               # sow biotype of neighbor transcript
 
-## V4) Call effect of variants for species not in Ensembl
+## V4) Predict effect of variants for species not in Ensembl
 
 # GFF file must be sorted and indexed with BGZIP and TABIX, see 
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_cache.html#gff

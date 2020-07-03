@@ -85,8 +85,8 @@ exampleREST.p[ly]:## R9) Retrieve variation sources of a species
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file & check SIFT support 
-exampleVEP.sh:## V3) Call effect of variants 
-exampleVEP.sh:## V4) Call effect of variants for species not in Ensembl
+exampleVEP.sh:## V3) Predict effect of variants 
+exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
 A few more advanced scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)

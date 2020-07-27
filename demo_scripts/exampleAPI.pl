@@ -56,6 +56,7 @@ foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') }){
 	# for brevity consider only the plastome
 	next if($slice->seq_region_name() ne 'Pt'); 
 
+    # note Ensembl 1-based inclusive coordinates
 	printf(">%s %s %d-%d\n",
 		$slice->seq_region_name(),
 		$slice->coord_system_name(),
@@ -75,7 +76,7 @@ foreach my $slice (@{ $slice_adaptor->fetch_all('toplevel') }){
 my $chrname = 'chr4';
 
 my $slice = $slice_adaptor->
-	fetch_by_region( 'chromosome', $chrname );
+	fetch_by_region( 'toplevel', $chrname );
 
 	my @repeats = @{ $slice->get_all_RepeatFeatures() };
 	my $total_repeats = 0;
@@ -87,7 +88,7 @@ foreach my $repeat (@repeats) {
 
 	printf("%s\t%d\t%d\t%s\t%s\t%s\n",
 		$chrname,
-		$repeat->start(),
+		$repeat->start()-1,
 		$repeat->end(),
 		$repeat->analysis()->logic_name(),
 		$repeat->repeat_consensus()->repeat_class(),
@@ -168,6 +169,8 @@ foreach my $homology (@homologies) {
 # Note: only a few plants have markers
 # As of release EG47/100:
 # triticum_aestivum, oryza_indica, brassica_rapa
+#
+# Coordinates are returned in BED format
 
 $species = 'triticum_aestivum';
 $chrname = '1D';
@@ -187,7 +190,7 @@ foreach my $mf (@{ $slice->get_all_MarkerFeatures() }) {
 
 	printf("%s\t%d\t%d\t%s\t%s\t%s\t%d\n",
 		$mf->seq_region_name(),
-		$mf->start(),      
+		$mf->start()-1,      
 		$mf->end(), 
 		$mf->display_id(),
 		$marker->left_primer(),

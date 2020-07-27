@@ -35,6 +35,9 @@ echo
 mysql --host $SERVER --user $USER --port $PORT \
 	-e "show databases" | grep "core_${EGRELEASE}_${RELEASE}"
 
+# The following API script can also be used:
+# https://github.com/Ensembl/ensembl-metadata/blob/master/misc_scripts/get_list_databases_for_division.pl
+
 ## S2) Count protein-coding genes of a particular species
 
 SPECIES=arabidopsis_thaliana

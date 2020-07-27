@@ -126,6 +126,9 @@ wget $OPTARG -c $URL
 # in the command line. Example:
 # zcat $TSVFILE | grep triticum_aestivum | grep oryza_sativa | grep ortholog 
 
+# Alternatively a smaller OrthoXML-format file can be obtained
+# OXMLFILE=Compara.${RELEASE}.protein_default.allhomologies.orthoxml.xml.gz
+# URL=${SERVER}/${DIV}/release-${EGRELEASE}/xml/ensembl-compara/homologies/${OXMLFILE}
 
 ## F10) download UniProt report of Ensembl Plants, 
 # summarized how many protein sequences from each species

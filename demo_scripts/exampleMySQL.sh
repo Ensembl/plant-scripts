@@ -13,11 +13,17 @@ SERVER=mysql-eg-publicsql.ebi.ac.uk
 USER=anonymous
 PORT=4157
 
-# set Ensembl Plants release number, check it
-# at the bottom of http://plants.ensembl.org
-EGRELEASE=47
+# get Ensembl Plants current release number from FTP server
+FTPSERVER=ftp://ftp.ensemblgenomes.org/pub
+DIV=plants
+SUMFILE=${FTPSERVER}/${DIV}/current/summary.txt
+RELEASE=`wget --quiet -O - $SUMFILE | \
+    perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
 
-RELEASE=$(( $EGRELEASE + 53)); # do not change
+EGRELEASE=$(( $RELEASE - 53));
+
+# alternatively set other EG release number
+# EGRELEASE=
 
 echo "EGRELEASE=${EGRELEASE}"
 echo

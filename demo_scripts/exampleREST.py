@@ -14,10 +14,12 @@ import re
 
 # Copyright [2020] EMBL-European Bioinformatics Institute
 
-#======================================== 
-# Create helper functions for fetching JSON
+#=====================================================
+# helper functions that fetch JSON from REST endpoints
+
 def get_json(ext):
-#======================================== 
+    '''simple get function'''	
+
     server = "https://rest.ensembl.org"
     url = server+ext
     r = requests.get(url, headers={ "Content-Type" : "application/json"})
@@ -29,10 +31,9 @@ def get_json(ext):
     decoded = r.json()
     return decoded
 
-#======================================== 
-# Create helper functions for fetching JSON posts
 def get_json_post(ext,ids):
-#======================================== 
+    '''simple post function'''
+
     server = "https://rest.ensembl.org"
     url = server+ext
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
@@ -46,17 +47,23 @@ def get_json_post(ext,ids):
     return decoded
 
 
-#========================================
-#More examples: https://rest.ensembl.org/documentation/info/info_genomes_division
+#===========================================
+# example funtions that query REST endpoints 
+
+
 def get_metadata():
-#======================================== 
+    '''get metadata for plants division
+    More examples: 
+    https://rest.ensembl.org/documentation/info/info_genomes_division
+    '''
+
     ext = "/info/genomes/division/EnsemblPlants?"
     decoded = get_json(ext)
 
     for d in decoded:
         
-        ##Printing relevant info, notice some items have been 
-        ##converted to str for easier printing
+        # Printing relevant info, notice some items have been 
+        # converted to str for easier printing
         meta = (d['name'],d['assembly_accession'],str(d['base_count']),
             d['assembly_level'],str(d['has_peptide_compara']),
             str(d['has_variations']),str(d['has_genome_alignments']),
@@ -65,16 +72,19 @@ def get_metadata():
         print(separator.join(meta))
 
 
-#======================================== 
-#More examples: https://rest.ensembl.org/documentation/info/overlap_region
 def get_overlapping_features(species,region):
-#======================================== 
+    '''get genes, repeats & variants overlapping a chosen region
+    Note: produces 1-based inclusive coordinates
+    More examples:
+    https://rest.ensembl.org/documentation/info/overlap_region
+	'''
     ## get the genes via the API
     overlap_url = ("/overlap/region/" + species + "/" + region)
     ext = (overlap_url + "?feature=gene;content-type=application/json")
     overlap_data = get_json(ext)
     for overlap_feat in overlap_data:
-        print("%s\t%s\t%s" % (overlap_feat['id'],overlap_feat['start'],overlap_feat['end']))
+        print("%s\t%s\t%s" % 
+		(overlap_feat['id'],overlap_feat['start'],overlap_feat['end']))
 
     ## now LTR repeats 
     ext = (overlap_url + "?feature=repeat;content-type=application/json");
@@ -99,21 +109,22 @@ def get_overlapping_features(species,region):
             print("%s\t%s" % (overlap_feat['id'],overlap_feat['source']))
 
 
-#========================================= 
-#More examples here:
-#https://rest.ensembl.org/documentation/info/phenotype_region
 def get_phenotypes(species,region,p_cutoff):
-#========================================= 
+    '''gets phenotypes associated to a genomic region under a P-value cutoff
+    More examples: 
+    https://rest.ensembl.org/documentation/info/phenotype_region
+    '''
+
     ext = ('/phenotype/region/' + species + "/" + region + 
               "?feature_type=Variation;content-type=application/json")
     pheno_data = get_json(ext)
     
     for feat in pheno_data:
         for assoc in feat['phenotype_associations']:
-            pval = float(assoc['attributes']['p_value']) ##Making sure pval is a float
+            pval = float(assoc['attributes']['p_value']) #pval is a float
             if pval <= p_cutoff:
-                print("%s\t%s\t%s" % (feat['id'], assoc['location'], assoc['description']))
-
+                print("%s\t%s\t%s" % 
+					(feat['id'], assoc['location'], assoc['description']))
 
 
 #========================================= 

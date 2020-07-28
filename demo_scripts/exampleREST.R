@@ -23,15 +23,11 @@ server = 'http://rest.ensembl.org'
 call_endpoint <- function(url, content_type) {
 
 	result = GET(url, accept(content_type))
-
 	stop_for_status(result)
 
 	if(content_type == 'application/json'){
-			
 		return (fromJSON(content(result, "text", encoding="UTF-8")))
-	
 	} else {
-	
 		return (content(result, "text", encoding="UTF-8"))
 	}
 }

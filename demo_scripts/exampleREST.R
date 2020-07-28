@@ -34,6 +34,7 @@ call_endpoint <- function(url, content_type) {
 
 # function to post data to endpoint and 
 # wait for response
+#see https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html
 #sub post_endpoint {
 #	my ($http, $url, $data, $verbose) = @_;
 
@@ -60,17 +61,79 @@ url = paste(server, '/info/genomes/division/EnsemblPlants', sep="/")
 # note that actual data structure changes across endpoints
 metadata = call_endpoint(url,"application/json");
 
-# parse the data from the response
-for (row in 1:nrow(metadata)) {
-	print(paste(
-		metadata[ row, 'name'], 
-		metadata[ row, 'strain'],
-		metadata[ row, 'assembly_accession'],
-		metadata[ row, 'base_count'],
-		metadata[ row, 'assembly_level'],
-		metadata[ row, 'has_peptide_compara'],
-		metadata[ row, 'has_variations'],
-		metadata[ row, 'has_genome_alignments'],
-		metadata[ row, 'has_synteny'] , collapse="\t") );
+subset(metadata, select=c( 'name','strain','assembly_accession',
+	'base_count','assembly_level','has_peptide_compara',
+	'has_variations','has_genome_alignments','has_synteny'))
+
+## R3) Find features overlapping genomic region
+
+# full list at
+# https://rest.ensembl.org/documentation/info/overlap_region
+
+species = 'triticum_aestivum';
+region = '3D:379400000-379540000';
+
+# genes
+url = paste( 
+		paste(server, 'overlap/region', species, region, sep="/"),
+		"feature=gene;content-type=application/json",
+		sep="?")
+
+overlap_data = call_endpoint(url,"application/json")
+subset(overlap_data, select=c( 'id','start','end'))
+
+# now LTR repeats
+url = paste(
+        paste(server, 'overlap/region', species, region, sep="/"),
+		"feature=repeat;content-type=application/json",
+		sep="?")
+
+overlap_data = call_endpoint(url,"application/json")
+subset(overlap_data, grepl("LTR", description), 
+	select=c( 'description','start','end'))
+
+# finally get EMS variants
+url = paste(
+        paste(server, 'overlap/region', species, region, sep="/"),
+		"feature=variation;content-type=application/json",
+		sep="?")
+
+overlap_data = call_endpoint(url,"application/json")
+subset(overlap_data, grepl("EMS-induced mutation", source),
+    select=c( 'id','source'))
+
+## R4) Fetch phenotypes overlapping genomic region
+
+species = 'arabidopsis_thaliana';
+region = '3:19431095-19434450';
+p_cutoff = 0.0001;
+
+url = paste(
+		paste(server, 'phenotype/region', species, region, sep="/"),
+		"feature_type=Variation;content-type=application/json",
+        sep="?")
+
+pheno_data = call_endpoint(url,"application/json")
+pheno_data
+for (row in 1:nrow(pheno_data)) {
+	row	
 }
 
+
+
+## R5) Find homologues of selected gene
+
+species = 'triticum_aestivum'
+division = 'plants'
+gene = 'TraesCS1B02G195200'
+homoltype = 'ortholog' #paralog
+
+# optional define a target clade, such as 4479
+# for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
+target_clade=4479
+
+#see endpoint doc at
+#https://rest.ensembl.org/documentation/info/homology_symbol
+#url =
+#    join('/', server, 'homology/symbol', species, gene).
+#	    "?content-type=application/json&compara=division";

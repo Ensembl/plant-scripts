@@ -15,7 +15,7 @@ The examples for bulk downloads from the FTP site require the software [wget](ht
 
 ### MySQL
 
-The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client.
+The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client. Depending on your Linux flavour this package can be named *mysql-client* or simply *mysql*.
 
 ### Perl
 

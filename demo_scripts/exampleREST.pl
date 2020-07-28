@@ -90,6 +90,8 @@ foreach my $sp (@$metadata){
 # full list at
 # https://rest.ensembl.org/documentation/info/overlap_region
 
+# Note 1-based inclusive coords are returned
+
 my $species = 'triticum_aestivum';
 my $region = '3D:379400000-379540000';
 

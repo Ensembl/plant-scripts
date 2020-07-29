@@ -149,7 +149,7 @@ url = paste(
 
 # restrict to homologues from this clade/taxon
 if(!is.null(target_clade)){
-	paste(url, "&target_taxon=", target_clade, sep="")
+	url = paste(url, "&target_taxon=", target_clade, sep="")
 }
 
 homology_data = call_endpoint(url, "application/json")
@@ -157,6 +157,50 @@ homology_data = call_endpoint(url, "application/json")
 homologies=homology_data$data$homologies[[1]]
 
 # filter out homologues based on type
-subset(homologies, grepl("ortholog", type))
+filt_homol = subset(homologies, grepl(homoltype, type))
 
+## R6) Get annotation of orthologous genes/proteins
 
+# using the xrefs/id endpoint
+# https://rest.ensembl.org/documentation/info/xref_id
+
+total_annots=0
+
+for (hom in 1:nrow(filt_homol)) {
+
+	total_annots = total_annots + 1
+	if(total_annots > 5){
+		break; # for brevity
+	}
+
+	target_species = filt_homol[ hom,'target']$species
+	target_id = filt_homol[ hom,'target']$id
+	target_prot_id = filt_homol[ hom,'target']$protein_id
+
+    cat(paste(gene, species, target_id, target_species, "\n", sep="\t"))
+
+	# GO annotation (protein)
+	url = paste(
+	        paste(server, 'xrefs/id', target_prot_id, sep="/"),
+			"content-type=application/json;external_db=GO;all_levels=1",
+			sep="?")
+
+	go_data = call_endpoint(url, "application/json");
+	#if(is.data.frame(go_data)){
+		subset(as.data.frame(go_data), select=c( 'dbname','display_id',
+							'description','linkage_types'))
+	#}
+
+	# check KEGG Enzyme annotation (protein)
+	url = paste(
+            paste(server, 'xrefs/id', target_prot_id, sep="/"),
+            "content-type=application/json;external_db=KEGG_Enzyme",
+            sep="?")
+
+	KE_data = call_endpoint(url, "application/json");
+	if(is.data.frame(KE_data)){
+		subset(KE_data, select=c( 'dbname','display_id',
+	                            'description','info_type'))
+	}
+
+}

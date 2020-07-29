@@ -127,11 +127,11 @@ def get_phenotypes(species,region,p_cutoff):
 					(feat['id'], assoc['location'], assoc['description']))
 
 
-#========================================= 
-#see endpoint doc at 
-#https://rest.ensembl.org/documentation/info/homology_symbol
 def find_homologues(species,division,gene,homoltype,target_clade=None):
-#========================================= 
+    '''
+    Creates a homologue list for a given gene and species
+    More examples here: https://rest.ensembl.org/documentation/info/homology_symbol
+    '''
 
     ext = ('/homology/symbol/' + species + "/" + gene + 
              "?content-type=application/json&compara="+division)
@@ -149,9 +149,11 @@ def find_homologues(species,division,gene,homoltype,target_clade=None):
             filtered_homologies.append(hom)
     return filtered_homologies
 
-#======================================== 
+
 def parse_homologies(homologies):
-#======================================== 
+    '''
+    Parse homologs in a homology list
+    '''
     for homolog in homologies:
         target_species = homolog['target']['species']
         target_id      = homolog['target']['id']
@@ -193,24 +195,26 @@ def parse_homologies(homologies):
             print (pr['dbname'] + ': ' + pr['display_id'] + ' ' +
                         'Evidence: ' + pr['info_type'])
 
-#======================================== 
-## Note: unlike previous examples, this is a POST REST request, 
-# where user data is posted to the server and after some time
-# a response in parsed. Read more at:
-# https://github.com/Ensembl/ensembl-rest/wiki/POST-Requests
 def get_vep_data(species,variants_ids):
-#======================================== 
-
+    '''
+    Note: unlike previous examples, this is a POST REST request, 
+    where user data is posted to the server and after some time
+    a response in parsed. Read more at:
+    https://github.com/Ensembl/ensembl-rest/wiki/POST-Requests 
+    '''
     ext = "/vep/" + species + "/id"
 
     vep_data = get_json_post(ext,variants_ids)
 
     print (vep_data)
 
-#========================================= 
-#More examples: https://rest.ensembl.org/documentation/info/vep_region_get
+
 def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
-#========================================= 
+    '''
+    checks the consequences of a given SNP
+    More examples: https://rest.ensembl.org/documentation/info/vep_region_get
+    '''
+    
     # convert CDS coords to genomic coords
     # using: https://rest.ensembl.org/documentation/info/assembly_cds
     ext = ("/map/cds/" + transcript_id + "/" + SNPCDScoord + ".." + SNPCDScoord 

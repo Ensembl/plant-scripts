@@ -104,9 +104,9 @@ subset(overlap_data, grepl("EMS-induced mutation", source),
 
 ## R4) Fetch phenotypes overlapping genomic region
 
-species = 'arabidopsis_thaliana';
-region = '3:19431095-19434450';
-p_cutoff = 0.0001;
+species = 'arabidopsis_thaliana'
+region = '3:19431095-19434450'
+p_cutoff = 0.0001
 
 url = paste(
 		paste(server, 'phenotype/region', species, region, sep="/"),
@@ -114,17 +114,24 @@ url = paste(
         sep="?")
 
 pheno_data = call_endpoint(url,"application/json")
-pheno_data
 for (row in 1:nrow(pheno_data)) {
-	row	
+	feat = pheno_data[[ row, 'phenotype_associations']]
+	for (f in 1:nrow(feat)) {
+		assoc = feat[ f, ]
+		if(as.numeric(assoc$attributes$p_value) <= p_cutoff){
+			print( paste(
+				pheno_data[row,'id'],
+				assoc$location,
+				assoc$description,
+				sep='\t') )
+		}
+	}
 }
-
 
 
 ## R5) Find homologues of selected gene
 
 species = 'triticum_aestivum'
-division = 'plants'
 gene = 'TraesCS1B02G195200'
 homoltype = 'ortholog' #paralog
 
@@ -134,6 +141,22 @@ target_clade=4479
 
 #see endpoint doc at
 #https://rest.ensembl.org/documentation/info/homology_symbol
-#url =
-#    join('/', server, 'homology/symbol', species, gene).
-#	    "?content-type=application/json&compara=division";
+
+url = paste(
+        paste(server, 'homology/symbol', species, gene, sep="/"),
+	    "compara=plants;content-type=application/json",
+		sep="?")
+
+# restrict to homologues from this clade/taxon
+if(!is.null(target_clade)){
+	paste(url, "&target_taxon=", target_clade, sep="")
+}
+
+homology_data = call_endpoint(url, "application/json")
+
+homologies=homology_data$data$homologies[[1]]
+
+# filter out homologues based on type
+subset(homologies, grepl("ortholog", type))
+
+

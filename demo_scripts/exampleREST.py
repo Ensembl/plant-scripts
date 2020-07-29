@@ -256,9 +256,9 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
                 print (val, end="\t")
             print()
 
-#=========================================
 def get_variation_sources(species):
-#=========================================
+    '''retreive the variation sources of a species'''
+
     ext = ('/info/variation/' + species + 
         "?content-type=application/json")
     var_source_data = get_json(ext)

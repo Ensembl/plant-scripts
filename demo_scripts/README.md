@@ -75,15 +75,15 @@ exampleMySQL.sh:## S3) Get canonical transcript stable_ids
 exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
 exampleMySQL.sh:## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
 
-exampleREST.pl:## R1) Create a HTTP client and a helper functions 
-exampleREST.p[ly]:## R2) Get metadata for all plant species 
-exampleREST.p[ly]:## R3) Find features overlapping genomic region
-exampleREST.p[ly]:## R4) Fetch phenotypes overlapping genomic region
-exampleREST.p[ly]:## R5) Find homologues of selected gene
-exampleREST.p[ly]:## R6) Get annotation of orthologous genes/proteins
-exampleREST.p[ly]:## R7) Fetch variant consequences for multiple variant ids
-exampleREST.p[ly]:## R8) Check consequences of SNP within CDS sequence
-exampleREST.p[ly]:## R9) Retrieve variation sources of a species
+exampleREST:## R1) Create a HTTP client and a helper functions 
+exampleREST:## R2) Get metadata for all plant species 
+exampleREST:## R3) Find features overlapping genomic region
+exampleREST:## R4) Fetch phenotypes overlapping genomic region
+exampleREST:## R5) Find homologues of selected gene
+exampleREST:## R6) Get annotation of orthologous genes/proteins
+exampleREST:## R7) Fetch variant consequences for multiple variant ids
+exampleREST:## R8) Check consequences of SNP within CDS sequence
+exampleREST:## R9) Retrieve variation sources of a species
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file & check SIFT support 

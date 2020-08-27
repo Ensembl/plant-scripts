@@ -251,6 +251,50 @@ variants = '{ "ids" : [ "10522356134" ] }'
 vep_data = post_endpoint(url, variants, "application/json");
 vep_data
 
+## R8) Check consequences of single SNP within CDS sequence
+
+# Note: you need the relevant transcript id from species of interest
+# This query involves 2 consecutive REST calls
+
+species = 'triticum_aestivum';
+transcript_id = 'TraesCS4B02G042700.1';
+SNPCDScoord = '812..812';
+SNPbase = 'T';
+
+# i) convert CDS coords to genomic coords
+url = paste(
+        paste(server, 'map/cds', transcript_id, SNPCDScoord, sep="/"),
+		"?",
+		"content-type=application/json;",
+		"species=",
+		species,
+		sep='')	
+
+map_cds = call_endpoint(url, "application/json");
+if(length(map_cds) > 0) {
+
+	SNPgenome_coord = paste( 
+		map_cds$mappings$seq_region_name,
+		":",
+		map_cds$mappings$start,
+		"-",
+		map_cds$mappings$end,
+		sep='');
+
+	# ii) fetch VEP consequences for this region
+	url = paste(
+	        paste(server, 'vep', species, 'region', 
+					SNPgenome_coord, SNPbase,sep="/"),
+			"content-type=application/json",
+			sep="?")
+
+	conseq = call_endpoint(url, "application/json")
+
+	if(length(conseq) > 0) {
+		conseq$transcript_consequences		
+	}
+}
+
 
 ## R9) Retrieve variation sources of a species
 

@@ -250,3 +250,14 @@ variants = '{ "ids" : [ "10522356134" ] }'
 
 vep_data = post_endpoint(url, variants, "application/json");
 vep_data
+
+
+## R9) Retrieve variation sources of a species
+
+url = paste(
+		paste(server, 'info/variation', species, sep="/"),
+		"content-type=application/json",
+		sep="?")
+
+var_source_data = call_endpoint(url, "application/json")
+subset(var_source_data, select=c( 'name','description'))

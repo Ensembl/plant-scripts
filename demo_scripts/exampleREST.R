@@ -34,6 +34,19 @@ call_endpoint <- function(url, content_type) {
 
 # function to post data to endpoint and 
 # wait for response
+post_endpoint <- function(url, data, content_type) {
+
+	result = POST(url, body=data, encode="json")
+	stop_for_status(result)
+
+	if(content_type == 'application/json'){
+		return (fromJSON(content(result, "text", encoding="UTF-8")))
+	} else {
+		return (content(result, "text", encoding="UTF-8"))
+	}
+}
+
+
 #see https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html
 #sub post_endpoint {
 #	my ($http, $url, $data, $verbose) = @_;
@@ -218,4 +231,22 @@ for (hom in 1:nrow(filt_homol)) {
 	}
 }
 
+## R7) Fetch variant consequences for multiple variant ids
 
+# Note: unless previous examples, this is a POST REST request, 
+# where user data is posted to the server and after some time
+# a response in parsed. Read more at:
+# https://github.com/Ensembl/ensembl-rest/wiki/POST-Requests
+
+species = 'oryza_sativa';
+
+url = paste(
+		paste(server, 'vep', species, 'id', sep="/"),
+			"content-type=application/json",
+			sep="?")
+
+# max one thousand ids are allowed, the example posts one
+variants = '{ "ids" : [ "10522356134" ] }'
+
+vep_data = post_endpoint(url, variants, "application/json");
+vep_data

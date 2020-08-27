@@ -114,16 +114,18 @@ url = paste(
         sep="?")
 
 pheno_data = call_endpoint(url,"application/json")
-for (row in 1:nrow(pheno_data)) {
-	feat = pheno_data[[ row, 'phenotype_associations']]
-	for (f in 1:nrow(feat)) {
-		assoc = feat[ f, ]
-		if(as.numeric(assoc$attributes$p_value) <= p_cutoff){
-			print( paste(
-				pheno_data[row,'id'],
-				assoc$location,
-				assoc$description,
-				sep='\t') )
+if(length(pheno_data) > 0) {
+	for (row in 1:nrow(pheno_data)) {
+		feat = pheno_data[[ row, 'phenotype_associations']]
+		for (f in 1:nrow(feat)) {
+			assoc = feat[ f, ]
+			if(as.numeric(assoc$attributes$p_value) <= p_cutoff){
+				print( paste(
+					pheno_data[row,'id'],
+					assoc$location,
+					assoc$description,
+					sep='\t') )
+			}
 		}
 	}
 }
@@ -154,6 +156,7 @@ if(!is.null(target_clade)){
 
 homology_data = call_endpoint(url, "application/json")
 
+# extract homologies
 homologies=homology_data$data$homologies[[1]]
 
 # filter out homologues based on type
@@ -169,7 +172,7 @@ total_annots=0
 for (hom in 1:nrow(filt_homol)) {
 
 	total_annots = total_annots + 1
-	if(total_annots > 5){
+	if(total_annots > 10){
 		break; # for brevity
 	}
 
@@ -186,10 +189,10 @@ for (hom in 1:nrow(filt_homol)) {
 			sep="?")
 
 	go_data = call_endpoint(url, "application/json");
-	#if(is.data.frame(go_data)){
-		subset(as.data.frame(go_data), select=c( 'dbname','display_id',
-							'description','linkage_types'))
-	#}
+	if(length(go_data) > 0){
+		print(subset(as.data.frame(go_data), select=c( 'dbname','display_id',
+							'description','linkage_types')))
+	}
 
 	# check KEGG Enzyme annotation (protein)
 	url = paste(
@@ -198,9 +201,21 @@ for (hom in 1:nrow(filt_homol)) {
             sep="?")
 
 	KE_data = call_endpoint(url, "application/json");
-	if(is.data.frame(KE_data)){
-		subset(KE_data, select=c( 'dbname','display_id',
-	                            'description','info_type'))
+	if(length(KE_data) > 0){
+		print(subset(KE_data, select=c( 'dbname','display_id',
+	                            'description','info_type')))
 	}
 
+	# now check Plant Reactome annotation (gene)
+	url = paste(
+			paste(server, 'xrefs/id', target_id, sep="/"),
+			"content-type=application/json;external_db=Plant_Reactome_Pathway",
+			sep="?")
+
+	PR_data = call_endpoint(url, "application/json");
+	if(length(PR_data) > 0){
+		print(subset(PR_data, select=c( 'dbname','display_id', 'info_type')))
+	}
 }
+
+

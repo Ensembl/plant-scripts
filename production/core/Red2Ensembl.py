@@ -7,9 +7,10 @@
 
 import argparse
 import os
+import re
 #import filecmp
 #import errno
-#import subprocess
+import subprocess
 
 #import sqlalchemy as db
 #import sqlalchemy_utils as db_utils
@@ -23,20 +24,58 @@ def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
        saves them in multiple files in named directory.
        Returns: integer with number of parsed sequences'''
+    num_seqs = 0
+    try:
+        file = open(genome_file)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", genome_file, error)
+        return num_seqs
+
+    seq_filepath = ''
+    prev_filepath = ''
+    for line in file:
+       header = re.search(r'^>', line) 
+       if header:
+           # check previous file was open
+           prev_filepath = seq_filepath
+           if prev_filepath:
+               seqfile.close()
+
+           # open temp FASTA file for this sequence only
+           seq_name_match = re.search(r'^>(\S+)', line)
+           if seq_name_match:
+               seq_name = seq_name_match.group(1)
+               seq_filename = seq_name + '.fa'
+               seq_filepath = os.path.join(dirname, seq_filename)
+               seqfile = open(seq_filepath,"w+")
+               seqfile.write(">%s\n" % seq_name)
+               num_seqs = num_seqs + 1
+           else:
+               print("# ERROR: cannot parse FASTA header:", header)
+       else:
+           if seqfile:
+               seqfile.write(line)
+    
+    if seqfile: 
+        seqfile.close()
+    file.close()
+
+    return num_seqs
 
 
-def run_red( red_exe, red_args ):
-    ''' calls Red execute and waits for it to terminate'''
-        # output format: 1 (chrName:start-end) or 2 (chrName start end)
-        # Note that chrName includes the '>' character
-        #cmd = self.param('red_path')+ \
-        #      ' -frm 2'+ \
-        #      ' -gnm '+self.param('gnm')+ \
-        #      ' -rpt '+self.param('rpt')
-        #try:
-        #    response = subprocess.check_call(cmd.split())
-        #except subprocess.CalledProcessError as err:
-        #    print("Could not run Red. Return code "+err.returncode)
+def run_red( red_exe, gnmdirname, rptdirname ):
+    '''Calls Red and waits for it to terminate.
+       Note repeats are requested in format 2: chrName start end'''
+    cmd = red_exe + \
+            ' -frm 2'+ \
+            ' -gnm ' + gnmdirname + \
+            ' -rpt ' + rptdirname
+    print(cmd)
+
+    try:
+        response = subprocess.check_call(cmd.split())
+    except subprocess.CalledProcessError as err:
+        print("# ERROR: cannot run Red " + err.returncode)
 
 
 def save_repeats_core( target_db ):
@@ -52,7 +91,7 @@ def main():
     parser=argparse.ArgumentParser()
     
     parser.add_argument("fasta_file",
-        help="path to an input FASTA file with genomic sequences")
+        help="path to FASTA file with top-level genomic sequences")
     parser.add_argument("outdir",
         help="path to directory to store Red results")
     parser.add_argument("--exe", default="Red",
@@ -70,12 +109,10 @@ def main():
 
     args = parser.parse_args()
 
-    # check script params
-
     # create output directory and subdirs if required,
     # these follow Red nomenclature
-	gnmdir = args.outdir
-	rptdir = args.outdir+'/rpt'
+    gnmdir = args.outdir
+    rptdir = os.path.join(args.outdir, 'rpt')
     outdirs = [ gnmdir, rptdir ]
     for dir in outdirs:
         try:
@@ -86,10 +123,14 @@ def main():
 
     # save individual sequences to output directory, 
     # this allows for multi-threaded Red jobs
+    print("# parsing FASTA file")
     n_of_sequences = parse_FASTA_sequences( args.fasta_file, gnmdir )
-
+    print("# number of input sequences = %d\n" % n_of_sequences)
 
     # run Red
+    print("# running Red")
+    run_red( args.exe, gnmdir, rptdir ) 
+
     # optionally parse output and feed into core   
 
 

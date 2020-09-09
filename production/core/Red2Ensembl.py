@@ -8,8 +8,7 @@
 import argparse
 import os
 import re
-#import filecmp
-#import errno
+import errno
 import subprocess
 
 #import sqlalchemy as db
@@ -47,7 +46,12 @@ def parse_FASTA_sequences( genome_file , dirname ):
                seq_name = seq_name_match.group(1)
                seq_filename = seq_name + '.fa'
                seq_filepath = os.path.join(dirname, seq_filename)
-               seqfile = open(seq_filepath,"w+")
+
+               try:
+                   seqfile = open(seq_filepath,"w+")
+               except OSError as error:
+                   print("# ERROR: cannot create file ", seq_filepath, error)
+
                seqfile.write(">%s\n" % seq_name)
                num_seqs = num_seqs + 1
            else:
@@ -64,21 +68,64 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
 
 def run_red( red_exe, cores, gnmdirname, rptdirname ):
-    '''Calls Red and waits for it to terminate.
-       Note: repeats are requested in format 3, 1-based inclusive
-       Note: this requires Red2'''
+    '''Calls Red, waits for jobs and returns log file name.
+       If repeat outfiles are in place then Red is skipped.
+       Note: repeats are requested in format 3, 1-based inclusive (Red2)'''
+
+    # set log file name
+    log_filepath = os.path.join(gnmdirname, 'log.txt')
+    logfile = open(log_filepath)
+
+    # check whether previous results exist
+    if logfile:
+        job_done = False
+        repeats_ok = True
+        for line in logfile:
+            #Printing locations to: outdir/rpt/1.tsv
+            repeats = re.search(r'locations to (\S+)', line)
+            summary = re.search(r'Genome length: \d+', line)
+            if repeats:
+                rptfile = repeats.group(1)
+                if not(os.path.isfile(rptfile)):
+                    repeats_ok = False
+            elif summary:
+                job_done = True
+
+            if repeats_ok == False:
+                break
+        
+        logfile.close()
+        
+        if job_done:
+            print("# re-using previous Red results")				
+            return log_filepath
+
+    # open new log file 
+    try:
+        logfile = open(log_filepath,"w+")
+    except OSError as error:
+        print("# ERROR: cannot create file ", log_filepath, error)
+
     cmd = red_exe + \
             ' -cor '+ cores + \
             ' -frm 3'+ \
             ' -gnm ' + gnmdirname + \
-            ' -rpt ' + rptdirname
-    print(cmd)
+            ' -rpt ' + rptdirname 
 
+    # check Red binary
+    if not(os.path.isfile(red_exe)):
+        raise FileNotFoundError(errno.ENOENT,os.strerror(errno.ENOENT),red_exe)
+
+    # run Red and capture stdout
     try:
-        response = subprocess.check_call(cmd.split())
+        print("# Red command: ", cmd)
+        osresponse = subprocess.check_call(cmd.split(),stdout=logfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run Red " + err.returncode)
+    finally:
+        logfile.close()
 
+    return log_filepath
 
 def save_repeats_core( target_db ):
     '''Store parsed Red repeats in Ensembl core database'''    
@@ -122,18 +169,22 @@ def main():
         try:
             os.makedirs( dir, mode=0o777, exist_ok=True)
         except OSError as error:
-            print("# ERROR: cannot create " + dir)
+            print("# ERROR: cannot create ", dir)
             print(error) 
 
     # save individual sequences to output directory, 
     # this allows for multi-threaded Red jobs
     print("# parsing FASTA file")
-    n_of_sequences = parse_FASTA_sequences( args.fasta_file, gnmdir )
-    print("# number of input sequences = %d\n" % n_of_sequences)
+    n_of_sequences = parse_FASTA_sequences( args.fasta_file, gnmdir)
+    if n_of_sequences == 0:
+        print("# ERROR: cannot parse ", args.fasta_file)
+        exit(-1)
+    else:
+        print("# number of input sequences = %d\n" % n_of_sequences)
 
     # run Red
     print("# running Red")
-    run_red( args.exe, args.cor, gnmdir, rptdir ) 
+    log_filename = run_red( args.exe, args.cor, gnmdir, rptdir) 
 
     # optionally parse output and feed into core   
 

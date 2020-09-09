@@ -63,10 +63,11 @@ def parse_FASTA_sequences( genome_file , dirname ):
     return num_seqs
 
 
-def run_red( red_exe, gnmdirname, rptdirname ):
+def run_red( red_exe, cores, gnmdirname, rptdirname ):
     '''Calls Red and waits for it to terminate.
        Note repeats are requested in format 2: chrName start end'''
     cmd = red_exe + \
+            ' -cor '+ cores + \
             ' -frm 2'+ \
             ' -gnm ' + gnmdirname + \
             ' -rpt ' + rptdirname
@@ -96,6 +97,8 @@ def main():
         help="path to directory to store Red results")
     parser.add_argument("--exe", default="Red",
         help="path to Red executable, default: Red")
+    parser.add_argument("--cor", default=1,
+        help="number of cores for Red, default: 1")
     parser.add_argument("--host",
         help="name of the database host, required to store repeats in Ensembl core")
     parser.add_argument("--user",
@@ -129,7 +132,7 @@ def main():
 
     # run Red
     print("# running Red")
-    run_red( args.exe, gnmdir, rptdir ) 
+    run_red( args.exe, args.cor, gnmdir, rptdir ) 
 
     # optionally parse output and feed into core   
 

@@ -2,6 +2,11 @@
 
 # Python3 script to run RepeatDetector (Red v2) and optionally 
 # feed results into an Ensembl core database
+#
+# Tested with: 
+# pyenv local 3.7.6
+# pip install --user sqlalchemy_utils pymysql
+# 
 # Bruno Contreras Moreira, Carlos García Girón EBI-EMBL 2020
 #
 # See https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Repeat+masking+with+Red
@@ -12,13 +17,13 @@ import re
 import errno
 import subprocess
 
-#import sqlalchemy as db
-#import sqlalchemy_utils as db_utils
+import sqlalchemy as db
+import sqlalchemy_utils as db_utils
 
 # sqlalchemy requires MySQLdb but MySQLdb doesn't support Python 3.x
 # pymysql can be imported and used instead
-#import pymysql
-#pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
@@ -76,15 +81,13 @@ def _parse_rptfiles_from_log( log_filename ):
     try:
         logfile = open(log_filename)
     except OSError as error:
-        print("# ERROR: cannot open/read file:", lof_filename, error)
+        print("# ERROR: cannot open/read file:", log_filename, error)
         return rpt_files
 
     job_done = False
     repeats_ok = True
     for line in logfile:
-        #Printing locations to: outdir/rpt/1.tsv
-        repeats = re.search(r'locations to (\S+)', line)
-        summary = re.search(r'Genome length: \d+', line)
+        repeats = re.search(r'locations to: (\S+)', line)
         if repeats:
             rpt_filename = repeats.group(1)
             if not(os.path.isfile(rpt_filename)):
@@ -92,12 +95,14 @@ def _parse_rptfiles_from_log( log_filename ):
                 break
             else:
                 rpt_files.append(rpt_filename)
-        elif summary:
-            job_done = True
+        else: # last line in log
+            summary = re.search(r'Genome length: \d+', line)
+            if summary:
+                job_done = True
 
     logfile.close
 
-    if job_done:
+    if repeats_ok and job_done:
         return rpt_files
     else:
         return []
@@ -151,16 +156,30 @@ def run_red( red_exe, cores, gnmdirname, rptdirname ):
     return rpt_files
 
 
-def parse_repeats(rpt_file_list, repeat_consensus_id, analysis_id):
+def store_repeats_database( rpt_file_list, db_url):
+    '''Store parsed Red repeats in Ensembl core database
+       accessible from passed URL'''
+    engine = db.create_engine(db_url)
+    connection = engine.connect()
+    metadata = db.MetaData()
+    
+
+    # _parse_repeats( rpt_file_list, 1, 1)
+
+
+def _parse_repeats(rpt_file_list, repeat_consensus_id, analysis_id):
     '''Parse the 1-based inclusive coords produced by Red in rpt dir and 
        create TSV file to be loaded in Ensembl core database''' 
     if not rpt_file_list:
         print("# ERROR: got no repeat files")
-    
 
-
-def save_repeats_core( target_db ):
-    '''Store parsed Red repeats in Ensembl core database'''
+    for filename in rpt_file_list:
+        try:
+            rptfile = open(filename)
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", filename, error)
+        
+        print(filename)
 
 
 def main():
@@ -179,7 +198,7 @@ def main():
         help="name of the database host, required to store repeats in Ensembl core")
     parser.add_argument("--user",
         help="host user, required to store repeats in Ensembl core")
-    parser.add_argument("--pass",
+    parser.add_argument("--pw",
         help="host password, required to store repeats in Ensembl core")
     parser.add_argument("--port", type=int,
         help="host port, required to store repeats in Ensembl core")
@@ -206,15 +225,25 @@ def main():
     n_of_sequences = parse_FASTA_sequences( args.fasta_file, gnmdir)
     if n_of_sequences == 0:
         print("# ERROR: cannot parse ", args.fasta_file)
-        exit(-1)
     else:
-        print("# number of input sequences = %d\n" % n_of_sequences)
+        print("# number of input sequences = %d\n\n" % n_of_sequences)
 
-    # run Red
+    # run Red, or else re-use previous results
     print("# running Red")
     repeat_filenames = run_red( args.exe, args.cor, gnmdir, rptdir) 
+    print("# TSV files with repeat coords: %s\n\n" % rptdir)
 
+    # (optionally) store repeat features in core database
+    if args.user and args.pw and args.host and args.port and args.db:
+        db_url = 'mysql://' + \
+                args.user + ':' + \
+                args.pw + '@' + \
+                args.host + ':' + \
+                args.port + '/' + \
+                args.db + '?' + \
+               'local_infile=1'
 
+        store_repeats_database(repeat_filenames, db_url)
 
 
 if __name__ == "__main__":

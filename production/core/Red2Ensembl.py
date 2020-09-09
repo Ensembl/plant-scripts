@@ -68,38 +68,58 @@ def parse_FASTA_sequences( genome_file , dirname ):
     return num_seqs
 
 
+def _parse_rptfiles_from_log( log_filename ):
+    '''Parses Red stdout log and returns a list with
+       the names of output files with repeat coordinates'''
+    rpt_files = []
+
+    try:
+        logfile = open(log_filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", lof_filename, error)
+        return rpt_files
+
+    job_done = False
+    repeats_ok = True
+    for line in logfile:
+        #Printing locations to: outdir/rpt/1.tsv
+        repeats = re.search(r'locations to (\S+)', line)
+        summary = re.search(r'Genome length: \d+', line)
+        if repeats:
+            rpt_filename = repeats.group(1)
+            if not(os.path.isfile(rpt_filename)):
+                repeats_ok = False
+                break
+            else:
+                rpt_files.append(rpt_filename)
+        elif summary:
+            job_done = True
+
+    logfile.close
+
+    if job_done:
+        return rpt_files
+    else:
+        return []
+
+
 def run_red( red_exe, cores, gnmdirname, rptdirname ):
-    '''Calls Red, waits for jobs and returns log file name.
+    '''Calls Red, waits for job completion and logs stdout.
+       Returns list of TSV repeat filenames.
        If repeat outfiles are in place then Red is skipped.
        Note: repeats are requested in format 3, 1-based inclusive (Red2)'''
 
+    rpt_files = []
+
     # set log file name
     log_filepath = os.path.join(gnmdirname, 'log.txt')
-    logfile = open(log_filepath)
 
     # check whether previous results exist
-    if logfile:
-        job_done = False
-        repeats_ok = True
-        for line in logfile:
-            #Printing locations to: outdir/rpt/1.tsv
-            repeats = re.search(r'locations to (\S+)', line)
-            summary = re.search(r'Genome length: \d+', line)
-            if repeats:
-                rptfile = repeats.group(1)
-                if not(os.path.isfile(rptfile)):
-                    repeats_ok = False
-            elif summary:
-                job_done = True
-
-            if repeats_ok == False:
-                break
-        
-        logfile.close()
-        
-        if job_done:
+    if(os.path.isfile(log_filepath)):
+        rpt_files = _parse_rptfiles_from_log(log_filepath)
+        if rpt_files:
             print("# re-using previous Red results")				
-            return log_filepath
+            return rpt_files
 
     # open new log file 
     try:
@@ -126,14 +146,21 @@ def run_red( red_exe, cores, gnmdirname, rptdirname ):
     finally:
         logfile.close()
 
-    return log_filepath
+    # parse log and capture repeat filenames
+    rpt_files = _parse_rptfiles_from_log(log_filepath)
+    return rpt_files
+
+
+def parse_repeats(rpt_file_list, repeat_consensus_id, analysis_id):
+    '''Parse the 1-based inclusive coords produced by Red in rpt dir and 
+       create TSV file to be loaded in Ensembl core database''' 
+    if not rpt_file_list:
+        print("# ERROR: got no repeat files")
+    
+
 
 def save_repeats_core( target_db ):
-    '''Store parsed Red repeats in Ensembl core database'''    
-
-def parse_repeats(repeat_consensus_id,analysis_id):
-    '''Parse the BED-like format produced by Red in rpt dir and 
-	create new file with 1-based inclusive coords for Ensembl''' 
+    '''Store parsed Red repeats in Ensembl core database'''
 
 
 def main():
@@ -185,9 +212,8 @@ def main():
 
     # run Red
     print("# running Red")
-    log_filename = run_red( args.exe, args.cor, gnmdir, rptdir) 
+    repeat_filenames = run_red( args.exe, args.cor, gnmdir, rptdir) 
 
-    # optionally parse output and feed into core   
 
 
 

@@ -17,7 +17,7 @@ This is the usual order in which they are run:
 
 A few important notes:
 
-[1] These scripts are not CI-tested; we changed as needed across releases
+[1] These scripts are not CI-tested; we change them as needed across releases
 
 [2] Some scripts use environmental variables set up in our .bashrc files
 

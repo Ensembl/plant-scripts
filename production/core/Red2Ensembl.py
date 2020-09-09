@@ -1,7 +1,8 @@
 #!/usr/bin/env python3 
 
-# Python3 script to run RepeatDetector (Red) and feed results into an Ensembl core database
-# Bruno Contreras Moreira, Carlos Garcia Giron EBI-EMBL 2020
+# Python3 script to run RepeatDetector (Red v2) and optionally 
+# feed results into an Ensembl core database
+# Bruno Contreras Moreira, Carlos García Girón EBI-EMBL 2020
 #
 # See https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Repeat+masking+with+Red
 

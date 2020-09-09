@@ -72,6 +72,25 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
     return num_seqs
 
+def parse_version_from_log( log_filename ):
+    '''Parses Red stdout log and returns a string with version'''
+    version = 'NA'
+    try:
+        logfile = open(log_filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", log_filename, error)
+        return version
+
+    for line in logfile:
+        versionre = re.search(r'^Version: (\S+)', line)
+        if versionre:
+            version = versionre.group(1)
+            break
+
+    logfile.close
+
+    return version
+
 
 def _parse_rptfiles_from_log( log_filename ):
     '''Parses Red stdout log and returns a list with
@@ -108,16 +127,13 @@ def _parse_rptfiles_from_log( log_filename ):
         return []
 
 
-def run_red( red_exe, cores, gnmdirname, rptdirname ):
+def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
     '''Calls Red, waits for job completion and logs stdout.
        Returns list of TSV repeat filenames.
        If repeat outfiles are in place then Red is skipped.
        Note: repeats are requested in format 3, 1-based inclusive (Red2)'''
 
     rpt_files = []
-
-    # set log file name
-    log_filepath = os.path.join(gnmdirname, 'log.txt')
 
     # check whether previous results exist
     if(os.path.isfile(log_filepath)):
@@ -156,13 +172,64 @@ def run_red( red_exe, cores, gnmdirname, rptdirname ):
     return rpt_files
 
 
-def store_repeats_database( rpt_file_list, db_url):
+def store_repeats_database( rpt_file_list, red_path, red_version, logic_name, db_url):
     '''Store parsed Red repeats in Ensembl core database
-       accessible from passed URL'''
+       accessible from passed URL. Note that the analysis logic name
+       and the software version are also passed in order to
+       fill the analysis table'''
+
     engine = db.create_engine(db_url)
     connection = engine.connect()
     metadata = db.MetaData()
     
+    # handles for relevant db tables 
+    analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
+    meta_table = db.Table('meta',metadata,autoload=True,autoload_with=engine)
+    repeat_consensus_table = \
+        db.Table('repeat_consensus',metadata,autoload=True,autoload_with=engine)
+    repeat_feature_table = \
+        db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
+
+    # insert Red analysis
+    analysis_insert = analysis_table.insert().values({ \
+        'created':db.sql.func.now(), \
+        'logic_name':logic_name, \
+        'program':'Red', \
+        'program_version':red_version, \
+        'program_file':red_path })
+    connection.execute(analysis_insert)
+
+    # fetch the assigned analysis_id for the new Red analysis
+    analysis_query = db.select([analysis_table.columns.analysis_id])
+    analysis_query = \
+        analysis_query.where(analysis_table.columns.logic_name == logic_name)
+    analysis_results = connection.execute(analysis_query).fetchall()
+    analysis_id = analysis_results[0][0]
+
+    # insert repeat analysis meta keys
+    meta_insert = meta_table.insert().values({ \
+        'species_id':1, \
+        'meta_key':'repeat.analysis', \
+        'meta_value':logic_name })
+    connection.execute(meta_insert)
+
+    # insert dummy repeat consensus
+    # Note: Red repeats are not annotated by default 
+    repeat_consensus_insert = repeat_consensus_table.insert().values({ \
+        'repeat_name':logic_name, \
+        'repeat_class':logic_name, \
+        'repeat_type':logic_name, \
+        'repeat_consensus':'N' })
+    connection.execute(repeat_consensus_insert)
+
+    # fetch the repeat_consensus_id of the new dummy consensus
+    repeat_consensus_query = \
+        db.select([repeat_consensus_table.columns.repeat_consensus_id])
+    repeat_consensus_query = \
+        repeat_consensus_query.where( \
+            repeat_consensus_table.columns.repeat_name == logic_name)
+    repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
+    repeat_consensus_id = repeat_consensus_results[0][0]
 
     # _parse_repeats( rpt_file_list, 1, 1)
 
@@ -204,6 +271,8 @@ def main():
         help="host port, required to store repeats in Ensembl core")
     parser.add_argument("--db",
         help="name of the core database, required to store repeats in Ensembl core")
+    parser.add_argument("--logic_name", default="repeatdetector",
+        help="path to Red executable, default: repeatdetector")
 
     args = parser.parse_args()
 
@@ -219,6 +288,8 @@ def main():
             print("# ERROR: cannot create ", dir)
             print(error) 
 
+    log_filepath = os.path.join(gnmdir, 'log.txt')
+
     # save individual sequences to output directory, 
     # this allows for multi-threaded Red jobs
     print("# parsing FASTA file")
@@ -230,7 +301,8 @@ def main():
 
     # run Red, or else re-use previous results
     print("# running Red")
-    repeat_filenames = run_red( args.exe, args.cor, gnmdir, rptdir) 
+    repeat_filenames = run_red( args.exe, args.cor, \
+	    gnmdir, rptdir, log_filepath) 
     print("# TSV files with repeat coords: %s\n\n" % rptdir)
 
     # (optionally) store repeat features in core database
@@ -243,7 +315,9 @@ def main():
                 args.db + '?' + \
                'local_infile=1'
 
-        store_repeats_database(repeat_filenames, db_url)
+        store_repeats_database(repeat_filenames, \
+            arg.exe, parse_version_from_log(log_filepath), \
+            args.logic_name, db_url)
 
 
 if __name__ == "__main__":

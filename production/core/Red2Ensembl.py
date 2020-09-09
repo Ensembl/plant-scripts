@@ -65,10 +65,11 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
 def run_red( red_exe, cores, gnmdirname, rptdirname ):
     '''Calls Red and waits for it to terminate.
-       Note repeats are requested in format 2: chrName start end'''
+       Note: repeats are requested in format 3, 1-based inclusive
+       Note: this requires Red2'''
     cmd = red_exe + \
             ' -cor '+ cores + \
-            ' -frm 2'+ \
+            ' -frm 3'+ \
             ' -gnm ' + gnmdirname + \
             ' -rpt ' + rptdirname
     print(cmd)

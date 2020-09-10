@@ -25,11 +25,13 @@ import sqlalchemy_utils as db_utils
 import pymysql
 pymysql.install_as_MySQLdb()
 
+
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
        saves them in multiple files in named directory.
-       Returns: integer with number of parsed sequences'''
-    num_seqs = 0
+       Returns: list of successfully parsed sequence names'''
+
+    seq_names = []
     try:
         file = open(genome_file)
     except OSError as error:
@@ -54,27 +56,28 @@ def parse_FASTA_sequences( genome_file , dirname ):
                seq_filepath = os.path.join(dirname, seq_filename)
 
                try:
-                   seqfile = open(seq_filepath,"w+")
+                   seqfile = open(seq_filepath,"w")
                except OSError as error:
                    print("# ERROR: cannot create file ", seq_filepath, error)
 
                seqfile.write(">%s\n" % seq_name)
-               num_seqs = num_seqs + 1
+               seq_names.append(seq_name)
            else:
                print("# ERROR: cannot parse FASTA header:", header)
        else:
            if seqfile:
                seqfile.write(line)
     
-    if seqfile: 
-        seqfile.close()
+    if seqfile: seqfile.close()
     file.close()
 
-    return num_seqs
+    return seq_names
+
 
 def parse_params_from_log( log_filename ):
     '''Parses Red stdout log and returns two strings: 
        i) Red version ii) Parameters of this job'''
+
     version = 'NA'
     params = ''
     try:
@@ -100,6 +103,7 @@ def parse_params_from_log( log_filename ):
 def _parse_rptfiles_from_log( log_filename ):
     '''Parses Red stdout log and returns a list with
        the names of output files with repeat coordinates'''
+
     rpt_files = []
 
     try:
@@ -149,7 +153,7 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
 
     # open new log file 
     try:
-        logfile = open(log_filepath,"w+")
+        logfile = open(log_filepath,"w")
     except OSError as error:
         print("# ERROR: cannot create file ", log_filepath, error)
 
@@ -168,7 +172,7 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
         print("# Red command: ", cmd)
         osresponse = subprocess.check_call(cmd.split(),stdout=logfile)
     except subprocess.CalledProcessError as err:
-        print("# ERROR: cannot run Red " + err.returncode)
+        print("# ERROR: cannot run Red ", err.returncode)
     finally:
         logfile.close()
 
@@ -177,26 +181,55 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
     return rpt_files
 
 
-def store_repeats_database( rpt_file_list, red_path, red_version, \
-    red_paramslogic_name, db_url):
+def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
+    red_path,red_version, red_params, logic_name, db_url):
     '''Store parsed Red repeats in Ensembl core database
        accessible from passed URL. Note that the analysis logic name
-       and the software version are also passed in order to
-       fill the analysis table'''
+       and software details are also passed in order to
+       fill the analysis table.
+       Returns number of inserted repeats.'''
 
+    num_repeats = 0
+    name_to_seqregion = {}
+
+    # core database handles
     engine = db.create_engine(db_url)
     connection = engine.connect()
     metadata = db.MetaData()
     
-    # handles for relevant db tables 
+    # relevant db tables 
     analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
     meta_table = db.Table('meta',metadata,autoload=True,autoload_with=engine)
     repeat_consensus_table = \
         db.Table('repeat_consensus',metadata,autoload=True,autoload_with=engine)
     repeat_feature_table = \
         db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
+    seq_region_table = db.Table('seq_region',metadata,autoload=True,autoload_with=engine)
+    seq_syn_table = \
+        db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
 
-    # insert Red analysis
+    # fetch seq_region_ids of sequences
+    for seq_name in seq_name_list:
+        seq_query = db.select([seq_region_table.columns.seq_region_id])
+        seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
+        seq_results = connection.execute(seq_query).fetchall()
+        if seq_results:
+            seq_region_id = seq_results[0][0]
+        else:
+            # try synonyms if that failed
+            syn_query = db.select([seq_syn_table.columns.seq_region_id])
+            syn_query = syn_query.where(seq_syn_table.columns.synonym == seq_name)
+            syn_results = connection.execute(syn_query).fetchall()
+            if syn_results:
+                seq_region_id = syn_results[0][0]
+            else:
+                print("# ERROR: cannot find seq_region_id for sequence %s\n" % seq_name)
+                return num_repeats              
+
+        print("# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id))	
+        name_to_seqregion[seq_name] = seq_region_id
+
+    # insert Red analysis, will fails if logic_name exists
     analysis_insert = analysis_table.insert().values({ \
         'created':db.sql.func.now(), \
         'logic_name':logic_name, \
@@ -215,15 +248,16 @@ def store_repeats_database( rpt_file_list, red_path, red_version, \
     analysis_results = connection.execute(analysis_query).fetchall()
     analysis_id = analysis_results[0][0]
 
-    # insert repeat analysis meta keys
+    # insert repeat analysis meta keys, will fails if exists
     meta_insert = meta_table.insert().values({ \
         'species_id':1, \
         'meta_key':'repeat.analysis', \
         'meta_value':logic_name })
     connection.execute(meta_insert)
 
-    # insert dummy repeat consensus
-    # Note: Red repeats are not annotated by default 
+    # insert dummy repeat consensus, will fail if it exists
+    # Note: Red repeats are not annotated by default, 
+    # thus they are linked to a dummy repeat consensus
     repeat_consensus_insert = repeat_consensus_table.insert().values({ \
         'repeat_name':logic_name, \
         'repeat_class':logic_name, \
@@ -238,24 +272,73 @@ def store_repeats_database( rpt_file_list, red_path, red_version, \
         repeat_consensus_query.where( \
             repeat_consensus_table.columns.repeat_name == logic_name)
     repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
-    repeat_consensus_id = repeat_consensus_results[0][0]
+    dummy_consensus_id = repeat_consensus_results[0][0]
 
-    # _parse_repeats( rpt_file_list, 1, 1)
+    # parse repeats and produce a TSV file to be loaded in repeat table
+    TSVfilename =_parse_repeats(rptdir, rpt_file_list, name_to_seqregion,\
+        analysis_id, dummy_consensus_id)
+
+    # actually insert repeat features
+    repeat_query = "LOAD DATA LOCAL INFILE '" + TSVfilename +\
+        "' INTO TABLE repeat_feature FIELDS TERMINATED BY '\\t' " +\
+        "LINES TERMINATED BY '\\n' (seq_region_id,seq_region_start," + \
+        "seq_region_end,repeat_start,repeat_end,repeat_consensus_id,analysis_id)"
+    repeat_result = connection.execute(repeat_query).rowcount
+
+    return repeat_result
 
 
-def _parse_repeats(rpt_file_list, repeat_consensus_id, analysis_id):
-    '''Parse the 1-based inclusive coords produced by Red in rpt dir and 
-       create TSV file to be loaded in Ensembl core database''' 
+def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_consensus_id):
+    '''Parses 1-based inclusive coords produced by Red in rpt dir and 
+       creates TSV file ready to be loaded in Ensembl core database.
+       Returns TSV filename.''' 
+	   
     if not rpt_file_list:
         print("# ERROR: got no repeat files")
 
+    # open new TSV file
+    outfilename = os.path.join(rptdir, 'ensembl.tsv')
+    try:
+        tsvfile = open(outfilename,"w")
+    except OSError as error:
+        print("# ERROR: cannot create file ", outfilename, error)
+
+    # parse repeat coord files, one per sequence
     for filename in rpt_file_list:
         try:
             rptfile = open(filename)
         except OSError as error:
             print("# ERROR: cannot open/read file:", filename, error)
-        
-        print(filename)
+
+        for line in rptfile:
+            column = line.split()
+             
+            if column[0] in name2region: 
+                seq_region_id = name2region[column[0]]
+            else:
+                seq_region_id = column[0]
+                print("# ERROR: cannot fetch seq_region_id for sequence", column[0])
+
+            seq_region_start = column[1]
+            seq_region_end = column[2]
+            repeat_start = 1
+            repeat_end = int(seq_region_end) - int(seq_region_start) + 1
+
+            print("%s\t%d\t%d\t%d\t%d\t%d\t%d" % (\
+                seq_region_id,\
+                int(seq_region_start),\
+                int(seq_region_end),\
+                int(repeat_start),\
+                repeat_end,\
+                int(repeat_consensus_id),\
+                int(analysis_id)), \
+				file=tsvfile)
+
+        rptfile.close()
+
+    tsvfile.close()
+    
+    return outfilename
 
 
 def main():
@@ -302,11 +385,11 @@ def main():
     # save individual sequences to output directory, 
     # this allows for multi-threaded Red jobs
     print("# parsing FASTA file")
-    n_of_sequences = parse_FASTA_sequences( args.fasta_file, gnmdir)
-    if n_of_sequences == 0:
+    sequence_names = parse_FASTA_sequences( args.fasta_file, gnmdir)
+    if len(sequence_names) == 0:
         print("# ERROR: cannot parse ", args.fasta_file)
     else:
-        print("# number of input sequences = %d\n\n" % n_of_sequences)
+        print("# number of input sequences = %d\n\n" % len(sequence_names))
 
     # run Red, or else re-use previous results
     print("# running Red")
@@ -320,14 +403,20 @@ def main():
                 args.user + ':' + \
                 args.pw + '@' + \
                 args.host + ':' + \
-                args.port + '/' + \
+                str(args.port) + '/' + \
                 args.db + '?' + \
                'local_infile=1'
 
         red_version, red_params = parse_params_from_log(log_filepath)
-        store_repeats_database(repeat_filenames, \
-            arg.exe, red_version, red_params, \
-            args.logic_name, db_url)
+
+        num_repeats = store_repeats_database( rptdir, sequence_names, repeat_filenames, \
+            args.exe, red_version, red_params, args.logic_name,\
+            db_url)
+        print("\n# stored %d repeats\n" % num_repeats);
+
+        #name2region = {} #debugging
+        #_parse_repeats(rptdir, repeat_filenames, name2region, 11, 22)
+
 
 
 if __name__ == "__main__":

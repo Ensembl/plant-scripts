@@ -72,9 +72,11 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
     return num_seqs
 
-def parse_version_from_log( log_filename ):
-    '''Parses Red stdout log and returns a string with version'''
+def parse_params_from_log( log_filename ):
+    '''Parses Red stdout log and returns two strings: 
+       i) Red version ii) Parameters of this job'''
     version = 'NA'
+    params = ''
     try:
         logfile = open(log_filename)
     except OSError as error:
@@ -85,11 +87,14 @@ def parse_version_from_log( log_filename ):
         versionre = re.search(r'^Version: (\S+)', line)
         if versionre:
             version = versionre.group(1)
-            break
+        else:
+            paramre = re.search(r'^(-\w+: \S+)', line)
+            if paramre:
+                params = params + ' ' + paramre.group(1)
 
     logfile.close
 
-    return version
+    return version, params
 
 
 def _parse_rptfiles_from_log( log_filename ):
@@ -172,7 +177,8 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
     return rpt_files
 
 
-def store_repeats_database( rpt_file_list, red_path, red_version, logic_name, db_url):
+def store_repeats_database( rpt_file_list, red_path, red_version, \
+    red_paramslogic_name, db_url):
     '''Store parsed Red repeats in Ensembl core database
        accessible from passed URL. Note that the analysis logic name
        and the software version are also passed in order to
@@ -196,7 +202,10 @@ def store_repeats_database( rpt_file_list, red_path, red_version, logic_name, db
         'logic_name':logic_name, \
         'program':'Red', \
         'program_version':red_version, \
-        'program_file':red_path })
+        'program_file':red_path,
+        'parameters': red_params,
+        'gff_source':logic_name,
+        'gff_feature':'repeat' })
     connection.execute(analysis_insert)
 
     # fetch the assigned analysis_id for the new Red analysis
@@ -315,8 +324,9 @@ def main():
                 args.db + '?' + \
                'local_infile=1'
 
+        red_version, red_params = parse_params_from_log(log_filepath)
         store_repeats_database(repeat_filenames, \
-            arg.exe, parse_version_from_log(log_filepath), \
+            arg.exe, red_version, red_params, \
             args.logic_name, db_url)
 
 

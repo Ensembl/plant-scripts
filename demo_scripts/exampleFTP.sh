@@ -11,7 +11,7 @@ ARGSTDOUT=" --quiet $ARGSTOFILE - "
 
 # set servers & division
 SERVER="ftp://ftp.ensemblgenomes.org/pub"
-DIV="plants"
+DIV=plants
 BIOMARTSERVICE="http://plants.ensembl.org/biomart/martservice"
 
 # get Ensembl Plants current release number
@@ -19,7 +19,7 @@ SUMFILE="${SERVER}/${DIV}/current/summary.txt"
 RELEASE=$($EXE $ARGSTDOUT $SUMFILE | \
 	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }')
 
-EGRELEASE=$(( $RELEASE - 53));
+EGRELEASE=$(( RELEASE - 53));
 
 # alternatively set a different Ensembl Genomes (EG) release
 # EGRELEASE=
@@ -31,7 +31,7 @@ echo "EGRELEASE=${EGRELEASE} OPTARG=${OPTARG}"
 echo
 
 # set example species
-SPECIES="Brachypodium_distachyon"
+SPECIES=Brachypodium_distachyon
 
 ## F1) download peptide sequences in FASTA format
 
@@ -67,7 +67,7 @@ $EXE $OPTARG $ARGSDEF $URL
 # You can construct your queries at http://plants.ensembl.org/biomart/martview
 # and export them as XML
 
-MARTSPECIES="bdistachyon_eg_gene"
+MARTSPECIES=bdistachyon_eg_gene
 BIOMARTQUERY=$(cat <<-XMLQUERY
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
@@ -121,7 +121,7 @@ $EXE $OPTARG $ARGSDEF $URL
 
 ## F8) get precomputed VEP cache files
 
-SPECIES="arabidopsis_thaliana"
+SPECIES=arabidopsis_thaliana
 VEPCACHE="${SPECIES,,}*.tar.gz*"
 URL="${SERVER}/${DIV}/release-${EGRELEASE}/variation/vep/${VEPCACHE}"
 echo "# downloading $URL"

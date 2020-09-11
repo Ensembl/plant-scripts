@@ -15,7 +15,7 @@ PORT=4157
 
 # get Ensembl Plants current release number from FTP server
 # Note: wget is used, this can be modified to use alternatives ie curl
-FTPSERVER=ftp://ftp.ensemblgenomes.org/pub
+FTPSERVER="ftp://ftp.ensemblgenomes.org/pub"
 DIV=plants
 SUMFILE="${FTPSERVER}/${DIV}/current/summary.txt"
 RELEASE=`wget --quiet -O - $SUMFILE | \

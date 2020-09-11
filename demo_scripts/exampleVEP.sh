@@ -9,7 +9,7 @@
 # at the bottom of http://plants.ensembl.org
 EGRELEASE=47
 
-RELEASE=$(( $EGRELEASE + 53)); # do not change
+RELEASE=$(( EGRELEASE + 53)); # do not change
 
 echo "EGRELEASE=${EGRELEASE}"
 echo
@@ -33,10 +33,10 @@ echo
 # Note: look for "sift  b"
 
 SPECIES=arabidopsis_thaliana
-VEPCACHE=${SPECIES}*.tar.gz*
+VEPCACHE="${SPECIES}*.tar.gz*"
 tar xfz $VEPCACHE
-grep sift ${SPECIES}/${{EGRELEASE}_*/info.txt
-
+grep sift "${SPECIES}/${EGRELEASE}_*/info.txt"
+echo "${SPECIES}/${EGRELEASE}_*/info.txt"
 
 ## V3) Predict effect of variants 
 

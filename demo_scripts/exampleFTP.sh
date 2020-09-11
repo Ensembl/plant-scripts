@@ -84,8 +84,13 @@ XMLQUERY
 
 FASTAUP="${SPECIES}.upstream_flank100.chr5.fa"
 URL="${BIOMARTSERVICE}?query=$BIOMARTQUERY"
-echo "# downloading $URL" 
-$EXE $OPTARG $ARGSDEF "$URL" $ARGSTOFILE $FASTAUP
+echo "# downloading $FASTAUP"
+if [[ $OPTARG == "--spider" ]]; then
+	echo "# skip this recipe in test"
+	echo
+else
+	$EXE $OPTARG $ARGSDEF "$URL" $ARGSTOFILE $FASTAUP
+fi
 
 ## F6) get mappings to UniProt proteins
 

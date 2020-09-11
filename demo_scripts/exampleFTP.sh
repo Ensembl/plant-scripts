@@ -2,104 +2,107 @@
 
 # Copyright [2020] EMBL-European Bioinformatics Institute
 
-# The recipes below use wget to download files, 
-# you could use curl instead
+# The recipes below use wget to download files 
+# Please change these env variables to use other tools ie curl
+EXE="wget"
+ARGSDEF=" -c " 
+ARGSTOFILE=" -O "
+ARGSTDOUT=" --quiet $ARGSTOFILE - "
 
 # set servers & division
-SERVER=ftp://ftp.ensemblgenomes.org/pub
-DIV=plants
-BIOMARTSERVICE=http://plants.ensembl.org/biomart/martservice
+SERVER="ftp://ftp.ensemblgenomes.org/pub"
+DIV="plants"
+BIOMARTSERVICE="http://plants.ensembl.org/biomart/martservice"
 
 # get Ensembl Plants current release number
-SUMFILE=${SERVER}/${DIV}/current/summary.txt
-RELEASE=`wget --quiet -O - $SUMFILE | \
+SUMFILE="${SERVER}/${DIV}/current/summary.txt"
+RELEASE=`$EXE $ARGSTDOUT $SUMFILE | \
 	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
 
-EGRELEASE=$(( $RELEASE - 53));    
+EGRELEASE=$(( $RELEASE - 53));
 
-# alternatively set other EG release number
+# alternatively set a different Ensembl Genomes (EG) release
 # EGRELEASE=
 
+# optional arguments, if any
 OPTARG=$1
 
 echo "EGRELEASE=${EGRELEASE} OPTARG=${OPTARG}"
 echo
 
 # set example species
-SPECIES=Brachypodium_distachyon
-
-echo "EGRELEASE=${EGRELEASE} OPTARG=$OPTARG"
-echo
+SPECIES="Brachypodium_distachyon"
 
 ## F1) download peptide sequences in FASTA format
 
-FASTAPEP=${SPECIES}*pep.all.fa.gz
-URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP}
+FASTAPEP="${SPECIES}*pep.all.fa.gz"
+URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL 
+$EXE $OPTARG $ARGSDEF $URL
 
 ## F2) download CDS nucleotide sequences in FASTA format
 
-FASTACDS=${SPECIES}*cds.all.fa.gz
-URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cds/${FASTACDS}
+FASTACDS="${SPECIES}*cds.all.fa.gz"
+URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cds/${FASTACDS}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL 
+$EXE $OPTARG $ARGSDEF $URL 
 
 ## F3) download transcripts (cDNA) in FASTA format
 
-FASTACDNA=${SPECIES}*cdna.all.fa.gz
-URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cdna/${FASTACDNA}
+FASTACDNA="${SPECIES}*cdna.all.fa.gz"
+URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cdna/${FASTACDNA}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL 
+$EXE $OPTARG $ARGSDEF $URL
 
 ## F4) download soft-masked genomic sequences
 
-FASTASM=${SPECIES}*.dna_sm.toplevel.fa.gz
-URL=${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}
+FASTASM="${SPECIES}*.dna_sm.toplevel.fa.gz"
+URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
-
+$EXE $OPTARG $ARGSDEF $URL
 
 ## F5) Upstream/downstream sequences
 
-# Note: this is actually a BioMart query.
-# You can construct your queries at 
-# http://plants.ensembl.org/biomart/martview
-# and then export them as XML
+# Note: this is actually a precompiled BioMart query.
+# You can construct your queries at http://plants.ensembl.org/biomart/martview
+# and export them as XML
 
-BIOMARTQUERY=$(cat <<XMLQUERY
+MARTSPECIES="bdistachyon_eg_gene"
+BIOMARTQUERY=$(cat <<-XMLQUERY
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
-<Query  virtualSchemaName = "plants_mart" formatter = "FASTA" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
-	<Dataset name = "bdistachyon_eg_gene" interface = "default" >
-		<Filter name = "upstream_flank" value = "500"/>
+<Query  virtualSchemaName = "plants_mart" formatter = "FASTA" header = "0" uniqueRows = "0" count = "0" datasetConfigVersion = "0.6" >
+	<Dataset name = "$MARTSPECIES" interface = "default" >
+		<Filter name = "chromosome_name" value = "5"/>        
+		<Filter name = "upstream_flank" value = "100"/>
 		<Attribute name = "ensembl_gene_id" />
 		<Attribute name = "5utr" />
 	</Dataset>
 </Query>
 XMLQUERY
 )
-FASTAUP=${SPECIES}.upstream_flank500.fa
-URL=${BIOMARTSERVICE}?query=$BIOMARTQUERY
-echo "# downloading $URL"
-wget $OPTARG -c "$URL" -O $FASTAUP
+
+FASTAUP="${SPECIES}.upstream_flank100.chr5.fa"
+URL="${BIOMARTSERVICE}?query=$BIOMARTQUERY"
+echo "# downloading $URL" 
+$EXE $OPTARG $ARGSDEF "$URL" $ARGSTOFILE $FASTAUP
 
 ## F6) get mappings to UniProt proteins
 
-UNIPTSV=${SPECIES}*.uniprot.tsv.gz
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/${SPECIES,,}//$UNIPTSV
+UNIPTSV="${SPECIES}*.uniprot.tsv.gz"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/tsv/${SPECIES,,}/$UNIPTSV"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 
 ## F7) get indexed, bgzipped VCF file with variants mapped
 
-# Note: this contains all variants known to Ensembl Plants,
+# Note: this file contains all variants known to Ensembl Plants,
 # individual genotypes are not necessarily conserved
 
-VCF=${SPECIES,,}.vcf.gz*
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}
+VCF="${SPECIES,,}.vcf.gz*"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/variation/vcf/${SPECIES,,}/${VCF}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 
 # wheat is an exception, as you can tell from the VCF file which EMS lines
 # share a certain mutation, as in this excerpt:
@@ -113,49 +116,49 @@ wget $OPTARG -c $URL
 
 ## F8) get precomputed VEP cache files
 
-SPECIES=arabidopsis_thaliana
-VEPCACHE=${SPECIES,,}*.tar.gz*
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/vep/${VEPCACHE}
+SPECIES="arabidopsis_thaliana"
+VEPCACHE="${SPECIES,,}*.tar.gz*"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/variation/vep/${VEPCACHE}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 
 # Note: you can get indexed cached files instead from 
 # URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/indexed_vep_cache/${VEPCACHE}
 
 ## F9) download all homologies in a single TSV file, several GBs
 
-TSVFILE=Compara.${RELEASE}.protein_default.homologies.tsv.gz
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}
+TSVFILE="Compara.${RELEASE}.protein_default.homologies.tsv.gz"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 
 # Note: you can extract homologies from this file by parsing it
 # in the command line. Example:
 # zcat $TSVFILE | grep triticum_aestivum | grep oryza_sativa | grep ortholog 
 
-# Alternatively a smaller OrthoXML-format file can be obtained
-# OXMLFILE=Compara.${RELEASE}.protein_default.allhomologies.orthoxml.xml.gz
-# URL=${SERVER}/${DIV}/release-${EGRELEASE}/xml/ensembl-compara/homologies/${OXMLFILE}
+# Alternatively a smaller file in OrthoXML format can be obtained
+# OXMLFILE="Compara.${RELEASE}.protein_default.allhomologies.orthoxml.xml.gz"
+# URL="${SERVER}/${DIV}/release-${EGRELEASE}/xml/ensembl-compara/homologies/${OXMLFILE}"
 
 ## F10) download UniProt report of Ensembl Plants, 
 # summarized how many protein sequences from each species
 # have been annotated in SwissProt & TrEMBL
 
-UNIPFILE=uniprot_report_EnsemblPlants.txt
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE
+UNIPFILE="uniprot_report_EnsemblPlants.txt"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 
 ## F11) retrieve list of new species in current release
 
-NEWLIST=new_genomes.txt
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST
+NEWLIST="new_genomes.txt"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 
 ## F12) get current plant species tree (cladogram)
-TREEFILE=/plants_protein-trees_default.nh
-URL=${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE
+TREEFILE="plants_species-tree_Ensembl.nh"
+URL="${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE"
 echo "# downloading $URL"
-wget $OPTARG -c $URL
+$EXE $OPTARG $ARGSDEF $URL
 

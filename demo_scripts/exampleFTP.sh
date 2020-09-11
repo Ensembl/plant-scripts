@@ -16,8 +16,8 @@ BIOMARTSERVICE="http://plants.ensembl.org/biomart/martservice"
 
 # get Ensembl Plants current release number
 SUMFILE="${SERVER}/${DIV}/current/summary.txt"
-RELEASE=`$EXE $ARGSTDOUT $SUMFILE | \
-	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
+RELEASE=$($EXE $ARGSTDOUT $SUMFILE | \
+	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }')
 
 EGRELEASE=$(( $RELEASE - 53));
 

@@ -14,13 +14,14 @@ USER=anonymous
 PORT=4157
 
 # get Ensembl Plants current release number from FTP server
+# Note: wget is used, this can be modified to use alternatives ie curl
 FTPSERVER=ftp://ftp.ensemblgenomes.org/pub
 DIV=plants
-SUMFILE=${FTPSERVER}/${DIV}/current/summary.txt
+SUMFILE="${FTPSERVER}/${DIV}/current/summary.txt"
 RELEASE=`wget --quiet -O - $SUMFILE | \
     perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
 
-EGRELEASE=$(( $RELEASE - 53));
+EGRELEASE=$(( RELEASE - 53));
 
 # alternatively set other EG release number
 # EGRELEASE=
@@ -38,14 +39,16 @@ mysql --host $SERVER --user $USER --port $PORT \
 # The following API script can also be used:
 # https://github.com/Ensembl/ensembl-metadata/blob/master/misc_scripts/get_list_databases_for_division.pl
 
+
 ## S2) Count protein-coding genes of a particular species
 
 SPECIES=arabidopsis_thaliana
-SPECIESCORE=`mysql --host $SERVER --user $USER --port $PORT \
-    -e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}"`
+SPECIESCORE=$(mysql --host $SERVER --user $USER --port $PORT \
+    -e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}")
 
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
+
 
 ## S3) Get canonical transcript stable_ids
 
@@ -63,8 +66,8 @@ mysql --host $SERVER --user $USER --port $PORT \
 # Variation schema documented at 
 # http://www.ensembl.org/info/docs/api/variation/variation_schema.html
 
-SPECIESVAR=`mysql --host $SERVER --user $USER --port $PORT \
-	-e "show databases" | grep "${SPECIES}_variation_${EGRELEASE}_${RELEASE}"`
+SPECIESVAR=$(mysql --host $SERVER --user $USER --port $PORT \
+	-e "show databases" | grep "${SPECIES}_variation_${EGRELEASE}_${RELEASE}")
 
 mysql --host $SERVER --user $USER --port $PORT \
     $SPECIESVAR<<SQL
@@ -101,6 +104,4 @@ FROM
 	INNER JOIN gene_member USING (gene_member_id)
 WHERE method_link_species_set.name="T.aes homoeologues" LIMIT 10
 SQL
-
-
 

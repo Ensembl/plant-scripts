@@ -25,6 +25,30 @@ import sqlalchemy_utils as db_utils
 import pymysql
 pymysql.install_as_MySQLdb()
 
+def fetch_repeats_FASTA( db_url, logic_name, dirname ):
+    '''Retrieves repeat sequences from Ensembl core db 
+       and puts them in FASTA file.
+       Returns name of FASTA file.'''
+
+    # core database handles
+    engine = db.create_engine(db_url)
+    connection = engine.connect()
+    metadata = db.MetaData()
+
+    # find out analysis_id of logic_name
+
+    # fetch sequences
+	#seq_query = db.select([seq_region_table.columns.seq_region_id])
+	#seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
+    #seq_results = connection.execute(seq_query).fetchall()
+	#if seq_results:
+    #    seq_region_id = seq_results[0][0]
+    repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
+        "SUBSTR(d.sequence,r.seq_region_start,r.seq_region_end-r.seq_region_start+1) " +\
+        "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
+    repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
+    print(repeat_seq_result[0][0])
+
 
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
@@ -349,73 +373,66 @@ def main():
         help="path to FASTA file with repeat sequences in RepBase format")
     parser.add_argument("outdir",
         help="path to directory with stored Red results")
+    parser.add_argument("host",
+        help="name of the database host")
+    parser.add_argument("user",
+        help="host user")
+    parser.add_argument("pw",
+        help="host password")
+    parser.add_argument("port", type=int,
+        help="host port")
+    parser.add_argument("db",
+        help="name of the core database")
     parser.add_argument("--exe", default="minimap2",
         help="path to minimap2 executable, default: minimap2")
     parser.add_argument("--cor", default=1,
         help="number of cores for minimap2, default: 1")
-    parser.add_argument("--host",
-        help="name of the database host, required to store repeats in Ensembl core")
-    parser.add_argument("--user",
-        help="host user, required to store repeats in Ensembl core")
-    parser.add_argument("--pw",
-        help="host password, required to store repeats in Ensembl core")
-    parser.add_argument("--port", type=int,
-        help="host port, required to store repeats in Ensembl core")
-    parser.add_argument("--db",
-        help="name of the core database, required to store repeats in Ensembl core")
     parser.add_argument("--logic_name", default="repeatdetector",
         help="path to Red executable, default: repeatdetector")
 
     args = parser.parse_args()
 
-    # create output directory and subdirs if required,
+    # create output subdir if required,
     # these follow Red nomenclature
     gnmdir = args.outdir
     rptdir = os.path.join(args.outdir, 'rpt')
-    outdirs = [ gnmdir, rptdir ]
-    for dir in outdirs:
-        try:
-            os.makedirs( dir, mode=0o777, exist_ok=True)
-        except OSError as error:
-            print("# ERROR: cannot create ", dir)
-            print(error) 
+    annotdir = os.path.join(args.outdir, 'annot') 
+    try:
+        os.makedirs( annotdir, mode=0o777, exist_ok=True)
+    except OSError as error:
+        print("# ERROR: cannot create ", annotdir)
+        print(error) 
 
-    log_filepath = os.path.join(gnmdir, 'log.txt')
-
-    # save individual sequences to output directory, 
-    # this allows for multi-threaded Red jobs
-    print("# parsing FASTA file")
-    sequence_names = parse_FASTA_sequences( args.fasta_file, gnmdir)
-    if len(sequence_names) == 0:
-        print("# ERROR: cannot parse ", args.fasta_file)
-    else:
-        print("# number of input sequences = %d\n\n" % len(sequence_names))
-
-    # run Red, or else re-use previous results
-    print("# running Red")
-    repeat_filenames = run_red( args.exe, args.cor, \
-	    gnmdir, rptdir, log_filepath) 
-    print("# TSV files with repeat coords: %s\n\n" % rptdir)
-
-    # (optionally) store repeat features in core database
+    # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:
         db_url = 'mysql://' + \
-                args.user + ':' + \
-                args.pw + '@' + \
-                args.host + ':' + \
-                str(args.port) + '/' + \
-                args.db + '?' + \
-               'local_infile=1'
+        args.user + ':' + \
+        args.pw + '@' + \
+        args.host + ':' + \
+        str(args.port) + '/' + \
+        args.db + '?' + \
+        'local_infile=1'
 
-        red_version, red_params = parse_params_from_log(log_filepath)
+        # fetch sequences of Red repats and save in FASTA file
+        repeats_filename = fetch_repeats_FASTA( db_url, args.logic_name, annotdir )
+        print("# FASTA file with repeat sequences: %s\n\n" % repeats_filename)
 
-        num_repeats = store_repeats_database( rptdir, sequence_names, repeat_filenames, \
-            args.exe, red_version, red_params, args.logic_name,\
-            db_url)
-        print("\n# stored %d repeats\n" % num_repeats);
+         # format repeat library for minimap2
 
-        #name2region = {} #debugging
-        #_parse_repeats(rptdir, repeat_filenames, name2region, 11, 22)
+
+         # run minimap2, or else re-use previous results
+         #print("# running minimap2")
+
+
+    #repeat_filenames = run_red( args.exe, args.cor, \
+	#    gnmdir, rptdir, log_filepath) 
+    #print("# TSV files with repeat coords: %s\n\n" % rptdir)
+
+
+#        num_repeats = store_repeats_database( rptdir, sequence_names, repeat_filenames, \
+#            args.exe, red_version, red_params, args.logic_name,\
+#            db_url)
+#        print("\n# stored %d repeats\n" % num_repeats);
 
 
 

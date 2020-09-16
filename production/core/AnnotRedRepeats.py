@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 
 
 # Python3 script to annotate Red repeats and optionally 
-# feed results into an Ensembl core database
+# feed the new consensus_repeats into an Ensembl core database
 #
 # Tested with: 
 # pyenv local 3.7.6
@@ -25,30 +25,90 @@ import sqlalchemy_utils as db_utils
 import pymysql
 pymysql.install_as_MySQLdb()
 
-def fetch_repeats_FASTA( db_url, logic_name, dirname ):
-    '''Retrieves repeat sequences from Ensembl core db 
-       and puts them in FASTA file.
+def fetch_repeats_FASTA( logpath, synpath, annotdir ):
+    '''Parses previous log and synonyms to retrieve repeat coords and puts 
+       the corresponding sequence segments in a new FASTA file.
        Returns name of FASTA file.'''
 
-    # core database handles
-    engine = db.create_engine(db_url)
-    connection = engine.connect()
-    metadata = db.MetaData()
+    #repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
+    #    "SUBSTR(d.sequence,r.seq_region_start,r.seq_region_end-r.seq_region_start+1) " +\
+    #    "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
+    #repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
+    #print(repeat_seq_result[0][0])
 
-    # find out analysis_id of logic_name
+    repeat_FASTA_file = ''
+    name_to_seqregion = {}
 
-    # fetch sequences
-	#seq_query = db.select([seq_region_table.columns.seq_region_id])
-	#seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
-    #seq_results = connection.execute(seq_query).fetchall()
-	#if seq_results:
-    #    seq_region_id = seq_results[0][0]
-    repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
-        "SUBSTR(d.sequence,r.seq_region_start,r.seq_region_end-r.seq_region_start+1) " +\
-        "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
-    repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
-    print(repeat_seq_result[0][0])
+    # check whether previous files and synonyms exist
+    if(os.path.isfile(logpath)):
+        rpt_files = _parse_rptfiles_from_log(logpath)
+        if not rpt_files:
+            print("# ERROR: cannot find previous repeat files from", logpath)
+            return repeat_FASTA_file
+        
+        fa_files = _parse_fafiles_from_log(logpath)
+        if not rpt_files:
+            print("# ERROR: cannot find previous sequence files from", logpath)
+            return repeat_FASTA_file
+	
+        try:
+            synfile = open(synpath)
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", synpath, error)
+            return repeat_FASTA_file
+        for line in synfile:
+            synre = re.search(r'^(\S+)\t(\d+)', line)
+            if synre:
+                name_to_seqregion[ synre.group(1) ] = synre.group(2)
+ 
+    # cut repeat sequences from coordinates, chr by chr
+    for file in fa_files:
 
+        chrsequence = ''
+
+        # build rpt_filename
+        rpt_filename = os.path.basename(file)
+        rpt_filename = rpt_filename.replace(".fa",".tsv")
+
+        # open sequence file
+        try:
+            fafile = open(file)
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", file, error)
+            return repeat_FASTA_file
+
+        for line in fafile:
+            namere = re.search(r'^>(\S+)', line)
+            if namere:
+                seq_name = namere.group(1)
+                if seq_name in name_to_seqregion:
+                    seq_region_id = name_to_seqregion[ seq_name ]
+                else:
+                    print("# ERROR: cannot find seg_region_id for sequence ", seq_name, error)
+                    return repeat_FASTA_file
+            else:
+                chrsequence = chrsequence + line.rstrip()
+        fafile.close() 
+    
+	    # open corresponding repeat file
+        for rfilename in rpt_files:
+            rpt_basename = os.path.basename(rfilename)
+            if rpt_basename != rpt_filename: 
+                continue
+            try:
+                rfile = open(rfilename)
+            except OSError as error:
+                 print("# ERROR: cannot open/read file:", rfilename, error)
+                 return repeat_FASTA_file
+            for line in rfile:
+                ( name, start, end ) = line.split()
+                int_start = int(start)
+                int_len = int(end)-int_start+1
+                print(">%s %s %s\n%s" % 
+                    (seq_region_id, start, end,
+                    chrsequence[int_start-1:int_len]))
+                break
+                
 
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
@@ -156,6 +216,36 @@ def _parse_rptfiles_from_log( log_filename ):
 
     if repeats_ok and job_done:
         return rpt_files
+    else:
+        return []
+
+def _parse_fafiles_from_log( log_filename ):
+    '''Parses names of FASTA (.fa) sequence files from log. 
+       Returns a list with the filenames'''
+
+    fa_files = []
+
+    try:
+        logfile = open(log_filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", log_filename, error)
+        return fa_files
+
+    fafiles_ok = True
+    for line in logfile:
+        fare = re.search(r'^Counting k-mers in (\S+) ...', line)
+        if fare:
+            fa_filename = fare.group(1)
+            if not(os.path.isfile(fa_filename)):
+                fafiles_ok = False
+                break
+            else:
+                fa_files.append(fa_filename)
+
+    logfile.close
+
+    if fafiles_ok:
+        return fa_files
     else:
         return []
 
@@ -368,40 +458,48 @@ def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_conse
 def main():
 
     parser=argparse.ArgumentParser()
-    
+   
     parser.add_argument("repeat_fasta_file",
         help="path to FASTA file with repeat sequences in RepBase format")
     parser.add_argument("outdir",
         help="path to directory with stored Red results")
-    parser.add_argument("host",
-        help="name of the database host")
-    parser.add_argument("user",
-        help="host user")
-    parser.add_argument("pw",
-        help="host password")
-    parser.add_argument("port", type=int,
-        help="host port")
-    parser.add_argument("db",
-        help="name of the core database")
     parser.add_argument("--exe", default="minimap2",
         help="path to minimap2 executable, default: minimap2")
     parser.add_argument("--cor", default=1,
         help="number of cores for minimap2, default: 1")
+    parser.add_argument("--host",
+        help="name of the database host")
+    parser.add_argument("--user",
+        help="host user")
+    parser.add_argument("--pw",
+        help="host password")
+    parser.add_argument("--port", type=int,
+        help="host port")
+    parser.add_argument("--db",
+        help="name of the core database")
     parser.add_argument("--logic_name", default="repeatdetector",
-        help="path to Red executable, default: repeatdetector")
+        help="logic name of Ensembl analysis, default: repeatdetector")
 
     args = parser.parse_args()
 
     # create output subdir if required,
     # these follow Red nomenclature
     gnmdir = args.outdir
-    rptdir = os.path.join(args.outdir, 'rpt')
     annotdir = os.path.join(args.outdir, 'annot') 
     try:
         os.makedirs( annotdir, mode=0o777, exist_ok=True)
     except OSError as error:
         print("# ERROR: cannot create ", annotdir)
         print(error) 
+
+    log_filepath = os.path.join(gnmdir, 'log.txt')
+    syn_filepath = os.path.join(gnmdir, 'synonyms.tsv')
+
+    # fetch sequences of Red repeats and save in FASTA file
+    repeats_filename = fetch_repeats_FASTA( log_filepath, syn_filepath, annotdir )
+    print("# FASTA file with repeat sequences: %s\n\n" % repeats_filename)
+
+    # fetch sequences of Red repats and save in FASTA file
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:
@@ -413,15 +511,11 @@ def main():
         args.db + '?' + \
         'local_infile=1'
 
-        # fetch sequences of Red repats and save in FASTA file
-        repeats_filename = fetch_repeats_FASTA( db_url, args.logic_name, annotdir )
-        print("# FASTA file with repeat sequences: %s\n\n" % repeats_filename)
-
-         # format repeat library for minimap2
+        # format repeat library for minimap2
 
 
-         # run minimap2, or else re-use previous results
-         #print("# running minimap2")
+        # run minimap2, or else re-use previous results
+        #print("# running minimap2")
 
 
     #repeat_filenames = run_red( args.exe, args.cor, \

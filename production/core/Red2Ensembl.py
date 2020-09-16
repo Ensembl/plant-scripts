@@ -364,7 +364,7 @@ def main():
     parser.add_argument("--db",
         help="name of the core database, required to store repeats in Ensembl core")
     parser.add_argument("--logic_name", default="repeatdetector",
-        help="path to Red executable, default: repeatdetector")
+        help="logic name of Ensembl analysis, default: repeatdetector")
 
     args = parser.parse_args()
 
@@ -413,10 +413,6 @@ def main():
             args.exe, red_version, red_params, args.logic_name,\
             db_url)
         print("\n# stored %d repeats\n" % num_repeats);
-
-        #name2region = {} #debugging
-        #_parse_repeats(rptdir, repeat_filenames, name2region, 11, 22)
-
 
 
 if __name__ == "__main__":

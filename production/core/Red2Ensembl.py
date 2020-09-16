@@ -285,7 +285,7 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
         "seq_region_end,repeat_start,repeat_end,repeat_consensus_id,analysis_id)"
     repeat_result = connection.execute(repeat_query).rowcount
 
-    return repeat_result
+    return repeat_result, name_to_seqregion
 
 
 def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_consensus_id):
@@ -409,10 +409,22 @@ def main():
 
         red_version, red_params = parse_params_from_log(log_filepath)
 
-        num_repeats = store_repeats_database( rptdir, sequence_names, repeat_filenames, \
-            args.exe, red_version, red_params, args.logic_name,\
-            db_url)
+        num_repeats, name2seqregion  = \
+            store_repeats_database( rptdir, sequence_names, repeat_filenames, \
+                args.exe, red_version, red_params, args.logic_name,\
+                db_url)
         print("\n# stored %d repeats\n" % num_repeats);
+
+        # print sequence name synonyms to file
+        syn_filepath = os.path.join(gnmdir, 'synonyms.tsv')
+        try:
+            synfile = open(syn_filepath, "w")
+            for name, seqregion in name2seqregion.items():
+                synfile.write("%s\t%s\n" % (name, seqregion))
+            synfile.close()
+        except OSError as error:
+            print("# ERROR: cannot create file:", syn_filepath, error)
+							       
 
 
 if __name__ == "__main__":

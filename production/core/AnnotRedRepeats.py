@@ -138,6 +138,62 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
     return repeat_FASTA_file
 
 
+def format_reference_minimap( miniexe, fasta_file, annotdir):
+    '''Takes FASTA library and formats it with minimap2.
+       Returns name of formatted library file.'''
+
+    # output for nrTEplantsJune2020.fna (708MB) -> requires 3.7GB RAM
+	#[M::main::44.595*0.98] loaded/built the index for 171104 target sequence(s)
+	#[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 171104
+	#[M::main] Version: 2.17-r974-dirty
+	#[M::main] CMD: github/minimap2/minimap2 --idx-no-seq -d repeat_lib.mmi
+	#[M::main] Real time: 47.044 sec; CPU: 44.924 sec; Peak RSS: 3.713 GB
+
+    log_filepath = os.path.join(annotdir, 'repeat_lib.mmi.log')
+    formatted_filename = os.path.join(annotdir, 'repeat_lib.mmi')
+
+    # check whether previous results exist
+    if(os.path.isfile(formatted_filename)) and (os.path.isfile(log_filepath)):
+        try:
+            logfile = open(log_filepath)
+        except OSError as error:
+            print("# ERROR: cannot open/read file ", log_filepath, error)
+
+        for line in logfile:
+            # jobs might die due to lack of RAM; make sure
+            # they completed y checking the final memory report
+            ramre = re.search(r'Peak RSS+', line)
+            if ramre:
+                print("# re-using previously formatted repeat library ", 
+                    formatted_filename)
+                return formatted_filename
+
+    # open new log file
+    try:
+        logfile = open(log_filepath,"w")
+    except OSError as error:
+        print("# ERROR: cannot create file ", log_filepath, error)
+
+    cmd = miniexe + ' --idx-no-seq -d ' + formatted_filename + ' ' + fasta_file
+																	
+    # check minimap2 binary
+    if not(os.path.isfile(miniexe)):
+        raise FileNotFoundError(errno.ENOENT,os.strerror(errno.ENOENT),miniexe)
+	
+    # run minimap2 and capture stderr
+    try:
+        osresponse = subprocess.check_call(cmd.split(),stderr=logfile)
+    except subprocess.CalledProcessError as err:
+        print("# ERROR: cannot run minimap2 ", cmd, err.returncode)
+        # does not seem to work on bshell jobs
+        #except OSError as err:
+        #    print("# ERROR: need more RAM to run minimap2 ", err.returncode)
+    finally:
+        logfile.close()
+
+    return formatted_filename
+
+
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
        saves them in multiple files in named directory.
@@ -184,32 +240,6 @@ def parse_FASTA_sequences( genome_file , dirname ):
     file.close()
 
     return seq_names
-
-
-def parse_params_from_log( log_filename ):
-    '''Parses Red stdout log and returns two strings: 
-       i) Red version ii) Parameters of this job'''
-
-    version = 'NA'
-    params = ''
-    try:
-        logfile = open(log_filename)
-    except OSError as error:
-        print("# ERROR: cannot open/read file:", log_filename, error)
-        return version
-
-    for line in logfile:
-        versionre = re.search(r'^Version: (\S+)', line)
-        if versionre:
-            version = versionre.group(1)
-        else:
-            paramre = re.search(r'^(-\w+: \S+)', line)
-            if paramre:
-                params = params + ' ' + paramre.group(1)
-
-    logfile.close
-
-    return version, params
 
 
 def _parse_rptfiles_from_log( log_filename ):
@@ -531,7 +561,17 @@ def main():
     print("# FASTA file with repeat sequences (length>%s): %s\n\n"\
         % (args.minlen, repeats_filename))
 
-    # fetch sequences of Red repats and save in FASTA file
+    # format repeat library for minimap2
+    formatted_library = format_reference_minimap( args.exe, \
+        args.repeat_fasta_file, annotdir)
+
+	        # run minimap2, or else re-use previous results
+			        #print("# running minimap2")
+
+    #repeat_filenames = run_red( args.exe, args.cor, \
+	    #    gnmdir, rptdir, log_filepath)
+	    #print("# TSV files with repeat coords: %s\n\n" % rptdir)
+
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:
@@ -542,18 +582,6 @@ def main():
         str(args.port) + '/' + \
         args.db + '?' + \
         'local_infile=1'
-
-        # format repeat library for minimap2
-
-
-        # run minimap2, or else re-use previous results
-        #print("# running minimap2")
-
-
-    #repeat_filenames = run_red( args.exe, args.cor, \
-	#    gnmdir, rptdir, log_filepath) 
-    #print("# TSV files with repeat coords: %s\n\n" % rptdir)
-
 
 #        num_repeats = store_repeats_database( rptdir, sequence_names, repeat_filenames, \
 #            args.exe, red_version, red_params, args.logic_name,\

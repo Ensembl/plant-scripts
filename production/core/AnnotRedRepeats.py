@@ -25,9 +25,10 @@ import sqlalchemy_utils as db_utils
 import pymysql
 pymysql.install_as_MySQLdb()
 
-def fetch_repeats_FASTA( logpath, synpath, annotdir ):
+def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
     '''Parses previous log and synonyms to retrieve repeat coords and puts 
        the corresponding sequence segments in a new FASTA file.
+       Only repeats with length >= minlen are fetched.
        Returns name of FASTA file.'''
 
     #repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
@@ -61,6 +62,13 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir ):
             if synre:
                 name_to_seqregion[ synre.group(1) ] = synre.group(2)
  
+    # create output FASTA file
+    repeat_FASTA_file = os.path.join(annotdir, 'Red_repeats.fna')
+    try:
+        outfile = open(repeat_FASTA_file,"w")
+    except OSError as error:
+        print("# ERROR: cannot create file ", repeat_FASTA_file, error)
+
     # cut repeat sequences from coordinates, chr by chr
     for file in fa_files:
 
@@ -75,7 +83,9 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir ):
             fafile = open(file)
         except OSError as error:
             print("# ERROR: cannot open/read file:", file, error)
-            return repeat_FASTA_file
+            outfile.close()
+            os.remove(repeat_FASTA_file)
+            return ''
 
         for line in fafile:
             namere = re.search(r'^>(\S+)', line)
@@ -84,8 +94,11 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir ):
                 if seq_name in name_to_seqregion:
                     seq_region_id = name_to_seqregion[ seq_name ]
                 else:
-                    print("# ERROR: cannot find seg_region_id for sequence ", seq_name, error)
-                    return repeat_FASTA_file
+                    print("# ERROR: cannot find seg_region_id for sequence ", 
+                        seq_name, error)
+                    outfile.close()
+                    os.remove(repeat_FASTA_file)
+                    return ''
             else:
                 chrsequence = chrsequence + line.rstrip()
         fafile.close() 
@@ -99,16 +112,31 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir ):
                 rfile = open(rfilename)
             except OSError as error:
                  print("# ERROR: cannot open/read file:", rfilename, error)
-                 return repeat_FASTA_file
+                 outfile.close()
+                 os.remove(repeat_FASTA_file)
+                 return ''
             for line in rfile:
                 ( name, start, end ) = line.split()
-                int_start = int(start)
-                int_len = int(end)-int_start+1
-                print(">%s %s %s\n%s" % 
-                    (seq_region_id, start, end,
-                    chrsequence[int_start-1:int_len]))
-                break
-                
+                # convert coord strings to substring indexes (0-based excl)
+                idx_start = int(start)-1
+                idx_end = int(end)
+                if(idx_end-idx_start+1 < minlen): 
+                    continue
+                if chrsequence[idx_start:idx_end] == '':
+                    print("# ERROR: cannot cut seq_region %s:%s-%s" 
+                        % (seq_region_id, start, end)) 
+                    outfile.close()
+                    os.remove(repeat_FASTA_file)
+                    return ''
+                else:
+                    # note that coords in FASTA header are still 1-based incl
+                    outfile.write(">%s:%s:%s\n%s\n" % 
+                        (seq_region_id, start, end,
+                        chrsequence[idx_start:idx_end]))
+    
+    outfile.close()
+    return repeat_FASTA_file
+
 
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes FASTA genome file name, parses individual sequences and 
@@ -467,6 +495,8 @@ def main():
         help="path to minimap2 executable, default: minimap2")
     parser.add_argument("--cor", default=1,
         help="number of cores for minimap2, default: 1")
+    parser.add_argument("--minlen", default=90,
+        help="min length of Red repeats to be annotated, default: 90")
     parser.add_argument("--host",
         help="name of the database host")
     parser.add_argument("--user",
@@ -496,8 +526,10 @@ def main():
     syn_filepath = os.path.join(gnmdir, 'synonyms.tsv')
 
     # fetch sequences of Red repeats and save in FASTA file
-    repeats_filename = fetch_repeats_FASTA( log_filepath, syn_filepath, annotdir )
-    print("# FASTA file with repeat sequences: %s\n\n" % repeats_filename)
+    repeats_filename = fetch_repeats_FASTA( log_filepath, syn_filepath,\
+        annotdir, int(args.minlen) )
+    print("# FASTA file with repeat sequences (length>%s): %s\n\n"\
+        % (args.minlen, repeats_filename))
 
     # fetch sequences of Red repats and save in FASTA file
 

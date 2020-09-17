@@ -31,12 +31,6 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
        Only repeats with length >= minlen are fetched.
        Returns name of FASTA file.'''
 
-    #repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
-    #    "SUBSTR(d.sequence,r.seq_region_start,r.seq_region_end-r.seq_region_start+1) " +\
-    #    "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
-    #repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
-    #print(repeat_seq_result[0][0])
-
     repeat_FASTA_file = ''
     name_to_seqregion = {}
 
@@ -313,15 +307,16 @@ def _parse_fafiles_from_log( log_filename ):
 
 def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     '''Calls minimap2,  waits for job completion and logs stderr.
-       Returns name of file with mappings.
-       If previous output exist minimap2 is skipped.'''
+       Returns name of file with sorted mappings (system sort).
+       If previous output exist minimap2 & sort are skipped.'''
 
-    output_filename = os.path.join(outdir, 'repeat_mappings.paf') 
+    output_filename = os.path.join(outdir, 'repeat_mappings.paf')
+    sorted_filename = os.path.join(outdir, 'repeat_mappings.sort.paf')
     log_filepath = os.path.join(outdir, 'repeat_mappings.log')
 
     # check whether previous results exist
-    if(os.path.isfile(output_filename) and
-        os.path.getsize(output_filename) > 0 and
+    if(os.path.isfile(sorted_filename) and
+        os.path.getsize(sorted_filename) > 0 and
         os.path.isfile(log_filepath)):
         try:
             logfile = open(log_filepath)
@@ -334,9 +329,9 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
             # they completed by checking the final memory report
             ramre = re.search(r'Peak RSS+', line)
             if ramre:
-                print("# re-using previous mappings file ",output_filename)
+                print("# re-using previous mappings file ",sorted_filename)
 																
-        return output_filename
+        return sorted_filename
 
     # open new log & output files 
     try:
@@ -344,12 +339,21 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     except OSError as error:
         print("# ERROR: cannot create file ", log_filepath, error)
         return ''
+
     try:
         outfile = open(output_filename,"w")
     except OSError as error:
         print("# ERROR: cannot create file ", output_filename, error)
         return ''
 
+    try:
+        sortfile = open(sorted_filename,"w")
+    except OSError as error:
+        print("# ERROR: cannot create file ", sorted_filename, error)
+    return ''
+
+    print("hola")
+    # put together minimap2 command
     cmd = miniexe + \
             ' -K100M --score-N 0 -x map-ont ' +\
             ' -t '+ cores + ' ' +\
@@ -364,24 +368,39 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     try:
         osresponse = subprocess.check_call(cmd.split(),stdout=outfile,stderr=logfile)
     except subprocess.CalledProcessError as err:
-        print("# ERROR: cannot run minimap2 ", cmd,  err.returncode)
+        print("# ERROR: cannot run minimap2 ", cmd, err.returncode)
     finally:
         logfile.close()
         outfile.close()
+    print(cmd)
+    
+	# sort results
+    cmd = 'sort -k1,1 -k11,11nr ' + output_filename
+    
+    try:
+        osresponse = subprocess.check_call(cmd.split(),stdout=sortfile)
+    except subprocess.CalledProcessError as err:
+        print("# ERROR: cannot run sort ", cmd, err.returncode)
+    finally:
+        sortfile.close()
 
-    return output_filename
+    return sorted_filename
 
 
-def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
-    red_path,red_version, red_params, logic_name, db_url):
-    '''Store parsed Red repeats in Ensembl core database
-       accessible from passed URL. Note that the analysis logic name
-       and software details are also passed in order to
-       fill the analysis table.
-       Returns number of inserted repeats.'''
+def store_repeat_annot_database( map_filename, 
+    repeat_fasta_file, logic_name, db_url):
+    '''Store parsed repeat annotations in Ensembl core database
+       accessible from passed URL. Note that the entry in analysis table
+       with the passed logic name is updated.
+       Returns number of inserted annotations.'''
 
-    num_repeats = 0
-    name_to_seqregion = {}
+#repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
+    #    "SUBSTR(d.sequence,r.seq_region_start,r.seq_region_end-r.seq_region_start+1) " +\
+	    #    "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
+		    #repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
+			    #print(repeat_seq_result[0][0])
+
+    num_annot = 0
 
     # core database handles
     engine = db.create_engine(db_url)
@@ -590,6 +609,8 @@ def main():
     map_filename = run_minimap( args.exe, args.cor, \
 	    formatted_lib_filename, repeats_filename, annotdir)
 
+    print("# minimap2 mapped repeats: ", map_filename)
+
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:
@@ -601,9 +622,10 @@ def main():
         args.db + '?' + \
         'local_infile=1'
 
-#        num_annot = store_repeat_annot_database( map_filename, \
-#            args.repeat_fasta_file, args.logic_name, db_url)
-#        print("\n# stored %d repeat annotations\n" % num_annot);
+        #num_annot = store_repeat_annot_database( map_filename, \
+        #    args.repeat_fasta_file, args.logic_name, db_url)
+
+        #print("\n# stored %d repeat annotations\n" % num_annot)
 
 
 

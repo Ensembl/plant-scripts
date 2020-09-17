@@ -350,9 +350,8 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         sortfile = open(sorted_filename,"w")
     except OSError as error:
         print("# ERROR: cannot create file ", sorted_filename, error)
-    return ''
+        return ''
 
-    print("hola")
     # put together minimap2 command
     cmd = miniexe + \
             ' -K100M --score-N 0 -x map-ont ' +\
@@ -374,7 +373,8 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         outfile.close()
     print(cmd)
     
-	# sort results
+	# sort results on repeat, aligned block length
+    # https://github.com/lh3/miniasm/blob/master/PAF.md
     cmd = 'sort -k1,1 -k11,11nr ' + output_filename
     
     try:
@@ -383,6 +383,8 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         print("# ERROR: cannot run sort ", cmd, err.returncode)
     finally:
         sortfile.close()
+
+    os.remove(output_filename)
 
     return sorted_filename
 
@@ -399,6 +401,9 @@ def store_repeat_annot_database( map_filename,
 	    #    "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
 		    #repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
 			    #print(repeat_seq_result[0][0])
+
+
+    #sort -k1,1 -k11,11nr  Helianthus_annuus.HanXRQr1.0.47.Red.June2020.paf | perl -lane '$hits{$F[0]}++; $cov=$F[10]/$F[1]; printf("%s\t%s\t%1.2f\n",$F[0],(split(/#/,$F[5]))[1],$cov) if($hits{$F[0]}==1 && $cov >= 0.75)' |wc
 
     num_annot = 0
 

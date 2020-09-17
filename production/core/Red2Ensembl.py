@@ -189,7 +189,6 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
        fill the analysis table.
        Returns number of inserted repeats.'''
 
-    num_repeats = 0
     name_to_seqregion = {}
 
     # core database handles
@@ -224,7 +223,7 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
                 seq_region_id = syn_results[0][0]
             else:
                 print("# ERROR: cannot find seq_region_id for sequence %s\n" % seq_name)
-                return num_repeats              
+                return 0              
 
         print("# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id))	
         name_to_seqregion[seq_name] = seq_region_id

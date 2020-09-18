@@ -413,7 +413,7 @@ def make_annotation_report( map_filename, #repeat_fasta_file,
 
    return matched_repeats 
 
-def store_repeat_annot_database( matched_repeats, 
+def store_repeat_annot_database( workdir, matched_repeats, 
     repeat_fasta_file, logic_name, db_url):
     '''Store parsed repeat annotations in Ensembl core database
        accessible from passed URL. First param is dictionary
@@ -429,7 +429,6 @@ def store_repeat_annot_database( matched_repeats,
 
 
     num_annot = 0
-    quit()
 
     # core database handles
     engine = db.create_engine(db_url)
@@ -440,6 +439,15 @@ def store_repeat_annot_database( matched_repeats,
     analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
     repeat_feature_table = \
         db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
+
+    # create temporary table with annotated repeat features
+    #for repeat in matched_repeats:
+        #(seq_region_id,seq_region_start,seq_region_end) = repeat.split(":")
+        #print("%s %s %s" % (seq_region_id,seq_region_start,seq_region_end))
+        
+    # TO BE DONE
+    return 0
+    
 
     #update_stmt = analysis_table.update()\
     #    .where(analysis_table.logic_name=logic_name)\
@@ -549,7 +557,7 @@ def main():
         args.db + '?' + \
         'local_infile=1'
 
-        num_annot = store_repeat_annot_database( matched_repeats, \
+        num_annot = store_repeat_annot_database( annotdir, matched_repeats, \
             args.repeat_fasta_file, args.logic_name, db_url)
 
         print("\n# stored %d repeat annotations\n" % num_annot)

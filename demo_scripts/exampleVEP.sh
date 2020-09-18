@@ -46,7 +46,8 @@ echo "${SPECIES}/${EGRELEASE}_*/info.txt"
 
 VCFILE=ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf
 
-ensembl-vep/vep --genomes \ # Ensembl Genomes
+VEPOPTIONS=(
+	--genomes \             # Ensembl Genomes
 	--species $SPECIES \
 	--cache \               # use local cache file, opposed to --database
 	--dir_cache ./ \        # location of unpacked cache $SPECIES folder
@@ -56,6 +57,8 @@ ensembl-vep/vep --genomes \ # Ensembl Genomes
 	--check_existing \      # co-located known variants
 	--distance 5000 \       # max dist between variant and transcript
 	--biotype               # sow biotype of neighbor transcript
+    )
+ensembl-vep/vep "${VEPOPTIONS[@]}"
 
 ## V4) Predict effect of variants for species not in Ensembl
 

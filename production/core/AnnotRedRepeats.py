@@ -191,54 +191,6 @@ def format_reference_minimap( miniexe, cores, fasta_file, outdir):
     return formatted_filename
 
 
-def parse_FASTA_sequences( genome_file , dirname ):
-    '''Takes FASTA genome file name, parses individual sequences and 
-       saves them in multiple files in named directory.
-       Returns: list of successfully parsed sequence names'''
-
-    seq_names = []
-    try:
-        file = open(genome_file)
-    except OSError as error:
-        print("# ERROR: cannot open/read file:", genome_file, error)
-        return num_seqs
-
-    seq_filepath = ''
-    prev_filepath = ''
-    for line in file:
-       header = re.search(r'^>', line) 
-       if header:
-           # check previous file was open
-           prev_filepath = seq_filepath
-           if prev_filepath:
-               seqfile.close()
-
-           # open temp FASTA file for this sequence only
-           seq_name_match = re.search(r'^>(\S+)', line)
-           if seq_name_match:
-               seq_name = seq_name_match.group(1)
-               seq_filename = seq_name + '.fa'
-               seq_filepath = os.path.join(dirname, seq_filename)
-
-               try:
-                   seqfile = open(seq_filepath,"w")
-               except OSError as error:
-                   print("# ERROR: cannot create file ", seq_filepath, error)
-
-               seqfile.write(">%s\n" % seq_name)
-               seq_names.append(seq_name)
-           else:
-               print("# ERROR: cannot parse FASTA header:", header)
-       else:
-           if seqfile:
-               seqfile.write(line)
-    
-    if seqfile: seqfile.close()
-    file.close()
-
-    return seq_names
-
-
 def _parse_rptfiles_from_log( log_filename ):
     '''Parses Red stdout log and returns a list with
        the names of output files with repeat coordinates'''
@@ -398,6 +350,7 @@ def make_annotation_report( map_filename, #repeat_fasta_file,
    skip_match = {}
    matched_repeats = {}
    annotated_length = 0
+   stats = {}
 
    try:
        mapfile = open(map_filename)
@@ -415,8 +368,17 @@ def make_annotation_report( map_filename, #repeat_fasta_file,
            # mark repeat as seen
            skip_match[paf[0]] = 1
            if int(paf[10])/int(paf[1]) >= cover:
-               annotated_length = annotated_length + int(paf[1])
                matched_repeats[paf[0]] = paf[5]
+               # collect stats
+               annotated_length = annotated_length + int(paf[1])
+               classre = re.search(r'#(\S+)', paf[5])
+               if classre:
+                   repclass = classre.group(1)
+                   if repclass in stats:
+                       stats[repclass] = stats[repclass] + int(paf[1])
+                   else: 
+                       stats[repclass] = int(paf[1])
+
                if verbose:
                    print("# %s %s %1.1f" % 
                        (paf[0], paf[5], int(paf[10])/int(paf[1])))
@@ -440,6 +402,12 @@ def make_annotation_report( map_filename, #repeat_fasta_file,
    
    logfile.close()
 
+   # print repeat class stats
+   for repclass in sorted(stats.keys()): 
+       print("%s\t%d" %
+           (repclass, stats[repclass]))
+
+
    # parse repeat FASTA file to fetch sequences of matched repeats
    # TO BE DONE if those sequences/consensi are valuable
 
@@ -461,6 +429,7 @@ def store_repeat_annot_database( matched_repeats,
 
 
     num_annot = 0
+    quit()
 
     # core database handles
     engine = db.create_engine(db_url)
@@ -469,71 +438,20 @@ def store_repeat_annot_database( matched_repeats,
     
     # relevant db tables 
     analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
-    meta_table = db.Table('meta',metadata,autoload=True,autoload_with=engine)
-    repeat_consensus_table = \
-        db.Table('repeat_consensus',metadata,autoload=True,autoload_with=engine)
     repeat_feature_table = \
         db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
-    seq_region_table = db.Table('seq_region',metadata,autoload=True,autoload_with=engine)
-    seq_syn_table = \
-        db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
 
-    # fetch seq_region_ids of sequences
-    for seq_name in seq_name_list:
-        seq_query = db.select([seq_region_table.columns.seq_region_id])
-        seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
-        seq_results = connection.execute(seq_query).fetchall()
-        if seq_results:
-            seq_region_id = seq_results[0][0]
-        else:
-            # try synonyms if that failed
-            syn_query = db.select([seq_syn_table.columns.seq_region_id])
-            syn_query = syn_query.where(seq_syn_table.columns.synonym == seq_name)
-            syn_results = connection.execute(syn_query).fetchall()
-            if syn_results:
-                seq_region_id = syn_results[0][0]
-            else:
-                print("# ERROR: cannot find seq_region_id for sequence %s\n" % seq_name)
-                return num_repeats              
+    #update_stmt = analysis_table.update()\
+    #    .where(analysis_table.logic_name=logic_name)\
+    #    .values(db_file=repeat_fasta_file)
+    #connection.execute(update_stmt)
 
-        print("# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id))	
-        name_to_seqregion[seq_name] = seq_region_id
-
-    # insert Red analysis, will fails if logic_name exists
-    analysis_insert = analysis_table.insert().values({ \
-        'created':db.sql.func.now(), \
-        'logic_name':logic_name, \
-        'program':'Red', \
-        'program_version':red_version, \
-        'program_file':red_path,
-        'parameters': red_params,
-        'gff_source':logic_name,
-        'gff_feature':'repeat' })
-    connection.execute(analysis_insert)
-
-    # fetch the assigned analysis_id for the new Red analysis
+    # fetch the assigned analysis_id for logic_name
     analysis_query = db.select([analysis_table.columns.analysis_id])
     analysis_query = \
         analysis_query.where(analysis_table.columns.logic_name == logic_name)
     analysis_results = connection.execute(analysis_query).fetchall()
     analysis_id = analysis_results[0][0]
-
-    # insert repeat analysis meta keys, will fails if exists
-    meta_insert = meta_table.insert().values({ \
-        'species_id':1, \
-        'meta_key':'repeat.analysis', \
-        'meta_value':logic_name })
-    connection.execute(meta_insert)
-
-    # insert dummy repeat consensus, will fail if it exists
-    # Note: Red repeats are not annotated by default, 
-    # thus they are linked to a dummy repeat consensus
-    repeat_consensus_insert = repeat_consensus_table.insert().values({ \
-        'repeat_name':logic_name, \
-        'repeat_class':logic_name, \
-        'repeat_type':logic_name, \
-        'repeat_consensus':'N' })
-    connection.execute(repeat_consensus_insert)
 
     # fetch the repeat_consensus_id of the new dummy consensus
     repeat_consensus_query = \
@@ -557,58 +475,6 @@ def store_repeat_annot_database( matched_repeats,
 
     return repeat_result
 
-
-def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_consensus_id):
-    '''Parses 1-based inclusive coords produced by Red in rpt dir and 
-       creates TSV file ready to be loaded in Ensembl core database.
-       Returns TSV filename.''' 
-	   
-    if not rpt_file_list:
-        print("# ERROR: got no repeat files")
-
-    # open new TSV file
-    outfilename = os.path.join(rptdir, 'ensembl.tsv')
-    try:
-        tsvfile = open(outfilename,"w")
-    except OSError as error:
-        print("# ERROR: cannot create file ", outfilename, error)
-
-    # parse repeat coord files, one per sequence
-    for filename in rpt_file_list:
-        try:
-            rptfile = open(filename)
-        except OSError as error:
-            print("# ERROR: cannot open/read file:", filename, error)
-
-        for line in rptfile:
-            column = line.split()
-             
-            if column[0] in name2region: 
-                seq_region_id = name2region[column[0]]
-            else:
-                seq_region_id = column[0]
-                print("# ERROR: cannot fetch seq_region_id for sequence", column[0])
-
-            seq_region_start = column[1]
-            seq_region_end = column[2]
-            repeat_start = 1
-            repeat_end = int(seq_region_end) - int(seq_region_start) + 1
-
-            print("%s\t%d\t%d\t%d\t%d\t%d\t%d" % (\
-                seq_region_id,\
-                int(seq_region_start),\
-                int(seq_region_end),\
-                int(repeat_start),\
-                repeat_end,\
-                int(repeat_consensus_id),\
-                int(analysis_id)), \
-				file=tsvfile)
-
-        rptfile.close()
-
-    tsvfile.close()
-    
-    return outfilename
 
 
 def main():

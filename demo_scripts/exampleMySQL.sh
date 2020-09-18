@@ -89,7 +89,7 @@ SQL
 mysql --host $SERVER --user $USER --port $PORT \
 	ensembl_compara_plants_${EGRELEASE}_$RELEASE -e \
 	"SELECT name from method_link_species_set" | \
-	grep "T.aes" | grep homoeologues
+	grep "T.\?aes" | grep homoeologues
 
 # remove LIMIT 10 if you want the complete set
 mysql --host $SERVER --user $USER --port $PORT \

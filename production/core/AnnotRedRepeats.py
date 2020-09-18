@@ -49,12 +49,12 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
         try:
             synfile = open(synpath)
         except OSError as error:
-            print("# ERROR: cannot open/read file:", synpath, error)
-            return repeat_FASTA_file
-        for line in synfile:
-            synre = re.search(r'^(\S+)\t(\d+)', line)
-            if synre:
-                name_to_seqregion[ synre.group(1) ] = synre.group(2)
+            print("# WARNING: cannot find synonyms file, will use real names")
+        else:    
+            for line in synfile:
+                synre = re.search(r'^(\S+)\t(\d+)', line)
+                if synre:
+                    name_to_seqregion[ synre.group(1) ] = synre.group(2)
  
     # create output FASTA file
     repeat_FASTA_file = os.path.join(annotdir, 'Red_repeats.fna')
@@ -88,11 +88,7 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
                 if seq_name in name_to_seqregion:
                     seq_region_id = name_to_seqregion[ seq_name ]
                 else:
-                    print("# ERROR: cannot find seg_region_id for sequence ", 
-                        seq_name, error)
-                    outfile.close()
-                    os.remove(repeat_FASTA_file)
-                    return ''
+                    seq_region_id = seq_name
             else:
                 chrsequence = chrsequence + line.rstrip()
         fafile.close() 

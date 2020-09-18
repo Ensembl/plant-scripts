@@ -13,8 +13,6 @@ add transcripts to a GFF file containing gene, exon and CDS features
 #### BIGD2ENA.pl
 takes a FASTA file with contigs from BIGD (non INSDC archive) and attempts to match them
  to sequences in a ENA sequence report asumming order is conserved. Uses sequence length as a control.
- Bruno Contreras Moreira 2019
-
 
 #### check_coding_translations.pl
 this check is to mimic the dump process by Production

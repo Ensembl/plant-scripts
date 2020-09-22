@@ -19,8 +19,9 @@ FTPSERVER="ftp://ftp.ensemblgenomes.org/pub"
 DIV=plants
 SUMFILE="${FTPSERVER}/${DIV}/current/summary.txt"
 RELEASE=`wget --quiet -O - $SUMFILE | \
-    perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
+	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
 
+# work out Ensembl Genomes release
 EGRELEASE=$(( RELEASE - 53));
 
 # alternatively set other EG release number
@@ -44,22 +45,28 @@ mysql --host $SERVER --user $USER --port $PORT \
 
 SPECIES=arabidopsis_thaliana
 SPECIESCORE=$(mysql --host $SERVER --user $USER --port $PORT \
-    -e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}")
+	-e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}")
 
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
 
 
-## S3) Get canonical transcript stable_ids
+## S3) Get stable_ids of transcripts used in Compara analyses 
 
-# The canonical transcript is used in the gene tree analysis,
-# which usually is the longest translation with no stop codons.
+# Canonical transcripts are used in the gene tree analysis,
+# which usually are the longest translations with no stop codons.
 # This file can be combined to that obtained in recipe F3 to
 # obtain the sequences
 
 mysql --host $SERVER --user $USER --port $PORT \
-    $SPECIESCORE -e "SELECT t.stable_id from gene g, transcript t \
-	WHERE g.canonical_transcript_id = t.transcript_id LIMIT 10"
+	"ensembl_compara_plants_${EGRELEASE}_${RELEASE}" \
+    -e "SELECT sm.stable_id \
+		FROM seq_member sm, gene_member gm, genome_db gdb \
+		WHERE sm.seq_member_id = gm.canonical_member_id \
+		AND sm.genome_db_id = gdb.genome_db_id \
+		AND gdb.name = '$SPECIES' \
+		LIMIT 10"
+
 
 ## S4) Get variants significantly associated to phenotypes
 

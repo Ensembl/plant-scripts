@@ -152,7 +152,7 @@ homoltype = 'ortholog' #paralog
 
 # optional define a target clade, such as 4479
 # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
-target_clade=4479
+target_clade=4479 # or target_clade = 'Poaceae'
 
 #see endpoint doc at
 #https://rest.ensembl.org/documentation/info/homology_symbol

@@ -71,7 +71,7 @@ exampleFTP.sh:## F12) get current plant species tree (cladogram)
 
 exampleMySQL.sh:## S1) Check currently supported Ensembl Genomes (EG) core schemas,
 exampleMySQL.sh:## S2) Count protein-coding genes of a particular species
-exampleMySQL.sh:## S3) Get canonical transcript stable_ids
+exampleMySQL.sh:## S3) Get stable_ids of transcripts used in Compara analyses 
 exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
 exampleMySQL.sh:## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
 

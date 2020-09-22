@@ -127,7 +127,7 @@ printf(">DEAR3 %s\n%s\n\n",
     $gene_obj->canonical_transcript()->translation->stable_id(),
     $gene_obj->canonical_transcript()->translate->seq() );
 
-## A7) Find all orthologues among rosids
+## A7) Find all orthologues of a gene
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->

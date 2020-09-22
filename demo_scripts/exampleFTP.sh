@@ -19,6 +19,7 @@ SUMFILE="${SERVER}/${DIV}/current/summary.txt"
 RELEASE=$($EXE $ARGSTDOUT $SUMFILE | \
 	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }')
 
+# work out Ensembl Genomes release
 EGRELEASE=$(( RELEASE - 53));
 
 # alternatively set a different Ensembl Genomes (EG) release

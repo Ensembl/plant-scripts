@@ -7,9 +7,11 @@
 
 # set Ensembl Plants release number, check it
 # at the bottom of http://plants.ensembl.org
+# EG stands for Ensembl Genomes
 EGRELEASE=47
 
-RELEASE=$(( EGRELEASE + 53)); # do not change
+# work out Ensembl release, do not change
+RELEASE=$(( EGRELEASE + 53));
 
 echo "EGRELEASE=${EGRELEASE}"
 echo
@@ -46,16 +48,17 @@ echo "${SPECIES}/${EGRELEASE}_*/info.txt"
 
 VCFILE=ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf
 
-ensembl-vep/vep --genomes \ # Ensembl Genomes
-	--species $SPECIES \
-	--cache \               # use local cache file, opposed to --database
-	--dir_cache ./ \        # location of unpacked cache $SPECIES folder
-	--cache_version $EGRELEASE \
-	--input_file $VCFILE \
-	--output_file ${VCFILE}.vep \
-	--check_existing \      # co-located known variants
-	--distance 5000 \       # max dist between variant and transcript
-	--biotype               # sow biotype of neighbor transcript
+VEPOPTIONS=(
+	--genomes              # Ensembl Genomes, for Plants
+	--species $SPECIES 
+	--cache                # use local cache file, opposed to --database
+	--dir_cache ./         # location of unpacked cache $SPECIES folder
+	--check_existing       # co-located known variants
+	--distance 5000        # max dist between variant and transcript
+	--biotype              # show biotype of neighbor transcript
+)
+
+ensembl-vep/vep "${VEPOPTIONS[@]}"
 
 ## V4) Predict effect of variants for species not in Ensembl
 

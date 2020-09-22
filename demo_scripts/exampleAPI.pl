@@ -145,9 +145,8 @@ my $homology_adaptor = Bio::EnsEMBL::Registry->
 my @homologies = @{$homology_adaptor->
 	fetch_all_by_Member($gene_member)};
 
-# filter out homologues based on taxonomy and type
+# filter out homologues based on type
 @homologies = grep {
-	$_->taxonomy_level eq 'rosids' &&
 	$_->description =~ m/ortholog/
 } @homologies;
 
@@ -155,12 +154,11 @@ foreach my $homology (@homologies) {
 
 	# get the protein from the target
 	my $target = $homology->get_all_Members->[1];	
-	my $translation = $target->get_Translation;
 	
 	printf("%s\t%s\t%s\t%s\n",
 		$gene_obj->stable_id(), 
 		$species, 
-		$translation->stable_id(),
+		$target->stable_id(),
 		$target->genome_db->name() );
 }
 

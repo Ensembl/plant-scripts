@@ -19,8 +19,9 @@ FTPSERVER="ftp://ftp.ensemblgenomes.org/pub"
 DIV=plants
 SUMFILE="${FTPSERVER}/${DIV}/current/summary.txt"
 RELEASE=`wget --quiet -O - $SUMFILE | \
-    perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
+	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
 
+# work out Ensembl Genomes release
 EGRELEASE=$(( RELEASE - 53));
 
 # alternatively set other EG release number
@@ -44,22 +45,28 @@ mysql --host $SERVER --user $USER --port $PORT \
 
 SPECIES=arabidopsis_thaliana
 SPECIESCORE=$(mysql --host $SERVER --user $USER --port $PORT \
-    -e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}")
+	-e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}")
 
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
 
 
-## S3) Get canonical transcript stable_ids
+## S3) Get stable_ids of transcripts used in Compara analyses 
 
-# The canonical transcript is used in the gene tree analysis,
-# which usually is the longest translation with no stop codons.
+# Canonical transcripts are used in the gene tree analysis,
+# which usually are the longest translations with no stop codons.
 # This file can be combined to that obtained in recipe F3 to
 # obtain the sequences
 
 mysql --host $SERVER --user $USER --port $PORT \
-    $SPECIESCORE -e "SELECT t.stable_id from gene g, transcript t \
-	WHERE g.canonical_transcript_id = t.transcript_id LIMIT 10"
+	"ensembl_compara_plants_${EGRELEASE}_${RELEASE}" \
+    -e "SELECT sm.stable_id \
+		FROM seq_member sm, gene_member gm, genome_db gdb \
+		WHERE sm.seq_member_id = gm.canonical_member_id \
+		AND sm.genome_db_id = gdb.genome_db_id \
+		AND gdb.name = '$SPECIES' \
+		LIMIT 10"
+
 
 ## S4) Get variants significantly associated to phenotypes
 
@@ -85,12 +92,16 @@ SQL
 # Compara schema is described at 
 # https://m.ensembl.org/info/docs/api/compara/compara_schema.html
 
-# find out correct method_link_species_set.name
+# find out the correct method_link_species_set_id in this release
 mysql --host $SERVER --user $USER --port $PORT \
-	ensembl_compara_plants_${EGRELEASE}_$RELEASE -e \
-	"SELECT name from method_link_species_set" | \
-	grep "T.aes" | grep homoeologues
 
+	ensembl_compara_plants_${EGRELEASE}_$RELEASE <<SQL
+SELECT method_link_species_set_id
+FROM method_link_species_set
+WHERE name LIKE 'T%aes%homoeologues'
+SQL
+
+# update the method_link_species_set_id filter according to the value retrieved above
 # remove LIMIT 10 if you want the complete set
 mysql --host $SERVER --user $USER --port $PORT \
     ensembl_compara_plants_${EGRELEASE}_$RELEASE <<SQL
@@ -100,8 +111,8 @@ SELECT
 FROM
 	homology_member 
 	INNER JOIN homology USING (homology_id)
-	INNER JOIN method_link_species_set USING (method_link_species_set_id)
 	INNER JOIN gene_member USING (gene_member_id)
-WHERE method_link_species_set.name="T.aes homoeologues" LIMIT 10
+WHERE method_link_species_set_id = 301014
+LIMIT 10
 SQL
 

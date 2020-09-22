@@ -110,7 +110,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->
 my ($gene_obj) = @{$gene_adaptor->
    fetch_all_by_external_name($gene_name)};
 
-## A6) Get its canonical sequence
+## A6) Get the transcript used in Compara analyses
 
 # The canonical transcript is used in the gene tree analysis,
 # which usually is the longest translation with no stop codons

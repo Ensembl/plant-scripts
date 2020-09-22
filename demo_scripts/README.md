@@ -46,8 +46,8 @@ exampleAPI.pl:## A2) Check which analyses are available for a species
 exampleAPI.pl:## A3) Get soft masked sequences from Arabidopsis thaliana
 exampleAPI.pl:## A4) Get BED file with repeats in chr4
 exampleAPI.pl:## A5) Find the DEAR3 gene
-exampleAPI.pl:## A6) Get its canonical sequence
-exampleAPI.pl:## A7) Find all orthologues among rosids
+exampleAPI.pl:## A6) Get the transcript used in Compara analyses
+exampleAPI.pl:## A7) Find all orthologues of a gene
 exampleAPI.pl:## A8) Get markers mapped on chr1D of bread wheat
 
 exampleBiomart.R:## B1) Check plant marts and select dataset

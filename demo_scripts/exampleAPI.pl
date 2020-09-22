@@ -127,7 +127,7 @@ printf(">DEAR3 %s\n%s\n\n",
     $gene_obj->canonical_transcript()->translation->stable_id(),
     $gene_obj->canonical_transcript()->translate->seq() );
 
-## A7) Find all orthologues among rosids
+## A7) Find all orthologues of a gene
 
 # get an adaptor to work with genes from compara
 my $gene_member_adaptor = Bio::EnsEMBL::Registry->
@@ -145,9 +145,8 @@ my $homology_adaptor = Bio::EnsEMBL::Registry->
 my @homologies = @{$homology_adaptor->
 	fetch_all_by_Member($gene_member)};
 
-# filter out homologues based on taxonomy and type
+# filter out homologues based on type
 @homologies = grep {
-	$_->taxonomy_level eq 'rosids' &&
 	$_->description =~ m/ortholog/
 } @homologies;
 

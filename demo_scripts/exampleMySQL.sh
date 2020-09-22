@@ -92,12 +92,16 @@ SQL
 # Compara schema is described at 
 # https://m.ensembl.org/info/docs/api/compara/compara_schema.html
 
-# find out correct method_link_species_set.name
+# find out the correct method_link_species_set_id in this release
 mysql --host $SERVER --user $USER --port $PORT \
-	ensembl_compara_plants_${EGRELEASE}_$RELEASE -e \
-	"SELECT name from method_link_species_set" | \
-	grep "T.\?aes" | grep homoeologues
 
+	ensembl_compara_plants_${EGRELEASE}_$RELEASE <<SQL
+SELECT method_link_species_set_id
+FROM method_link_species_set
+WHERE name LIKE 'T%aes%homoeologues'
+SQL
+
+# update the method_link_species_set_id filter according to the value retrieved above
 # remove LIMIT 10 if you want the complete set
 mysql --host $SERVER --user $USER --port $PORT \
     ensembl_compara_plants_${EGRELEASE}_$RELEASE <<SQL
@@ -107,8 +111,8 @@ SELECT
 FROM
 	homology_member 
 	INNER JOIN homology USING (homology_id)
-	INNER JOIN method_link_species_set USING (method_link_species_set_id)
 	INNER JOIN gene_member USING (gene_member_id)
-WHERE method_link_species_set.name="T.aes homoeologues" LIMIT 10
+WHERE method_link_species_set_id = 301014
+LIMIT 10
 SQL
 

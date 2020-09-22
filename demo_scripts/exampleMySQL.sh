@@ -94,6 +94,7 @@ SQL
 
 # find out the correct method_link_species_set_id in this release
 mysql --host $SERVER --user $USER --port $PORT \
+
 	ensembl_compara_plants_${EGRELEASE}_$RELEASE <<SQL
 SELECT method_link_species_set_id
 FROM method_link_species_set

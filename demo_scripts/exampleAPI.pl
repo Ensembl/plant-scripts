@@ -154,12 +154,11 @@ foreach my $homology (@homologies) {
 
 	# get the protein from the target
 	my $target = $homology->get_all_Members->[1];	
-	my $translation = $target->get_Translation;
 	
 	printf("%s\t%s\t%s\t%s\n",
 		$gene_obj->stable_id(), 
 		$species, 
-		$translation->stable_id(),
+		$target->stable_id(),
 		$target->genome_db->name() );
 }
 

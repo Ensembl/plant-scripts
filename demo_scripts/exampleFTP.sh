@@ -19,6 +19,7 @@ SUMFILE="${SERVER}/${DIV}/current/summary.txt"
 RELEASE=$($EXE $ARGSTDOUT $SUMFILE | \
 	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }')
 
+# work out Ensembl Genomes release
 EGRELEASE=$(( RELEASE - 53));
 
 # alternatively set a different Ensembl Genomes (EG) release
@@ -141,7 +142,13 @@ $EXE $OPTARG $ARGSDEF $URL
 # in the command line. Example:
 # zcat $TSVFILE | grep triticum_aestivum | grep oryza_sativa | grep ortholog 
 
-# Alternatively a smaller file in OrthoXML format can be obtained
+# Note: homologies of each species can be retrieved from a more specific file
+# SPECIES=Triticum_aestivum
+#URL="${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${SPECIES,,}${TSVFILE}"
+#wget -c "$URL"
+#zcat "$TSVFILE" | grep oryza_sativa | grep ortholog
+
+# Note: Alternatively a smaller file in OrthoXML format can be obtained
 # OXMLFILE="Compara.${RELEASE}.protein_default.allhomologies.orthoxml.xml.gz"
 # URL="${SERVER}/${DIV}/release-${EGRELEASE}/xml/ensembl-compara/homologies/${OXMLFILE}"
 

@@ -176,9 +176,9 @@ my $division = 'plants';
 my $gene = 'TraesCS1B02G195200'; 
 my $homoltype = 'ortholog'; #paralog
 
-# optional define a target clade, such as 4479
+# optionally define a target clade, such as 4479
 # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
-my $target_clade=4479; 
+my $target_clade=4479; # or $target_clade='Poaceae';
 
 #see endpoint doc at 
 #https://rest.ensembl.org/documentation/info/homology_symbol

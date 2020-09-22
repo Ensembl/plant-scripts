@@ -295,7 +295,7 @@ homoltype = 'ortholog' #can also be paralog
 
 # optionally define a target clade, such as 4479
 # for Poaceae, see https://www.ncbi.nlm.nih.gov/taxonomy
-target_clade = '4479' 
+target_clade = '4479' # or target_clade = 'Poaceae' 
 homologies = find_homologues(species,division,gene,homoltype,target_clade) #function call
 
 ## R6) Parse homologies and get annotation of orthologous genes/proteins

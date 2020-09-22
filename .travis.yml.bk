@@ -1,0 +1,19 @@
+# removed as test_demo depends on too many dependencies
+os: linux
+dist: bionic
+language: perl
+perl:
+  - "5.26"
+
+before_install:
+  - "sudo apt-get update"
+  - "sudo apt-get install -y wget python3 mysql-client libmysqlclient-dev"
+  - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
+
+script:
+  - "make test_demo"
+  - "make test_phylo"
+
+notifications:
+  email:
+    on_failure: always

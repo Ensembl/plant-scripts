@@ -18,7 +18,7 @@ use Bio::Seq;
 # It uses env $USER to create hive job names and assumes:
 # i) Ensembl-version API is loaded in @INC / $PERL5LIB
 #
-# Adapted from Dan Bolser's run_the_gff_loader2.sh by B Contreras Moreira 2018-9
+# Adapted from Dan Bolsers run_the_gff_loader2.sh by B Contreras Moreira 2018-20
 #
 # https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Load+GFF3+Pipeline
 #
@@ -32,24 +32,24 @@ my ($prodbname,$pipeline_dir,$reg_file,$hive_args,$hive_db,$hive_url,$argsline);
 my ($skip_bad_types,$rerun,$sub_chr_names,$nonzero,$synonyms,$overwrite,$max_feats) = (0,0,'',0,0,0,0);
 my ($check_gff_CDS,$check_chr_ends,$add_to_previous,$names_stable,$otherfeats) = (0,0,0,0,0);
 my ($new_gff3file,$short_gff3file,$synonym_file,$gbkfile,%synonym) = ('','','','');
-my ($logicname,$other_params) = ('','');
+my ($logicname,$full_provider_name,$URL,$other_params) = ('','','','');
 my $hive_db_cmd = 'mysql-ens-hive-prod-2-ensrw';
 my $runDCexe = 'run_datachecks.pl';
 
 my @BADCHAR = qw( ' );
 
-getopts('hNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:G:O:', \%opts);
+getopts('hNoawzyrceY:n:s:f:g:L:S:v:R:H:P:m:D:G:O:U:F:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
   print "-s species_name                                (required, example: -s arabidopsis_thaliana)\n";
-  print "-f protein FASTA file                          (required, example: -f atha.pep.fasta)\n";
   print "-v next Ensembl version                        (required, example: -v 95)\n";
   print "-g GFF3 file                                   (required, example: -g atha.gff)\n";
   print "-R registry file, can be env variable          (required, example: -R \$p1panreg)\n";
   print "-D ensembl_production db name                  (required, example: -D ensembl_production)\n";
   print "-P folder to put pipeline files, can be env    (required, example: -P \$gfftmp)\n";
+  print "-f protein FASTA file                          (optional, example: -f atha.pep.fasta)\n";
   print "-H hive database command                       (optional, default: $hive_db_cmd)\n";
   print "-G GenBank file to load sequence edits         (optional, example: -G atha.gbk)\n";
   print "-m max genes to load                           (optional, default: all loaded)\n";
@@ -63,6 +63,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)){
   print "-c check CDS coords in GFF3                    (optional, requires -m)\n";
   print "-S source of annotation for dumps, one word    (optional, example: -S SOL, default: 3rd col of GFF3)\n";
   print "-L logicname to import analysis desc & webdata (optional, example: -L SOL_genomics, should be in production db)\n";
+  print "-U URL of annotation provider                  (optional, example: -U 'https://www.melonomics.net')\n";
+  print "-F full name of annotation provider            (optional, example: -F 'consortium, institution')\n";
   print "-o add features to other_features db           (optional, default: add to core db)\n";
   print "-O other params for Load GFF3 Pipeline         (optional, example: '-mrna_types primary_transcript' or '-types_complete 0'\n";
   print "-w over-write db (hive_force_init)             (optional, useful when a previous run failed)\n";                             
@@ -88,7 +90,6 @@ if($opts{'s'}){
 else{ die "# EXIT : need a valid -s species_name, such as -s arabidopsis_thaliana\n" }
 
 if($opts{'f'} && -e $opts{'f'}){ $protein_fasta_file = $opts{'f'} }
-else{ die "# EXIT : need a valid -f file, such as -f atha.pep.fasta\n" }
 
 if($opts{'g'} && -e $opts{'g'}){ $gff3_file = $opts{'g'} }
 else{ die "# EXIT : need a valid -g file, such as -g atha.gff\n" }
@@ -153,13 +154,17 @@ elsif($opts{'Y'}){ $synonym_file = $opts{'Y'} }
 
 if($opts{'O'}){ $other_params = $opts{'O'} }
 
+if($opts{'U'}){ $URL = $opts{'U'} }
+
+if($opts{'F'}){ $full_provider_name = $opts{'F'} }
+
 $argsline = sprintf("%s -s %s -f %s -g %s -S %s -L %s -o %d -v %s -R %s -D %s -H %s -P %s -G %s -m %d ".
-		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -O '%s' -a %d -w %d -r %d",
+		"-Y %s -n '%s' -z %d -y %d -e %d -c %d -N %d -O '%s' -a %d -w %d -r %d -U %s -F %s",
   $0, $species, $protein_fasta_file, $gff3_file, $gene_source, $logicname, $otherfeats,
   $ensembl_version, $reg_file, $prodbname, $hive_db_cmd, $pipeline_dir, $gbkfile, $max_feats,
   $synonym_file, $sub_chr_names, $nonzero, $synonyms, 
   $check_chr_ends, $check_gff_CDS, $names_stable, $other_params,
-  $add_to_previous, $overwrite, $rerun );
+  $add_to_previous, $overwrite, $rerun, $URL, $full_provider_name );
 
 print "# $argsline\n\n";
 
@@ -501,7 +506,7 @@ if($meta_adaptor->single_value_by_key( 'genebuild.start_date' )){
 	$meta_adaptor->store_key_value( 'genebuild.start_date', $version_start_date );
 }
 
-print "\n# Setting meta genebuild.last_geneset_update to $year_month\n\n";
+print "\n# Setting meta genebuild.last_geneset_update to $year_month\n";
 if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
 	if(!$meta_adaptor->key_value_exists( 'genebuild.last_geneset_update', $year_month )) {
 		$meta_adaptor->update_key_value( 'genebuild.last_geneset_update', $year_month );
@@ -510,20 +515,40 @@ if($meta_adaptor->single_value_by_key( 'genebuild.last_geneset_update' )){
 	$meta_adaptor->store_key_value( 'genebuild.last_geneset_update', $year_month )
 }
 
+print "\n# Setting meta annotation.provider_name to $full_provider_name\n";
+if($meta_adaptor->single_value_by_key( 'annotation.provider_name' )){
+    if(!$meta_adaptor->key_value_exists( 'annotation.provider_name', $full_provider_name )) {
+        $meta_adaptor->update_key_value( 'annotation.provider_name', $full_provider_name );
+    }
+} else {
+    $meta_adaptor->store_key_value( 'annotation.provider_name', $full_provider_name )
+}
+
+print "\n# Setting meta annotation.provider_url to $URL\n\n";
+if($meta_adaptor->single_value_by_key( 'annotation.provider_url' )){
+    if(!$meta_adaptor->key_value_exists( 'annotation.provider_url', $URL )) {
+        $meta_adaptor->update_key_value( 'annotation.provider_url', $URL );
+    }
+} else {
+	$meta_adaptor->store_key_value( 'annotation.provider_url', $URL )
+}
+
+
 ## Run init script and produce a hive_db with all tasks to be carried out
 #########################################################################
 
 my $initcmd = "init_pipeline.pl Bio::EnsEMBL::EGPipeline::PipeConfig::LoadGFF3_conf ".
-    	"$hive_args ".
-    	"--registry $reg_file ".
-        "--production_db $prodbname ".
-    	"--pipeline_dir $pipeline_dir ".
-    	"--species $species ".
-    	"--gff3_file $new_gff3file ".
-    	"--protein_fasta_file $protein_fasta_file ".
-    	"--gene_source '$gene_source' ".
+	"$hive_args ".
+	"--registry $reg_file ".
+	"--production_db $prodbname ".
+	"--pipeline_dir $pipeline_dir ".
+	"--species $species ".
+	"--gff3_file $new_gff3file ".
+	"--gene_source '$gene_source' ".
 	#"-fix_models 0 ".
 	"--hive_force_init $overwrite ";
+
+if($protein_fasta_file){ $initcmd .= "--protein_fasta_file $protein_fasta_file " } 
 
 if($names_stable){ $initcmd .= "-use_name_field stable_id " }
 

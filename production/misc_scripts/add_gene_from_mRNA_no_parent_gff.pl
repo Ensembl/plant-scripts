@@ -3,11 +3,11 @@ use strict;
 use warnings;
 
 # add genes to a GFF file containing only mRNA features with no explicit parent
-# by Bruno Contreras Moreira EMBL-EBI 2019
+# by Bruno Contreras Moreira EMBL-EBI 2019-20
 
 if(!$ARGV[0]){ die "# usage: $0 <GFF>\n" }
 
-my ($tparent, $tname, $gene, $transcript, $other, $type, %seen);
+my ($tparent, $tname, $gene, $transcript, $other, $type, $id, %seen);
 
 open(GFF,"<",$ARGV[0]) || die "# ERROR: cannot read $ARGV[0]\n";
 while(<GFF>){
@@ -50,10 +50,19 @@ while(<GFF>){
 	
 	} else {
 		$other = $_;
+		chomp($other);
 		$type = lc($col[2]);
-		
+	
 		# update parent
-		$other =~ s/Parent=[^;]+;/Parent=$tparent.t;/;
+		$other =~ s/Parent=[^;]+(;*)/Parent=$tparent.t$1\n/;
+
+		# add ID if missing
+		if($other !~ /ID=/){
+			#count feature
+			$seen{"$tparent.t.$type"}++;
+			$id = "$tparent.t.$type".$seen{"$tparent.t.$type"};
+			$other =~ s/Parent=/ID=$id;Parent=/;
+		}
 
 		print $other;
 	}

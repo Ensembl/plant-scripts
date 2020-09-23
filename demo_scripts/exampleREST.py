@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from __future__ import print_function ##Allow Python 3.X printing for Python 2
 import requests, sys
 import re

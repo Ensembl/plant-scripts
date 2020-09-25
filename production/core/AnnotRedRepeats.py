@@ -302,9 +302,10 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
     # put together minimap2 command
     # ' -x map-ont ' +\
+    # ' -x asm20 ' +\
     cmd = miniexe + \
             ' -K100M --score-N 0 ' +\
-            ' -x asm20 ' +\
+            ' -x map-pab ' +\
             ' -t '+ cores + ' ' +\
             lib_filename + ' ' +\
             fasta_filename

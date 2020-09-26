@@ -20,6 +20,7 @@
 
 use warnings;
 use strict;
+use List::Util qw(all);
 use Bio::EnsEMBL::Registry;
 
 Bio::EnsEMBL::Registry->load_registry_from_db(
@@ -194,4 +195,54 @@ foreach my $mf (@{ $slice->get_all_MarkerFeatures() }) {
 		$marker->left_primer(),
 		$marker->right_primer(),
 		$marker->max_primer_dist() );
+}
+
+
+## A9) Find all syntelogues between rice
+
+# get an adaptor to work with comparative sets from compara
+my $mlss_adaptor = Bio::EnsEMBL::Registry->
+	get_adaptor($division, 'compara', 'MethodLinkSpeciesSet');
+
+# find the mlss that describes orthologies between these
+# two rice species
+my $mlss = $mlss_adaptor->fetch_by_method_link_type_registry_aliases(
+    'ENSEMBL_ORTHOLOGUES', ['oryza_sativa', 'oryza_indica']);
+
+# find all homologues between these two rice species
+@homologies = @{$homology_adaptor->
+    fetch_all_by_MethodLinkSpeciesSet($mlss)};
+
+# filter out homologues based on local gene order conservation
+@homologies = grep {
+	$_->goc_score && $_->goc_score >= 75
+} @homologies;
+
+my $n = 1;
+foreach my $homology (@homologies) {
+
+	# get one orthologue
+	my $prot = $homology->get_all_Members->[1];
+
+    # find all orthologues in rice
+    my @rice_homologies = @{$homology_adaptor->
+        fetch_all_by_Member($prot,
+            -METHOD_LINK_TYPE => 'ENSEMBL_ORTHOLOGUES',
+            -TARGET_TAXON => 'Oryza')};
+
+    if (all {$_->goc_score && $_->goc_score >= 75}
+                @rice_homologies) {
+        foreach my $rh (@rice_homologies) {
+            printf("%s\t%s\t%s\t%s\t%d\n",
+                $rh->get_all_Members->[0]->genome_db->name,
+                $rh->get_all_Members->[0]->stable_id,
+                $rh->get_all_Members->[1]->genome_db->name,
+                $rh->get_all_Members->[1]->stable_id,
+                $rh->goc_score);
+        }
+        print "\n";
+
+        # Only print the first 10 groups
+        last if $n++ == 10;
+    }
 }

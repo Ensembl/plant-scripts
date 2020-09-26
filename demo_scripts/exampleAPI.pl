@@ -24,7 +24,7 @@ use List::Util qw(all);
 use Bio::EnsEMBL::Registry;
 
 Bio::EnsEMBL::Registry->load_registry_from_db(
-	-USER => 'anonymous',
+	-USER => 'ensro',
 	-HOST => 'mysql-eg-publicsql.ebi.ac.uk',
 	-PORT => '4157',
 	#-VERBOSE => 1 # uncomment to see dbs loaded

@@ -88,7 +88,7 @@ sub help_message {
 
     print "Example calls:\n\n"
       . " perl $0 -c Brassicaceae -f Brassicaceae\n"
-      . " perl $0 -c Brassicaceae -f Brassicaceae -t cdna -o theobroma_cacao_criollo\n"
+      . " perl $0 -c Brassicaceae -f Brassicaceae -t cdna -o beta_vulgaris\n"
       . " perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75\n"
       . " perl $0 -f all -c 33090 -m all -r physcomitrella_patens\n";
     exit(0);

@@ -96,7 +96,7 @@ sub help_message {
       . "https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html\n\n";
 
     print "Example calls:\n\n"
-      . " perl $0 -c Brassicaceae -f Brassicaceae -o theobroma_cacao_criollo\n"
+      . " perl $0 -c Brassicaceae -f Brassicaceae -o beta_vulgaris\n"
       . " perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75\n"
       . exit(0);
 }

@@ -87,7 +87,7 @@ mysql --host $SERVER --user $USER --port $PORT \
 SQL
 
 
-## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
+## S5) Get Triticum aestivum homeologous genes across A,B & D subgenomes
 
 # Compara schema is described at 
 # https://m.ensembl.org/info/docs/api/compara/compara_schema.html
@@ -114,7 +114,7 @@ WHERE method_link_species_set_id = ${MLSSID}
 LIMIT 10
 SQL
 
-## S6) count the number of whole-genome alignments of all genomes
+## S6) Count the number of whole-genome alignments of all genomes
 
 # Compara schema is described at 
 # https://m.ensembl.org/info/docs/api/compara/compara_schema.html

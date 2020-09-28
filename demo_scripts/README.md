@@ -56,24 +56,25 @@ exampleBiomart.R:## B3) Download GO terms associated to genes
 exampleBiomart.R:## B4) Get Pfam domains annotated in genes
 exampleBiomart.R:## B5) Get SNP consequences from a selected variation source
 
-exampleFTP.sh:## F1) download peptide sequences in FASTA format
-exampleFTP.sh:## F2) download CDS nucleotide sequences in FASTA format
-exampleFTP.sh:## F3) download transcripts (cDNA) in FASTA format
-exampleFTP.sh:## F4) download soft-masked genomic sequences
+exampleFTP.sh:## F1) DDownload peptide sequences in FASTA format
+exampleFTP.sh:## F2) Download CDS nucleotide sequences in FASTA format
+exampleFTP.sh:## F3) Download transcripts (cDNA) in FASTA format
+exampleFTP.sh:## F4) Download soft-masked genomic sequences
 exampleFTP.sh:## F5) Upstream/downstream sequences
-exampleFTP.sh:## F6) get mappings to UniProt proteins
-exampleFTP.sh:## F7) get indexed, bgzipped VCF file with variants mapped
-exampleFTP.sh:## F8) get precomputed VEP cache files
-exampleFTP.sh:## F9) download all homologies in a single TSV file, several GBs
-exampleFTP.sh:## F10) download UniProt report of Ensembl Plants, 
-exampleFTP.sh:## F11) retrieve list of new species in current release
-exampleFTP.sh:## F12) get current plant species tree (cladogram)
+exampleFTP.sh:## F6) Get mappings to UniProt proteins
+exampleFTP.sh:## F7) Get indexed, bgzipped VCF file with variants mapped
+exampleFTP.sh:## F8) Get precomputed VEP cache files
+exampleFTP.sh:## F9) Download all homologies in a single TSV file, several GBs
+exampleFTP.sh:## F10) Download UniProt report of Ensembl Plants, 
+exampleFTP.sh:## F11) Retrieve list of new species in current release
+exampleFTP.sh:## F12) Get current plant species tree (cladogram)
 
 exampleMySQL.sh:## S1) Check currently supported Ensembl Genomes (EG) core schemas,
 exampleMySQL.sh:## S2) Count protein-coding genes of a particular species
 exampleMySQL.sh:## S3) Get stable_ids of transcripts used in Compara analyses 
 exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
-exampleMySQL.sh:## S5) get Triticum aestivum homeologous genes across A,B & D subgenomes
+exampleMySQL.sh:## S5) Get Triticum aestivum homeologous genes across A,B & D subgenomes
+exampleMySQL.sh:## S6) count the number of whole-genome alignments of all genomes 
 
 exampleREST:## R1) Create a HTTP client and a helper functions 
 exampleREST:## R2) Get metadata for all plant species 

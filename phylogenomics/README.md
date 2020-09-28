@@ -44,16 +44,16 @@ perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_pate
 Note option -f produces FASTA files of aligned peptide sequences, one per cluster. Such a task takes usually takes over an hour over the Ensembl REST API.
 
 
-### ens_synthelogs.pl
+### ens_syntelogs.pl
 
 This script is related to [ens_single-copy_core_genes.pl](ens_single-copy_core_genes.pl) but explicitely considers only orthogroups with Gene Order Conservation (GOC) score >= 75 by default. The output matrix contains also the genomic coordinates of genes of the reference genome:
 
 ```
-perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae
+perl ens_syntelogs.pl -c Brassicaceae -f Brassicaceae
 
 ```
 
-A sample output matrix is available in [Brassicaceae.synthelogs.GOC75.tsv](./bench/Brassicaceae.synthelogs.GOC75.tsv). A benchmark is described in folder [bench](./bench).
+A sample output matrix is available in [Brassicaceae.syntelogs.GOC75.tsv](./bench/Brassicaceae.syntelogs.GOC75.tsv). A benchmark is described in folder [bench](./bench).
 
 Note option -f produces FASTA files of aligned peptide sequences, one per cluster. Such a task takes usually takes over an hour over the Ensembl REST API.
 
@@ -61,7 +61,7 @@ Note option -f produces FASTA files of aligned peptide sequences, one per cluste
 
 Produces a FASTA file with the canonical cds/pep sequences of species in a clade in Ensembl Plants:
 ```
-perl ens_synthelogs.pl -c Brassicaceae -f Brassicaceae.fna
+perl ens_syntelogs.pl -c Brassicaceae -f Brassicaceae.fna
 
 ```
 

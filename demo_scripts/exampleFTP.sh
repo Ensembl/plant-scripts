@@ -34,28 +34,28 @@ echo
 # set example species
 SPECIES=Brachypodium_distachyon
 
-## F1) download peptide sequences in FASTA format
+## F1) Download peptide sequences in FASTA format
 
 FASTAPEP="${SPECIES}*pep.all.fa.gz"
 URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP}"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
-## F2) download CDS nucleotide sequences in FASTA format
+## F2) Download CDS nucleotide sequences in FASTA format
 
 FASTACDS="${SPECIES}*cds.all.fa.gz"
 URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cds/${FASTACDS}"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL 
 
-## F3) download transcripts (cDNA) in FASTA format
+## F3) Download transcripts (cDNA) in FASTA format
 
 FASTACDNA="${SPECIES}*cdna.all.fa.gz"
 URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/cdna/${FASTACDNA}"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
-## F4) download soft-masked genomic sequences
+## F4) Download soft-masked genomic sequences
 
 FASTASM="${SPECIES}*.dna_sm.toplevel.fa.gz"
 URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/dna/${FASTASM}"
@@ -93,14 +93,14 @@ else
 	$EXE $OPTARG $ARGSDEF "$URL" $ARGSTOFILE $FASTAUP
 fi
 
-## F6) get mappings to UniProt proteins
+## F6) Get mappings to UniProt proteins
 
 UNIPTSV="${SPECIES}*.uniprot.tsv.gz"
 URL="${SERVER}/${DIV}/release-${EGRELEASE}/tsv/${SPECIES,,}/$UNIPTSV"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
-## F7) get indexed, bgzipped VCF file with variants mapped
+## F7) Get indexed, bgzipped VCF file with variants mapped
 
 # Note: this file contains all variants known to Ensembl Plants,
 # individual genotypes are not necessarily conserved
@@ -120,7 +120,7 @@ $EXE $OPTARG $ARGSDEF $URL
 #1A      406098  Cadenza0877.chr1A.406098        T       C       .       .       EMS-induced mutation;TSA=SNV
 #1A      406098  Cadenza1340.chr1A.406098        T       C       .       .       EMS-induced mutation;TSA=SNV
 
-## F8) get precomputed VEP cache files
+## F8) Get precomputed VEP cache files
 
 SPECIES=arabidopsis_thaliana
 VEPCACHE="${SPECIES,,}*.tar.gz*"
@@ -131,7 +131,7 @@ $EXE $OPTARG $ARGSDEF $URL
 # Note: you can get indexed cached files instead from 
 # URL=${SERVER}/${DIV}/release-${EGRELEASE}/variation/indexed_vep_cache/${VEPCACHE}
 
-## F9) download all homologies in a single TSV file, several GBs
+## F9) Download all homologies in a single TSV file, several GBs
 
 TSVFILE="Compara.${RELEASE}.protein_default.homologies.tsv.gz"
 URL="${SERVER}/${DIV}/release-${EGRELEASE}/tsv/ensembl-compara/homologies/${TSVFILE}"
@@ -161,14 +161,14 @@ URL="${SERVER}/${DIV}/release-${EGRELEASE}/$UNIPFILE"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
-## F11) retrieve list of new species in current release
+## F11) Retrieve list of new species in current release
 
 NEWLIST="new_genomes.txt"
 URL="${SERVER}/${DIV}/release-${EGRELEASE}/$NEWLIST"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
-## F12) get current plant species tree (cladogram)
+## F12) Get current plant species tree (cladogram)
 TREEFILE="plants_species-tree_Ensembl.nh"
 URL="${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE"
 echo "# downloading $URL"

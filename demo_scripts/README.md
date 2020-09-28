@@ -49,6 +49,7 @@ exampleAPI.pl:## A5) Find the DEAR3 gene
 exampleAPI.pl:## A6) Get the transcript used in Compara analyses
 exampleAPI.pl:## A7) Find all orthologues of a gene
 exampleAPI.pl:## A8) Get markers mapped on chr1D of bread wheat
+exampleAPI.pl:## A9) Find all syntelogues among rices
 
 exampleBiomart.R:## B1) Check plant marts and select dataset
 exampleBiomart.R:## B2) Check available filters and attributes

@@ -114,3 +114,27 @@ WHERE method_link_species_set_id = ${MLSSID}
 LIMIT 10
 SQL
 
+## S6) count the number of whole-genome alignments of all genomes
+
+# Compara schema is described at 
+# https://m.ensembl.org/info/docs/api/compara/compara_schema.html
+
+mysql --host $SERVER --user $USER --port $PORT \
+    ensembl_compara_plants_${EGRELEASE}_$RELEASE <<SQL
+SELECT
+    genome_db.name,
+    SUM(type = "LASTZ_NET") AS n_lastz,
+    SUM(type = "SYNTENY") AS n_syntenies,
+    SUM(type IN ("EPO", "EPO_LOW_COVERAGE")) AS n_multiple
+FROM
+    genome_db
+    JOIN species_set USING (genome_db_id)
+    JOIN method_link_species_set USING (species_set_id)
+    JOIN method_link USING (method_link_id)
+WHERE
+    genome_component IS NULL
+    AND genome_db.name != "ancestral_sequences"
+GROUP BY genome_db_id
+ORDER BY genome_db.name
+SQL
+

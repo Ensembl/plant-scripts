@@ -198,7 +198,11 @@ foreach my $mf (@{ $slice->get_all_MarkerFeatures() }) {
 }
 
 
-## A9) Find all syntelogues between rice
+## A9) Find all syntelogues among rices
+
+# Note: GOC=Gene Order Conservation score
+# Read more at 
+# https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 
 # get an adaptor to work with comparative sets from compara
 my $mlss_adaptor = Bio::EnsEMBL::Registry->

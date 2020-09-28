@@ -74,7 +74,7 @@ exampleMySQL.sh:## S2) Count protein-coding genes of a particular species
 exampleMySQL.sh:## S3) Get stable_ids of transcripts used in Compara analyses 
 exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
 exampleMySQL.sh:## S5) Get Triticum aestivum homeologous genes across A,B & D subgenomes
-exampleMySQL.sh:## S6) count the number of whole-genome alignments of all genomes 
+exampleMySQL.sh:## S6) Count the number of whole-genome alignments of all genomes 
 
 exampleREST:## R1) Create a HTTP client and a helper functions 
 exampleREST:## R2) Get metadata for all plant species 

@@ -80,7 +80,7 @@ sub help_message {
 
     print "Example calls:\n\n"
       . " perl $0 -c Brassicaceae -f Brassicaceae -r arabidopsis_thaliana\n"
-      . " perl $0 -c Brassicaceae -f Brassicaceae -r arabidopsis_thaliana -t cdna -o theobroma_cacao_criollo\n";
+      . " perl $0 -c Brassicaceae -f Brassicaceae -r arabidopsis_thaliana -t cdna -o beta_vulgaris\n";
     exit(0);
 }
 

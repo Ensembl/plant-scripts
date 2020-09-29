@@ -301,12 +301,11 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         return ''
 
     # put together minimap2 command
-    # ' -x map-ont ' +\
-    # ' -x asm20 ' +\
-#TODO: check multimapping options, as our reference is highly repetitive
+    # map-ont is actually the default as of Sep2020
+    # Note: also test map-pab, asm20 not much difference
     cmd = miniexe + \
             ' -K100M --score-N 0 ' +\
-            ' -x map-pab ' +\
+            ' -x map-ont ' +\
             ' -t '+ cores + ' ' +\
             lib_filename + ' ' +\
             fasta_filename
@@ -325,10 +324,11 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         outfile.close()
     print(cmd)
     
-	# sort results on repeat, aligned block length
-    # https://github.com/lh3/miniasm/blob/master/PAF.md
-    cmd = 'sort -k1,1 -k11,11nr ' + output_filename
-    # sort -k6,6 -k11,11nr  
+    # sort results on repeat, start coord, end coord
+    # See: https://github.com/lh3/miniasm/blob/master/PAF.md
+    # Note: this allows updating the overlap coords while parsing
+    # in function make_annotation_report 
+    cmd = 'sort -k1,1 -k3,3n -k4,4n ' + output_filename
 
     try:
         osresponse = subprocess.check_call(cmd.split(),stdout=sortfile)
@@ -344,11 +344,11 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
 def make_annotation_report( map_filename, log_filename, 
     minlen, verbose=False):
-    '''Parse mappings file and print repeat annotation stats.
-       Only alignments with %coverage > cover are considered.
+    '''Parse file with sorted mappings and print repeat annotation stats.
+       Only alignments > minlen are considered.
        Returns dictionary with mapped repeats.'''
 
-    skip_match = {}
+    rep_match = {}
     matched_repeats = {}
     annotated_length = 0
     stats = {}
@@ -360,29 +360,67 @@ def make_annotation_report( map_filename, log_filename,
         return {}
 
     for line in mapfile:
-        paf = line.split("\t")
+        paf = line.split("\t") 
+        # See https://github.com/lh3/miniasm/blob/master/PAF.md
         #  0 : masked seq_region
-        #  1 : length of seq_region 
-        #  5 : repeat from library (ie RLG_159077:mipsREdat_9.3p_ALL#LTR/Gypsy)
-        # 11 : aligned block length
-        if paf[0] not in skip_match:
-            # mark repeat as seen
-            skip_match[paf[0]] = 1
-            if int(paf[10])/int(paf[1]) >= cover:
-                matched_repeats[paf[0]] = paf[5]
-                # collect stats
-                annotated_length = annotated_length + int(paf[1])
-                classre = re.search(r'#(\S+)', paf[5])
-                if classre:
-                    repclass = classre.group(1)
-                    if repclass in stats:
-                        stats[repclass] = stats[repclass] + int(paf[1])
-                    else: 
-                        stats[repclass] = int(paf[1])
+        #  2 : 0-based start coord of seq_region
+        #  3 : 0-based, exclusive end coord of seq_region
+        #  5 : repeat name (ie RLG_159077:mipsREdat_9.3p_ALL#LTR/Gypsy)
 
-                if verbose:
-                    print("# %s %s %1.1f" % 
-                        (paf[0], paf[5], int(paf[10])/int(paf[1])))
+        # work out length of annotated repeat
+        start = int(paf[2])
+        end = int(paf[3])
+        annotlen = end-start
+
+        if annotlen >= minlen:
+
+            # update last aligned coord of this repeat,
+            # compute overlap with previous repeat,
+            # skip short or redundant alignments
+
+            # -----------
+            #               -------  
+            if paf[0] not in rep_match or start >= rep_match[paf[0]]:
+                rep_match[paf[0]] = end
+            elif start < rep_match[paf[0]] and end <= rep_match[paf[0]]:
+                # -------------- redundant
+                #     ------
+                #print("> %s %s %d %d %d" % (paf[0], paf[5], start, end, annotlen))
+                continue
+            else:
+                # -----------
+                #     -------***
+                overlap = rep_match[paf[0]] - start
+                annotlen = annotlen - overlap
+                if annotlen >= minlen:
+                    rep_match[paf[0]] = end
+                    start = start + overlap
+                else:
+                    #print(">> %s %s %d %d %d" % (paf[0], paf[5], start, end, annotlen))
+                    continue
+
+            # record this annotated segment
+            if paf[0] not in matched_repeats: 
+                matched_repeats[paf[0]] = [ paf[5] ]
+            else:
+                matched_repeats[paf[0]].append(paf[5])
+				
+            # collect stats
+            annotated_length = annotated_length + annotlen
+            classre = re.search(r'#(\S+)', paf[5])
+            if classre:
+                repclass = classre.group(1)
+                if repclass in stats:
+                    stats[repclass] = stats[repclass] + annotlen
+                else: 
+                    stats[repclass] = annotlen
+
+            if verbose:
+                print("# %s %s %d %d %d" % 
+                    (paf[0], paf[5], start, end, annotlen))
+ 
+        #else: 
+        #     print(">>> %s %s %d %d %d" % (paf[0], paf[5], start, end, annotlen))
 
     mapfile.close()
 

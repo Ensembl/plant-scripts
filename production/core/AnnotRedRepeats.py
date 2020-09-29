@@ -586,7 +586,7 @@ def main():
     print("# mapped repeats: ", map_filename)
 
     matched_repeats = make_annotation_report( map_filename, log_filepath,\
-        args.minlen)
+        int(args.minlen))
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:

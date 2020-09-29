@@ -303,6 +303,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     # put together minimap2 command
     # ' -x map-ont ' +\
     # ' -x asm20 ' +\
+#TODO: check multimapping options, as our reference is highly repetitive
     cmd = miniexe + \
             ' -K100M --score-N 0 ' +\
             ' -x map-pab ' +\
@@ -327,7 +328,8 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 	# sort results on repeat, aligned block length
     # https://github.com/lh3/miniasm/blob/master/PAF.md
     cmd = 'sort -k1,1 -k11,11nr ' + output_filename
-    
+    # sort -k6,6 -k11,11nr  
+
     try:
         osresponse = subprocess.check_call(cmd.split(),stdout=sortfile)
     except subprocess.CalledProcessError as err:
@@ -340,77 +342,78 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     return sorted_filename
 
 
-def make_annotation_report( map_filename, #repeat_fasta_file, 
-    log_filename, cover, verbose=False):
-   '''Parse mappings file and print repeat annotation stats.
-      Only alignments with %coverage > cover are considered.
-      Returns dictionary with mapped repeats.'''
+def make_annotation_report( map_filename, log_filename, 
+    minlen, verbose=False):
+    '''Parse mappings file and print repeat annotation stats.
+       Only alignments with %coverage > cover are considered.
+       Returns dictionary with mapped repeats.'''
 
-   skip_match = {}
-   matched_repeats = {}
-   annotated_length = 0
-   stats = {}
+    skip_match = {}
+    matched_repeats = {}
+    annotated_length = 0
+    stats = {}
 
-   try:
-       mapfile = open(map_filename)
-   except OSError as error:
-       print("# ERROR: cannot open/read file ", map_filename, error)
-       return {}
+    try:
+        mapfile = open(map_filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file ", map_filename, error)
+        return {}
 
-   for line in mapfile:
-       paf = line.split("\t")
-       #  0 : masked seq_region
-       #  1 : length of seq_region 
-       #  5 : repeat from library (ie RLG_159077:mipsREdat_9.3p_ALL#LTR/Gypsy)
-       # 11 : aligned block length
-       if paf[0] not in skip_match:
-           # mark repeat as seen
-           skip_match[paf[0]] = 1
-           if int(paf[10])/int(paf[1]) >= cover:
-               matched_repeats[paf[0]] = paf[5]
-               # collect stats
-               annotated_length = annotated_length + int(paf[1])
-               classre = re.search(r'#(\S+)', paf[5])
-               if classre:
-                   repclass = classre.group(1)
-                   if repclass in stats:
-                       stats[repclass] = stats[repclass] + int(paf[1])
-                   else: 
-                       stats[repclass] = int(paf[1])
+    for line in mapfile:
+        paf = line.split("\t")
+        #  0 : masked seq_region
+        #  1 : length of seq_region 
+        #  5 : repeat from library (ie RLG_159077:mipsREdat_9.3p_ALL#LTR/Gypsy)
+        # 11 : aligned block length
+        if paf[0] not in skip_match:
+            # mark repeat as seen
+            skip_match[paf[0]] = 1
+            if int(paf[10])/int(paf[1]) >= cover:
+                matched_repeats[paf[0]] = paf[5]
+                # collect stats
+                annotated_length = annotated_length + int(paf[1])
+                classre = re.search(r'#(\S+)', paf[5])
+                if classre:
+                    repclass = classre.group(1)
+                    if repclass in stats:
+                        stats[repclass] = stats[repclass] + int(paf[1])
+                    else: 
+                        stats[repclass] = int(paf[1])
 
-               if verbose:
-                   print("# %s %s %1.1f" % 
-                       (paf[0], paf[5], int(paf[10])/int(paf[1])))
+                if verbose:
+                    print("# %s %s %1.1f" % 
+                        (paf[0], paf[5], int(paf[10])/int(paf[1])))
 
-   mapfile.close()
+    mapfile.close()
 
-   # fetch summary from log and print it with annotation stats
-   try:
-       logfile = open(log_filename)
-   except OSError as error:
-       print("# ERROR: cannot open/read file:", log_filename, error)
-       return {}
+    # fetch summary from log and print it with annotation stats
+    try:
+        logfile = open(log_filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", log_filename, error)
+        return {}
 
-   for line in logfile:
-       statsre = re.search(r'^Genome length: (\d+) - Repeats length: (\d+)', line)
-       if statsre:
-           print("# Genome length: %s Repeated content: %s %2.1f%% Annotated: %d %2.1f%%\n" %
-               (statsre.group(1), statsre.group(2),\
-                100*int(statsre.group(2))/int(statsre.group(1)),
-                annotated_length, 100*annotated_length/int(statsre.group(1))))
+    for line in logfile:
+        statsre = re.search(r'^Genome length: (\d+) - Repeats length: (\d+)', line)
+        if statsre:
+            print("# Genome length: %s Repeated content: %s %2.1f%% Annotated: %d %2.1f%%\n" %
+                (statsre.group(1), statsre.group(2),\
+                 100*int(statsre.group(2))/int(statsre.group(1)),
+                 annotated_length, 100*annotated_length/int(statsre.group(1))))
    
-   logfile.close()
+    logfile.close()
 
-   # print repeat class stats
-   for repclass in sorted(stats.keys()): 
-       print("%s\t%d" %
-           (repclass, stats[repclass]))
+    # print repeat class stats
+    for repclass in sorted(stats.keys()): 
+        print("%s\t%d" %
+            (repclass, stats[repclass]))
 
 
-   # parse repeat FASTA file to fetch sequences of matched repeats
-   # TO BE DONE if those sequences/consensi are valuable
+    # parse repeat FASTA file to fetch sequences of matched repeats
+    # TO BE DONE if those sequences/consensi are valuable
 
-   return matched_repeats 
+    return matched_repeats 
+
 
 def store_repeat_annot_database( workdir, matched_repeats, 
     repeat_fasta_file, logic_name, db_url):
@@ -497,9 +500,7 @@ def main():
     parser.add_argument("--cor", default=1,
         help="number of cores for minimap2, default: 1")
     parser.add_argument("--minlen", default=90,
-        help="min length of Red repeats to be annotated, default: 90")
-    parser.add_argument("--cover", default=75,
-        help="min %coverage of aligned repeats to transfer annotation, default: 75")
+        help="min length of repeats to be annotated, default: 90bp")
     parser.add_argument("--host",
         help="name of the database host")
     parser.add_argument("--user",
@@ -534,17 +535,20 @@ def main():
     print("# FASTA file with repeat sequences (length>%s): %s\n\n"\
         % (args.minlen, repeats_filename))
 
-    # format repeat library for minimap2
+    # format reference sequences for minimap2
+    # Note: a precomputed repeat library is used as reference
     formatted_lib_filename = format_reference_minimap( args.exe, args.cor,\
         args.repeat_fasta_file, annotdir)
 
     # run minimap2, or else re-use previous results
+    # Note: Red-called repeats are handled as long reads
     print("# running minimap2")
     map_filename = run_minimap( args.exe, args.cor, \
-	    formatted_lib_filename, repeats_filename, annotdir)
+        formatted_lib_filename, repeats_filename, annotdir)
     print("# mapped repeats: ", map_filename)
 
-    matched_repeats = make_annotation_report( map_filename, log_filepath, args.cover/100)
+    matched_repeats = make_annotation_report( map_filename, log_filepath,\
+        args.minlen)
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:

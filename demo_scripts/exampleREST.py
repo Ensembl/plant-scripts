@@ -110,6 +110,25 @@ def get_overlapping_features(species,region):
         if overlap_feat['source'] == source_variation:
             print("%s\t%s" % (overlap_feat['id'],overlap_feat['source']))
 
+    ## protein-coding genes from additional annotation tracks,
+    ## also called otherfeatures dbs
+    dbtype = 'otherfeatures'
+
+    ext = (overlap_url + 
+        "?feature=transcript;db_type=" + dbtype + 
+        ";content-type=application/json")
+    overlap_data = get_json(ext)    
+
+    for overlap_feat in overlap_data:
+        if overlap_feat['biotype'] == 'protein_coding':
+
+            ext2 = ( "/sequence/id/" + overlap_feat['id'] +
+                "?db_type=" + dbtype + ";type=protein;object_type=transcript;" +
+                "species=" + species + ";content-type=application/json" )
+           
+            prot_data = get_json(ext2)
+            print(">%s\n%s" % (prot_data['id'],prot_data['seq']))  
+
 
 def get_phenotypes(species,region,p_cutoff):
     '''gets phenotypes associated to a genomic region under a P-value cutoff

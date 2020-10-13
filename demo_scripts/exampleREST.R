@@ -105,7 +105,7 @@ overlap_data = call_endpoint(url,"application/json")
 subset(overlap_data, grepl("LTR", description), 
 	select=c( 'description','start','end'))
 
-# finally get EMS variants
+# get EMS variants
 url = paste(
         paste(server, 'overlap/region', species, region, sep="/"),
 		"feature=variation;content-type=application/json",
@@ -114,6 +114,17 @@ url = paste(
 overlap_data = call_endpoint(url,"application/json")
 subset(overlap_data, grepl("EMS-induced mutation", source),
     select=c( 'id','source'))
+
+# protein-coding genes from additional annotation tracks,
+# also called otherfeatures dbs
+#dbtype = 'otherfeatures'
+#
+#url = paste(
+#    paste(server, 'overlap/region', species, region, sep="/"),
+#    paste( '?feature=transcript;', 'db_type=', dbtype,
+#        ";content-type=application/json", sep=""))
+# to be completed, se pl/py versions
+
 
 ## R4) Fetch phenotypes overlapping genomic region
 

@@ -127,7 +127,7 @@ foreach my $overlap_feat (@$overlap_data){
 		$overlap_feat->{end});
 }
 
-# finally get EMS variants
+# EMS variants
 
 my $source_variation = 'EMS-induced mutation';
 #$source_variation = 'CerealsDB';
@@ -143,6 +143,28 @@ foreach my $overlap_feat (@$overlap_data){
 		$overlap_feat->{id},
 		$overlap_feat->{source});
 }
+
+# protein-coding genes from additional annotation tracks,
+# also called otherfeatures dbs
+my $dbtype = 'otherfeatures';
+
+$url = join('/', $server, 'overlap/region', $species, $region).
+	"?feature=transcript;db_type=$dbtype;content-type=application/json";
+
+$overlap_data = call_endpoint($http,$url);
+
+foreach my $overlap_feat (@$overlap_data){
+	next if($overlap_feat->{biotype} ne 'protein_coding');
+
+	# get peptide sequences encoded by these genes
+	$url = join('/', $server, 'sequence/id', $overlap_feat->{id}).
+		"?db_type=$dbtype;type=protein;species=$species;object_type=transcript;".
+		"content-type=application/json";
+	
+	my $result = call_endpoint($http,$url);
+	printf(">%s\n%s\n",$result->{'id'},$result->{'seq'});
+}
+
 
 ## R4) Fetch phenotypes overlapping genomic region
 

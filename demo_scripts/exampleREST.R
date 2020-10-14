@@ -46,26 +46,6 @@ post_endpoint <- function(url, data, content_type) {
 	}
 }
 
-
-#see https://cran.r-project.org/web/packages/jsonlite/vignettes/json-apis.html
-#sub post_endpoint {
-#	my ($http, $url, $data, $verbose) = @_;
-
-#	print "Invoking $url (POST)\n" if($verbose);
-
-#	my $response = $http->request('POST', $url, {	
-#		headers => { 
-#			'Content-type' => 'application/json',
-#			'Accept' => 'application/json'
-#		},
-#		content => $data
-#	});
-	
-#	die "# Failed POST request $url\n" unless $response->{success};
-
-#	return decode_json($response->{content});
-#}
-
 ## R2) Get metadata for all plant species 
 
 url = paste(server, '/info/genomes/division/EnsemblPlants', sep="/")
@@ -86,18 +66,20 @@ subset(metadata, select=c( 'name','strain','assembly_accession',
 species = 'triticum_aestivum';
 region = '3D:379400000-379540000';
 
+rest_point = paste(server, 'overlap/region', species, region, sep="/")
+
 # genes
 url = paste( 
-		paste(server, 'overlap/region', species, region, sep="/"),
+		rest_point,
 		"feature=gene;content-type=application/json",
 		sep="?")
 
 overlap_data = call_endpoint(url,"application/json")
 subset(overlap_data, select=c( 'id','start','end'))
 
-# now LTR repeats
+# LTR repeats
 url = paste(
-        paste(server, 'overlap/region', species, region, sep="/"),
+        rest_point,
 		"feature=repeat;content-type=application/json",
 		sep="?")
 
@@ -105,9 +87,9 @@ overlap_data = call_endpoint(url,"application/json")
 subset(overlap_data, grepl("LTR", description), 
 	select=c( 'description','start','end'))
 
-# get EMS variants
+# EMS variants
 url = paste(
-        paste(server, 'overlap/region', species, region, sep="/"),
+        rest_point,
 		"feature=variation;content-type=application/json",
 		sep="?")
 
@@ -117,14 +99,25 @@ subset(overlap_data, grepl("EMS-induced mutation", source),
 
 # protein-coding genes from additional annotation tracks,
 # also called otherfeatures dbs
-#dbtype = 'otherfeatures'
-#
-#url = paste(
-#    paste(server, 'overlap/region', species, region, sep="/"),
-#    paste( '?feature=transcript;', 'db_type=', dbtype,
-#        ";content-type=application/json", sep=""))
-# to be completed, se pl/py versions
+url = paste(
+	rest_point,
+	"feature=transcript;db_type=otherfeatures;content-type=application/json", 
+	sep="?")
 
+overlap_data = call_endpoint(url,"application/json")
+transcripts = subset(overlap_data, grepl("protein_coding", biotype),
+    select=c( 'id','biotype'))
+
+if(length(transcripts)){
+	for(tr in 1:nrow(transcripts)) {
+		rest_point = paste(server, 'sequence/id', transcripts[tr,'id'], sep="/")
+		args = paste('db_type=otherfeatures','type=protein','object_type=transcript',
+			paste('species',species,sep="="),'content-type=application/json',sep=';')
+		url = paste(rest_point,args,sep='?')
+		seqdata = call_endpoint(url,"application/json")
+		print(seqdata)
+	}
+}
 
 ## R4) Fetch phenotypes overlapping genomic region
 
@@ -135,7 +128,7 @@ p_cutoff = 0.0001
 url = paste(
 		paste(server, 'phenotype/region', species, region, sep="/"),
 		"feature_type=Variation;content-type=application/json",
-        sep="?")
+		sep="?")
 
 pheno_data = call_endpoint(url,"application/json")
 if(length(pheno_data) > 0) {

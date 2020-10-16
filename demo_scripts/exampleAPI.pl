@@ -222,7 +222,7 @@ my $mlss = $mlss_adaptor->fetch_by_method_link_type_registry_aliases(
 	$_->goc_score && $_->goc_score >= 75
 } @homologies;
 
-my $n = 1;
+my $count = 1;
 foreach my $homology (@homologies) {
 
 	# get one orthologue
@@ -247,15 +247,20 @@ foreach my $homology (@homologies) {
         print "\n";
 
         # Only print the first 10 groups
-        last if $n++ == 10;
+        last if $count++ == 10;
     }
 }
 
-##A10) Print all translations for otherfeatures genes (shows first 10)
-my $count = 0;
+## A10) Print all translations for otherfeatures genes
+
+# Note: otherfeatures dbs are Ensembl databases that
+# usually contain additional annotation tracks
+
+$count = 0;
 $species = 'triticum_aestivum';
 
-$gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "otherfeatures", "gene");
+$gene_adaptor = Bio::EnsEMBL::Registry->
+	get_adaptor($species, "otherfeatures", "gene");
 my $genes = $gene_adaptor->fetch_all_by_biotype('protein_coding');
 
 for my $gene (@$genes){
@@ -271,8 +276,8 @@ for my $gene (@$genes){
         my $sequence = $translation->seq;
         print $translation->seq, "\n";
     }
-    if ($count == 10){
-        last;
-    }
+
+	# Print only first 10, comment for real use
+    last if ($count == 10);
 }
 

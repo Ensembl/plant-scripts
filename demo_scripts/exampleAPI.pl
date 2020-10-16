@@ -250,3 +250,29 @@ foreach my $homology (@homologies) {
         last if $n++ == 10;
     }
 }
+
+##A10) Print all translations for otherfeatures genes (shows first 10)
+my $count = 0;
+$species = 'triticum_aestivum';
+
+$gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "otherfeatures", "gene");
+my $genes = $gene_adaptor->fetch_all_by_biotype('protein_coding');
+
+for my $gene (@$genes){
+    my $transcripts = $gene->get_all_Transcripts;
+    for my $t (@$transcripts){
+        if ($t->biotype ne 'protein_coding'){
+            next;
+        }
+        $count++;
+        print ">",$gene->stable_id,"\n";
+
+        my $translation = $t->translation;
+        my $sequence = $translation->seq;
+        print $translation->seq, "\n";
+    }
+    if ($count == 10){
+        last;
+    }
+}
+

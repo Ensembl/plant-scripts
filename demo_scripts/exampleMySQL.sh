@@ -138,10 +138,12 @@ GROUP BY genome_db_id
 ORDER BY genome_db.name
 SQL
 
-## S7) Extract all the mutations for a known line on triticum aestivum. The variation name contains the name of the line where the muation is present. 
+## S7) Extract all the mutations and consequence for a known line on triticum aestivum. 
 
+# The variation name contains the name of the line where the muation is present. 
 # Variation schema documented at 
 # http://www.ensembl.org/info/docs/api/variation/variation_schema.html
+
 SPECIES=triticum_aestivum
 LINE="Cadenza1441"
 SPECIESVAR=$(mysql --host $SERVER --user $USER --port $PORT \
@@ -149,14 +151,15 @@ SPECIESVAR=$(mysql --host $SERVER --user $USER --port $PORT \
 mysql --host $SERVER --user $USER --port $PORT \
     $SPECIESVAR <<SQL
 SELECT 
-    seq_region.`name` as CHR, 
+    seq_region.name as CHR, 
     variation_feature.seq_region_start as POS, 
     variation_feature.allele_string,  
-    variation.`name` as ID, transcript_variation.feature_stable_id, 
+    variation.name as ID, 
+    transcript_variation.feature_stable_id, 
     transcript_variation.consequence_types, 
     transcript_variation.sift_prediction, 
     transcript_variation.sift_score,
-    variation_set.`name` as variation_set
+    variation_set.name as variation_set
 FROM variation 
 JOIN variation_set_variation
     ON variation.variation_id =variation_set_variation.variation_id
@@ -169,6 +172,6 @@ JOIN transcript_variation
 JOIN seq_region
     ON variation_feature.seq_region_id = seq_region.seq_region_id
 WHERE 
-    variation.`name` LIKE "${LINE}%" 
+    variation.name LIKE "${LINE}%" 
 SQL
 

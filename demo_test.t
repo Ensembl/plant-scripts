@@ -2,8 +2,8 @@ use strict;
 use warnings;
 use Test::More tests => 5;
 
-ok( eval{ `bash exampleFTP.sh --spider 2>&1` } =~ /Brachypodium_distachyon/ , 
-	'exampleFTP.sh --spider test' );
+ok( eval{ `bash exampleFTP.sh --spider test 2>&1` } =~ /Brachypodium_distachyon/ , 
+	'exampleFTP.sh' );
 
 ok( eval{ `bash exampleMySQL.sh test` } =~ /COUNT/ , 'exampleMySQL.sh' );
 

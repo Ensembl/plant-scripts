@@ -1,9 +1,9 @@
 
 # Scripting analyses of genomes in Ensembl Plants
 
-This folder contains code examples for interrogating Ensembl Plants from your own scripts.
+This repo contains code examples for interrogating Ensembl Plants from your own scripts.
 
-<!-- [![Build Status](https://travis-ci.com/Ensembl/plant_tools.svg?branch=master)](https://travis-ci.com/Ensembl/plant_tools) -->
+[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
 
 ## Dependencies
 
@@ -95,4 +95,8 @@ exampleVEP.sh:## V3) Predict effect of variants
 exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
-A few more advanced scripts for phylogenomic studies are documented in folder [phylogenomics](../phylogenomics)
+A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
+
+![Plant species tree](./EnsemblPlants49.png)
+
+*Fig. 1. Species tree of Ensembl Plants release 49, figure generated with [iTOL](https://itol.embl.de)*

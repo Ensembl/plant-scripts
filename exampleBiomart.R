@@ -17,6 +17,8 @@
 
 library("biomaRt")
 
+args = commandArgs(trailingOnly=TRUE)
+
 ## B1) Check plant marts and select dataset
 
 listMarts( host="plants.ensembl.org" )
@@ -43,6 +45,11 @@ EPgenes = useMart(
 head( listFilters(EPgenes) )
 
 head( listAttributes(EPgenes) )
+
+# stop here if just a test
+if(length(args)==1 && args[1]=="test"){
+	stop()
+}
 
 
 ## B3) Download GO terms associated to genes

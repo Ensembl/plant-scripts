@@ -85,6 +85,10 @@ foreach my $sp (@$metadata){
 		$sp->{has_synteny});
 }
 
+# stop here if just a test
+exit if($ARGV[0] eq 'test');
+
+
 ## R3) Find features overlapping genomic region
 
 # full list at

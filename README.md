@@ -100,6 +100,6 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 
 A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
 
-![Plant species tree](./EnsemblPlants49.png)
+![Plant species tree](./EnsemblPlants47.png)
 
 *Fig. 1. Species tree of Ensembl Plants release 47 obtained with recipe F12. Figure generated with [iTOL](https://itol.embl.de)*

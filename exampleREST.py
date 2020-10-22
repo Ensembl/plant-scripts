@@ -295,6 +295,10 @@ def get_variation_sources(species):
 ## R2) Get metadata for all plant species
 get_metadata() #function call
 
+# stop if this is just a test
+if sys.argv[1] == 'test':
+	quit()
+
 ## R3) Find features overlapping genomic region
 species = 'triticum_aestivum';
 region = '3D:379400000-379540000';

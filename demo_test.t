@@ -2,7 +2,8 @@ use strict;
 use warnings;
 use Test::More tests => 5;
 
-ok( eval{ `bash exampleFTP.sh --spider 2>&1` } !~ /No such file/ , 'exampleFTP.sh --spider ' );
+ok( eval{ `bash exampleFTP.sh --spider 2>&1` } =~ /Brachypodium_distachyon/ , 
+	'exampleFTP.sh --spider test' );
 
 ok( eval{ `bash exampleMySQL.sh test` } =~ /stable_id/ , 'exampleMySQL.sh' );
 

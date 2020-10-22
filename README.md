@@ -31,10 +31,13 @@ The REST recipes written in python require library [requests](https://pypi.org/p
 
 ### R
 
-For the BioMart recipes you will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html). See installation instructions [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
+For the BioMart recipes you will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html), which can be installed with:
 
-For the REST recipes there are two required packages: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
+	Rscript install_R_deps.R
 
+Full installation instructions can be found [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
+
+For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
 
 ## List of recipes
 

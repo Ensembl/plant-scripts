@@ -3,7 +3,7 @@
 
 This repo contains code examples for interrogating Ensembl Plants from your own scripts.
 
-<!--[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)-->
+[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
 
 ## Dependencies
 

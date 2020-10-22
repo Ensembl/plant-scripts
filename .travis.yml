@@ -12,13 +12,19 @@ before_install:
   - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
 
 before_script:
+  # uncomment next line to install biomaRt R package, takes several minutes
   #- "make install"
-  # http://plants.ensembl.org/info/docs/api/api_installation.html
   - git clone https://github.com/Ensembl/ensembl.git
+  - git clone https://github.com/Ensembl/ensembl-variation.git
+  - git clone https://github.com/Ensembl/ensembl-funcgen.git
   - git clone https://github.com/Ensembl/ensembl-compara.git
+  - git clone https://github.com/Ensembl/ensembl-metadata.git
   - git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git
   - PERL5LIB=$PWD/ensembl/modules:$PERL5LIB
+  - PERL5LIB=$PWD/ensembl-variation/modules:$PERL5LIB
   - PERL5LIB=$PWD/ensembl-compara/modules:$PERL5LIB
+  - PERL5LIB=$PWD/ensembl-funcgen/modules:$PERL5LIB
+  - PERL5LIB=$PWD/ensembl-metadata/modules:$PERL5LIB
   - PERL5LIB=$PWD/bioperl-live:$PERL5LIB
   - export PERL5LIB
 

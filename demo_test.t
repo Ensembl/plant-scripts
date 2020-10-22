@@ -1,6 +1,8 @@
 use strict;
 use warnings;
-use Test::More tests => 5;
+use Test::More;
+
+my $number_of_tests = 5;
 
 ok( eval{ `./exampleFTP.sh --spider test 2>&1` } =~ /Brachypodium_distachyon/ , 
 	'exampleFTP.sh' );
@@ -13,4 +15,9 @@ ok( eval{ `perl exampleREST.pl test` } =~ /hordeum_vulgare/ , 'exampleREST.pl' )
 
 ok( eval{ `perl exampleAPI.pl test` } =~ /xref/ , 'exampleAPI.pl' );
 
-#ok( eval{ `Rscript exampleBiomart.R test` } =~ /IWGSC/ , 'exampleBiomaRt.R' );
+if($ARGV[0] && $ARGV[0] eq 'biomart'){
+	ok( eval{ `Rscript exampleBiomart.R test` } =~ /IWGSC/ , 'exampleBiomaRt.R' );
+	$number_of_tests++;
+}
+
+done_testing( $number_of_tests );

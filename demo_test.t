@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 ok( eval{ `./exampleFTP.sh --spider test 2>&1` } =~ /Brachypodium_distachyon/ , 
 	'exampleFTP.sh' );
@@ -13,5 +13,4 @@ ok( eval{ `perl exampleREST.pl test` } =~ /hordeum_vulgare/ , 'exampleREST.pl' )
 
 ok( eval{ `perl exampleAPI.pl test` } =~ /xref/ , 'exampleAPI.pl' );
 
-#takes too long and BiomaRt package not maintained by Ensembl
-#ok( eval{ `Rscript exampleBiomart.R test` } =~ /IWGSC/ , 'exampleBiomaRt.R' );
+ok( eval{ `Rscript exampleBiomart.R test` } =~ /IWGSC/ , 'exampleBiomaRt.R' );

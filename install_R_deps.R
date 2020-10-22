@@ -7,7 +7,8 @@ local_lib = "./lib/R/"
 
 if(!requireNamespace("BiocManager", quietly=T))
 	install.packages("BiocManager", dependencies=T, lib=local_lib)
-BiocManager::install("biomaRt")
+
+BiocManager::install("biomaRt", lib=local_lib)
 
 #repository = 'https://cloud.r-project.org';
 #required_packages = c("httr", "jsonlite")

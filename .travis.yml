@@ -11,7 +11,7 @@ before_install:
   - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
 
 script:
-  - "make test_demo"
+  - "make test"
 
 notifications:
   email:

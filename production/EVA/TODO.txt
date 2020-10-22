@@ -1,3 +1,0 @@
-Another location to find VCF files for assemblies would be:
-
-ftp://ftp.ebi.ac.uk/pub/databases/eva/rs_releases/release_0_preview/

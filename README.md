@@ -19,7 +19,7 @@ The examples for SQL queries to Ensembl Genomes database servers require the [My
 
 ### Perl
 
-As listed in [cpanfile](./cpanfile), three modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them as explained in [phylogenomics/README.md](../phylogenomics/README.md). 
+As listed in [cpanfile](./cpanfile), three modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them as explained in [phylogenomics](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics). 
 
 For the recipes using the Ensembl Perl API please follow the installation [instructions](http://plants.ensembl.org/info/docs/api/api_installation.html). If you use git please follow [these](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). Note that your local Ensembl API should match the version of the current Ensembl release.
 

@@ -3,6 +3,7 @@
 # Installs missing R dependencies 
 
 local_lib = "./lib/R/"
+.libPaths( c( .libPaths(), local_lib) )
 
 if(!requireNamespace("BiocManager", quietly=T))
 	install.packages("BiocManager", dependencies=T, lib=local_lib)
@@ -17,7 +18,5 @@ BiocManager::install("biomaRt")
 #		install.packages(package, dependencies=TRUE, lib=local_lib, repos=repository)
 #	}
 #}
-
-.libPaths( c( .libPaths(), local_lib) )
 
 sessionInfo()

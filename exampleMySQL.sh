@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Your usage of the data returned by the REST service is
+# Your usage of the data returned by the public MySQL server is
 # subject to same conditions as laid out on the Ensembl website.
 #
 # Copyright [2020] EMBL-European Bioinformatics Institute

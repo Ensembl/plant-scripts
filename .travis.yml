@@ -12,7 +12,6 @@ before_install:
 
 script:
   - "make test_demo"
-  - "make test_phylo"
 
 notifications:
   email:

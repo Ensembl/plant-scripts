@@ -30,6 +30,13 @@ EGRELEASE=$((RELEASE - 53));
 echo "EGRELEASE=${EGRELEASE}"
 echo
 
+# stop here if just a test
+if [ $1 = "test" ] ; then
+	mysql --host $SERVER --user $USER --port $PORT -e "show databases"
+	exit 0
+fi
+
+
 ## S1) Check currently supported Ensembl Genomes (EG)/non-vertebrates core schemas,
 
 # Note: includes non-plants as well
@@ -48,11 +55,6 @@ SPECIESCORE=$(mysql --host $SERVER --user $USER --port $PORT \
 
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
-
-# stop here if just a test
-if [ $1 = "test" ] ; then
-	exit 0
-fi
 
 ## S3) Get stable_ids of transcripts used in Compara analyses 
 

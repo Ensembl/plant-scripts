@@ -41,6 +41,13 @@ URL="${SERVER}/release-${EGRELEASE}/${DIV}/fasta/${SPECIES,,}/pep/${FASTAPEP}"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
+# stop here if just a test
+if [ $2 = "test" ] ; then
+	exit 0
+fi
+
+
+
 ## F2) Download CDS nucleotide sequences in FASTA format
 
 FASTACDS="${SPECIES}*cds.all.fa.gz"

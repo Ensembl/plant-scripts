@@ -10,10 +10,10 @@
 #
 # Copyright [2020] EMBL-European Bioinformatics Institute
 
-# uncomment to install package biomaRt package
-# if(!requireNamespace("BiocManager", quietly = TRUE))
-# 	install.packages("BiocManager")
-# BiocManager::install("biomaRt")
+# To install R package biomaRt run: Rscript install_R_deps.R
+
+local_lib = "./lib/R/"
+.libPaths( c( .libPaths(), local_lib) )
 
 library("biomaRt")
 

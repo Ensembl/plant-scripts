@@ -68,6 +68,11 @@ mysql --host $SERVER --user $USER --port $PORT \
 		LIMIT 10"
 
 
+# stop here if just a test
+if [ $1 = "test" ] ; then
+	exit 0
+fi
+
 ## S4) Get variants significantly associated to phenotypes
 
 # Variation schema documented at 

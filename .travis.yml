@@ -7,11 +7,12 @@ perl:
 
 before_install:
   - "sudo apt-get update"
-  - "sudo apt-get install -y wget r-base python3 mysql-client libmysqlclient-dev"
+  - "sudo apt-get install -y wget python3 mysql-client libmysqlclient-dev"
+  #- "sudo apt-get install -y r-base
   - "cpanm --sudo -v --installdeps --notest --cpanfile cpanfile ."
 
 before_script:
-  - "make install"
+  #- "make install"
   # http://plants.ensembl.org/info/docs/api/api_installation.html
   - git clone --branch master --depth 1 https://github.com/Ensembl/ensembl.git
   - git clone --branch master --depth 1 https://github.com/Ensembl/ensembl-compara.git

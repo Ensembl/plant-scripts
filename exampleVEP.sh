@@ -11,7 +11,7 @@
 EGRELEASE=47
 
 # work out Ensembl release, do not change
-RELEASE=$(( EGRELEASE + 53));
+RELEASE=$((EGRELEASE + 53));
 
 echo "EGRELEASE=${EGRELEASE}"
 echo

@@ -48,7 +48,7 @@ head( listAttributes(EPgenes) )
 
 # stop here if just a test
 if(length(args)==1 && args[1]=="test"){
-	stop()
+	q("no",1)
 }
 
 

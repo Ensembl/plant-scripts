@@ -18,11 +18,11 @@ PORT=4157
 FTPSERVER="ftp://ftp.ensemblgenomes.org/pub"
 DIV=plants
 SUMFILE="${FTPSERVER}/${DIV}/current/summary.txt"
-RELEASE=`wget --quiet -O - $SUMFILE | \
-	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }'`
+RELEASE=$(wget --quiet -O - $SUMFILE | \
+	perl -lne 'if(/Release (\d+) of Ensembl/){ print $1 }')
 
 # work out Ensembl Genomes release
-EGRELEASE=$(( RELEASE - 53));
+EGRELEASE=$((RELEASE - 53));
 
 # alternatively set other EG release number
 # EGRELEASE=
@@ -30,7 +30,7 @@ EGRELEASE=$(( RELEASE - 53));
 echo "EGRELEASE=${EGRELEASE}"
 echo
 
-## S1) Check currently supported Ensembl Genomes (EG) core schemas,
+## S1) Check currently supported Ensembl Genomes (EG)/non-vertebrates core schemas,
 
 # Note: includes non-plants as well
 
@@ -39,7 +39,6 @@ mysql --host $SERVER --user $USER --port $PORT \
 
 # The following API script can also be used:
 # https://github.com/Ensembl/ensembl-metadata/blob/master/misc_scripts/get_list_databases_for_division.pl
-
 
 ## S2) Count protein-coding genes of a particular species
 
@@ -50,6 +49,10 @@ SPECIESCORE=$(mysql --host $SERVER --user $USER --port $PORT \
 mysql --host $SERVER --user $USER --port $PORT \
 	$SPECIESCORE -e "SELECT COUNT(*) FROM gene WHERE biotype='protein_coding'"
 
+# stop here if just a test
+if [ $1 = "test" ] ; then
+	exit 0
+fi
 
 ## S3) Get stable_ids of transcripts used in Compara analyses 
 
@@ -66,12 +69,6 @@ mysql --host $SERVER --user $USER --port $PORT \
 		AND sm.genome_db_id = gdb.genome_db_id \
 		AND gdb.name = '$SPECIES' \
 		LIMIT 10"
-
-
-# stop here if just a test
-if [ $1 = "test" ] ; then
-	exit 0
-fi
 
 ## S4) Get variants significantly associated to phenotypes
 

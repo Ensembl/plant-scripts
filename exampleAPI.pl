@@ -46,6 +46,12 @@ foreach my $analysis (sort
 		print $analysis->logic_name(), "\n";
 } 
 
+# stop here if only test
+if($ARGV[0] eq "test"){
+	exit(0);
+}
+
+
 ## A3) Get soft masked sequences from Arabidopsis thaliana
 
 my $slice_adaptor = Bio::EnsEMBL::Registry->

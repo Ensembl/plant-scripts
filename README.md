@@ -12,6 +12,7 @@ This repo contains code examples for interrogating Ensembl Plants from your own 
 	- [Python](#python)
 	- [R](#r)
 - [List of recipes](#list-of-recipes)
+- [Species tree](#species-tree)
 - [Citation](#citation)
 
 ## Dependencies
@@ -110,6 +111,8 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
 A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
+
+## Species tree
 
 ![Plant species tree](./files/EnsemblPlants47.png)
 

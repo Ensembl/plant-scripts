@@ -13,7 +13,7 @@
 # http://www.ensembl.org/info/docs/api/api_git.html
 # https://m.ensembl.org/info/docs/api/debug_installation_guide.html
 # Note you might need some dependencies, such as libmysqlclient-dev
-# or Perl modules DBI & DBD::mysql
+# and Perl modules DBI & DBD::mysql
 
 
 ## A1) Load the Registry object with details of genomes available

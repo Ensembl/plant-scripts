@@ -41,7 +41,7 @@ if( my $ftp = Net::FTP->new( $FTPURL, Passive=>1, Debug=>0, Timeout=>60) ){
 		$ftp->message();
 
 	# print header
-	print "study\tassembly\tsubgroup\tcramfile\tdescription\n";
+	print "cramfile\tstudy\tassembly\tsubgroup\tdescription\n";
 
 	# stop if test only
 	if($assembly_name eq 'test'){
@@ -56,7 +56,10 @@ if( my $ftp = Net::FTP->new( $FTPURL, Passive=>1, Debug=>0, Timeout=>60) ){
 		my @contents = $ftp->ls();
 
 		# skip other assemblies
-		next if(!grep(/^$assembly_name$/, @contents));
+		if(!grep(/^$assembly_name$/, @contents)){
+			$ftp->cdup();
+			next;
+		}
 
 		# get description from hub.txt
 		$descr = 'NA';
@@ -89,7 +92,7 @@ if( my $ftp = Net::FTP->new( $FTPURL, Passive=>1, Debug=>0, Timeout=>60) ){
 							$cramfile = $1;
 
 							# print this CRAM file
-							print "$study\t$file\t$subgroup\t$cramfile\t$descr\n";
+							print "$cramfile\t$study\t$file\t$subgroup\t$descr\n";
 						}
 					}
 					close(HUB);

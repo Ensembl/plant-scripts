@@ -2,7 +2,7 @@
 
 # Installs missing R dependencies 
 
-local_lib = "./lib/R/"
+local_lib = "./files/R/"
 .libPaths( c( .libPaths(), local_lib) )
 
 if(!requireNamespace("BiocManager", quietly=T))

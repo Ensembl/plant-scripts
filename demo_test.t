@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
-my $number_of_tests = 6;
+my $number_of_tests = 7;
 
 ok( eval{ `./exampleFTP.sh --spider test 2>&1` } =~ /Brachypodium_distachyon/ , 
 	'exampleFTP.sh' );
@@ -16,6 +16,8 @@ ok( eval{ `perl exampleREST.pl test` } =~ /hordeum_vulgare/ , 'exampleREST.pl' )
 ok( eval{ `Rscript exampleREST.R test` } =~ /hordeum_vulgare/ , 'exampleREST.R' );
 
 ok( eval{ `perl exampleAPI.pl test` } =~ /xref/ , 'exampleAPI.pl' );
+
+ok( eval{ `perl exampleCRAM.pl test` } =~ /subgroup/ , 'exampleCRAM.pl' );
 
 if($ARGV[0] && $ARGV[0] eq 'biomart'){
 	ok( eval{ `Rscript exampleBiomart.R test` } =~ /IWGSC/ , 'exampleBiomaRt.R' );

@@ -39,6 +39,10 @@ Full installation instructions can be found [here](http://plants.ensembl.org/inf
 
 For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
 
+## Zenodo DOI
+
+DOI 10.5281/zenodo.4121769
+
 ## List of recipes
 
 These are the recipes in this repository, obtained with grep -P "^## \w\d+" example*:

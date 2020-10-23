@@ -102,7 +102,7 @@ A few more advanced scripts for phylogenomic studies are documented in repositor
 
 ## RNA-seq tracks
 
-Sequence reads from RNA-seq studies at the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser) are regularly mapped to genome assemblies in Ensembl Plants. For each study CRAM files are created with the [RNASeq-er](https://www.ebi.ac.uk/fg/rnaseq/api) pipeline and published at [ftp://ftp.ensemblgenomes.org/pub/misc_data/Track_Hubs](ftp://ftp.ensemblgenomes.org/pub/misc_data/Track_Hubs)
+Sequence reads from RNA-seq studies at the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser) are regularly mapped to genome assemblies in Ensembl Plants. For each study CRAM files are created with the [RNASeq-er](https://www.ebi.ac.uk/fg/rnaseq/api) pipeline and published at <a href="ftp://ftp.ensemblgenomes.org/pub/misc_data/Track_Hubs">ftp://ftp.ensemblgenomes.org/pub/misc_data/Track_Hubs</a>
 
 Each study contains a separate folder for each assembly that was used for mapping. For instance, study SRP133995 was mapped to tomato assembly SL3.0 and the tracksDb.txt file therein indicates the full path to the relevant CRAM file next to its metadata. Assembly names correspond to column ‘assembly_default’ in recipe R2. 
 

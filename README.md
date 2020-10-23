@@ -3,7 +3,16 @@
 
 This repo contains code examples for interrogating Ensembl Plants from your own scripts.
 
-<!--[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)-->
+[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
+
+- [Dependencies](#dependencies)
+	- [FTP](#ftp)
+	- [MySQL](#mysql)	
+	- [Perl](#perl)
+	- [Python](#python)
+	- [R](#r)
+- [List of recipes](#list-of-recipes)
+- [Citation](#citation)
 
 ## Dependencies
 
@@ -38,10 +47,6 @@ For the BioMart recipes you will need BioConductor package [biomaRt](http://www.
 Full installation instructions can be found [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
 
 For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
-
-## Zenodo DOI
-
-DOI 10.5281/zenodo.4121769
 
 ## List of recipes
 
@@ -109,3 +114,9 @@ A few more advanced scripts for phylogenomic studies are documented in repositor
 ![Plant species tree](./files/EnsemblPlants47.png)
 
 *Fig. 1. Species tree of Ensembl Plants release 47 obtained with recipe F12. Figure generated with [iTOL](https://itol.embl.de)*
+
+## Citation
+
+You can cite the release scripts as follows:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)

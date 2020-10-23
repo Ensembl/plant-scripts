@@ -17,6 +17,8 @@ library(jsonlite)
 
 server = 'http://rest.ensembl.org'
 
+args = commandArgs(trailingOnly=TRUE)
+
 ## R1) helper functions 
 
 # function for invoking endpoint
@@ -55,8 +57,15 @@ url = paste(server, '/info/genomes/division/EnsemblPlants', sep="/")
 metadata = call_endpoint(url,"application/json");
 
 subset(metadata, select=c( 'name','strain','assembly_accession',
-	'base_count','assembly_level','has_peptide_compara',
+	'assembly_default','base_count','assembly_level','has_peptide_compara',
 	'has_variations','has_genome_alignments','has_synteny'))
+
+
+# stop here if just a test
+if(length(args)==1 && args[1]=="test"){
+	q("no",1)
+}
+
 
 ## R3) Find features overlapping genomic region
 

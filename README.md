@@ -61,6 +61,8 @@ exampleBiomart.R:## B3) Download GO terms associated to genes
 exampleBiomart.R:## B4) Get Pfam domains annotated in genes
 exampleBiomart.R:## B5) Get SNP consequences from a selected variation source
 
+exampleCRAM.pl:## C1) Find RNA-seq CRAM files for a genome assembly
+
 exampleFTP.sh:## F1) DDownload peptide sequences in FASTA format
 exampleFTP.sh:## F2) Download CDS nucleotide sequences in FASTA format
 exampleFTP.sh:## F3) Download transcripts (cDNA) in FASTA format
@@ -99,15 +101,6 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
 A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
-
-## RNA-seq tracks
-
-Sequence reads from RNA-seq studies at the [European Nucleotide Archive](https://www.ebi.ac.uk/ena/browser) are regularly mapped to genome assemblies in Ensembl Plants. For each study CRAM files are created with the [RNASeq-er](https://www.ebi.ac.uk/fg/rnaseq/api) pipeline and published on FTP site **ftp://ftp.ensemblgenomes.org/pub/misc_data/Track_Hubs**
-
-Each study contains a separate folder for each assembly that was used for mapping. For instance, study SRP133995 was mapped to tomato assembly SL3.0 and the tracksDb.txt file therein indicates the full path to the relevant CRAM file next to its metadata. Assembly names correspond to column ‘assembly_default’ in recipe R2. 
-
-
-
 
 ![Plant species tree](./files/EnsemblPlants47.png)
 

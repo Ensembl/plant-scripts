@@ -109,6 +109,6 @@ Each study contains a separate folder for each assembly that was used for mappin
 
 
 
-![Plant species tree](./EnsemblPlants47.png)
+![Plant species tree](./files/EnsemblPlants47.png)
 
 *Fig. 1. Species tree of Ensembl Plants release 47 obtained with recipe F12. Figure generated with [iTOL](https://itol.embl.de)*

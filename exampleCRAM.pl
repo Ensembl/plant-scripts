@@ -2,6 +2,16 @@
 
 # Example of Perl client to browse RNA-seq CRAM files from FTP server
 
+# Sequence reads from RNA-seq studies at the European Nucleotide Archive
+# are regularly mapped to genome assemblies in Ensembl Plants. For each study 
+# CRAM files are created with the https://www.ebi.ac.uk/fg/rnaseq/api pipeline 
+# and published on FTP site ftp://ftp.ensemblgenomes.org/pub/misc_data/Track_Hubs
+#
+# Each study contains a separate folder for each assembly used for mapping. 
+# For instance, study SRP133995 was mapped to tomato assembly SL3.0 and the 
+# tracksDb.txt file therein indicates the full path to the relevant CRAM file 
+# next to its metadata. 
+
 # Copyright [2020] EMBL-European Bioinformatics Institute
 
 use strict;

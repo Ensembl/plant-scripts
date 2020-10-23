@@ -120,6 +120,6 @@ A few more advanced scripts for phylogenomic studies are documented in repositor
 
 ## Citation
 
-You can cite the release scripts as follows:
+<!-- to be added chapter citation -->
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)

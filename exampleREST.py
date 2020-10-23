@@ -66,7 +66,8 @@ def get_metadata():
         
         # Printing relevant info, notice some items have been 
         # converted to str for easier printing
-        meta = (d['name'],d['assembly_accession'],str(d['base_count']),
+        meta = (d['name'],d['assembly_accession'],
+            d['assembly_default'],str(d['base_count']),
             d['assembly_level'],str(d['has_peptide_compara']),
             str(d['has_variations']),str(d['has_genome_alignments']),
             str(d['has_synteny']));
@@ -296,7 +297,7 @@ def get_variation_sources(species):
 get_metadata() #function call
 
 # stop if this is just a test
-if sys.argv[1] == 'test':
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
 	quit()
 
 ## R3) Find features overlapping genomic region

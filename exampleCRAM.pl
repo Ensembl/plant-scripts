@@ -21,6 +21,7 @@ use Net::FTP;
 ## C1) Find RNA-seq CRAM files for a genome assembly
 
 # Note: assembly name is 'assembly_default' in recipe R2
+# Note: can take a few minutes
 
 my $FTPURL = 'ftp.ensemblgenomes.org';
 my $FTPDIR = '/pub/misc_data/Track_Hubs';

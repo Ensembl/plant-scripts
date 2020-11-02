@@ -73,7 +73,7 @@ exampleBiomart.R:## B5) Get SNP consequences from a selected variation source
 
 exampleCRAM.pl:## C1) Find RNA-seq CRAM files for a genome assembly
 
-exampleFTP.sh:## F1) DDownload peptide sequences in FASTA format
+exampleFTP.sh:## F1) Download peptide sequences in FASTA format
 exampleFTP.sh:## F2) Download CDS nucleotide sequences in FASTA format
 exampleFTP.sh:## F3) Download transcripts (cDNA) in FASTA format
 exampleFTP.sh:## F4) Download soft-masked genomic sequences

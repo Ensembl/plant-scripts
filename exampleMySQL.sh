@@ -178,4 +178,3 @@ JOIN seq_region
 WHERE 
     variation.name LIKE "${LINE}%" 
 SQL
-

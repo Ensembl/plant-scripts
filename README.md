@@ -1,5 +1,5 @@
 
-These scripts can be used to call and annotate repeated sequences in genomes using the [Repeat detector (Red)[https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5] and the library of repeats [nrTEplants](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs)
+These scripts can be used to call and annotate repeated sequences in genomes using the [Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) and the library of repeats [nrTEplants](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs)
 
 ## Dependencies
 

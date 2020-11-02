@@ -9,6 +9,8 @@ Binaries:
 
 * A clone of minimap2 from https://github.com/lh3/minimap2
 
+* A copy of nrTEplants
+
 Python3 modules:
 
 * [sqlalchemy](https://pypi.org/project/SQLAlchemy)
@@ -25,18 +27,30 @@ git clone https://github.com/lh3/minimap2.git
 cd minimap2 && make
 cd ..
 
+wget -c https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2
+bunzip2 /nrTEplantsJune2020.fna.bz2
+
 python3 -m pip install sqlalchemy sqlalchemy_utils PyMySQL
 ```
 
-## Example
+## Examples
 
-This script can be used to obtain single-copy core genes present within a clade.
 Example calls include:
 
 ```
-perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
-perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o beta_vulgaris
-perl ens_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
-perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
+# local run, saves results in folder 'Camelina_sativa' 
+./Red2Ensembl.py Camelina_sativa.Cs.dna.toplevel.fa Camelina_sativa --exe /path/to/Red --cor 4 
+
+# local run & loading repeats in core db
+./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
+	--exe /path/to/Red --cor 4 --host mysql-ens-plants-prod-1 --user xyz --pw XYZ \
+	--port 123 --db brachypodium_distachyon_core_49_102_4
+```
+
+The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, such as the library nrTEplants:
+````
+./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4
+
+TO BE DONE: load annotations to core db
 ```
 

@@ -9,7 +9,7 @@ Binaries:
 
 * A clone of minimap2 from https://github.com/lh3/minimap2
 
-* A copy of nrTEplants
+* A copy of the [nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2)
 
 Python3 modules:
 

@@ -31,11 +31,10 @@ echo "EGRELEASE=${EGRELEASE}"
 echo
 
 # stop here if just a test
-if [ $1 = "test" ] ; then
+if [[ $# -ge 0 ]] && [[ $1 = "test" ]]; then
 	mysql --host $SERVER --user $USER --port $PORT -e "show databases"
 	exit 0
 fi
-
 
 ## S1) Check currently supported Ensembl Genomes (EG)/non-vertebrates core schemas,
 
@@ -178,3 +177,34 @@ JOIN seq_region
 WHERE 
     variation.name LIKE "${LINE}%" 
 SQL
+
+## S8) Get annotated repeated sequences from selected species
+
+# This recipe first interrogates the MySQL server (BED file) and 
+# then the FTP server (genome FASTA file) and finally produces a 
+# FASTA file with repeat sequences. Uses MINLEN to skip short repeats.
+# Note: requires wget, sort, gzip and bedtools
+
+MINLEN=90
+SPECIES=oryza_sativa
+SPECIESCORE=$(mysql --host $SERVER --user $USER --port $PORT \
+	-e "show databases" | grep "${SPECIES}_core_${EGRELEASE}_${RELEASE}") 
+BEDFILE=${SPECIES}.repeats.bed
+FASTANAME="*${SPECIES^}*.dna.toplevel.fa.gz"
+FASTA=${SPECIES}.toplevel.fasta
+REPFASTA=${SPECIES}.repeats.fasta
+
+mysql --host $SERVER --user $USER --port $PORT $SPECIESCORE -Nb -e \
+	"SELECT sr.name,(r.seq_region_start-1),r.seq_region_end,rc.repeat_class \
+	FROM repeat_feature r JOIN seq_region sr JOIN repeat_consensus rc \
+	WHERE r.seq_region_id=sr.seq_region_id \
+	AND r.repeat_consensus_id=rc.repeat_consensus_id \
+	AND (r.seq_region_end-r.seq_region_start+1) > ${MINLEN}" | \
+	sort -u -k1,1 -k2,2n > $BEDFILE
+
+# similar to recipe F4
+URL="${FTPSERVER}/${DIV}/current/fasta/${SPECIES}/dna/${FASTANAME}"
+wget -c $URL -O- | gunzip > $FASTA
+
+bedtools getfasta -name -fi $FASTA -bed $BEDFILE > $REPFASTA
+

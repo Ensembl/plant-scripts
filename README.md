@@ -1,7 +1,7 @@
 
 These scripts can be used to call and annotate repeated sequences in genomes using the [Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) and the library of repeats [nrTEplants](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
 
-If you choose to load the repeats into an Ensembl core db, by default they will be added as an analysis with logi_c_name='repeatdetector'
+If you choose to load the repeats into an Ensembl core db, by default they will be added as an analysis with logic_name='repeatdetector'
 
 ## Dependencies
 

@@ -6,7 +6,7 @@ clean:
 	rm -f new_genomes.txt && rm -f uniprot_report_EnsemblPlants.txt
 	rm -f arabidopsis_thaliana*.tar.gz
 	rm -f plants_species-tree*.nh
-
+	rm -f oryza_sativa*
 
 install:
 	Rscript install_R_deps.R

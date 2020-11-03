@@ -141,7 +141,7 @@ GROUP BY genome_db_id
 ORDER BY genome_db.name
 SQL
 
-## S7) Extract all the mutations and consequence for a known line on triticum aestivum. 
+## S7) Extract all the mutations and consequences for a known wheat cultivar 
 
 # The variation name contains the name of the line where the muation is present. 
 # Variation schema documented at 

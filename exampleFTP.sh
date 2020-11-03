@@ -42,7 +42,7 @@ echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
 # stop here if just a test
-if [ $2 = "test" ] ; then
+if [[ $# -ge 2 ]] && [[ $2 = "test" ]]; then
 	exit 0
 fi
 

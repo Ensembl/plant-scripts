@@ -51,4 +51,55 @@ The repeats called by Red can be optionally annotated by similarity to sequences
 ```
 ./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4
 ```
+This will produce a report such as this one:
+```
+# FASTA file with repeat sequences (length>90): Camelina_sativa/annot/Red_repeats.fna
 
+
+# re-using previously formatted repeat library  Camelina_sativa/annot/repeat_lib.mmi
+# running minimap2
+/path/to/minimap2 -K100M --score-N 0  -x map-ont  -t 4 Camelina_sativa/annot/repeat_lib.mmi Camelina_sativa/annot/Red_repeats.fna
+# mapped repeats:  Camelina_sativa/annot/repeat_mappings.sort.paf
+# Genome length: 641355730 Repeated content: 230739085 36.0% Annotated: 42633901 6.6%
+
+Crypton 580
+DIRS    222132
+DNA     456403
+DNA/CACTA       312
+DNA/En-Spm      729412
+DNA/HAT 119922
+DNA/Harbinger   56149
+DNA/MuDR        598270
+DNA/Pogo        243186
+DNA/hAT 21260
+Helitron        290418
+Helitron/Helitron       1673
+Helitron|TRIM   1432
+LARD    239264
+LINE    819243
+LINE/L1 80920
+LTR     4254019
+LTR/Copia       5839801
+LTR/Gypsy       18494851
+MITE    312641
+Maverick        1258
+MobileElement   619
+Mutator 122
+Other   998
+Other/Centromeric       194
+Other/Simple    1503
+RC/Helitron     312013
+Retroelement    995
+SINE    65415
+SINE|LARD       8392
+SINE|TRIM       282
+TIR     5128793
+TIR/Mutator     35807
+TIR/PIF-Harbinger       379
+TIR/hAT 8030
+TRIM    1531956
+Unassigned      75795
+Unclassified    2676694
+nonLTR  101
+rRNA    2667
+```

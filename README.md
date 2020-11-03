@@ -35,7 +35,7 @@ python3 -m pip install sqlalchemy sqlalchemy_utils PyMySQL
 
 ## Examples
 
-Example calls include:
+For large genomes such as barley or wheat you will need a large amount of RAM (~20GB) to run Red:
 
 ```
 # local run, saves results in folder 'Camelina_sativa' 
@@ -47,10 +47,8 @@ Example calls include:
 	--port 123 --db brachypodium_distachyon_core_49_102_4
 ```
 
-The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, such as the library nrTEplants:
-````
+The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, such as the library nrTEplants. The script does not load the resulting annotations in a core db just yet:
+```
 ./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4
-
-TO BE DONE: load annotations to core db
 ```
 

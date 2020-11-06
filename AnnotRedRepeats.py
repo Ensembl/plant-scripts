@@ -325,7 +325,10 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     print(cmd)
     
     # PAF format equivalent in BLAST+:
-    # blastn -task blastn -query test.fna -db nrTEplants.fna -outfmt '6 qseqid qlen qstart qend strand sseqid slen  sstart send positive length bitscore evalue'
+    # blastn -task blastn -query test.fna -db nrTEplants.fna -outfmt 
+    # '6 qseqid qlen qstart qend strand sseqid slen sstart send positive length bitscore'
+
+    # perl -lane 'print join("\t",@F[0,3,6,7,2,1,3,8,9,11,3,10])' megablast>paf
 
     # sort results on repeat, start coord, end coord
     # See: https://github.com/lh3/miniasm/blob/master/PAF.md

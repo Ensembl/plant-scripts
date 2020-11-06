@@ -302,7 +302,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
     # put together minimap2 command
     # map-ont is actually the default as of Sep2020
-    # Note: also test map-pab, asm20 not much difference
+    # Note: also tested map-pab, asm20, little difference
     cmd = miniexe + \
             ' -K100M --score-N 0 ' +\
             ' -x map-ont ' +\
@@ -324,6 +324,9 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         outfile.close()
     print(cmd)
     
+    # PAF format equivalent in BLAST+:
+    # blastn -task blastn -query test.fna -db nrTEplants.fna -outfmt '6 qseqid qlen qstart qend strand sseqid slen  sstart send positive length bitscore evalue'
+
     # sort results on repeat, start coord, end coord
     # See: https://github.com/lh3/miniasm/blob/master/PAF.md
     # Note: this allows updating the overlap coords while parsing

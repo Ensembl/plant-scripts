@@ -356,7 +356,7 @@ def main():
         help="name of the database host, required to store repeats in Ensembl core")
     parser.add_argument("--user",
         help="host user, required to store repeats in Ensembl core")
-    parser.add_argument("--pw",
+    parser.add_argument("--pass",
         help="host password, required to store repeats in Ensembl core")
     parser.add_argument("--port", type=int,
         help="host port, required to store repeats in Ensembl core")

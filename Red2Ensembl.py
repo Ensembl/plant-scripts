@@ -397,10 +397,10 @@ def main():
     print("# TSV files with repeat coords: %s\n\n" % rptdir)
 
     # (optionally) store repeat features in core database
-    if args.user and args.pw and args.host and args.port and args.db:
+    if args.user and args.pass and args.host and args.port and args.db:
         db_url = 'mysql://' + \
                 args.user + ':' + \
-                args.pw + '@' + \
+                args.pass + '@' + \
                 args.host + ':' + \
                 str(args.port) + '/' + \
                 args.db + '?' + \

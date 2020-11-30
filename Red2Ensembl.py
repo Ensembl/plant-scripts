@@ -356,7 +356,7 @@ def main():
         help="name of the database host, required to store repeats in Ensembl core")
     parser.add_argument("--user",
         help="host user, required to store repeats in Ensembl core")
-    parser.add_argument("--pass",
+    parser.add_argument("--pw",
         help="host password, required to store repeats in Ensembl core")
     parser.add_argument("--port", type=int,
         help="host port, required to store repeats in Ensembl core")
@@ -397,10 +397,10 @@ def main():
     print("# TSV files with repeat coords: %s\n\n" % rptdir)
 
     # (optionally) store repeat features in core database
-    if args.user and args.pass and args.host and args.port and args.db:
+    if args.user and args.pw and args.host and args.port and args.db:
         db_url = 'mysql://' + \
                 args.user + ':' + \
-                args.pass + '@' + \
+                args.pw + '@' + \
                 args.host + ':' + \
                 str(args.port) + '/' + \
                 args.db + '?' + \

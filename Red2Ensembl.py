@@ -423,7 +423,9 @@ def main():
             synfile.close()
         except OSError as error:
             print("# ERROR: cannot create file:", syn_filepath, error)
-							       
+
+    elif args.user or args.pw or args.host or args.port or args.db:
+        print("# ERROR: make sure you set all Ensembl core params")
 
 
 if __name__ == "__main__":

@@ -228,7 +228,7 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
         print("# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id))	
         name_to_seqregion[seq_name] = seq_region_id
 
-    # insert Red analysis, will fails if logic_name exists
+    # insert Red analysis, fails if logic_name exists
     analysis_insert = analysis_table.insert().values({ \
         'created':db.sql.func.now(), \
         'logic_name':logic_name, \

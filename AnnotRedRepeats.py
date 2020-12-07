@@ -454,7 +454,6 @@ def make_annotation_report( map_filename, log_filename,
         print("%s\t%d" %
             (repclass, stats[repclass]))
 
-
     # parse repeat FASTA file to fetch sequences of matched repeats
     # TO BE DONE if those sequences/consensi are valuable
 
@@ -557,8 +556,8 @@ def main():
         help="host port")
     parser.add_argument("--db",
         help="name of the core database")
-    parser.add_argument("--logic_name", default="repeatdetector",
-        help="logic name of Ensembl analysis, default: repeatdetector")
+    parser.add_argument("--logic_name", default="repeatdetector_annotated",
+        help="logic name of Ensembl analysis, default: repeatdetector_annotated")
 
     args = parser.parse_args()
 

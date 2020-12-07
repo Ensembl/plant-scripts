@@ -350,9 +350,10 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
 def make_annotation_report( map_filename, log_filename, 
     minlen, verbose=False):
-    '''Parse file with sorted mappings and print repeat annotation stats.
+    '''Parses file with sorted mappings and print repeat annotation stats.
        Only alignments > minlen are considered.
-       Returns dictionary with mapped repeats.'''
+       Returns dictionary with actual mapped repeat segment coords (tuple)
+       as keys and annotation as values'''
 
     rep_match = {}
     matched_repeats = {}
@@ -405,11 +406,12 @@ def make_annotation_report( map_filename, log_filename,
                     #print(">> %s %s %d %d %d" % (paf[0], paf[5], start, end, annotlen))
                     continue
 
-            # record this annotated segment
-            if paf[0] not in matched_repeats: 
-                matched_repeats[paf[0]] = [ paf[5] ]
-            else:
-                matched_repeats[paf[0]].append(paf[5])
+            # record actual annotated repeated segment
+            repeat_coords = line.split(":")
+            repeat_coords[1] = int(repeat_coords[1]) + start
+            repeat_coords[2] = repeat_coords[1] + (end-start)
+
+            matched_repeats[ (repeat_coords[0], repeat_coords[1], repeat_coords[2]) ] = paf[5]
 				
             # collect stats
             annotated_length = annotated_length + annotlen

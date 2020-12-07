@@ -460,20 +460,13 @@ def make_annotation_report( map_filename, log_filename,
     return matched_repeats 
 
 
-def store_repeat_annot_database( workdir, matched_repeats, 
-    repeat_fasta_file, logic_name, db_url):
+def store_annotated_repeat_database( workdir, matched_repeats, 
+    exe, repeat_fasta_file, logic_name, db_url):
     '''Store parsed repeat annotations in Ensembl core database
        accessible from passed URL. First param is dictionary
        with seq_region_id:start:end keys and annotations as values.
 	   Note analysis table entry with logic name is updated.
        Returns number of inserted annotations.'''
-
-#repeat_seq_query = "SELECT r.seq_region_id, r.seq_region_start, r.seq_region_end, " +\
-    #    "SUBSTR(d.sequence,r.seq_region_start,r.seq_region_end-r.seq_region_start+1) " +\
-	    #    "FROM repeat_feature r INNER JOIN dna d USING (seq_region_id)"
-		    #repeat_seq_result = connection.execute(repeat_seq_query).fetchall()
-			    #print(repeat_seq_result[0][0])
-
 
     num_annot = 0
 
@@ -484,8 +477,52 @@ def store_repeat_annot_database( workdir, matched_repeats,
     
     # relevant db tables 
     analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
+    meta_table = db.Table('meta',metadata,autoload=True,autoload_with=engine)
+    repeat_consensus_table = \
+        db.Table('repeat_consensus',metadata,autoload=True,autoload_with=engine)
     repeat_feature_table = \
         db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
+    seq_region_table = db.Table('seq_region',metadata,autoload=True,autoload_with=engine)
+    seq_syn_table = \
+        db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
+
+    # fetch seq_region_ids of sequences
+    for seq_name in seq_name_list:
+        seq_query = db.select([seq_region_table.columns.seq_region_id])
+        seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
+        seq_results = connection.execute(seq_query).fetchall()
+        if seq_results:
+            seq_region_id = seq_results[0][0]
+        else:
+            # try synonyms if that failed
+            syn_query = db.select([seq_syn_table.columns.seq_region_id])
+            syn_query = syn_query.where(seq_syn_table.columns.synonym == seq_name)
+            syn_results = connection.execute(syn_query).fetchall()
+            if syn_results:
+                seq_region_id = syn_results[0][0]
+            else:
+                print("# ERROR: cannot find seq_region_id for sequence %s\n" % seq_name)
+                return 0              
+        
+        print("# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id))	
+        name_to_seqregion[seq_name] = seq_region_id
+
+    # insert new analysis, fails if logic_name exists
+    analysis_insert = analysis_table.insert().values({ \
+        'created':db.sql.func.now(), \
+        'logic_name':logic_name, \
+        'program':'minimap2', \
+        'program_version':minimap_version, \
+        'program_file':exe,
+        'parameters': repeats_fasta_file,
+        'gff_source':logic_name,
+        'gff_feature':'repeat' })
+    connection.execute(analysis_insert)
+
+
+    #analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
+    #repeat_feature_table = \
+    #    db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
 
     # create temporary table with annotated repeat features
     #for repeat in matched_repeats:
@@ -605,8 +642,8 @@ def main():
         args.db + '?' + \
         'local_infile=1'
 
-        num_annot = store_repeat_annot_database( annotdir, matched_repeats, \
-            args.repeat_fasta_file, args.logic_name, db_url)
+        num_annot = store_annotated_repeat_database( annotdir, matched_repeats, \
+            args.exe, args.repeat_fasta_file, args.logic_name, db_url)
 
         print("\n# stored %d repeat annotations\n" % num_annot)
 

@@ -526,8 +526,8 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
             repeat_consensus = 'N' # until full seq is parsed
             classtype = repclass[1].split("/")
             if len(classtype) == 2:
-                repeat_type = repclass[1]
-                repeat_class = classtype[1]
+                repeat_class = repclass[1]
+                repeat_type = classtype[1]
             else:
                 repeat_type = repclass[1]
                 repeat_class = repclass[1]

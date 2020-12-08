@@ -505,7 +505,7 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
         print("# ERROR: cannot create file ", consfilename, error)
 
     # loop along matched repeats
-    repeat_consensus_id = last_consensus_id
+    new_consensus_id = last_consensus_id + 1
 
     for mrep in matched_repeats.keys():
         seq_region_id = mrep[0]
@@ -522,24 +522,28 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
         if repeat_name in repname_to_id:
             repeat_consensus_id = repname_to_id[repeat_name]
         else:
-            repeat_consensus_id = repeat_consensus_id + 1
-            repname_to_id[repeat_name] = repeat_consensus_id
+            repeat_consensus_id = new_consensus_id
             repeat_consensus = 'N' # until full seq is parsed
             classtype = repclass[1].split("/")
-            if classtype.len() == 1:
-                repeat_type = classtype[0]
+            if len(classtype) == 2:
+                repeat_type = repclass[1]
                 repeat_class = classtype[1]
             else:
-                repeat_type = classtype[0]
-                repeat_class = classtype[0]
+                repeat_type = repclass[1]
+                repeat_class = repclass[1]
 
+            # only new consensi are printed to file
             print("%d\t%s\t%s\t%s\t%s" % (\
-                int(repeat_consensus_idd),\
+                int(repeat_consensus_id),\
                 repeat_name,\
                 repeat_class,\
                 repeat_type,\
                 repeat_consensus),\
                 file=tsvfileII)
+
+            # and stored in dictionary
+            repname_to_id[repeat_name] = repeat_consensus_id		
+            new_consensus_id = new_consensus_id + 1
 
         print("%s\t%d\t%d\t%d\t%d\t%d\t%d" % (\
             seq_region_id,\

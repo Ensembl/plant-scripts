@@ -252,11 +252,33 @@ def _parse_fafiles_from_log( log_filename ):
     else:
         return []
 
+def _parse_minimap_log( log_filename ):
+    '''Parses minimap log file and returns
+       i string) version, float ii) peak RAM'''
+
+    version = ''
+	RAM = 0.0
+
+    try:
+        logfile = open(log_filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", log_filename, error)
+        return version
+
+    for line in logfile:
+        vre = re.search(r'^[M::main] Version: (\S+)', line)
+        if vre: version = vere.group(1)
+        ramre = re.search(r'Peak RSS+', line)
+        if ramre: RAM = float(ramre.group(1))
+						       
+    logfile.close
+    return version, RAM
 
 def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     '''Calls minimap2,  waits for job completion and logs stderr.
-       Returns name of file with sorted mappings (system sort).
-       If previous output exist minimap2 & sort are skipped.'''
+       If previous output exist minimap2 & sort are skipped.
+       Returns: i string) name of file with sorted mappings (system sort).
+                ii string) minimap version'''
 
     output_filename = os.path.join(outdir, 'repeat_mappings.paf')
     sorted_filename = os.path.join(outdir, 'repeat_mappings.sort.paf')
@@ -266,18 +288,12 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     if(os.path.isfile(sorted_filename) and
         os.path.getsize(sorted_filename) > 0 and
         os.path.isfile(log_filepath)):
-        try:
-            logfile = open(log_filepath)
-        except OSError as error:
-            print("# ERROR: cannot open/read file ", log_filepath, error)
-            return ''
 
-        for line in logfile:
-            # jobs might die due to insufficient RAM; make sure
-            # they completed by checking the final memory report
-            ramre = re.search(r'Peak RSS+', line)
-            if ramre:
-                print("# re-using previous mappings file ",sorted_filename)
+        # jobs might die due to insufficient RAM; make sure
+        # they completed by checking the final memory report
+        minimap_version, RAM = _parse_minimap_log(log_filepath)
+        if RAM > 0:
+            print("# re-using previous mappings file ",sorted_filename)
 																
         return sorted_filename
 
@@ -324,6 +340,8 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         outfile.close()
     print(cmd)
     
+    minimap_version, RAM = _parse_minimap_log(log_filepath)
+
     # PAF format equivalent in BLAST+:
     # blastn -task blastn -query test.fna -db nrTEplants.fna -outfmt 
     # '6 qseqid qlen qstart qend strand sseqid slen sstart send positive length bitscore'
@@ -345,7 +363,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
     os.remove(output_filename)
 
-    return sorted_filename
+    return sorted_filename, minimap_version
 
 
 def make_annotation_report( map_filename, log_filename, 
@@ -461,7 +479,7 @@ def make_annotation_report( map_filename, log_filename,
 
 
 def store_annotated_repeat_database( workdir, matched_repeats, 
-    exe, repeat_fasta_file, logic_name, db_url):
+    exe, minimap_version, repeat_fasta_file, logic_name, db_url):
     '''Store parsed repeat annotations in Ensembl core database
        accessible from passed URL. First param is dictionary
        with seq_region_id:start:end keys and annotations as values.
@@ -508,14 +526,15 @@ def store_annotated_repeat_database( workdir, matched_repeats,
         name_to_seqregion[seq_name] = seq_region_id
 
     # insert new analysis, fails if logic_name exists
+
     analysis_insert = analysis_table.insert().values({ \
-        'created':db.sql.func.now(), \
-        'logic_name':logic_name, \
+        'created': db.sql.func.now(), \
+        'logic_name': logic_name, \
         'program':'minimap2', \
-        'program_version':minimap_version, \
-        'program_file':exe,
+        'program_version': minimap_version, \
+        'program_file': exe,
         'parameters': repeats_fasta_file,
-        'gff_source':logic_name,
+        'gff_source': logic_name,
         'gff_feature':'repeat' })
     connection.execute(analysis_insert)
 
@@ -625,12 +644,12 @@ def main():
     # run minimap2, or else re-use previous results
     # Note: Red-called repeats are handled as long reads
     print("# running minimap2")
-    map_filename = run_minimap( args.exe, args.cor, \
+    map_filename, version = run_minimap( args.exe, args.cor, \
         formatted_lib_filename, repeats_filename, annotdir)
     print("# mapped repeats: ", map_filename)
 
-    matched_repeats = make_annotation_report( map_filename, log_filepath,\
-        int(args.minlen))
+    matched_repeats = make_annotation_report( map_filename,\
+        log_filepath,int(args.minlen))
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:
@@ -642,8 +661,8 @@ def main():
         args.db + '?' + \
         'local_infile=1'
 
-        num_annot = store_annotated_repeat_database( annotdir, matched_repeats, \
-            args.exe, args.repeat_fasta_file, args.logic_name, db_url)
+        num_annot = store_annotated_repeat_database( annotdir, matched_repeats,\
+            args.exe, version, args.repeat_fasta_file, args.logic_name, db_url)
 
         print("\n# stored %d repeat annotations\n" % num_annot)
 

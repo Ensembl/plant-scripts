@@ -352,11 +352,11 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
     # perl -lane 'print join("\t",@F[0,3,6,7,2,1,3,8,9,11,3,10])' megablast>paf
 
-    # sort results on repeat, start coord, end coord
+    # sort results on repeat, start coord, align length, end coord
     # See: https://github.com/lh3/miniasm/blob/master/PAF.md
     # Note: this allows updating the overlap coords while parsing
     # in function make_annotation_report 
-    cmd = 'sort -k1,1 -k3,3n -k4,4n ' + output_filename
+    cmd = 'sort -k1,1 -k3,3n -k10,10nr -k4,4n ' + output_filename
 
     try:
         osresponse = subprocess.check_call(cmd.split(),stdout=sortfile)

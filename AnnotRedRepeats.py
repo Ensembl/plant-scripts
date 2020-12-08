@@ -257,7 +257,7 @@ def _parse_minimap_log( log_filename ):
        i string) version, float ii) peak RAM'''
 
     version = ''
-	RAM = 0.0
+    RAM = 0.0
 
     try:
         logfile = open(log_filename)
@@ -267,9 +267,13 @@ def _parse_minimap_log( log_filename ):
 
     for line in logfile:
         vre = re.search(r'^[M::main] Version: (\S+)', line)
-        if vre: version = vere.group(1)
-        ramre = re.search(r'Peak RSS+', line)
-        if ramre: RAM = float(ramre.group(1))
+        if vre: 
+            version = vere.group(1)
+        
+        ramre = re.search(r'Peak RSS+: (\S+)', line)
+        if ramre: 
+            RAM = float(ramre.group(1))
+            break
 						       
     logfile.close
     return version, RAM
@@ -291,11 +295,11 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
         # jobs might die due to insufficient RAM; make sure
         # they completed by checking the final memory report
-        minimap_version, RAM = _parse_minimap_log(log_filepath)
+        (minimap_version, RAM) = _parse_minimap_log(log_filepath)
         if RAM > 0:
             print("# re-using previous mappings file ",sorted_filename)
 																
-        return sorted_filename
+        return sorted_filename, minimap_version
 
     # open new log & output files 
     try:
@@ -340,7 +344,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
         outfile.close()
     print(cmd)
     
-    minimap_version, RAM = _parse_minimap_log(log_filepath)
+    (minimap_version, RAM) = _parse_minimap_log(log_filepath)
 
     # PAF format equivalent in BLAST+:
     # blastn -task blastn -query test.fna -db nrTEplants.fna -outfmt 
@@ -425,9 +429,10 @@ def make_annotation_report( map_filename, log_filename,
                     continue
 
             # record actual annotated repeated segment
+            # Note: using Ensembl 1-based exclusive format
             repeat_coords = line.split(":")
-            repeat_coords[1] = int(repeat_coords[1]) + start
-            repeat_coords[2] = repeat_coords[1] + (end-start)
+            repeat_coords[1] = int(repeat_coords[1]) + start + 1
+            repeat_coords[2] = repeat_coords[1] + (end-start) + 1
 
             matched_repeats[ (repeat_coords[0], repeat_coords[1], repeat_coords[2]) ] = paf[5]
 				
@@ -472,21 +477,58 @@ def make_annotation_report( map_filename, log_filename,
         print("%s\t%d" %
             (repclass, stats[repclass]))
 
-    # parse repeat FASTA file to fetch sequences of matched repeats
-    # TO BE DONE if those sequences/consensi are valuable
-
     return matched_repeats 
 
 
+def _annotated_repeats_to_file( workdir, matched_repeats, 
+    analysis_id, repeat_consensus_id ):
+    '''Creates a TSV file in workdir with 1-based matched repeats & annotations,
+       to be loaded in Ensembl core database.
+	   Note1: keys in matched_repeats are tuples (seq_region, start, end)
+	   Note2: coords of matched_repeats are 1-based exclusive, 
+	   produced by make_annotation_report
+       Returns TSV filename.'''
+
+    # open new TSV file
+    outfilename = os.path.join(workdir, 'ensembl.tsv')
+    try:
+        tsvfile = open(outfilename,"w")
+    except OSError as error:
+        print("# ERROR: cannot create file ", outfilename, error)
+
+    # loop along matched repeats
+    for mrep in matched_repeats.keys():
+        seq_region_id = mrep[0]
+        seq_region_start = mrep[1]
+        seq_region_end = mrep[2]
+        repeat_start = 1
+        repeat_end = int(seq_region_end) - int(seq_region_start) + 1
+
+        print("%s\t%d\t%d\t%d\t%d\t%d\t%d" % (\
+            seq_region_id,\
+            int(seq_region_start),\
+            int(seq_region_end),\
+            int(repeat_start),\
+            repeat_end,\
+            int(repeat_consensus_id),\
+            int(analysis_id)), \
+            file=tsvfile)
+
+    tsvfile.close()
+
+    return outfilename
+
 def store_annotated_repeat_database( workdir, matched_repeats, 
     exe, minimap_version, repeat_fasta_file, logic_name, db_url):
-    '''Store parsed repeat annotations in Ensembl core database
-       accessible from passed URL. First param is dictionary
-       with seq_region_id:start:end keys and annotations as values.
-	   Note analysis table entry with logic name is updated.
+    '''Stores parsed repeat annotations in Ensembl core database
+       accessible from passed URL. Second param is dictionary
+       with tuples (seq_region_id,start,end) and annotations as values.
+       Note that the analysis logic name and software details are 
+       also passed in order to fill the analysis table.
        Returns number of inserted annotations.'''
 
-    num_annot = 0
+    # parse repeat_fasta_file to fetch full sequences of matched repeats 
+    # TO BE DONE if those sequences/consensi are valuable
 
     # core database handles
     engine = db.create_engine(db_url)
@@ -501,32 +543,11 @@ def store_annotated_repeat_database( workdir, matched_repeats,
     repeat_feature_table = \
         db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
     seq_region_table = db.Table('seq_region',metadata,autoload=True,autoload_with=engine)
-    seq_syn_table = \
-        db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
-
-    # fetch seq_region_ids of sequences
-    for seq_name in seq_name_list:
-        seq_query = db.select([seq_region_table.columns.seq_region_id])
-        seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
-        seq_results = connection.execute(seq_query).fetchall()
-        if seq_results:
-            seq_region_id = seq_results[0][0]
-        else:
-            # try synonyms if that failed
-            syn_query = db.select([seq_syn_table.columns.seq_region_id])
-            syn_query = syn_query.where(seq_syn_table.columns.synonym == seq_name)
-            syn_results = connection.execute(syn_query).fetchall()
-            if syn_results:
-                seq_region_id = syn_results[0][0]
-            else:
-                print("# ERROR: cannot find seq_region_id for sequence %s\n" % seq_name)
-                return 0              
-        
-        print("# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id))	
-        name_to_seqregion[seq_name] = seq_region_id
+    #don't read synonyms, repeat file used as input for minimap already used them
+    #seq_syn_table = \
+    #    db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
 
     # insert new analysis, fails if logic_name exists
-
     analysis_insert = analysis_table.insert().values({ \
         'created': db.sql.func.now(), \
         'logic_name': logic_name, \
@@ -538,31 +559,27 @@ def store_annotated_repeat_database( workdir, matched_repeats,
         'gff_feature':'repeat' })
     connection.execute(analysis_insert)
 
-
-    #analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
-    #repeat_feature_table = \
-    #    db.Table('repeat_feature',metadata,autoload=True,autoload_with=engine)
-
-    # create temporary table with annotated repeat features
-    #for repeat in matched_repeats:
-        #(seq_region_id,seq_region_start,seq_region_end) = repeat.split(":")
-        #print("%s %s %s" % (seq_region_id,seq_region_start,seq_region_end))
-        
-    # TO BE DONE
-    return 0
-    
-
-    #update_stmt = analysis_table.update()\
-    #    .where(analysis_table.logic_name=logic_name)\
-    #    .values(db_file=repeat_fasta_file)
-    #connection.execute(update_stmt)
-
     # fetch the assigned analysis_id for logic_name
     analysis_query = db.select([analysis_table.columns.analysis_id])
     analysis_query = \
         analysis_query.where(analysis_table.columns.logic_name == logic_name)
     analysis_results = connection.execute(analysis_query).fetchall()
     analysis_id = analysis_results[0][0]
+
+    # insert repeat analysis meta keys, will fails if exists
+    meta_insert = meta_table.insert().values({ \
+        'species_id':1, \
+        'meta_key':'repeat.analysis', \
+        'meta_value':logic_name })
+    connection.execute(meta_insert)
+
+    # insert dummy, default repeat consensus, will fail if it exists
+    repeat_consensus_insert = repeat_consensus_table.insert().values({ \
+        'repeat_name':logic_name, \
+        'repeat_class':logic_name, \
+        'repeat_type':logic_name, \
+        'repeat_consensus':'N' })
+    connection.execute(repeat_consensus_insert)
 
     # fetch the repeat_consensus_id of the new dummy consensus
     repeat_consensus_query = \
@@ -573,8 +590,12 @@ def store_annotated_repeat_database( workdir, matched_repeats,
     repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
     dummy_consensus_id = repeat_consensus_results[0][0]
 
+    # TO BE DONE
+    # add repeat consensi sequences, one per repeat name in matched_repeats,
+    # create dictionary mapping repeat_name to consensus_id
+
     # parse repeats and produce a TSV file to be loaded in repeat table
-    TSVfilename =_parse_repeats(rptdir, rpt_file_list, name_to_seqregion,\
+    TSVfilename = _annotated_repeats_to_file(workdir, matched_repeats,\
         analysis_id, dummy_consensus_id)
 
     # actually insert repeat features
@@ -644,7 +665,7 @@ def main():
     # run minimap2, or else re-use previous results
     # Note: Red-called repeats are handled as long reads
     print("# running minimap2")
-    map_filename, version = run_minimap( args.exe, args.cor, \
+    (map_filename, version) = run_minimap( args.exe, args.cor, \
         formatted_lib_filename, repeats_filename, annotdir)
     print("# mapped repeats: ", map_filename)
 
@@ -666,6 +687,8 @@ def main():
 
         print("\n# stored %d repeat annotations\n" % num_annot)
 
+    elif args.user or args.pw or args.host or args.port or args.db:
+        print("# ERROR: make sure you set all Ensembl core params")
 
 
 if __name__ == "__main__":

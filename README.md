@@ -1,7 +1,7 @@
 
 These scripts can be used to call and annotate repeated sequences in genomes using the [Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) and the library of repeats [nrTEplants](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
 
-If you choose to load the repeats into an Ensembl core db, by default they will be added as an analysis with logic_name='repeatdetector'
+By default, raw Red repeats are loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. Annotated repeats are imported with logic_name='repeatdetector_annotated'.
 
 ## Dependencies
 
@@ -51,12 +51,17 @@ For large genomes such as barley or wheat you will need a large amount of RAM (~
 
 The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, such as the library nrTEplants. The script does not load the resulting annotations in a core db just yet:
 ```
+# produce annotation report
 ./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4
+
+./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4 \
+    --host pl1 --user xyz --pw XYZ \
+    --port 123 --db camelina_sativa_core_50_103_1
 ```
-This will produce a report such as this one:
+
+Annotation reports look like this:
 ```
 # FASTA file with repeat sequences (length>90): Camelina_sativa/annot/Red_repeats.fna
-
 
 # re-using previously formatted repeat library  Camelina_sativa/annot/repeat_lib.mmi
 # running minimap2

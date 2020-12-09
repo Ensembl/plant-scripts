@@ -375,7 +375,7 @@ def make_annotation_report( map_filename, log_filename,
     '''Parses file with sorted mappings and print repeat annotation stats.
        Only alignments > minlen are considered.
        Returns dictionary with actual mapped repeat segment coords (tuple)
-       as keys and annotation as values'''
+       as keys and a tuples of matched repeats as values'''
 
     rep_match = {}
     matched_repeats = {}
@@ -395,6 +395,8 @@ def make_annotation_report( map_filename, log_filename,
         #  2 : 0-based start coord of seq_region
         #  3 : 0-based, exclusive end coord of seq_region
         #  5 : repeat name (ie RLG_159077:mipsREdat_9.3p_ALL#LTR/Gypsy)
+        #  7 : 0-based start coord of matched repeat
+        #  8 : 0-based, exclusive end coord of matched repeat
 
         # work out length of annotated repeat
         start = int(paf[2])
@@ -434,7 +436,8 @@ def make_annotation_report( map_filename, log_filename,
             repeat_coords[1] = int(repeat_coords[1]) + start + 1
             repeat_coords[2] = repeat_coords[1] + (end-start) + 1
 
-            matched_repeats[ (repeat_coords[0], repeat_coords[1], repeat_coords[2]) ] = paf[5]
+            matched_repeats[ (repeat_coords[0], repeat_coords[1], repeat_coords[2]) ] = \
+                (paf[5], int(paf[7])+1, int(paf[8])+1)
 				
             # collect stats
             annotated_length = annotated_length + annotlen
@@ -486,6 +489,7 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
        i) 1-based matched repeats for repeat_feature table
        ii) annotation for repeat_consensus table
        Note1: keys in matched_repeats are tuples (seq_region, start, end)
+       Note2: values in matched_repeats are tuples (repeat name, start, end)
        Returns i and ii filenames.'''
 
     repname_to_id = {}
@@ -511,12 +515,12 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
         seq_region_id = mrep[0]
         seq_region_start = mrep[1]
         seq_region_end = mrep[2]
-        repeat_start = 1
-        repeat_end = int(seq_region_end) - int(seq_region_start) + 1
+        repeat_start = matched_repeats[mrep][1]
+        repeat_end = matched_repeats[mrep][2]
 
         # parse repeat classification and assign repeat_consensus_id
         # example: RLG_43695:mipsREdat_9.3p_ALL#LTR/Gypsy
-        repclass = matched_repeats[mrep].split("#")
+        repclass = matched_repeats[mrep][0].split("#")
         repeat_name = repclass[0]
 
         if repeat_name in repname_to_id:
@@ -547,12 +551,12 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
 
         print("%s\t%d\t%d\t%d\t%d\t%d\t%d" % (\
             seq_region_id,\
-            int(seq_region_start),\
-            int(seq_region_end),\
-            int(repeat_start),\
+            seq_region_start,\
+            seq_region_end,\
+            repeat_start,\
             repeat_end,\
-            int(repeat_consensus_id),\
-            int(analysis_id)), \
+            repeat_consensus_id,\
+            analysis_id), \
             file=tsvfileI)
 
     tsvfileI.close()
@@ -572,6 +576,8 @@ def store_annotated_repeat_database( workdir, matched_repeats,
 
     # parse repeat_fasta_file to fetch full sequences of matched repeats 
     # TO BE DONE if those sequences/consensi are valuable
+	# fulls seqs? only aligned? check barley
+
 
     # core database handles
     engine = db.create_engine(db_url)

@@ -621,73 +621,72 @@ def store_annotated_repeat_database( workdir, matched_repeats,
     #    db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
 
     # insert new analysis, fails if logic_name exists
-    #analysis_insert = analysis_table.insert().values({ \
-    #    'created': db.sql.func.now(), \
-    #    'logic_name': logic_name, \
-    #    'program':'minimap2', \
-    #    'program_version': minimap_version, \
-    #    'program_file': exe,
-    #    'parameters': repeats_fasta_file,
-    #    'gff_source': logic_name,
-    #    'gff_feature':'repeat' })
-    #connection.execute(analysis_insert)
+    analysis_insert = analysis_table.insert().values({ \
+        'created': db.sql.func.now(), \
+        'logic_name': logic_name, \
+        'program':'minimap2', \
+        'program_version': minimap_version, \
+        'program_file': exe,
+        'parameters': repeat_fasta_file,
+        'gff_source': logic_name,
+        'gff_feature':'repeat' })
+    connection.execute(analysis_insert)
 
     # fetch the assigned analysis_id for logic_name
-    #analysis_query = db.select([analysis_table.columns.analysis_id])
-    #analysis_query = \
-    #    analysis_query.where(analysis_table.columns.logic_name == logic_name)
-    #analysis_results = connection.execute(analysis_query).fetchall()
-    #analysis_id = analysis_results[0][0]
+    analysis_query = db.select([analysis_table.columns.analysis_id])
+    analysis_query = \
+        analysis_query.where(analysis_table.columns.logic_name == logic_name)
+    analysis_results = connection.execute(analysis_query).fetchall()
+    analysis_id = analysis_results[0][0]
 
     # insert repeat analysis meta keys, will fails if exists
-    #meta_insert = meta_table.insert().values({ \
-    #    'species_id':1, \
-    #    'meta_key':'repeat.analysis', \
-    #    'meta_value':logic_name })
-    #connection.execute(meta_insert)
+    meta_insert = meta_table.insert().values({ \
+        'species_id':1, \
+        'meta_key':'repeat.analysis', \
+        'meta_value':logic_name })
+    connection.execute(meta_insert)
 
     # insert dummy, default repeat consensus, will fail if it exists
-    #repeat_consensus_insert = repeat_consensus_table.insert().values({ \
-    #    'repeat_name':logic_name, \
-    #    'repeat_class':logic_name, \
-    #    'repeat_type':logic_name, \
-    #    'repeat_consensus':'N' })
-    #connection.execute(repeat_consensus_insert)
+    repeat_consensus_insert = repeat_consensus_table.insert().values({ \
+        'repeat_name':logic_name, \
+        'repeat_class':logic_name, \
+        'repeat_type':logic_name, \
+        'repeat_consensus':'N' })
+    connection.execute(repeat_consensus_insert)
 
     # fetch the repeat_consensus_id of the new dummy consensus
-    #repeat_consensus_query = \
-    #    db.select([repeat_consensus_table.columns.repeat_consensus_id])
-    #repeat_consensus_query = \
-    #    repeat_consensus_query.where( \
-    #        repeat_consensus_table.columns.repeat_name == logic_name)
-    #repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
-    #dummy_consensus_id = repeat_consensus_results[0][0]
-
-    # TO BE DONE
-    # add repeat consensi sequences, one per repeat name in matched_repeats,
-    # create dictionary mapping repeat_name to consensus_id
+    repeat_consensus_query = \
+        db.select([repeat_consensus_table.columns.repeat_consensus_id])
+    repeat_consensus_query = \
+        repeat_consensus_query.where( \
+            repeat_consensus_table.columns.repeat_name == logic_name)
+    repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
+    dummy_consensus_id = repeat_consensus_results[0][0]
 
     # parse repeat_fasta_file to fetch full sequences of matched repeats
     sequences = _get_FASTA_sequences(repeat_fasta_file)
 
-    # parse repeats and produce a TSV files to be loaded in db
-    analysis_id=1
-    dummy_consensus_id=1
-    repeat_result=1
-    (repeat_filename, annot_filename) = _annotated_repeats_to_files(workdir,\
+    # parse repeats and produce TSV files to be loaded in db
+    #analysis_id=1
+    #dummy_consensus_id=1
+    #repeat_result=1
+    (repeat_filename, cons_filename) = _annotated_repeats_to_files(workdir,\
         matched_repeats, sequences, analysis_id, dummy_consensus_id)
 
     # insert repeat annotations in repeat_consensus table
-   
+    cons_query = "LOAD DATA LOCAL INFILE '" + cons_filename +\
+        "' INTO TABLE repeat_consensus FIELDS TERMINATED BY '\\t' " +\
+        "LINES TERMINATED BY '\\n' (repeat_consensus_id,repeat_name," + \
+        "repeat_class,repeat_type,repeat_consensus)"
+    consensus_result = connection.execute(cons_query).rowcount
 
     # insert repeat features
-    #repeat_query = "LOAD DATA LOCAL INFILE '" + TSVfilename +\
-    #    "' INTO TABLE repeat_feature FIELDS TERMINATED BY '\\t' " +\
-    #    "LINES TERMINATED BY '\\n' (seq_region_id,seq_region_start," + \
-    #    "seq_region_end,repeat_start,repeat_end,repeat_consensus_id,analysis_id)"
-    #repeat_result = connection.execute(repeat_query).rowcount
-
-   
+    repeat_query = "LOAD DATA LOCAL INFILE '" + repeat_filename +\
+        "' INTO TABLE repeat_feature FIELDS TERMINATED BY '\\t' " +\
+        "LINES TERMINATED BY '\\n' (seq_region_id,seq_region_start," + \
+        "seq_region_end,repeat_start,repeat_end,repeat_consensus_id,analysis_id)"
+    repeat_result = connection.execute(repeat_query).rowcount
+  
     return repeat_result
 
 

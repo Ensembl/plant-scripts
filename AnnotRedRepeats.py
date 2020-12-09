@@ -266,9 +266,9 @@ def _parse_minimap_log( log_filename ):
         return version
 
     for line in logfile:
-        vre = re.search(r'^[M::main] Version: (\S+)', line)
+        vre = re.search(r'Version: (\S+)', line)
         if vre: 
-            version = vere.group(1)
+            version = vre.group(1)
         
         ramre = re.search(r'Peak RSS+: (\S+)', line)
         if ramre: 
@@ -279,8 +279,8 @@ def _parse_minimap_log( log_filename ):
     return version, RAM
 
 def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
-    '''Calls minimap2,  waits for job completion and logs stderr.
-       If previous output exist minimap2 & sort are skipped.
+    '''Calls minimap, waits for job completion and logs stderr.
+       If previous output exist minimap & sort are skipped.
        Returns: i string) name of file with sorted mappings (system sort).
                 ii string) minimap version'''
 
@@ -624,7 +624,7 @@ def store_annotated_repeat_database( workdir, matched_repeats,
     analysis_insert = analysis_table.insert().values({ \
         'created': db.sql.func.now(), \
         'logic_name': logic_name, \
-        'program':'minimap2', \
+        'program':'minimap', \
         'program_version': minimap_version, \
         'program_file': exe,
         'parameters': repeat_fasta_file,
@@ -744,9 +744,9 @@ def main():
     formatted_lib_filename = format_reference_minimap( args.exe, args.cor,\
         args.repeat_fasta_file, annotdir)
 
-    # run minimap2, or else re-use previous results
+    # run minimap, or else re-use previous results
     # Note: Red-called repeats are handled as long reads
-    print("# running minimap2")
+    print("# running minimap")
     (map_filename, version) = run_minimap( args.exe, args.cor, \
         formatted_lib_filename, repeats_filename, annotdir)
     print("# mapped repeats: ", map_filename)

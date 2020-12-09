@@ -65,7 +65,7 @@ Annotation reports look like this:
 # FASTA file with repeat sequences (length>90): Camelina_sativa/annot/Red_repeats.fna
 
 # re-using previously formatted repeat library  Camelina_sativa/annot/repeat_lib.mmi
-# running minimap2
+# running minimap
 /path/to/minimap2 -K100M --score-N 0  -x map-ont  -t 4 Camelina_sativa/annot/repeat_lib.mmi Camelina_sativa/annot/Red_repeats.fna
 # mapped repeats:  Camelina_sativa/annot/repeat_mappings.sort.paf
 # Genome length: 641355730 Repeated content: 230739085 36.0% Annotated: 42633901 6.6%

@@ -54,6 +54,7 @@ The repeats called by Red can be optionally annotated by similarity to sequences
 # produce annotation report
 ./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4
 
+# add annotated repeats to core db
 ./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4 \
     --host pl1 --user xyz --pw XYZ \
     --port 123 --db camelina_sativa_core_50_103_1

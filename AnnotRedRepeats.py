@@ -483,7 +483,7 @@ def make_annotation_report( map_filename, log_filename,
     return matched_repeats 
 
 
-def _annotated_repeats_to_files( workdir, matched_repeats, 
+def _annotated_repeats_to_files( workdir, matched_repeats, sequences,
     analysis_id, last_consensus_id ):
     '''Creates two TSV files in workdir to be loaded in Ensembl core db:
        i) 1-based matched repeats for repeat_feature table
@@ -527,7 +527,10 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
             repeat_consensus_id = repname_to_id[repeat_name]
         else:
             repeat_consensus_id = new_consensus_id
-            repeat_consensus = 'N' # until full seq is parsed
+            if matched_repeats[mrep][0] in sequences:
+                repeat_consensus = sequences[matched_repeats[mrep][0]]
+            else:
+                repeat_consensus = 'N' # default
             classtype = repclass[1].split("/")
             if len(classtype) == 2:
                 repeat_class = repclass[1]
@@ -563,6 +566,29 @@ def _annotated_repeats_to_files( workdir, matched_repeats,
     tsvfileII.close()
 
     return repfilename, consfilename
+
+def _get_FASTA_sequences( filename ):
+    '''Takes a FASTA filename and reads sequences.
+       Return a dictionary with first non-blank word as keys and 
+       sequence as values'''
+
+    sequences = {}
+
+    try:
+        file = open(filename)
+    except OSError as error:
+        print("# ERROR: cannot open/read file:", filename, error)
+        return sequences
+
+    for line in file:
+        header = re.search(r'^>(\S+)', line) 
+        if header:
+            name = header.group(1)
+        else: 
+            sequences[name] = sequences[name] + line.rstrip()
+ 
+    file.close()
+    return sequences
 
 
 def store_annotated_repeat_database( workdir, matched_repeats, 

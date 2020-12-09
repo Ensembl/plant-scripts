@@ -584,8 +584,11 @@ def _get_FASTA_sequences( filename ):
         header = re.search(r'^>(\S+)', line) 
         if header:
             name = header.group(1)
-        else: 
-            sequences[name] = sequences[name] + line.rstrip()
+        else:
+            if name in sequences:
+                sequences[name] = sequences[name] + line.rstrip()
+            else:
+                sequences[name] = line.rstrip()
  
     file.close()
     return sequences
@@ -599,11 +602,6 @@ def store_annotated_repeat_database( workdir, matched_repeats,
        Note that the analysis logic name and software details are 
        also passed in order to fill the analysis table.
        Returns number of inserted annotations.'''
-
-    # parse repeat_fasta_file to fetch full sequences of matched repeats 
-    # TO BE DONE if those sequences/consensi are valuable
-	# fulls seqs? only aligned? check barley
-
 
     # core database handles
     engine = db.create_engine(db_url)
@@ -669,12 +667,15 @@ def store_annotated_repeat_database( workdir, matched_repeats,
     # add repeat consensi sequences, one per repeat name in matched_repeats,
     # create dictionary mapping repeat_name to consensus_id
 
+    # parse repeat_fasta_file to fetch full sequences of matched repeats
+    sequences = _get_FASTA_sequences(repeat_fasta_file)
+
     # parse repeats and produce a TSV files to be loaded in db
     analysis_id=1
     dummy_consensus_id=1
     repeat_result=1
     (repeat_filename, annot_filename) = _annotated_repeats_to_files(workdir,\
-        matched_repeats,analysis_id, dummy_consensus_id)
+        matched_repeats, sequences, analysis_id, dummy_consensus_id)
 
     # insert repeat annotations in repeat_consensus table
    

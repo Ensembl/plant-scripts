@@ -395,7 +395,7 @@ my $up_data = call_endpoint($http,$url);
 
 if(defined($up_data->{seq})){
 printf(">%s %s\n%s\n",
-	$species,
+	$gene,
 	$up_data->{desc},
 	$up_data->{seq} );
 }

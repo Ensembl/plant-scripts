@@ -269,10 +269,10 @@ vep_data
 # Note: you need the relevant transcript id from species of interest
 # This query involves 2 consecutive REST calls
 
-species = 'triticum_aestivum';
-transcript_id = 'TraesCS4B02G042700.1';
-SNPCDScoord = '812..812';
-SNPbase = 'T';
+species = 'triticum_aestivum'
+transcript_id = 'TraesCS4B02G042700.1'
+SNPCDScoord = '812..812'
+SNPbase = 'T'
 
 # i) convert CDS coords to genomic coords
 url = paste(
@@ -318,3 +318,28 @@ url = paste(
 
 var_source_data = call_endpoint(url, "application/json")
 subset(var_source_data, select=c( 'name','description'))
+
+## R10) Get soft-masked upstream sequence of gene in otherfeatures track
+
+# Note: otherfeatures databases hold alternative gene models
+# and cannot be accessed through biomart
+
+gene = 'LOC_Os01g01010'
+species = 'oryza_sativa'
+upstream_window = 1000
+
+url = paste(
+	paste(server, 'sequence/id', gene, sep="/"),
+	"?",
+	"content-type=application/json;",
+	"db_type=otherfeatures;",
+	"species=",species,";",
+	"object_type=gene;",
+	"mask=soft;expand_5prime=",upstream_window,
+	sep='')
+
+	up_data = call_endpoint(url, "application/json")
+
+    if(length(conseq) > 0) {
+		up_data$seq
+	}

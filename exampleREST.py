@@ -279,7 +279,7 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
             print()
 
 def get_variation_sources(species):
-    '''retreive the variation sources of a species'''
+    '''retrieve the variation sources of a species'''
 
     ext = ('/info/variation/' + species + 
         "?content-type=application/json")
@@ -288,6 +288,21 @@ def get_variation_sources(species):
     for source in var_source_data:
         print("%s\t%s\t%s" % (species, 
             source['name'], source['description']))
+
+def get_masked_upstream_otherfeatures(gene,species,upstream_window):
+    '''Prints FASTA soft-masked upstream sequence of gene 
+       in otherfeatures track'''
+
+    ext = ("/sequence/id/" + gene + "?content-type=application/json;" +
+        "db_type=otherfeatures;species=" + species + ";object_type=gene;" + 
+        "mask=soft;expand_5prime=" + upstream_window)
+
+    up_data = get_json(ext)
+
+    if up_data['seq']:
+        print(">%s %s\n%s\n" %
+            (gene, up_data['desc'], up_data['seq']))
+
 
 
 #======================================== 
@@ -348,4 +363,15 @@ check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase)
 ## R9) Retrieve variation sources of a species
 
 get_variation_sources(species)
+
+## R10) Get soft-masked upstream sequence of gene in otherfeatures track
+
+# Note: otherfeatures databases hold alternative gene models
+# and cannot be accessed through biomart
+
+gene = 'LOC_Os01g01010';
+species = 'oryza_sativa';
+upstream_window = 1000;
+
+get_masked_upstream_otherfeatures(gene,species,upstream_window)
 

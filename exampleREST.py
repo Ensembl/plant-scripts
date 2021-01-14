@@ -295,7 +295,7 @@ def get_masked_upstream_otherfeatures(gene,species,upstream_window):
 
     ext = ("/sequence/id/" + gene + "?content-type=application/json;" +
         "db_type=otherfeatures;species=" + species + ";object_type=gene;" + 
-        "mask=soft;expand_5prime=" + upstream_window)
+        "mask=soft;expand_5prime=" + str(upstream_window))
 
     up_data = get_json(ext)
 

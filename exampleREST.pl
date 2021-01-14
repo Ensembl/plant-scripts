@@ -375,3 +375,28 @@ for my $pr (@{$var_source_data}) {
 		$pr->{name},
 		$pr->{description} );
 }
+
+## R10) Get soft-masked upstream sequence of gene in otherfeatures track
+
+# Note: otherfeatures databases hold alternative gene models 
+# and cannot be accessed through biomart
+
+$gene = 'LOC_Os01g01010';
+$species = 'oryza_sativa';
+
+my $upstream_window = 1000;
+
+$url = join('/', $server, "sequence/id/$gene") .
+		"?content-type=application/json;db_type=otherfeatures;".
+		"species=oryza_sativa;object_type=gene;".
+		"mask=soft;expand_5prime=$upstream_window";
+
+my $up_data = call_endpoint($http,$url);
+
+if(defined($up_data->{seq})){
+printf(">%s %s\n%s\n",
+	$species,
+	$up_data->{desc},
+	$up_data->{seq} );
+}
+

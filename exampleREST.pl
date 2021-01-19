@@ -61,6 +61,8 @@ sub post_endpoint {
 	return decode_json($response->{content});
 }
 
+
+
 ## R2) Get metadata for all plant species 
 
 my $url =
@@ -399,4 +401,21 @@ printf(">%s %s\n%s\n",
 	$up_data->{desc},
 	$up_data->{seq} );
 }
+
+## R11) Get all species under a given taxonomy clade
+
+my $taxonomy_clade = '71274'; # or taxonomy_clade = 'Asteridae' 
+
+my $url = join('/', $server, "info/genomes/taxonomy/$taxonomy_clade") ."?content-type=application/json";
+
+
+my $species_list = call_endpoint($http,$url);
+
+for my $species (@{$species_list}) {
+	printf("%s\t%s\t%s\n", 
+		$species->{display_name}, 
+		$species->{taxonomy_id},
+		$species->{assembly_accession} );
+}
+
 

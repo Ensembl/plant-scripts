@@ -286,7 +286,6 @@ def show_species_in_clade(tax_clade):
     ext = ('/info/genomes/taxonomy/' + tax_clade + "?content-type=application/json")
     species_data = get_json(ext)
     
-    #https://rest.ensembl.org/info/genomes/taxonomy/Asteridae?content-type=application/json
     for species in species_data:
         print(species['display_name'],'tax_id:',species['taxonomy_id'],'accesion:'+species['assembly_accession'])
 

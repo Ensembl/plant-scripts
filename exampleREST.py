@@ -278,6 +278,20 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
                 print (val, end="\t")
             print()
 
+def show_species_in_clade(tax_clade):
+    '''
+    Print all the species under a given clade (name or taxonamy id)
+    '''
+
+    ext = ('/info/genomes/taxonomy/' + tax_clade + "?content-type=application/json")
+    species_data = get_json(ext)
+    
+    #https://rest.ensembl.org/info/genomes/taxonomy/Asteridae?content-type=application/json
+    for species in species_data:
+        print(species['display_name'],'tax_id:',species['taxonomy_id'],'accesion:'+species['assembly_accession'])
+
+
+
 def get_variation_sources(species):
     '''retrieve the variation sources of a species'''
 
@@ -374,4 +388,9 @@ species = 'oryza_sativa';
 upstream_window = 1000;
 
 get_masked_upstream_otherfeatures(gene,species,upstream_window)
+
+## R11) Get all species for a given taxonomy clade
+taxonomy_clade = '71274' # or taxonomy_clade = 'Asteridae' 
+show_species_in_clade(taxonomy_clade) #function call
+
 

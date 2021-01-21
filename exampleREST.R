@@ -343,3 +343,23 @@ url = paste(
     if(length(conseq) > 0) {
 		up_data$seq
 	}
+
+
+## R10) Fetch species for a taxonomy clade
+
+taxonomy_clade = '71274'; # or taxonomy_clade = 'Asteridae'
+
+url = paste(
+                paste(server, 'info/genomes/taxonomy', taxonomy_clade, sep="/"),
+                "content-type=application/json",
+                sep="?")
+
+tax_data = call_endpoint(url,"application/json")
+
+for (row in 1:nrow(tax_data)){
+    name      = (tax_data[[row, 'display_name']])
+    tax_id    = (tax_data[[row, 'taxonomy_id']])
+    accession = (tax_data[[row, 'assembly_accession']])
+
+    print (paste (name,tax_id, accession, sep="   "))
+}

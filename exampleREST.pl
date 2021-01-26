@@ -406,8 +406,7 @@ printf(">%s %s\n%s\n",
 
 my $taxonomy_clade = '71274'; # or taxonomy_clade = 'Asteridae' 
 
-my $url = join('/', $server, "info/genomes/taxonomy/$taxonomy_clade") ."?content-type=application/json";
-
+$url = join('/', $server, "info/genomes/taxonomy/$taxonomy_clade") ."?content-type=application/json";
 
 my $species_list = call_endpoint($http,$url);
 

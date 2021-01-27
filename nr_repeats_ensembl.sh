@@ -61,7 +61,8 @@ mysql --host $SERVER --user $USER --port $PORT $SPECIESCORE -Nb -e \
 	FROM repeat_feature r JOIN seq_region sr JOIN repeat_consensus rc \
 	WHERE r.seq_region_id=sr.seq_region_id \
 	AND r.repeat_consensus_id=rc.repeat_consensus_id \
-	AND (rc.repeat_class <> 'Unspecified' AND rc.repeat_class <> 'repeatdetector') \
+	AND (rc.repeat_class <> 'Unspecified' AND rc.repeat_class <> \
+		'repeatdetector' AND rc.repeat_class <> 'tallymer') \
 	AND (r.seq_region_end-r.seq_region_start+1) > $MINLEN" | \
 	sort -u -k1,1 -k2,2n > _${SPECIES}.repeats1.bed
 

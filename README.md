@@ -56,7 +56,7 @@ See examples and documentation in folder [repeats](./repeats/).
 
 ## List of recipes
 
-These are the recipes in this repository, obtained with grep -P "^## \w\d+" example*:
+These are the recipes in this repository, obtained with grep -P "^## \w\d+" recipes/example*:
 
 ```
 exampleAPI.pl:## A1) Load the Registry object with details of genomes available

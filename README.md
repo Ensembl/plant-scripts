@@ -6,49 +6,16 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
 
 [![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
 
-- [Dependencies](#dependencies)
-	- [FTP](#ftp)
-	- [MySQL](#mysql)	
-	- [Perl](#perl)
-	- [Python](#python)
-	- [R](#r)
+- [Repeat masking and annotation](#repeat-masking-and-annotation)
 - [List of recipes](#list-of-recipes)
+- [Dependencies](#dependencies)
+    - [FTP](#ftp)
+    - [MySQL](#mysql)
+    - [Perl](#perl)
+    - [Python](#python)
+	- [R](#r)
 - [Species tree](#species-tree)
 - [Citation](#citation)
-
-## Dependencies
-
-Some of the scripts depend on additional software packages, see below to learn how to install them.
-
-### FTP
-
-The examples for bulk downloads from the FTP site require the software [wget](https://www.gnu.org/software/wget/), which is usually installed on most Linux distributions. For macOS it is available on [Homebrew](https://brew.sh). For Windows it ships with [MobaXterm](https://mobaxterm.mobatek.net).
-
-### MySQL
-
-The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client. Depending on your Linux flavour this package can be named *mysql-client* or simply *mysql*.
-
-### Perl
-
-As listed in [cpanfile](./files/cpanfile), three modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them as explained in [phylogenomics](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics). 
-
-For the recipes using the Ensembl Perl API please follow the installation [instructions](http://plants.ensembl.org/info/docs/api/api_installation.html). If you use git please follow [these](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). Note that your local Ensembl API should match the version of the current Ensembl release.
-
-The software VEP has the following Perl dependencies: [DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip). See full documentation at https://github.com/Ensembl/ensembl-vep
-
-### Python
-
-The REST recipes written in python require library [requests](https://pypi.org/project/requests).
-
-### R
-
-For the BioMart recipes you will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html), which can be installed with:
-
-	Rscript install_R_deps.R
-
-Full installation instructions can be found [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
-
-For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
 
 ## Repeat masking and annotation
 
@@ -119,6 +86,40 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
 A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
+
+## Dependencies
+
+Some of the scripts depend on additional software packages, see below to learn how to install them.
+
+### FTP
+
+The examples for bulk downloads from the FTP site require the software [wget](https://www.gnu.org/software/wget/), which is usually installed on most Linux distributions. For macOS it is available on [Homebrew](https://brew.sh). For Windows it ships with [MobaXterm](https://mobaxterm.mobatek.net).
+
+### MySQL
+
+The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client. Depending on your Linux flavour this package can be named *mysql-client* or simply *mysql*.
+
+### Perl
+
+As listed in [cpanfile](./files/cpanfile), three modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them as explained in [phylogenomics](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics).
+
+For the recipes using the Ensembl Perl API please follow the installation [instructions](http://plants.ensembl.org/info/docs/api/api_installation.html). If you use git please follow [these](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). Note that your local Ensembl API should match the version of the current Ensembl release.
+
+The software VEP has the following Perl dependencies: [DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip). See full documentation at https://github.com/Ensembl/ensembl-vep
+
+### Python
+
+The REST recipes written in python require library [requests](https://pypi.org/project/requests).
+
+### R
+
+For the BioMart recipes you will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html), which can be installed with:
+
+    Rscript install_R_deps.R
+
+Full installation instructions can be found [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
+
+For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
 
 ## Species tree
 

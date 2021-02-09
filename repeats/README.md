@@ -2,8 +2,8 @@
 These scripts can be used to i) mask and ii) annotate repeated sequences in plants genomes using the 
 [Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) 
 and the curated library of repeats 
-[nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2),
-which was obtained [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
+[nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2),
+described [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
 
 Optionally Red repeats can be loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. 
 Annotated repeats are imported with logic_name='repeatdetector_annotated'.
@@ -18,7 +18,7 @@ Binaries:
 
 * A clone of minimap2 from https://github.com/lh3/minimap2
 
-* A copy of the [nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2)
+* A copy of the [nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2)
 
 Python3 modules:
 

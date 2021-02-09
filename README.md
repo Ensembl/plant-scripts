@@ -2,7 +2,7 @@
 # Scripting analyses of genomes in Ensembl Plants
 
 This repo contains code examples for interrogating Ensembl Plants from your own scripts,
-and for annotating repeats in plant genomes.
+and for masking & annotating [repeats](./repeats() in plant genomes.
 
 [![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
 
@@ -52,7 +52,7 @@ For the REST recipes two core packages are required: [httr](https://cran.r-proje
 
 ## Repeat masking and annotation
 
-See examples and documentation in folder [repeats](/repeats/).
+See examples and documentation in folder [repeats](./repeats/).
 
 ## List of recipes
 

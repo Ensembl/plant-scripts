@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 
-# Script to download non-redundant annotated repeated elements 
+# Script to download annotated repeated elements 
 # of a selected species in Ensembl Plants
 
 # Required binaries: wget, sort, perl, mysql, bedtools, cd-hit-est
 
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 # documentation about Ensembl schemas can be found at 
 # http://www.ensembl.org/info/docs/api/index.html
 
 if [[ $# -eq 0 ]] ; then
-	echo "# example usage: $0 arabidopsis_thaliana [MB RAM]"
+	echo "# example usage: $0 arabidopsis_thaliana"
 	exit 0
 else
 	SPECIES=$1
@@ -104,31 +104,11 @@ cat _${SPECIES}.repeats.fasta | \
 	perl -slne 'if(/^(>.*)/){$h=$1} else {$fa{$h}.=$_} END{ foreach $h (keys(%fa)){ $l=length($fa{$h}); $dg=($fa{$h}=~tr/Nn//); print "$h\n$fa{$h}" if(100*$dg/$l<=$maxdeg) }}' \
 	-- -maxdeg=$MAXDEGENPERC > _${SPECIES}.repeats.nondeg.fasta
 
-## 9) eliminate short & redundant sequences
-if [[ $# -eq 2 ]] ; then
-	RAM=$2
-else
-	RAM=1024
-fi
-
-OUTFILE=${SPECIES}.${EGRELEASE}.repeats.nr${MAXIDFRAC}.fasta
-
-cd-hit-est -M $RAM -c $MAXIDFRAC -l $MINLEN \
-	-i _${SPECIES}.repeats.nondeg.fasta \
-	-o $OUTFILE
-
-if [ -s "$OUTFILE" ]; then
-	echo "# output: $OUTFILE"
-else
-	echo "# job failed, temp files conserved"
-	exit 3
-fi
-
-## 10) clean temp files
+## 9) clean temp files
 if [ -z "$DEBUG" ] || [ "$DEBUG" -eq "0" ]; then
 	echo
 	echo "# removing temp files"; 
-	rm _${SPECIES}.*.bed _${SPECIES}.*.fasta _${SPECIES}.*.fai ${SPECIES}.*.clstr
+	rm _${SPECIES}.*.bed _${SPECIES}.*.fasta _${SPECIES}.*.fai
 fi
 
 exit 0

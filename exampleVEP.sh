@@ -8,7 +8,12 @@
 # set Ensembl Plants release number, check it
 # at the bottom of http://plants.ensembl.org
 # EG stands for Ensembl Genomes
-EGRELEASE=47
+
+# example call: EGRELEASE=50 ./exampleVEP.sh
+
+if [ -z "${EGRELEASE}" ]; then
+	EGRELEASE=49
+fi
 
 # work out Ensembl release, do not change
 RELEASE=$((EGRELEASE + 53));
@@ -41,9 +46,13 @@ if [ ! -f ${VEPCACHE} ]; then
 	echo "Cache file ${VEPCACHE} not found, get it with recipe F8"
 	exit 1
 else
-	tar xfz $VEPCACHE
-	grep sift "${SPECIES}/${EGRELEASE}_*/info.txt"
-	echo "${SPECIES}/${EGRELEASE}_*/info.txt"
+	if [ ! -f "${SPECIES}/${EGRELEASE}_*/info.txt" ]; then
+		grep sift "${SPECIES}/${EGRELEASE}_*/info.txt"
+		echo "${SPECIES}/${EGRELEASE}_*/info.txt"
+	else
+		echo "Cannot find file ${SPECIES}/${EGRELEASE}_*/info.txt, please correct/set variable EGRELEASE"
+		exit 1
+	fi
 fi
 
 ## V3) Predict effect of variants 

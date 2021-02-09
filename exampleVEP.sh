@@ -77,16 +77,20 @@ fi
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_example.html
 
-VCFILE="{$VEPATH}/ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf"
+VCFILE="${VEPATH}/ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf"
+OUTFILE='arabidopsis_thaliana.vep.output'
 
 VEPOPTIONS=(
 	--genomes              # Ensembl Genomes, for Plants
 	--species $SPECIES 
 	--cache                # use local cache file, opposed to --database
 	--dir_cache ./         # location of unpacked cache $SPECIES folder
+	--cache_version $EGRELEASE
 	--check_existing       # co-located known variants
 	--distance 5000        # max dist between variant and transcript
 	--biotype              # show biotype of neighbor transcript
+	--input_file $VCFILE
+	--output_file $OUTFILE
 )
 
 ${VEPATH}/ensembl-vep/vep "${VEPOPTIONS[@]}"

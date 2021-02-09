@@ -46,9 +46,10 @@ if [ ! -f ${VEPCACHE} ]; then
 	echo "Cache file ${VEPCACHE} not found, get it with recipe F8"
 	exit 1
 else
-	if [ ! -f "${SPECIES}/${EGRELEASE}_*/info.txt" ]; then
-		grep sift "${SPECIES}/${EGRELEASE}_*/info.txt"
-		echo "${SPECIES}/${EGRELEASE}_*/info.txt"
+	INFOFILE="${SPECIES}/${EGRELEASE}_*/info.txt"
+	if [ ! -f "${INFOFILE}" ]; then
+		grep sift "${INFOFILE}"
+		echo "${INFOFILE}"
 	else
 		echo "Cannot find file ${SPECIES}/${EGRELEASE}_*/info.txt, please correct/set variable EGRELEASE"
 		exit 1

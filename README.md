@@ -1,7 +1,8 @@
 
 # Scripting analyses of genomes in Ensembl Plants
 
-This repo contains code examples for interrogating Ensembl Plants from your own scripts.
+This repo contains code examples for interrogating Ensembl Plants from your own scripts,
+and for annotating repeats in plant genomes.
 
 [![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
 
@@ -48,6 +49,10 @@ For the BioMart recipes you will need BioConductor package [biomaRt](http://www.
 Full installation instructions can be found [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html).
 
 For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite)
+
+## Repeat masking and annotation
+
+See examples and documentation in folder [repeats](/repeats/).
 
 ## List of recipes
 

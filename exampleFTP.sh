@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 # The recipes below use wget to download files 
 # Please change these env variables to use other tools ie curl

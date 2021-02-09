@@ -3,7 +3,7 @@
 # Your usage of the data returned by the public MySQL server is
 # subject to same conditions as laid out on the Ensembl website.
 #
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 # documentation about Ensembl schemas can be found at 
 # http://www.ensembl.org/info/docs/api/index.html

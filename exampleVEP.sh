@@ -58,6 +58,7 @@ if [ ! -f ${VEPCACHE} ]; then
 	echo "# ERROR: Cache file ${VEPCACHE} not found, get it with recipe F8"
 	exit 1
 else
+	tar xfz $VEPCACHE
 	pattern="${SPECIES}/${EGRELEASE}_*/info.txt"
 	files=( $pattern )
 	INFOFILE="${files[0]}" 

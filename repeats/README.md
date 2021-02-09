@@ -12,7 +12,9 @@ Annotated repeats are imported with logic_name='repeatdetector_annotated'.
 
 Binaries: 
 
-* A clone of Red from https://github.com/brunocontrerasmoreira/Red ; the original repo is [here](https://github.com/BioinformaticsToolsmith/Red)
+* g++-8
+
+* A clone of Red from https://github.com/EnsemblGenomes/Red ; the original repo is [here](https://github.com/BioinformaticsToolsmith/Red)
 
 * A clone of minimap2 from https://github.com/lh3/minimap2
 
@@ -26,8 +28,8 @@ Python3 modules:
 
 which can be installed with: 
 ```
-git clone https://github.com/brunocontrerasmoreira/Red.git
-cd Red && make bin && make
+git clone https://github.com/EnsemblGenomes/Red.git
+cd Red/src_2.0 && make bin && make
 cd ..
 
 git clone https://github.com/lh3/minimap2.git

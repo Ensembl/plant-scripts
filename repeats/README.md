@@ -1,7 +1,12 @@
 
-These scripts can be used to call and annotate repeated sequences in genomes using the [Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) and the library of repeats [nrTEplants](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
+These scripts can be used to i) mask and ii) annotate repeated sequences in plants genomes using the 
+[Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) 
+and the curated library of repeats 
+[nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2),
+which was obtained [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
 
-By default, raw Red repeats are loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. Annotated repeats are imported with logic_name='repeatdetector_annotated'.
+Optionally Red repeats can be loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. 
+Annotated repeats are imported with logic_name='repeatdetector_annotated'.
 
 ## Dependencies
 
@@ -49,7 +54,8 @@ For large genomes such as barley or wheat you will need a large amount of RAM (~
 	--port 123 --db brachypodium_distachyon_core_49_102_4
 ```
 
-The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, such as the library nrTEplants. The script does not load the resulting annotations in a core db just yet:
+The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, 
+such as the library nrTEplants. The script does not load the resulting annotations in a core db just yet:
 ```
 # produce annotation report
 ./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4

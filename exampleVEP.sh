@@ -36,9 +36,15 @@ echo
 
 SPECIES=arabidopsis_thaliana
 VEPCACHE="${SPECIES}*.tar.gz*"
-tar xfz $VEPCACHE
-grep sift "${SPECIES}/${EGRELEASE}_*/info.txt"
-echo "${SPECIES}/${EGRELEASE}_*/info.txt"
+
+if [ ! -f ${VEPCACHE} ]; then
+	echo "Cache file ${VEPCACHE} not found, get it with recipe F8"
+	exit 1
+else
+	tar xfz $VEPCACHE
+	grep sift "${SPECIES}/${EGRELEASE}_*/info.txt"
+	echo "${SPECIES}/${EGRELEASE}_*/info.txt"
+fi
 
 ## V3) Predict effect of variants 
 

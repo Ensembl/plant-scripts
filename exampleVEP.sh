@@ -21,7 +21,7 @@ if [ -z "${VEPATH}" ]; then
 fi
 
 # check VEP
-if [ ! -f "${VEPATH/ensembl-vep/vep}" ]; then
+if [ ! -f "${VEPATH}/ensembl-vep/vep" ]; then
 	echo "# ERROR: Cannot find ${VEPATH}/ensembl-vep/vep not found, please set VEPATH accordingly"
     exit 1
 fi

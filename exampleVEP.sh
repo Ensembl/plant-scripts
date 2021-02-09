@@ -104,7 +104,11 @@ FASTAGZFILE=      # GZIP-compressed file of genome FASTA file
 GFFILE=           # gene models matching sequences in FASTAGZFILE
 GZGFFILE=$GFFILE.sorted.gz
 
-grep -v "#" $GFFILE | sort -k1,1 -k4,4n -k5,5n -t$'\t' | bgzip -c > $GZGFFILE
-tabix -p gff $GZGFFILE
-
-${VEPATH}/ensembl-vep/vep -i $VCFILE -gff $GZGFFILE -fasta $FASTAGZFILE
+if [[ -f $GFFILE && -f $FASTAGZFILE ]]; then
+	# sort and index
+	grep -v "#" $GFFILE | sort -k1,1 -k4,4n -k5,5n -t$'\t' | bgzip -c > $GZGFFILE
+	tabix -p gff $GZGFFILE
+	
+	# actually call vep
+	${VEPATH}/ensembl-vep/vep -i $VCFILE -gff $GZGFFILE -fasta $FASTAGZFILE
+fi

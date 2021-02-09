@@ -17,4 +17,4 @@ install_repeats:
 	cd repeats && wget -c https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2 && bunzip2 nrTEplantsJune2020.fna.bz2
 
 clean_repeats:
-	cd repeats && rm -rf Ref minimap2
+	cd repeats && rm -rf Red minimap2

@@ -9,11 +9,23 @@
 # at the bottom of http://plants.ensembl.org
 # EG stands for Ensembl Genomes
 
-# example call: EGRELEASE=50 ./exampleVEP.sh
+# example call: VEPATH=/path/to/ensembl-vep EGRELEASE=50 ./exampleVEP.sh
 
 if [ -z "${EGRELEASE}" ]; then
 	EGRELEASE=49
 fi
+
+# edit if needed to point to ensembl-vep
+if [ -z "${VEPATH}" ]; then
+	VEPATH=./
+fi
+
+# check VEP
+if [ ! -f "${VEPATH/ensembl-vep/vep}" ]; then
+	echo "# ERROR: Cannot find ${VEPATH}/ensembl-vep/vep not found, please set VEPATH accordingly"
+    exit 1
+fi
+
 
 # work out Ensembl release, do not change
 RELEASE=$((EGRELEASE + 53));
@@ -43,15 +55,17 @@ SPECIES=arabidopsis_thaliana
 VEPCACHE="${SPECIES}*.tar.gz*"
 
 if [ ! -f ${VEPCACHE} ]; then
-	echo "Cache file ${VEPCACHE} not found, get it with recipe F8"
+	echo "# ERROR: Cache file ${VEPCACHE} not found, get it with recipe F8"
 	exit 1
 else
-	INFOFILE="${SPECIES}/${EGRELEASE}_*/info.txt"
-	if [ ! -f "${INFOFILE}" ]; then
+	pattern="${SPECIES}/${EGRELEASE}_*/info.txt"
+	files=( $pattern )
+	INFOFILE="${files[0]}" 
+	if [ -f "${INFOFILE}" ]; then
 		grep sift "${INFOFILE}"
 		echo "${INFOFILE}"
 	else
-		echo "Cannot find file ${SPECIES}/${EGRELEASE}_*/info.txt, please correct/set variable EGRELEASE"
+		echo "# ERROR: Cannot find file ${INFOFILE}, please correct/set variable EGRELEASE"
 		exit 1
 	fi
 fi
@@ -62,7 +76,7 @@ fi
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_options.html
 # http://www.ensembl.org/info/docs/tools/vep/script/vep_example.html
 
-VCFILE=ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf
+VCFILE="{$VEPATH}/ensembl-vep/examples/arabidopsis_thaliana.TAIR10.vcf"
 
 VEPOPTIONS=(
 	--genomes              # Ensembl Genomes, for Plants
@@ -74,7 +88,7 @@ VEPOPTIONS=(
 	--biotype              # show biotype of neighbor transcript
 )
 
-ensembl-vep/vep "${VEPOPTIONS[@]}"
+${VEPATH}/ensembl-vep/vep "${VEPOPTIONS[@]}"
 
 ## V4) Predict effect of variants for species not in Ensembl
 
@@ -88,4 +102,4 @@ GZGFFILE=$GFFILE.sorted.gz
 grep -v "#" $GFFILE | sort -k1,1 -k4,4n -k5,5n -t$'\t' | bgzip -c > $GZGFFILE
 tabix -p gff $GZGFFILE
 
-ensembl-vep/vep -i $VCFILE -gff $GZGFFILE -fasta $FASTAGZFILE
+${VEPATH}/ensembl-vep/vep -i $VCFILE -gff $GZGFFILE -fasta $FASTAGZFILE

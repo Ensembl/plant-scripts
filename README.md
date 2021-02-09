@@ -19,7 +19,7 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
 
 ## Repeat masking and annotation
 
-See examples and documentation in folder [repeats](./repeats/).
+See dependencies, examples and documentation in folder [repeats](./repeats/).
 
 ## List of recipes
 
@@ -87,7 +87,7 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 
 A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
 
-## Dependencies
+## Dependencies of recipes
 
 Some of the scripts depend on additional software packages, see below to learn how to install them.
 
@@ -110,13 +110,6 @@ The software VEP has the following Perl dependencies: [DBI](https://metacpan.org
 ### Python
 
 The REST recipes written in python require library [requests](https://pypi.org/project/requests).
-
-The repeat masking scripts require:
-
-* [sqlalchemy](https://pypi.org/project/SQLAlchemy)
-* [sqlalchemy_utils](https://pypi.org/project/SQLAlchemy-Utils)
-* [pymysql](https://pypi.org/project/PyMySQL)
-
 
 ### R
 

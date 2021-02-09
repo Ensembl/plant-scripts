@@ -111,6 +111,13 @@ The software VEP has the following Perl dependencies: [DBI](https://metacpan.org
 
 The REST recipes written in python require library [requests](https://pypi.org/project/requests).
 
+The repeat masking scripts require:
+
+* [sqlalchemy](https://pypi.org/project/SQLAlchemy)
+* [sqlalchemy_utils](https://pypi.org/project/SQLAlchemy-Utils)
+* [pymysql](https://pypi.org/project/PyMySQL)
+
+
 ### R
 
 For the BioMart recipes you will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html), which can be installed with:

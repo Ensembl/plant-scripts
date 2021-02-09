@@ -8,7 +8,7 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
 
 - [Repeat masking and annotation](#repeat-masking-and-annotation)
 - [List of recipes](#list-of-recipes)
-- [Dependencies](#dependencies)
+- [Dependencies of recipes](#dependencies-of-recipes)
     - [FTP](#ftp)
     - [MySQL](#mysql)
     - [Perl](#perl)

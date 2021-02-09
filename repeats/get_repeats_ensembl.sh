@@ -102,7 +102,7 @@ bedtools getfasta -name -fi _${SPECIES}.toplevel.fasta -bed _${SPECIES}.repeats.
 ## 8) eliminate degenerate (MAXDEGENPERC) repeat sequences 
 cat _${SPECIES}.repeats.fasta | \
 	perl -slne 'if(/^(>.*)/){$h=$1} else {$fa{$h}.=$_} END{ foreach $h (keys(%fa)){ $l=length($fa{$h}); $dg=($fa{$h}=~tr/Nn//); print "$h\n$fa{$h}" if(100*$dg/$l<=$maxdeg) }}' \
-	-- -maxdeg=$MAXDEGENPERC > _${SPECIES}.repeats.nondeg.fasta
+	-- -maxdeg=$MAXDEGENPERC > ${SPECIES}.repeats.nondeg.fasta
 
 ## 9) clean temp files
 if [ -z "$DEBUG" ] || [ "$DEBUG" -eq "0" ]; then

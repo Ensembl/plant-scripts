@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 # documentation about Ensembl VEP can be found at 
 # http://www.ensembl.org/info/docs/tools/vep/index.html

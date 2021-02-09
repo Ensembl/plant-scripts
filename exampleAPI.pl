@@ -5,7 +5,7 @@
 # https://m.ensembl.org/info/docs/api/core/core_tutorial.html
 # https://www.ensembl.org/info/docs/api/compara/compara_tutorial.html
 #
-# Copyright [2017-2020] EMBL-European Bioinformatics Institute
+# Copyright [2017-21] EMBL-European Bioinformatics Institute
 
 
 # Install the Ensembl Perl API and updated env as explained in

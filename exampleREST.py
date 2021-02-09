@@ -14,7 +14,7 @@ import re
 # See https://github.com/Ensembl/ensembl-rest/wiki for
 # examples in other programming languages
 
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 #=====================================================
 # helper functions that fetch JSON from REST endpoints

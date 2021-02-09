@@ -8,7 +8,7 @@
 # https://www.ensembl.org/info/data/biomart/how_to_use_biomart.html
 # https://www.ensembl.org/info/data/biomart/biomart_r_package.html
 #
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 # To install R package biomaRt run: Rscript install_R_deps.R
 

@@ -12,7 +12,7 @@
 # tracksDb.txt file therein indicates the full path to the relevant CRAM file 
 # next to its metadata. 
 
-# Copyright [2020] EMBL-European Bioinformatics Institute
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 use strict;
 use warnings;

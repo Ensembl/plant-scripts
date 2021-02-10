@@ -29,7 +29,8 @@ Plus three Python3 modules:
 
 ## Examples
 
-For large genomes such as barley or wheat you will need a large amount of RAM (~20GB) to run Red (see belowe):
+For large genomes such as barley or wheat you will need 20-30GB of RAM to run Red (see below):
+
 ```
 # test run, saves results in folder 'test_Atha_chr4' 
 ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --exe /path/to/Red

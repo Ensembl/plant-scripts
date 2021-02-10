@@ -17,5 +17,9 @@ install_repeats:
 	cd files && git clone https://github.com/lh3/minimap2.git && cd minimap2 && make
 	cd files && wget -c https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2 && bunzip2 nrTEplantsJune2020.fna.bz2
 
+test_repeats:
+	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
+
 clean_repeats:
 	cd files && rm -rf Red minimap2 nrTEplantsJune2020.fna*
+	cd repeats %% rm -rf test_Atha_chr4 Atha.sm.fna test.bed

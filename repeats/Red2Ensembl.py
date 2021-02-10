@@ -1,19 +1,19 @@
 #!/usr/bin/env python3 
 
-# Python3 script to run RepeatDetector (Red v2) and optionally 
-# feed results into an Ensembl core database
+# Python3 script to run RepeatDetector (a fork of Red v2) to mask repeats,
+# and optionally feed results into an Ensembl core database
 #
 # Tested with: 
 # pyenv local 3.7.6
 # pip install --user sqlalchemy_utils pymysql
-# 
-# Bruno Contreras Moreira, Carlos García Girón EBI-EMBL 2020
 #
-# See https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Repeat+masking+with+Red
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 import argparse
 import os
 import re
+import gzip
+import bz2
 import errno
 import subprocess
 
@@ -25,18 +25,41 @@ import sqlalchemy_utils as db_utils
 import pymysql
 pymysql.install_as_MySQLdb()
 
+def _is_gz_file(filepath):
+    '''Checks a file is GZIP compressed by checking magic number'''
+    with open(filepath, 'rb') as test_f:
+        return test_f.read(2) == b'\x1f\x8b'
+
+def _is_bz2_file(filepath):
+    '''Checks a file is BZIP2 compressed by checking magic number'''
+    with open(filepath, 'rb') as test_f:
+        return test_f.read(2) == b'BZ'
 
 def parse_FASTA_sequences( genome_file , dirname ):
-    '''Takes FASTA genome file name, parses individual sequences and 
-       saves them in multiple files in named directory.
+    '''Takes a FASTA genome file name, which might be GZIP-compressed,
+       parses individual sequences and saves them in multiple files in named directory.
        Returns: list of successfully parsed sequence names'''
 
     seq_names = []
-    try:
-        file = open(genome_file)
-    except OSError as error:
-        print("# ERROR: cannot open/read file:", genome_file, error)
-        return num_seqs
+
+    if(_is_gz_file(genome_file) == True):
+        try:
+            file = gzip.open(genome_file,'rt')
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", genome_file, error)
+            return num_seqs
+    elif(_is_bz2_file(genome_file) == True):
+        try:
+            file = bz2.open(genome_file,'rt')
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", genome_file, error)
+            return num_seqs
+    else:
+        try:
+            file = open(genome_file)
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", genome_file, error)
+            return num_seqs
 
     seq_filepath = ''
     prev_filepath = ''
@@ -158,7 +181,7 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
         print("# ERROR: cannot create file ", log_filepath, error)
 
     cmd = red_exe + \
-            ' -cor '+ cores + \
+            ' -cor '+ str(cores) + \
             ' -frm 3'+ \
             ' -gnm ' + gnmdirname + \
             ' -rpt ' + rptdirname 

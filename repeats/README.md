@@ -49,13 +49,14 @@ for large genomes you will need 20-40 GB of RAM to run Red (see below):
 The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, 
 such as the library nrTEplants. The script does not load the resulting annotations in a core db just yet:
 ```
-# produce annotation report
-./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4
+# produce annotation report and save BED file with repeats
+./AnnotRedRepeats.py files/nrTEplantsJune2020.fna Brachypodium_distachyon --cor 4 \
+	--bed_file Brachypodium_distachyon.repeats.bed
 
-# add annotated repeats to core db
-./AnnotRedRepeats.py nrTEplantsJune2020.fna Camelina_sativa --exe /path/to/minimap2 --cor 4 \
+# add annotated repeats to Ensembl core db and use a different minimap2 binary
+./AnnotRedRepeats.py files/nrTEplantsJune2020.fna Brachypodium_distachyon --exe /path/to/minimap2 --cor 4 \
     --host pl1 --user xyz --pw XYZ \
-    --port 123 --db camelina_sativa_core_50_103_1
+    --port 123 --db brachypodium_distachyon_core_49_102
 ```
 
 Annotation reports look like this:

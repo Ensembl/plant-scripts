@@ -3,3 +3,4 @@ requires 'JSON::XS';
 requires 'HTTP::Tiny';
 requires 'DBI';
 requires 'DBD::mysql';
+requires 'Archive::Zip';

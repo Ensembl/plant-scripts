@@ -415,7 +415,7 @@ def main():
     parser.add_argument("fasta_file",
         help="path to FASTA file with top-level genomic sequences")
     parser.add_argument("outdir",
-        help="path to directory to store Red results")
+        help="path to directory to store Red temp results")
     parser.add_argument("--exe", default="Red",
         help="path to Red executable, default: Red")
     parser.add_argument("--cor", default=1,

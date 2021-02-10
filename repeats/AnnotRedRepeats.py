@@ -129,7 +129,9 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
 
 def format_reference_minimap( miniexe, cores, fasta_file, outdir):
     '''Takes FASTA library and formats it with minimap2.
-       Returns name of formatted library file.'''
+       Returns name of formatted library file.
+       If fasta_file matches previous jobs, the previous indexed library is used;
+       otherwise, a new library is formatted and previous sorted mappings removed'''
 
     # output for nrTEplantsJune2020.fna (708MB) -> requires 3.7GB RAM
 	#[M::main::44.595*0.98] loaded/built the index for 171104 target sequence(s)
@@ -150,14 +152,26 @@ def format_reference_minimap( miniexe, cores, fasta_file, outdir):
         except OSError as error:
             print("# ERROR: cannot open/read file ", log_filepath, error)
 
+        samelib = False
         for line in logfile:
+            # make sure this library is the same indexed earlier
+            
+            cmdre = re.search(os.path.basename(fasta_file), line)
+            if cmdre:
+                samelib = True
+
             # jobs might die due insufficient RAM; make sure
             # they completed by checking the final memory report
             ramre = re.search(r'Peak RSS+', line)
-            if ramre:
+            if ramre: samelib:
                 print("# re-using previously formatted repeat library ", 
                     formatted_filename)
                 return formatted_filename
+
+    # remove previous mappings, as this is a different repeat library
+    sorted_filename = os.path.join(outdir, 'repeat_mappings.sort.paf')
+	if os.path.exists(sorted_filename):
+		  os.remove(sorted_filename)
 
     # open new log file
     try:
@@ -465,9 +479,6 @@ def make_annotation_report( map_filename, log_filename,
             if verbose:
                 print("# %s %s %d %d %d" % 
                     (paf[0], paf[5], start, end, annotlen))
- 
-        #else: 
-        #     print(">>> %s %s %d %d %d" % (paf[0], paf[5], start, end, annotlen))
 
     mapfile.close()
 

@@ -10,37 +10,24 @@ Annotated repeats are imported with logic_name='repeatdetector_annotated'.
 
 ## Dependencies
 
-Binaries: 
+The following dependencies can be installed in the parent folder with:
 
-* g++-8
+    make install_repeats
 
-* A clone of Red from https://github.com/EnsemblGenomes/Red ; the original repo is [here](https://github.com/BioinformaticsToolsmith/Red)
+There are two binaries, for which the GNU C++ compiler v8 is needed (g++-8):
+
+* A clone of Red from https://github.com/EnsemblGenomes/Red (the original repo is [here](https://github.com/BioinformaticsToolsmith/Red))
 
 * A clone of minimap2 from https://github.com/lh3/minimap2
 
-* A copy of the [nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2)
+* A copy of the [nrTEplants library](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2)
 
-Python3 modules:
+Plus three Python3 modules:
 
 * [sqlalchemy](https://pypi.org/project/SQLAlchemy)
 * [sqlalchemy_utils](https://pypi.org/project/SQLAlchemy-Utils)
 * [pymysql](https://pypi.org/project/PyMySQL)
 
-which can be installed with: 
-```
-git clone https://github.com/EnsemblGenomes/Red.git
-cd Red/src_2.0 && make bin && make
-cd ..
-
-git clone https://github.com/lh3/minimap2.git
-cd minimap2 && make
-cd ..
-
-wget -c https://github.com/Ensembl/plant_tools/releases/download/Jun2020/nrTEplantsJune2020.fna.bz2
-bunzip2 /nrTEplantsJune2020.fna.bz2
-
-python3 -m pip install sqlalchemy sqlalchemy_utils PyMySQL
-```
 
 ## Examples
 

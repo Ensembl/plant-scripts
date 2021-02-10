@@ -7,9 +7,7 @@
 # pyenv local 3.7.6
 # pip install --user sqlalchemy_utils pymysql
 # 
-# Bruno Contreras Moreira EBI-EMBL 2020
-#
-# See https://www.ebi.ac.uk/seqdb/confluence/display/EnsGen/Repeat+masking+with+Red
+# Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 import argparse
 import os
@@ -49,8 +47,9 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
         try:
             synfile = open(synpath)
         except OSError as error:
-            print("# WARNING: cannot find synonyms file, will use real names")
-        else:    
+            print("# INFO: cannot find synonyms file, will use real names")
+        else:
+            print("# INFO: will use real and synonym sequence names")
             for line in synfile:
                 synre = re.search(r'^(\S+)\t(\d+)', line)
                 if synre:
@@ -166,7 +165,7 @@ def format_reference_minimap( miniexe, cores, fasta_file, outdir):
     except OSError as error:
         print("# ERROR: cannot create file ", log_filepath, error)
 
-    cmd = miniexe + ' -t ' + cores + ' --idx-no-seq -d '\
+    cmd = miniexe + ' -t ' + str(cores) + ' --idx-no-seq -d '\
         + formatted_filename + ' ' + fasta_file
 																	
     # check minimap2 binary
@@ -326,7 +325,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     cmd = miniexe + \
             ' -K100M --score-N 0 ' +\
             ' -x map-ont ' +\
-            ' -t '+ cores + ' ' +\
+            ' -t '+ str(cores) + ' ' +\
             lib_filename + ' ' +\
             fasta_filename
 
@@ -371,7 +370,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
 
 def make_annotation_report( map_filename, log_filename, 
-    minlen, verbose=False):
+    minlen, bed_filename, verbose=False):
     '''Parses file with sorted mappings and print repeat annotation stats.
        Only alignments > minlen are considered.
        Returns dictionary with actual mapped repeat segment coords (tuple)
@@ -705,6 +704,8 @@ def main():
         help="number of cores for minimap2, default: 1")
     parser.add_argument("--minlen", default=90,
         help="min length of repeats to be annotated, default: 90bp")
+    parser.add_argument("--bed_file", default='',
+        help="name of output BED file with annotated repeats")
     parser.add_argument("--host",
         help="name of the database host")
     parser.add_argument("--user",
@@ -752,7 +753,7 @@ def main():
     print("# mapped repeats: ", map_filename)
 
     matched_repeats = make_annotation_report( map_filename,\
-        log_filepath,int(args.minlen))
+        log_filepath,int(args.minlen), args-bed_file)
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:

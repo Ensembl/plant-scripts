@@ -381,6 +381,13 @@ def make_annotation_report( map_filename, log_filename,
     annotated_length = 0
     stats = {}
 
+    if bed_filename:
+        try:
+            outbedfile = open(bed_filename, 'w')
+        except OSError as error:
+            print("# ERROR: cannot create file ", bed_filename, error)
+            return {}
+
     try:
         mapfile = open(map_filename)
     except OSError as error:
@@ -390,7 +397,7 @@ def make_annotation_report( map_filename, log_filename,
     for line in mapfile:
         paf = line.split("\t") 
         # See https://github.com/lh3/miniasm/blob/master/PAF.md
-        #  0 : masked seq_region
+        #  0 : masked seq_region 4:10002757:10003010
         #  2 : 0-based start coord of seq_region
         #  3 : 0-based, exclusive end coord of seq_region
         #  5 : repeat name (ie RLG_159077:mipsREdat_9.3p_ALL#LTR/Gypsy)
@@ -430,10 +437,17 @@ def make_annotation_report( map_filename, log_filename,
                     continue
 
             # record actual annotated repeated segment
-            # Note: using Ensembl 1-based exclusive format
             repeat_coords = line.split(":")
-            repeat_coords[1] = int(repeat_coords[1]) + start + 1
+            repeat_coords[1] = int(repeat_coords[1]) + start
             repeat_coords[2] = repeat_coords[1] + (end-start) + 1
+
+            # BED output
+            if bed_filename:
+                outbedfile.write("%s\t%d\t%d\t%s\n" % 
+                    (repeat_coords[0],repeat_coords[1],repeat_coords[2],paf[5]))
+
+            # Ensembl 1-based exclusive format
+            repeat_coords[1] = repeat_coords[1] + 1
 
             matched_repeats[ (repeat_coords[0], repeat_coords[1], repeat_coords[2]) ] = \
                 (paf[5], int(paf[7])+1, int(paf[8])+1)
@@ -456,6 +470,10 @@ def make_annotation_report( map_filename, log_filename,
         #     print(">>> %s %s %d %d %d" % (paf[0], paf[5], start, end, annotlen))
 
     mapfile.close()
+
+    if bed_filename:
+        outbedfile.close()
+        print("# BED file with annotated repeats: %s\n\n" % bed_filename)
 
     # fetch summary from log and print it with annotation stats
     try:
@@ -756,7 +774,7 @@ def main():
     print("# mapped repeats: ", map_filename)
 
     matched_repeats = make_annotation_report( map_filename,\
-        log_filepath,int(args.minlen), args-bed_file)
+        log_filepath,int(args.minlen), args.bed_file)
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:

@@ -182,7 +182,8 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
 
     cmd = red_exe + \
             ' -cor '+ str(cores) + \
-            ' -frm 3'+ \
+            ' -msk ' + rptdirname + \
+            ' -frm 3' + \
             ' -gnm ' + gnmdirname + \
             ' -rpt ' + rptdirname 
 

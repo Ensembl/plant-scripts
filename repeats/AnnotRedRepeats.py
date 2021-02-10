@@ -475,6 +475,7 @@ def make_annotation_report( map_filename, log_filename,
     logfile.close()
 
     # print repeat class stats
+    print("class\tbp")
     for repclass in sorted(stats.keys()): 
         print("%s\t%d" %
             (repclass, stats[repclass]))
@@ -692,14 +693,16 @@ def store_annotated_repeat_database( workdir, matched_repeats,
 
 def main():
 
+    default_exe = os.path.join( os.path.dirname(__file__) , "../files/minimap2/minimap2")
+
     parser=argparse.ArgumentParser()
    
     parser.add_argument("repeat_fasta_file",
         help="path to FASTA file with repeat sequences in RepBase format")
     parser.add_argument("outdir",
         help="path to directory with stored Red results")
-    parser.add_argument("--exe", default="minimap2",
-        help="path to minimap2 executable, default: minimap2")
+    parser.add_argument("--exe", default=default_exe,
+        help="path to minimap2 executable, default: " + default_exe)
     parser.add_argument("--cor", default=1,
         help="number of cores for minimap2, default: 1")
     parser.add_argument("--minlen", default=90,

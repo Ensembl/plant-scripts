@@ -19,7 +19,12 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
 
 ## Repeat masking and annotation
 
-See dependencies, examples and documentation in folder [repeats](./repeats/).
+See examples and documentation in folder [repeats](./repeats/).
+
+If you plant to annotate repeats your must first 
+
+    make install_repeats
+
 
 ## List of recipes
 

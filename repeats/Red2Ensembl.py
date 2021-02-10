@@ -410,14 +410,16 @@ def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_conse
 
 def main():
 
+    default_exe = os.path.join( os.path.dirname(__file__) , "../files/Red/bin/Red")
+
     parser=argparse.ArgumentParser()
-    
+   
     parser.add_argument("fasta_file",
         help="path to FASTA file with top-level genomic sequences")
     parser.add_argument("outdir",
         help="path to directory to store Red temp results")
-    parser.add_argument("--exe", default="Red",
-        help="path to Red executable, default: Red")
+    parser.add_argument("--exe", default=default_exe,
+        help="path to Red executable, default: " + default_exe)
     parser.add_argument("--cor", default=1,
         help="number of cores for Red, default: 1")
     parser.add_argument("--msk_file", default='',

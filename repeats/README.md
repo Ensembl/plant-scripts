@@ -30,11 +30,13 @@ Plus three Python3 modules:
 ## Examples
 
 Note that the input FASTA file can be GZIP/BZIP2 compressed; 
-for large genomes you will need 20-40 GB of RAM to run Red (see below):
+for large genomes you will need 20-40 GB of RAM to run Red (see below).
+
+### i) Masking
 
 ```
 # test run, saves results in folder 'test_Atha_chr4' 
-./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --exe /path/to/Red
+./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 
 
 # real example, with several chromosomes, 4 cores and saved masked sequences
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
@@ -46,12 +48,17 @@ for large genomes you will need 20-40 GB of RAM to run Red (see below):
 	--port 123 --db brachypodium_distachyon_core_49_102
 ```
 
+### ii) Annotating masked repeated sequences
+
 The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, 
-such as the library nrTEplants. The script does not load the resulting annotations in a core db just yet:
+such as the library **nrTEplants**. The script does not load the resulting annotations in a core db just yet:
 ```
-# produce annotation report and save BED file with repeats
+# test run, re-uses folder 'test_Atha_chr4'
+./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
+
+# consider only repeats with length >= 200 bp
 ./AnnotRedRepeats.py files/nrTEplantsJune2020.fna Brachypodium_distachyon --cor 4 \
-	--bed_file Brachypodium_distachyon.repeats.bed
+	--minlen 200
 
 # add annotated repeats to Ensembl core db and use a different minimap2 binary
 ./AnnotRedRepeats.py files/nrTEplantsJune2020.fna Brachypodium_distachyon --exe /path/to/minimap2 --cor 4 \
@@ -59,7 +66,26 @@ such as the library nrTEplants. The script does not load the resulting annotatio
     --port 123 --db brachypodium_distachyon_core_49_102
 ```
 
-Annotation reports look like this:
+Note that any FASTA file can be used to annotate the repeats. For instance, repeats preannotated
+in Ensembl can be used:
+```
+./get_repeats_ensembl.sh arabidopsis_thaliana
+
+./AnnotRedRepeats.py arabidopsis_thaliana.repeats.nondeg.fasta test_Atha_chr4 --bed_file test.ensembl.bed
+```
+
+
+
+## Annotation summary 
+
+If a library such as nrTEplants or any other RepBase-formatted is used, 
+an annotation report like this is produced. These are valid examples of FASTA headers:
+
+    >TEdenovo-B-R2315-Map11:repetDB.Mar2020#TIR @Brassica_rapa [S:]
+	>AT1TE94285:TAIR10_TE#DNA/MuDR @Arabidopsis_thaliana [S:]
+
+The repeat classification is then parse to produce a report like this:
+
 ```
 # FASTA file with repeat sequences (length>90): Camelina_sativa/annot/Red_repeats.fna
 

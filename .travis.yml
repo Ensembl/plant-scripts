@@ -10,7 +10,7 @@ before_install:
   - "sudo apt-get install -y wget python3 mysql-client libmysqlclient-dev"
   - "sudo apt-get install -y r-base
   - "cpanm --sudo -v --installdeps --notest --cpanfile files/cpanfile ."
-  - "sudo pip install requests sqlalchemy sqlalchemy_utils PyMySQL"
+  - "pip install --user -r files/pythonlist"
 
 before_script:
   # uncomment next line to install biomaRt R package, takes several minutes

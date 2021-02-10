@@ -111,5 +111,7 @@ rRNA    2667
 
 ## Runtime and RAM requirements
 
-![Plant species tree](./files/runtime_ram.png)
+These data were measured on a CentOS7.9 computer using 4 cores of a Xeon E5-2620 v4 (2.10GHz) CPU.
+
+![](../files/runtime_ram.png)
 

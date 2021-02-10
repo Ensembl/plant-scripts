@@ -20,6 +20,8 @@ install_repeats:
 test_repeats:
 	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
 
-clean_repeats:
+uninstall_repeats:
 	cd files && rm -rf Red minimap2 nrTEplantsJune2020.fna*
-	cd repeats %% rm -rf test_Atha_chr4 Atha.sm.fna test.bed
+
+clean_repeats:
+	cd repeats && rm -rf test_Atha_chr4 Atha.sm.fna test.bed

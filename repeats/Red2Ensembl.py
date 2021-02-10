@@ -158,6 +158,40 @@ def _parse_rptfiles_from_log( log_filename ):
     else:
         return []
 
+def _parse_mskfiles_from_log( log_filename ):
+    '''Parses Red stdout log and returns a list with
+       the names of soft-masked files'''
+
+    msk_files = []
+
+    try:
+       logfile = open(log_filename)
+    except OSError as error:
+       print("# ERROR: cannot open/read file:", log_filename, error)
+       return rpt_files
+
+    job_done = False
+    mask_ok = True
+    for line in logfile:
+        repeats = re.search(r'masked sequence to: (\S+)', line)
+        if repeats:
+            rpt_filename = repeats.group(1)
+            if not(os.path.isfile(rpt_filename)):
+                repeats_ok = False
+                break
+            else:
+                msk_files.append(rpt_filename)
+        else: # last line in log
+            summary = re.search(r'Genome length: \d+', line)
+            if summary:
+                job_done = True
+
+    logfile.close
+
+    if mask_ok and job_done:
+        return msk_files
+    else:
+        return []
 
 def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
     '''Calls Red, waits for job completion and logs stdout.
@@ -199,6 +233,9 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
         print("# ERROR: cannot run Red ", err.returncode)
     finally:
         logfile.close()
+
+    
+
 
     # parse log and capture repeat filenames
     rpt_files = _parse_rptfiles_from_log(log_filepath)

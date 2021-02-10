@@ -69,6 +69,7 @@ Annotation reports look like this:
 # mapped repeats:  Camelina_sativa/annot/repeat_mappings.sort.paf
 # Genome length: 641355730 Repeated content: 230739085 36.0% Annotated: 42633901 6.6%
 
+class	bp
 Crypton 580
 DIRS    222132
 DNA     456403

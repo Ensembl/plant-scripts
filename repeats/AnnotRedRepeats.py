@@ -163,15 +163,15 @@ def format_reference_minimap( miniexe, cores, fasta_file, outdir):
             # jobs might die due insufficient RAM; make sure
             # they completed by checking the final memory report
             ramre = re.search(r'Peak RSS+', line)
-            if ramre: samelib:
+            if ramre and samelib:
                 print("# re-using previously formatted repeat library ", 
                     formatted_filename)
                 return formatted_filename
 
     # remove previous mappings, as this is a different repeat library
     sorted_filename = os.path.join(outdir, 'repeat_mappings.sort.paf')
-	if os.path.exists(sorted_filename):
-		  os.remove(sorted_filename)
+    if os.path.exists(sorted_filename):
+        os.remove(sorted_filename)
 
     # open new log file
     try:

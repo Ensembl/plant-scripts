@@ -36,16 +36,14 @@ for large genomes you will need 20-40 GB of RAM to run Red (see below).
 
 ```
 # test run, saves results in folder 'test_Atha_chr4' 
-./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 
+./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna 
 
-# real example, with several chromosomes, 4 cores and saved masked sequences
-./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
-	--exe /path/to/Red --cor 4 --msk_file 
+# real example, with several chromosomes, taking 4 CPU cores 
+./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon --cor 4 
 
 # local run & loading repeats in core Ensembl db
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
-	--exe /path/to/Red --cor 4 --host pl1 --user xyz --pw XYZ \
-	--port 123 --db brachypodium_distachyon_core_49_102
+	--host pl1 --user xyz --pw XYZ --port 123 --db brachypodium_distachyon_core_49_102
 ```
 
 ### ii) Annotating masked repeated sequences

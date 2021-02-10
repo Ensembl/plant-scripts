@@ -493,10 +493,10 @@ def make_annotation_report( map_filename, log_filename,
     logfile.close()
 
     # print repeat class stats
-    print("class\tbp")
-    for repclass in sorted(stats.keys()): 
-        print("%s\t%d" %
-            (repclass, stats[repclass]))
+    if stats:
+        print("class\tbp")
+        for repclass in sorted(stats.keys()): 
+            print("%s\t%d" % (repclass, stats[repclass]))
 
     return matched_repeats 
 

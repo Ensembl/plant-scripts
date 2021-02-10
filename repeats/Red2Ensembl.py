@@ -193,7 +193,7 @@ def _parse_mskfiles_from_log( log_filename ):
     else:
         return []
 
-def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
+def run_red( red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepath):
     '''Calls Red, waits for job completion and logs stdout.
        Returns list of TSV repeat filenames.
        If repeat outfiles are in place then Red is skipped.
@@ -234,8 +234,15 @@ def run_red( red_exe, cores, gnmdirname, rptdirname, log_filepath):
     finally:
         logfile.close()
 
-    
-
+    # merge masked chromosomes if requested
+    if outmskfilename:
+        msk_files = _parse_mskfiles_from_log(log_filepath)
+        with open(outmskfilename, 'w') as outmskfile:
+            for fname in msk_files:
+                with open(fname) as infile:
+                    for line in infile:
+                        outmskfile.write(line)
+        print("# FASTA file with soft-masked sequences: %s" % (outmskfilename))
 
     # parse log and capture repeat filenames
     rpt_files = _parse_rptfiles_from_log(log_filepath)
@@ -413,6 +420,8 @@ def main():
         help="path to Red executable, default: Red")
     parser.add_argument("--cor", default=1,
         help="number of cores for Red, default: 1")
+    parser.add_argument("--msk_file", default='',
+        help="name of output FASTA file with soft-masked sequences")
     parser.add_argument("--host",
         help="name of the database host, required to store repeats in Ensembl core")
     parser.add_argument("--user",
@@ -428,7 +437,7 @@ def main():
 
     args = parser.parse_args()
 
-    # create output directory and subdirs if required,
+    # create output directory & subdirs if required,
     # these follow Red nomenclature
     gnmdir = args.outdir
     rptdir = os.path.join(args.outdir, 'rpt')
@@ -454,7 +463,7 @@ def main():
     # run Red, or else re-use previous results
     print("# running Red")
     repeat_filenames = run_red( args.exe, args.cor, \
-	    gnmdir, rptdir, log_filepath) 
+	    args.msk_file, gnmdir, rptdir, log_filepath) 
     print("# TSV files with repeat coords: %s\n\n" % rptdir)
 
     # (optionally) store repeat features in core database

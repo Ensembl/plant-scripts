@@ -17,9 +17,7 @@ The following dependencies can be installed in the parent folder with:
 There are two binaries, for which the GNU C++ compiler v8 is needed (g++-8):
 
 * A clone of Red from https://github.com/EnsemblGenomes/Red (the original repo is [here](https://github.com/BioinformaticsToolsmith/Red))
-
 * A clone of minimap2 from https://github.com/lh3/minimap2
-
 * A copy of the [nrTEplants library](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2)
 
 Plus three Python3 modules:
@@ -31,16 +29,19 @@ Plus three Python3 modules:
 
 ## Examples
 
-For large genomes such as barley or wheat you will need a large amount of RAM (~20GB) to run Red:
-
+For large genomes such as barley or wheat you will need a large amount of RAM (~20GB) to run Red (see belowe):
 ```
-# local run, saves results in folder 'Camelina_sativa' 
-./Red2Ensembl.py Camelina_sativa.Cs.dna.toplevel.fa Camelina_sativa --exe /path/to/Red --cor 4 
+# test run, saves results in folder 'test_Atha_chr4' 
+./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --exe /path/to/Red
 
-# local run & loading repeats in core db
+# real example, with several chromosomes, 4 cores and saved masked sequences
+./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
+	--exe /path/to/Red --cor 4 --msk_file 
+
+# local run & loading repeats in core Ensembl db
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
 	--exe /path/to/Red --cor 4 --host pl1 --user xyz --pw XYZ \
-	--port 123 --db brachypodium_distachyon_core_49_102_4
+	--port 123 --db brachypodium_distachyon_core_49_102
 ```
 
 The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, 
@@ -106,3 +107,8 @@ Unclassified    2676694
 nonLTR  101
 rRNA    2667
 ```
+
+## Runtime and RAM requirements
+
+![Plant species tree](./files/runtime_ram.png)
+

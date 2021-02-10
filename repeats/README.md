@@ -5,7 +5,7 @@ and the curated library of repeats
 [nrTEplants](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2),
 described [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
 
-Optionally Red repeats can be loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. 
+Optionally, repeats can be loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. 
 Annotated repeats are imported with logic_name='repeatdetector_annotated'.
 
 ## Dependencies
@@ -29,7 +29,8 @@ Plus three Python3 modules:
 
 ## Examples
 
-For large genomes you will need 20-40 GB of RAM to run Red (see below):
+Note that the input FASTA file can be GZIP/BZIP2 compressed; 
+for large genomes you will need 20-40 GB of RAM to run Red (see below):
 
 ```
 # test run, saves results in folder 'test_Atha_chr4' 

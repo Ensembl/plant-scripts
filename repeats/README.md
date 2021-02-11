@@ -68,10 +68,15 @@ such as the library **nrTEplants**. The script does not load the resulting annot
     --port 123 --db brachypodium_distachyon_core_49_102
 ```
 
-Note that any FASTA file can be used to annotate the repeats. For instance, repeats preannotated
-in Ensembl can be used:
+Note that any FASTA file can be used to annotate the repeats. For instance, repeats annotated
+in current species in Ensembl can be retrieved and used as well:
 ```
 ./get_repeats_ensembl.sh arabidopsis_thaliana
+
+# This will produce file: arabidopsis_thaliana.repeats.nondeg.fasta
+
+# Note this file can be highly redundant; redundancy can be eliminated with linclust,
+# see https://github.com/soedinglab/MMseqs2
 
 ./AnnotRedRepeats.py arabidopsis_thaliana.repeats.nondeg.fasta test_Atha_chr4 --bed_file test.ensembl.bed
 ```

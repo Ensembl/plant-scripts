@@ -21,7 +21,7 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
 
 See examples and documentation in folder [repeats](./repeats/).
 
-If you plant to annotate repeats you must first: 
+If you want to annotate repeats you must first run: 
 
     make install_repeats
 

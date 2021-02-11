@@ -18,14 +18,18 @@ There are two binaries, for which the GNU C++ compiler v8 is needed (g++-8):
 
 * A clone of Red from https://github.com/EnsemblGenomes/Red (the original repo is [here](https://github.com/BioinformaticsToolsmith/Red))
 * A clone of minimap2 from https://github.com/lh3/minimap2
+
+Plus:
+
 * A copy of the [nrTEplants library](https://github.com/Ensembl/plant_tools/releases/download/v0.3/nrTEplantsJune2020.fna.bz2)
 
-Plus three Python3 modules:
+And three Python3 modules:
 
 * [sqlalchemy](https://pypi.org/project/SQLAlchemy)
 * [sqlalchemy_utils](https://pypi.org/project/SQLAlchemy-Utils)
 * [pymysql](https://pypi.org/project/PyMySQL)
 
+Note that script [get_repeats_ensembl.sh](./get_repeats_ensembl.sh) has some more dependencies listed at its header.
 
 ## Examples
 

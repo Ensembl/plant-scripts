@@ -83,6 +83,7 @@ exampleREST:## R8) Check consequences of SNP within CDS sequence
 exampleREST:## R9) Retrieve variation sources of a species
 exampleREST:## R10) Get soft-masked upstream sequence of gene in otherfeatures track
 exampleREST:## R11) Get all species under a given taxonomy clade
+exampleREST:## R12) transfer coordinates across genome alignments between species
 
 exampleVEP.sh:## V1) Download, install and update VEP
 exampleVEP.sh:## V2) Unpack downloaded cache file & check SIFT support 

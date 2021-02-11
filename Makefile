@@ -8,11 +8,15 @@ clean:
 	rm -f plants_species-tree*.nh
 	rm -f oryza_sativa*
 
-installR:
+install_REST:
+	cd files && cpanm --installdeps --notest --cpanfile cpanfileREST .
+	cd files && pip install --user requests
+
+install_biomart_r:
 	Rscript install_R_deps.R
 
-install_ensembl_api:
-	cd files && cpanm --installdeps --notest --cpanfile cpanfile .
+install_ensembl:
+	cd files && cpanm --installdeps --notest --cpanfile cpanfileEnsembl .
 	cd files && git clone https://github.com/Ensembl/ensembl.git
 	cd files && git clone https://github.com/Ensembl/ensembl-variation.git
 	cd files && git clone https://github.com/Ensembl/ensembl-funcgen.git

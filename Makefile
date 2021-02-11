@@ -11,6 +11,14 @@ clean:
 installR:
 	Rscript install_R_deps.R
 
+install_ensembl_api:
+	cd files && git clone https://github.com/Ensembl/ensembl.git
+	cd files && git clone https://github.com/Ensembl/ensembl-variation.git
+	cd files && git clone https://github.com/Ensembl/ensembl-funcgen.git
+	cd files && git clone https://github.com/Ensembl/ensembl-compara.git
+	cd files && git clone https://github.com/Ensembl/ensembl-metadata.git
+	cd files && git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git
+
 install_repeats:
 	pip install --user -r files/pythonlist
 	cd files && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make

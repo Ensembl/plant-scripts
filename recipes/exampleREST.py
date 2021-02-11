@@ -317,6 +317,34 @@ def get_masked_upstream_otherfeatures(gene,species,upstream_window):
             (gene, up_data['desc'], up_data['seq']))
 
 
+def transfer_coords_genome_alignments(interval,species,target_species,method='LASTZ_NET'):
+    '''Transfer coordinates across genome alignments between species.
+       See all options at http://rest.ensembl.org/documentation/info/genomic_alignment_region
+       Note1: there might be more than one target regions for the same input interval
+       Note2: not all species have the same alignments computed'''
+
+    ext = ("/alignment/region/" + species + "/" + interval + "?content-type=application/json;" +
+            "compara=plants;method=" + method + ";species_set=" + species +
+            ";species_set=" + target_species)
+
+    coord_sets = get_json(ext)
+
+    for set in coord_sets:
+        print("%s\t%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%s\t%s" % ( 
+            set['alignments'][0]['species'],
+            set['alignments'][0]['seq_region'],
+            set['alignments'][0]['start'],
+            set['alignments'][0]['end'],
+            set['alignments'][0]['strand'],
+            set['alignments'][1]['species'],
+            set['alignments'][1]['seq_region'],
+            set['alignments'][1]['start'],
+            set['alignments'][1]['end'],
+            set['alignments'][1]['strand'],
+            set['alignments'][0]['seq'],
+            set['alignments'][1]['seq'] ))
+
+
 
 #======================================== 
 #Main
@@ -382,9 +410,9 @@ get_variation_sources(species)
 # Note: otherfeatures databases hold alternative gene models
 # and cannot be accessed through biomart
 
-gene = 'LOC_Os01g01010';
-species = 'oryza_sativa';
-upstream_window = 1000;
+gene = 'LOC_Os01g01010'
+species = 'oryza_sativa'
+upstream_window = 1000
 
 get_masked_upstream_otherfeatures(gene,species,upstream_window)
 
@@ -392,4 +420,11 @@ get_masked_upstream_otherfeatures(gene,species,upstream_window)
 taxonomy_clade = '71274' # or taxonomy_clade = 'Asteridae' 
 show_species_in_clade(taxonomy_clade) #function call
 
+## R12) transfer coordinates across genome alignments between species
 
+species = 'triticum_turgidum'
+target_species = 'triticum_aestivum'
+genome_intervals = [ '3B:2585940-2634711' ]
+
+for intv in genome_intervals:
+    transfer_coords_genome_alignments(intv,species,target_species)

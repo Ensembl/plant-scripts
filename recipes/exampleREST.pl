@@ -439,7 +439,7 @@ foreach my $intv (@genome_intervals) {
 
 	for my $set (@{$coord_sets}) {
 		printf("%s\t%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%s\t%s\n",
-	        $set->{alignments}[0]{species},
+			$set->{alignments}[0]{species},
 			$set->{alignments}[0]{seq_region},
 			$set->{alignments}[0]{start},
 			$set->{alignments}[0]{end},

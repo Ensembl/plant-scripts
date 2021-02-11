@@ -345,21 +345,52 @@ url = paste(
 	}
 
 
-## R10) Fetch species for a taxonomy clade
+## R11) Fetch species for a taxonomy clade
 
 taxonomy_clade = '71274'; # or taxonomy_clade = 'Asteridae'
 
 url = paste(
-                paste(server, 'info/genomes/taxonomy', taxonomy_clade, sep="/"),
-                "content-type=application/json",
-                sep="?")
+	paste(server, 'info/genomes/taxonomy', taxonomy_clade, sep="/"),
+	"content-type=application/json",
+	sep="?")
 
 tax_data = call_endpoint(url,"application/json")
 
 for (row in 1:nrow(tax_data)){
-    name      = (tax_data[[row, 'display_name']])
-    tax_id    = (tax_data[[row, 'taxonomy_id']])
-    accession = (tax_data[[row, 'assembly_accession']])
+	name      = (tax_data[[row, 'display_name']])
+	tax_id    = (tax_data[[row, 'taxonomy_id']])
+	accession = (tax_data[[row, 'assembly_accession']])
 
-    print (paste (name,tax_id, accession, sep="   "))
+	print (paste (name,tax_id, accession, sep="   "))
+}
+
+## R12) transfer coordinates across genome alignments between species
+
+# see all options at http://rest.ensembl.org/documentation/info/genomic_alignment_region
+#
+# Note1: there might be more than one target regions for the same input interval
+# Note2: not all species have the same alignments computed
+
+species = 'triticum_turgidum'
+target_species = 'triticum_aestivum'
+genome_intervals = list( '3B:2585940-2634711' )
+method = 'LASTZ_NET'
+
+for (intv in genome_intervals) {
+
+	url = paste(
+		paste(server, 'alignment/region', species, intv, sep="/"),
+		"?",
+		"content-type=application/json;",
+		"compara=plants;",
+		"method=",method,";",
+		"species_set=",species,";",
+		"species_set=",target_species,";",
+		sep='')
+
+	coord_sets = call_endpoint(url,"application/json")
+
+	for (row in 1:nrow(coord_sets)){
+		print(coord_sets[row, 'alignments'])
+	}
 }

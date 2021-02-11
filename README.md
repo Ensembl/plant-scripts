@@ -113,7 +113,7 @@ As listed in [cpanfile](./files/cpanfile), several modules are required for the 
 
 The dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip, full documentation at https://github.com/Ensembl/ensembl-vep), together with those used by recipes using the Ensembl Perl API, can be installed with
 
-   make install_ensembl
+    make install_ensembl
 
 Ensembl API installation instructions can be found [here](http://plants.ensembl.org/info/docs/api/api_installation.html), or if you use git [here](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). Note that your local Ensembl API should match the version of the current Ensembl release.
 

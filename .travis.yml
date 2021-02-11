@@ -10,10 +10,9 @@ before_install:
   - "sudo apt-get install -y wget python3 mysql-client libmysqlclient-dev g++-8 bedtools r-base"
   - "cpanm --sudo -v --installdeps --notest --cpanfile files/cpanfile ."
   - "pip install --user -r files/pythonlist"
+  - "make install_repeats"
 
 before_script:
-  # uncomment next line to install biomaRt R package, takes several minutes
-  #- "make install"
   - git clone https://github.com/Ensembl/ensembl.git
   - git clone https://github.com/Ensembl/ensembl-variation.git
   - git clone https://github.com/Ensembl/ensembl-funcgen.git
@@ -30,6 +29,7 @@ before_script:
 
 script:
   - "make test"
+  - "make test_repeats"
 
 notifications:
   email:

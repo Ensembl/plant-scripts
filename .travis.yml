@@ -1,9 +1,9 @@
 # removed as test_demo depends on too many dependencies
 os: linux
-dist: bionic
+dist: focal
 language: perl
 perl:
-  - "5.26"
+  - "5.30"
 
 before_install:
   - "sudo apt-get update"

@@ -13,12 +13,14 @@ before_install:
   - "cpanm --sudo -v --installdeps --notest --cpanfile files/cpanfileREST ."
   # Ensembl
   - "cpanm --sudo -v --installdeps --notest --cpanfile files/cpanfileEnsembl ."
-  - "cd files && git clone https://github.com/Ensembl/ensembl.git"
-  - "cd files && git clone https://github.com/Ensembl/ensembl-variation.git"
-  - "cd files && git clone https://github.com/Ensembl/ensembl-funcgen.git"
-  - "cd files && git clone https://github.com/Ensembl/ensembl-compara.git"
-  - "cd files && git clone https://github.com/Ensembl/ensembl-metadata.git"
-  - "cd files && git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git"
+  - "cd files"
+  - "git clone https://github.com/Ensembl/ensembl.git"
+  - "git clone https://github.com/Ensembl/ensembl-variation.git"
+  - "git clone https://github.com/Ensembl/ensembl-funcgen.git"
+  - "git clone https://github.com/Ensembl/ensembl-compara.git"
+  - "git clone https://github.com/Ensembl/ensembl-metadata.git"
+  - "git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git"
+  - "cd .."
   - "make install_repeats"
 
 #before_script:

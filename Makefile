@@ -12,6 +12,7 @@ installR:
 	Rscript install_R_deps.R
 
 install_ensembl_api:
+	cd files && cpanm --installdeps --notest --cpanfile cpanfile .
 	cd files && git clone https://github.com/Ensembl/ensembl.git
 	cd files && git clone https://github.com/Ensembl/ensembl-variation.git
 	cd files && git clone https://github.com/Ensembl/ensembl-funcgen.git

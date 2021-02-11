@@ -7,7 +7,7 @@ perl:
 
 before_install:
   - "sudo apt-get update"
-  - "sudo apt-get install -y wget python3 python3-pip mysql-client libmysqlclient-dev g++-8 bedtools r-base"
+  - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev g++-8 bedtools r-base"
   - "make install_REST"
   - "make install_ensembl"
   - "make install_repeats"

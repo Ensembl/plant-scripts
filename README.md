@@ -107,7 +107,9 @@ The examples for SQL queries to Ensembl Genomes database servers require the [My
 
 #### Perl
 
-As listed in [cpanfile](./files/cpanfile), several modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). You can install them with
+As listed in [cpanfile](./files/cpanfile), several modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). 
+
+Provided you have [cpanm](https://metacpan.org/pod/App::cpanminus) installed on your system, you can get this dependencies with
 
     make install_REST
 

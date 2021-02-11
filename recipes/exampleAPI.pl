@@ -21,6 +21,9 @@
 use warnings;
 use strict;
 use List::Util qw(all);
+use FindBin;
+use lib "$FindBin::Bin/../files/";
+
 use Bio::EnsEMBL::Registry;
 
 Bio::EnsEMBL::Registry->load_registry_from_db(

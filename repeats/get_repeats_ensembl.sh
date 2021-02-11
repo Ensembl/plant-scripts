@@ -3,7 +3,7 @@
 # Script to download annotated repeated elements 
 # of a selected species in Ensembl Plants
 
-# Required binaries: wget, sort, perl, mysql, bedtools, cd-hit-est
+# Required binaries: wget, sort, perl, mysql, bedtools
 
 # Copyright [2020-21] EMBL-European Bioinformatics Institute
 

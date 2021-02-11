@@ -417,4 +417,41 @@ for my $species (@{$species_list}) {
 		$species->{assembly_accession} );
 }
 
+## R12) transfer coordinates across genome alignments between species
+
+# see all options at http://rest.ensembl.org/documentation/info/genomic_alignment_region
+#
+# Note1: there might be more than one target regions for the same input interval
+# Note2: not all species have the same alignments computed
+
+$species = 'triticum_turgidum';
+
+my $target_species = 'triticum_aestivum';
+my @genome_intervals = ( '3B:2585940-2634711' );
+my $method = 'method=LASTZ_NET';
+
+foreach my $intv (@genome_intervals) {
+
+	$url = join('/', $server, "alignment/region/$species/$intv") . 
+		"?content-type=application/json;compara=plants;$method;species_set=$species;species_set=$target_species";
+
+	my $coord_sets = call_endpoint($http,$url);
+
+	for my $set (@{$coord_sets}) {
+		printf("%s\t%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%s\t%s\n",
+	        $set->{alignments}[0]{species},
+			$set->{alignments}[0]{seq_region},
+			$set->{alignments}[0]{start},
+			$set->{alignments}[0]{end},
+			$set->{alignments}[0]{strand},
+			$set->{alignments}[1]{species},
+			$set->{alignments}[1]{seq_region},
+			$set->{alignments}[1]{start},
+			$set->{alignments}[1]{end},
+			$set->{alignments}[1]{strand},
+			$set->{alignments}[0]{seq},
+			$set->{alignments}[1]{seq},
+		);
+	}
+}
 

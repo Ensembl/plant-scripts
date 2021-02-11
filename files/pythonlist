@@ -1,4 +1,3 @@
-requests 
 sqlalchemy 
 sqlalchemy_utils 
 PyMySQL

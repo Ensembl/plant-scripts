@@ -7,9 +7,18 @@ perl:
 
 before_install:
   - "sudo apt-get update"
-  - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev g++-8 bedtools r-base"
-  - "sudo make install_REST"
-  - "sudo make install_ensembl"
+  - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev g++-8 bedtools r-base cpanminus"
+  # REST
+  - "sudo pip3 install --user requests"
+  - "sudo cpanm --installdeps --notest --cpanfile cpanfileREST"
+  # Ensembl
+  - "sudo cpanm --installdeps --notest --cpanfile cpanfileEnsembl ."
+  - "cd files && git clone https://github.com/Ensembl/ensembl.git"
+  - "cd files && git clone https://github.com/Ensembl/ensembl-variation.git"
+  - "cd files && git clone https://github.com/Ensembl/ensembl-funcgen.git"
+  - "cd files && git clone https://github.com/Ensembl/ensembl-compara.git"
+  - "cd files && git clone https://github.com/Ensembl/ensembl-metadata.git"
+  - "cd files && git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git"
   - "make install_repeats"
 
 #before_script:

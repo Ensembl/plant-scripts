@@ -8,17 +8,19 @@ perl:
 before_install:
   - "sudo apt-get update"
   - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev g++-8 bedtools r-base"
-  - "cpanm --local-lib=~/lib local::lib && eval $(perl -I ~/lib/lib/perl5/ -Mlocal::lib)
 
-#before_script:  
-#  - "make install_REST"
-#  - "make install_ensembl"
-#  - "make install_biomart_r"
-#  - "make install_repeats"
+# https://travis-ci.community/t/accessing-old-versions-of-perl-in-a-c-language-build/10948/5
+install: skip 
 
-#script:
-#  - "make test"
-#  - "make test_repeats"
+before_script:  
+  - "make install_REST"
+  - "make install_ensembl"
+  - "make install_biomart_r"
+  - "make install_repeats"
+
+script:
+  - "make test"
+  - "make test_repeats"
 
 notifications:
   email:

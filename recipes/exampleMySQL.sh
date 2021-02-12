@@ -207,4 +207,3 @@ URL="${FTPSERVER}/${DIV}/current/fasta/${SPECIES}/dna/${FASTANAME}"
 wget -c $URL -O- | gunzip > $FASTA
 
 bedtools getfasta -name -fi $FASTA -bed $BEDFILE > $REPFASTA
-

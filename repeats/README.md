@@ -59,11 +59,11 @@ such as the library **nrTEplants**. The script does not load the resulting annot
 ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
 
 # consider only repeats with length >= 200 bp
-./AnnotRedRepeats.py files/nrTEplantsJune2020.fna Brachypodium_distachyon --cor 4 \
+./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna Brachypodium_distachyon --cor 4 \
 	--minlen 200
 
 # add annotated repeats to Ensembl core db and use a different minimap2 binary
-./AnnotRedRepeats.py files/nrTEplantsJune2020.fna Brachypodium_distachyon --exe /path/to/minimap2 --cor 4 \
+./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna Brachypodium_distachyon --exe /path/to/minimap2 --cor 4 \
     --host pl1 --user xyz --pw XYZ \
     --port 123 --db brachypodium_distachyon_core_49_102
 ```

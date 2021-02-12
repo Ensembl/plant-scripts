@@ -12,7 +12,7 @@
 
 # To install R package biomaRt run: Rscript install_R_deps.R
 
-local_lib = "./files/R/"
+local_lib = "./lib/R/"
 .libPaths( c( .libPaths(), local_lib) )
 
 library("biomaRt")

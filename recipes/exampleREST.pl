@@ -14,6 +14,8 @@
 
 use strict;
 use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 use JSON;
 use HTTP::Tiny;
 use Data::Dumper;

@@ -410,7 +410,7 @@ def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_conse
 
 def main():
 
-    default_exe = os.path.join( os.path.dirname(__file__) , "../files/Red/bin/Red")
+    default_exe = os.path.join( os.path.dirname(__file__) , "../lib/Red/bin/Red")
 
     parser=argparse.ArgumentParser()
    

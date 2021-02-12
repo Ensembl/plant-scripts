@@ -722,7 +722,7 @@ def store_annotated_repeat_database( workdir, matched_repeats,
 
 def main():
 
-    default_exe = os.path.join( os.path.dirname(__file__) , "../files/minimap2/minimap2")
+    default_exe = os.path.join( os.path.dirname(__file__) , "../lib/minimap2/minimap2")
 
     parser=argparse.ArgumentParser()
    

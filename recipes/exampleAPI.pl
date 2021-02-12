@@ -22,12 +22,12 @@ use warnings;
 use strict;
 use List::Util qw(all);
 use FindBin;
-use lib "$FindBin::Bin/../files/bioperl-live/";
-use lib "$FindBin::Bin/../files/ensembl/modules/";
-use lib "$FindBin::Bin/../files/ensembl-compara/modules/";
-use lib "$FindBin::Bin/../files/ensembl-variation/modules/";
-use lib "$FindBin::Bin/../files/ensembl-funcgen/modules/";
-use lib "$FindBin::Bin/../files/ensembl-metadata/modules/";
+use lib "$FindBin::Bin/../lib/bioperl-live/";
+use lib "$FindBin::Bin/../lib/ensembl/modules/";
+use lib "$FindBin::Bin/../lib/ensembl-compara/modules/";
+use lib "$FindBin::Bin/../lib/ensembl-variation/modules/";
+use lib "$FindBin::Bin/../lib/ensembl-funcgen/modules/";
+use lib "$FindBin::Bin/../lib/ensembl-metadata/modules/";
 
 use Bio::EnsEMBL::Registry;
 

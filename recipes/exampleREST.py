@@ -3,7 +3,6 @@
 from __future__ import print_function ##Allow Python 3.X printing for Python 2
 
 import os, re, sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "../files/"))
 import requests
 
 # Example of python queries to the Ensembl REST endpoints

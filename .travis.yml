@@ -15,7 +15,6 @@ install: skip
 before_script:  
   - "make install_REST"
   - "make install_ensembl"
-  - "make install_biomart_r"
   - "make install_repeats"
 
 script:

@@ -8,6 +8,7 @@ perl:
 before_install:
   - "sudo apt-get update"
   - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev g++-8 bedtools r-base cpanminus"
+  - "cpanm --local-lib lib --quiet --installdeps --notest ."
 
 before_script:  
   - "make install_REST"

@@ -1,6 +1,9 @@
 test:
 	perl demo_test.t
 
+test_travis:
+	perl demo_test.t travis
+
 clean:
 	rm -f *rachypodium* && rm -f Compara*gz 
 	rm -f new_genomes.txt && rm -f uniprot_report_EnsemblPlants.txt

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
-my $number_of_tests = 4;
+my $number_of_tests = 3;
 
 ok( eval{ `recipes/exampleFTP.sh --spider test 2>&1` } =~ /Brachypodium_distachyon/ , 
 	'exampleFTP.sh' );
@@ -11,18 +11,18 @@ ok( eval{ `recipes/exampleMySQL.sh test` } =~ /_core_/ , 'exampleMySQL.sh' );
 
 if($ARGV[0] && $ARGV[0] ne 'travis'){
 
-	# REST tests usually timeout
+	# REST/API tests often timeout
 	
-	$number_of_tests += 3;
+	$number_of_tests += 4;
 	
 	ok( eval{ `python recipes/exampleREST.py test` } =~ /hordeum_vulgare/ , 'exampleREST.py' );
 
 	ok( eval{ `perl recipes/exampleREST.pl test` } =~ /hordeum_vulgare/ , 'exampleREST.pl' );
 
 	ok( eval{ `Rscript recipes/exampleREST.R test` } =~ /hordeum_vulgare/ , 'exampleREST.R' );
-}
 
-ok( eval{ `perl recipes/exampleAPI.pl test` } =~ /xref/ , 'exampleAPI.pl' );
+	ok( eval{ `perl recipes/exampleAPI.pl test` } =~ /xref/ , 'exampleAPI.pl' );
+}
 
 ok( eval{ `perl recipes/exampleCRAM.pl test` } =~ /subgroup/ , 'exampleCRAM.pl' );
 

@@ -113,7 +113,7 @@ Provided you have [cpanm](https://metacpan.org/pod/App::cpanminus) installed on 
 
     make install_REST
 
-The dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip, full documentation at https://github.com/Ensembl/ensembl-vep), together with those used by recipes using the Ensembl Perl API, can be installed with
+The dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip), together with those used by recipes using the Ensembl Perl API, can be installed with
 
     make install_ensembl
 

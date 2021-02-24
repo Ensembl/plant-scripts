@@ -4,8 +4,7 @@
 This repo contains code examples for interrogating Ensembl Plants from your own scripts,
 and for masking & annotating [repeats](./repeats) in plant genomes.
 
-<!-- tests are unreliable due to network traffic
-[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts) -->
+[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)
 
 - [Repeat masking and annotation](#repeat-masking-and-annotation)
 - [List of recipes](#list-of-recipes)

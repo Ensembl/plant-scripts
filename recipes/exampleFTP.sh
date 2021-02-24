@@ -176,7 +176,8 @@ echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL
 
 ## F12) Get current plant species tree (cladogram)
-TREEFILE="plants_species-tree_Ensembl.nh"
+
+TREEFILE="plants_protein-trees_default.nh"
 URL="${SERVER}/${DIV}/release-${EGRELEASE}/compara/species_trees/$TREEFILE"
 echo "# downloading $URL"
 $EXE $OPTARG $ARGSDEF $URL

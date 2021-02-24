@@ -16,9 +16,11 @@ before_script:
   - "make install_REST"
   - "make install_ensembl"
   - "make install_repeats"
+  - PERL5LIB=$PWD/lib:$PERL5LIB
+  - export PERL5LIB
 
 script:
-  - "make test"
+  - "make test_travis"
   - "make test_repeats"
 
 notifications:

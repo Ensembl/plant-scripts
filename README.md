@@ -134,7 +134,7 @@ For the BioMart recipes you will need BioConductor package [biomaRt](http://www.
 
 ## Phylogenomics
 
-See examples and documentation in folder [repeats](./phylogenomics/).
+See examples and documentation in folder [phylogenomics](./phylogenomics/).
 
 If you want to run any of those scripts you must first run:
 

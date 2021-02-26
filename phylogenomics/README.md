@@ -1,13 +1,18 @@
 
 # Plant phylogenomics scripts
 
-These scripts interrogate Ensembl Plants through [REST endpoints](https://rest.ensembl.org) and the FTP site to export data that might be useful for phylogenomic and pangenome studies.
+These scripts interrogate Ensembl Plants through [REST endpoints](https://rest.ensembl.org) 
+and the FTP site to export data that might be useful for phylogenomic and pan-gene set studies.
 
 ## Documentation and examples
 
 Run any of the scripts with argument -h to get instructions and examples.
 
 ## Dependencies
+
+The following dependencies can be installed in the parent folder with:
+
+    make install_REST
 
 The scripts require the following non-core Perl modules:
 * [HTTP::Tiny](https://metacpan.org/release/HTTP-Tiny)
@@ -38,10 +43,11 @@ Example calls include:
 perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae
 perl ens_single-copy_core_genes.pl -c Brassicaceae -f Brassicaceae -t cdna -o beta_vulgaris
 perl ens_single-copy_core_genes.pl -f poaceae -c 4479 -r oryza_sativa -WGA 75
-perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrella_patens
+perl ens_single-copy_core_genes.pl -f all -c 33090 -m all -r physcomitrium_patens
 ```
 
-Note option -f produces FASTA files of aligned peptide sequences, one per cluster. Such a task takes usually takes over an hour over the Ensembl REST API.
+Note option -f produces FASTA files of aligned peptide sequences, one per cluster. 
+Such a task takes usually takes over an hour over the Ensembl REST API.
 
 
 ### ens_syntelogs.pl
@@ -53,9 +59,13 @@ perl ens_syntelogs.pl -c Brassicaceae -f Brassicaceae
 
 ```
 
-A sample output matrix is available in [Brassicaceae.syntelogs.GOC75.tsv](./bench/Brassicaceae.syntelogs.GOC75.tsv). A benchmark is described in folder [bench](./bench).
+A sample output matrix is available in [Brassicaceae.syntelogs.GOC75.tsv](./bench/Brassicaceae.syntelogs.GOC75.tsv). 
+A benchmark is described in <https://github.com/Ensembl/plant_tools/tree/master/bench/synthelogs>.
 
-Note option -f produces FASTA files of aligned peptide sequences, one per cluster. Such a task takes usually takes over an hour over the Ensembl REST API.
+Note option -f produces FASTA files of aligned peptide sequences, one per cluster. 
+Such a task takes usually takes over an hour over the Ensembl REST API.
+
+WARNING: not all species are included in the Compara gene-tree analysis. You can exclude them with -i.
 
 ### ens_sequences.pl
 
@@ -64,7 +74,6 @@ Produces a FASTA file with the canonical cds/pep sequences of species in a clade
 perl ens_syntelogs.pl -c Brassicaceae -f Brassicaceae.fna
 
 ```
-
 
 
 ### ens_pangene_analysis.pl
@@ -97,6 +106,7 @@ The following options are only available for some clades:
 ```
 Read about GOC and WGA at https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 
+WARNING: not all species are included in the Compara gene-tree analysis. You can exclude them with -i. 
 
 These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log).
 The output folders contain pan-gene clusters, pangenome matrices in several formats and also a matrix of Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
@@ -106,8 +116,8 @@ perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -S > Oryza.nosing
 perl ens_pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
 ```
 
-Those files can be used to produce pan-gene plots for instance with scripts from 
-[GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues).
+Those files can be used to produce pan-gene plots. 
+The examples below use scripts from third-party [GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues).
 
 ```
 get_homologues/plot_pancore_matrix.pl -f core_both -i core_gene.tab

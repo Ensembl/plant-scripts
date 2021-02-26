@@ -4,6 +4,8 @@
 These scripts interrogate Ensembl Plants through [REST endpoints](https://rest.ensembl.org) 
 and the FTP site to export data that might be useful for phylogenomic and pan-gene set studies.
 
+These scripts were tested at the [CABANA workshop: Analysis of crop genomics data ](http://training.ensembl.org/events/2021/2021-03-01-CABANA).
+
 ## Documentation and examples
 
 Run any of the scripts with argument -h to get instructions and examples.

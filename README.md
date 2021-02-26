@@ -14,6 +14,7 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
     - [Perl](#perl)
     - [Python](#python)
 	- [R](#r)
+- [Phylogenomics](#phylogenomics)
 - [Species tree](#species-tree)
 - [Citation](#citation)
 
@@ -130,6 +131,14 @@ The REST recipes written in python require library [requests](https://pypi.org/p
 For the BioMart recipes you will need BioConductor package [biomaRt](http://www.bioconductor.org/packages/release/bioc/html/biomaRt.html) (read more [here](http://plants.ensembl.org/info/data/biomart/biomart_r_package.html)). For the REST recipes two core packages are required: [httr](https://cran.r-project.org/web/packages/httr) and [jsonlite](https://cran.r-project.org/web/packages/jsonlite). All these can be installed with:
 
     Rscript install_R_deps.R
+
+## Phylogenomics
+
+See examples and documentation in folder [repeats](./phylogenomics/).
+
+If you want to run any of those scripts you must first run:
+
+    make install_REST
 
 ## Species tree
 

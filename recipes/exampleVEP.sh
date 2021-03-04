@@ -89,10 +89,11 @@ VEPOPTIONS=(
 	--check_existing       # co-located known variants
 	--distance 5000        # max dist between variant and transcript
 	--biotype              # show biotype of neighbor transcript
-    --sift b               # note not all species have SIFT precomputed
 	--input_file $VCFILE
 	--output_file $OUTFILE
 )
+
+#   --sift b               # only some species have SIFT precomputed
 
 ${VEPATH}/ensembl-vep/vep "${VEPOPTIONS[@]}"
 

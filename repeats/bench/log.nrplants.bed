@@ -1,0 +1,60 @@
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species aegilops_tauschii -logic_name repeatmask_nrplants
+aegilops_tauschii	genome_length	4224915394
+aegilops_tauschii	repeatmask_nrplants	2954386572
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species arabidopsis_halleri -logic_name repeatmask_nrplants
+arabidopsis_halleri	genome_length	196243198
+arabidopsis_halleri	repeatmask_nrplants	54248175
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species arabidopsis_thaliana -logic_name repeatmask_nrplants
+arabidopsis_thaliana	genome_length	119667750
+arabidopsis_thaliana	repeatmask_nrplants	34493047
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species arabis_alpina -logic_name repeatmask_nrplants
+arabis_alpina	genome_length	
+arabis_alpina	repeatmask_nrplants	138763577
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species brachypodium_distachyon -logic_name repeatmask_nrplants
+brachypodium_distachyon	genome_length	271163419
+brachypodium_distachyon	repeatmask_nrplants	76177501
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species brassica_rapa -logic_name repeatmask_nrplants
+brassica_rapa	genome_length	283822783
+brassica_rapa	repeatmask_nrplants	85105371
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species camelina_sativa -logic_name repeatmask_nrplants
+camelina_sativa	genome_length	641356059
+camelina_sativa	repeatmask_nrplants	158537047
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species citrullus_lanatus -logic_name repeatmask_nrplants
+citrullus_lanatus	genome_length	365450462
+citrullus_lanatus	repeatmask_nrplants	64792392
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species cucumis_melo -logic_name repeatmask_nrplants
+cucumis_melo	genome_length	357857370
+cucumis_melo	repeatmask_nrplants	159149620
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species helianthus_annuus -logic_name repeatmask_nrplants
+helianthus_annuus	genome_length	3027844945
+helianthus_annuus	repeatmask_nrplants	788477175
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species malus_domestica_golden -logic_name repeatmask_nrplants
+malus_domestica_golden	genome_length	702961352
+malus_domestica_golden	repeatmask_nrplants	313026586
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species olea_europaea_sylvestris -logic_name repeatmask_nrplants
+olea_europaea_sylvestris	genome_length	1140989389
+olea_europaea_sylvestris	repeatmask_nrplants	227766390
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species oryza_sativa -logic_name repeatmask_nrplants
+oryza_sativa	genome_length	375049285
+oryza_sativa	repeatmask_nrplants	146748772
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species prunus_dulcis -logic_name repeatmask_nrplants
+prunus_dulcis	genome_length	227498357
+prunus_dulcis	repeatmask_nrplants	86267619
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species rosa_chinensis -logic_name repeatmask_nrplants
+rosa_chinensis	genome_length	515588973
+rosa_chinensis	repeatmask_nrplants	116760801
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species setaria_viridis -logic_name repeatmask_nrplants
+setaria_viridis	genome_length	
+setaria_viridis	repeatmask_nrplants	80092623
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species trifolium_pratense -logic_name repeatmask_nrplants
+trifolium_pratense	genome_length	304842038
+trifolium_pratense	repeatmask_nrplants	33750565
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species triticum_turgidum -logic_name repeatmask_nrplants
+triticum_turgidum	genome_length	10463058104
+triticum_turgidum	repeatmask_nrplants	7583835351
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species vitis_vinifera -logic_name repeatmask_nrplants
+vitis_vinifera	genome_length	486265422
+vitis_vinifera	repeatmask_nrplants	216500288
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $p1panreg -species zea_mays -logic_name repeatmask_nrplants
+zea_mays	genome_length	2135083061
+zea_mays	repeatmask_nrplants	1337627276

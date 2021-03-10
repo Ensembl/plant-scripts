@@ -1,12 +1,12 @@
 
-# The results and plots resulting from the operations below can be browsed at:
-#
-# https://docs.google.com/spreadsheets/d/1-Gaw8fP-BOESGO-kF4Jrce1lQT8VR8OhlKF7wCbIi_I/edit?usp=sharing
-#
-#######################################################################################################
+## Benchmark analyses
+
+The results and plots resulting from the operations below can be browsed at:
+
+https://docs.google.com/spreadsheets/d/1-Gaw8fP-BOESGO-kF4Jrce1lQT8VR8OhlKF7wCbIi_I/edit?usp=sharing
 
 
-ensetup 101
+```
 
 # nrplants v0.3 Jun2020
 ~/plant_tools/production/core/repeats_pipeline_hive.pl -v 101 -R $p1panreg -P $reptmp -D ensembl_production -s aegilops_tauschii -s arabidopsis_halleri -s arabidopsis_thaliana -s arabis_alpina -s brassica_rapa -s malus_domestica_golden -s oryza_sativa -s prunus_dulcis -s setaria_viridis -s triticum_turgidum -s vitis_vinifera -s trifolium_pratense -s olea_europaea_sylvestris -s brachypodium_distachyon -s helianthus_annuus -s zea_mays -s camelina_sativa -w -n
@@ -210,5 +210,5 @@ done < list.cores.sp.toplevel > log.updown500.${K}mer
 
 																													
 
-
+```
 

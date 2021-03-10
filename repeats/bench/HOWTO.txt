@@ -1,3 +1,11 @@
+
+# The results and plots resulting from the operations below can be browsed at:
+#
+# https://docs.google.com/spreadsheets/d/1-Gaw8fP-BOESGO-kF4Jrce1lQT8VR8OhlKF7wCbIi_I/edit?usp=sharing
+#
+#######################################################################################################
+
+
 ensetup 101
 
 # nrplants v0.3 Jun2020

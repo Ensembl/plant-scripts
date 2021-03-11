@@ -180,15 +180,15 @@ while read -r col1 col2 col3; do
 	bedtools intersect -a bed/${col1}.updown500.bed -b bed/${col2}.repeatmask_redat.bed -sorted > bed/${col1}.updown500.redat.bed 
 
 	# extract overlapping sequences
-    bedtools getfasta -fi ${REDIR}/$col3 -bed bed/${col1}.updown500.Red.bed > kmer/${col1}.updown500.Red.fna
+	bedtools getfasta -fi ${REDIR}/$col3 -bed bed/${col1}.updown500.Red.bed > kmer/${col1}.updown500.Red.fna
 	bedtools getfasta -fi ${REDIR}/$col3 -bed bed/${col1}.updown500.nrplants.bed > kmer/${col1}.updown500.nrplants.fna
 	bedtools getfasta -fi ${REDIR}/$col3 -bed bed/${col1}.updown500.redat.bed > kmer/${col1}.updown500.redat.fna
 
 	# extract canonical kmers
 	# bioinfologics.github.io/post/2018/09/17/k-mer-counting-part-i-introduction 
-    ~/soft/jellyfish-linux count -C -m $K -s 2G -t 4 kmer/${col1}.updown500.Red.fna -o kmer/${col1}.updown500.Red.${K}mer.jf
+	~/soft/jellyfish-linux count -C -m $K -s 2G -t 4 kmer/${col1}.updown500.Red.fna -o kmer/${col1}.updown500.Red.${K}mer.jf
 	red=$(~/soft/jellyfish-linux stats kmer/${col1}.updown500.Red.${K}mer.jf | perl -lane 'push(@N,$F[1]); END{ print join("\t",@N)}')
-    ~/soft/jellyfish-linux dump -L $MINCP -c -t kmer/${col1}.updown500.Red.${K}mer.jf | \
+	~/soft/jellyfish-linux dump -L $MINCP -c -t kmer/${col1}.updown500.Red.${K}mer.jf | \
 		sort -nrk2,2 > kmer/${col1}.updown500.Red.${K}mer.${MINCP}.tsv
 	red20=$(perl -lne '$tot++; END{ print $tot}' kmer/${col1}.updown500.Red.${K}mer.${MINCP}.tsv)
 
@@ -204,7 +204,7 @@ while read -r col1 col2 col3; do
 		sort -nrk2,2 > kmer/${col1}.updown500.redat.${K}mer.${MINCP}.tsv
 	redat20=$(perl -lne '$tot++; END{ print $tot}' kmer/${col1}.updown500.redat.${K}mer.${MINCP}.tsv)
 
-    printf "%s\t%s\t%s\t%s\t%d\t%d\t%d\n" $col2 $redat $nrplants $red $redat20 $nrplants20 $red20
+	printf "%s\t%s\t%s\t%s\t%d\t%d\t%d\n" $col2 $redat $nrplants $red $redat20 $nrplants20 $red20
 
 done < list.cores.sp.toplevel > log.updown500.${K}mer
 

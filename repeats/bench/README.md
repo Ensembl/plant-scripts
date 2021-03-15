@@ -208,7 +208,16 @@ while read -r col1 col2 col3; do
 
 done < list.cores.sp.toplevel > log.updown500.${K}mer
 
-																													
+## check overlap with denovo called Rgenes (NLR-annotator)
+
+while read -r col1 col2; do
+	red=$(bedtools intersect -a denovoRgenes/${col2}.nlr.bed.sorted -b bed/${col2}.Red.bed -sorted -wo | perl -lane 'next if($F[9] <= $ENV{'MINOVER'}); $over+=$F[9]; END{print $over}')
+	nrplants=$(bedtools intersect -a denovoRgenes/${col2}.nlr.bed.sorted -b bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane 'next if($F[9] <= $ENV{'MINOVER'}); $over+=$F[9]; END{print $over}')
+	redat=$(bedtools intersect -a denovoRgenes/${col2}.nlr.bed.sorted -b bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane 'next if($F[9] <= $ENV{'MINOVER'}); $over+=$F[9]; END{print $over}')
+	genes=$(bedtools intersect -a denovoRgenes/${col2}.nlr.bed.sorted -b denovoRgenes/${col2}.nlr.bed.sorted -sorted -wo | perl -lane '$over+=$F[12]; END{print $over}')
+	read tgenes filename <<< $(wc -l denovoRgenes/${col2}.nlr.bed.sorted)
+	printf "%s\t%d\t%d\t%d\t%d\t%d\n" $col2 $tgenes $genes $redat $nrplants $red
+
+done < list.cores.sp > log.Rgenes.$MINOVER
 
 ```
-

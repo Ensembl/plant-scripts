@@ -85,64 +85,48 @@ in current species in Ensembl can be retrieved and used as well:
 
 ## Annotation summary 
 
-If a library such as nrTEplants or any other RepBase-formatted is used, 
+If a library such as nrTEplants or any other RepBase-formatted file is used, 
 an annotation report like this is produced. These are valid examples of FASTA headers:
 
     >TEdenovo-B-R2315-Map11:repetDB.Mar2020#TIR @Brassica_rapa [S:]
 	>AT1TE94285:TAIR10_TE#DNA/MuDR @Arabidopsis_thaliana [S:]
 
-The repeat classification is then parse to produce a report like this:
+The repeat classification is then parsed to produce a report like this:
 
 ```
-# FASTA file with repeat sequences (length>90): Camelina_sativa/annot/Red_repeats.fna
-
-# re-using previously formatted repeat library  Camelina_sativa/annot/repeat_lib.mmi
-# running minimap
-/path/to/minimap2 -K100M --score-N 0  -x map-ont  -t 4 Camelina_sativa/annot/repeat_lib.mmi Camelina_sativa/annot/Red_repeats.fna
-# mapped repeats:  Camelina_sativa/annot/repeat_mappings.sort.paf
-# Genome length: 641355730 Repeated content: 230739085 36.0% Annotated: 42633901 6.6%
+# Genome length: 18585056 Repeated content: 6837303 36.8% Annotated: 2748796 14.8%
 
 class	bp
-Crypton 580
-DIRS    222132
-DNA     456403
-DNA/CACTA       312
-DNA/En-Spm      729412
-DNA/HAT 119922
-DNA/Harbinger   56149
-DNA/MuDR        598270
-DNA/Pogo        243186
-DNA/hAT 21260
-Helitron        290418
-Helitron/Helitron       1673
-Helitron|TRIM   1432
-LARD    239264
-LINE    819243
-LINE/L1 80920
-LTR     4254019
-LTR/Copia       5839801
-LTR/Gypsy       18494851
-MITE    312641
-Maverick        1258
-MobileElement   619
-Mutator 122
-Other   998
-Other/Centromeric       194
-Other/Simple    1503
-RC/Helitron     312013
-Retroelement    995
-SINE    65415
-SINE|LARD       8392
-SINE|TRIM       282
-TIR     5128793
-TIR/Mutator     35807
-TIR/PIF-Harbinger       379
-TIR/hAT 8030
-TRIM    1531956
-Unassigned      75795
-Unclassified    2676694
-nonLTR  101
-rRNA    2667
+DIRS	1212
+DNA	32110
+DNA/En-Spm	50044
+DNA/HAT	33911
+DNA/Harbinger	13879
+DNA/Mariner	3935
+DNA/MuDR	283157
+DNA/Pogo	21954
+DNA/Tc1	3467
+Helitron	20670
+LARD	83725
+LINE	2384
+LINE/L1	9898
+LINE?	1235
+LTR	113511
+LTR/Copia	88739
+LTR/Gypsy	900679
+MITE	2502
+Other	42920
+Other/Simple	1596
+RC/Helitron	766803
+RathE1_cons	1188
+RathE2_cons	245
+RathE3_cons	196
+SINE	9192
+Satellite	132
+TIR	79579
+TIR/Mutator	364
+TRIM	53086
+Unclassified	126483
 ```
 
 ## Runtime and RAM requirements

@@ -29,7 +29,8 @@ If you want to annotate repeats you must first run:
 
 ## List of recipes
 
-These are the recipes in this repository, obtained with grep -P "^## \w\d+" recipes/example*:
+These are the script recipes, obtained with grep -P "^## \w\d+" recipes/example* .
+You can check the source code in folder [recipes](./recipes/):
 
 ```
 exampleAPI.pl:## A1) Load the Registry object with details of genomes available

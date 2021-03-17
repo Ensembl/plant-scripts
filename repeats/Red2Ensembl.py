@@ -16,7 +16,6 @@ import gzip
 import bz2
 import errno
 import subprocess
-from string import maketrans
 
 import sqlalchemy as db
 import sqlalchemy_utils as db_utils
@@ -63,11 +62,6 @@ def parse_FASTA_sequences( genome_file , dirname ):
             print("# ERROR: cannot open/read file:", genome_file, error)
             return num_seqs
 
-    # prepare translation table for forbidden chars
-    forbidchars = "\/:*<>|"
-    dummychars  = "_______"
-    transtab = maketrans(forbidchars, dummychars)
-
     seq_filepath = ''
     prev_filepath = ''
     for line in file:
@@ -82,7 +76,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
            seq_name_match = re.search(r'^>(\S+)', line)
            if seq_name_match:
                raw_seq_name = seq_name_match.group(1)
-               seq_name = seq_name.translate(transtab)
+               seq_name = re.sub(r'\/:*<>|','_', raw_seq_name)
 
                seq_filename = seq_name + '.fa'
                seq_filepath = os.path.join(dirname, seq_filename)

@@ -105,8 +105,8 @@ def parse_FASTA_sequences( genome_file , dirname ):
     # estimate RAM needed for this genome using fitted linear function
     RAM = (13.9 * math.log10(genome_length)) - 115 
     if(RAM < 1): RAM = 1
-    print("# genome length= ", genome_length)
-    print("# estimated GB of RAM needed to process this genome= %1.1f" % RAM)
+    print("# genome length = ", genome_length)
+    print("# estimated GB of RAM needed to process this genome = %1.1f" % RAM)
 
     return seq_names
 

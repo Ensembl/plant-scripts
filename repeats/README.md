@@ -16,7 +16,7 @@ Annotated repeats are imported with logic_name='repeatdetector_annotated'.
 
 The following dependencies can be installed in the parent folder with:
 
-    make install_repeats
+    make install install_repeats
 
 There are two binaries, for which the GNU C++ compiler v8 is needed (g++-8):
 
@@ -84,8 +84,6 @@ in current species in Ensembl can be retrieved and used as well:
 
 ./AnnotRedRepeats.py arabidopsis_thaliana.repeats.nondeg.fasta test_Atha_chr4 --bed_file test.ensembl.bed
 ```
-
-
 
 ## Annotation summary 
 

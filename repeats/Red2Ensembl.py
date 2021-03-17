@@ -94,7 +94,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
            else:
                print("# ERROR: cannot parse FASTA header:", header)
        else:
-           genome_length = genome_length + len(line)
+           genome_length = genome_length + len(line) - 1
            if seqfile:
                seqfile.write(line)
     
@@ -106,7 +106,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
     RAM = (13.9 * math.log10(genome_length)) - 115 
     print("# genome length = %d bp" % genome_length)
     if(RAM > 0):
-        print("# estimated RAM needed to process this genome = %1.1f GB" % RAM)
+        print("# estimated RAM needed to process this genome = %1.2f GB" % RAM)
 
     return seq_names
 

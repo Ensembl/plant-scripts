@@ -1,9 +1,13 @@
 
-These scripts can be used to i) mask and ii) annotate repeated sequences in plants genomes using the 
+These scripts can be used to:
++ i) mask repeated sequences in plant genomes
++ ii) annotate repeats with the 
 [Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) 
-and the curated library of repeats 
+and 
+	* the curated library of repeats 
 [nrTEplants](https://github.com/Ensembl/plant-scripts/releases/download/v0.3/nrTEplantsJune2020.fna.bz2),
-described in full detail [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs). 
+described in full detail [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs)
+	* annotated repeats from species in Ensembl Plants, obtained with *get_repeats_ensembl.sh*
 
 Optionally, repeats can be loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. 
 Annotated repeats are imported with logic_name='repeatdetector_annotated'.

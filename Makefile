@@ -11,6 +11,9 @@ clean:
 	rm -f plants_species-tree*.nh
 	rm -f oryza_sativa*
 
+install:
+	sudo apt-get install -y wget mysql-client libmysqlclient-dev bedtools
+
 install_REST:
 	cpanm --local-lib lib --installdeps --notest --cpanfile lib/cpanfileREST .
 	pip3 install --user requests

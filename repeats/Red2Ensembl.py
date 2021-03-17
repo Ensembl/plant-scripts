@@ -38,6 +38,7 @@ def _is_bz2_file(filepath):
 def parse_FASTA_sequences( genome_file , dirname ):
     '''Takes a FASTA genome file name, which might be GZIP/BZIP2-compressed,
        parses individual sequences and saves them in multiple files in named directory.
+       Also outputs the estimated RAM needs for a genome.
        Note: forbidden filesystem chars are removed from sequence names.
        Returns: list of successfully parsed sequence names'''
 
@@ -64,6 +65,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
     seq_filepath = ''
     prev_filepath = ''
+	genome_length = 0
     for line in file:
        header = re.search(r'^>', line) 
        if header:
@@ -91,11 +93,17 @@ def parse_FASTA_sequences( genome_file , dirname ):
            else:
                print("# ERROR: cannot parse FASTA header:", header)
        else:
+		   genome_length = genome_length + len(line)
            if seqfile:
                seqfile.write(line)
     
     if seqfile: seqfile.close()
     file.close()
+
+    
+    # estimate RAM needed for this genome using fitted linear function
+    RAM = 13.9 * log10(genome_length) - 115 
+    print("# WARNING: estimated GB of RAM needed to process this genome= ", RAM)
 
     return seq_names
 

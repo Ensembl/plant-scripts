@@ -14,6 +14,7 @@ import os
 import re
 import gzip
 import bz2
+import math
 import errno
 import subprocess
 

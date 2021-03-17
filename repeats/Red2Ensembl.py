@@ -5,7 +5,7 @@
 #
 # Tested with: 
 # pyenv local 3.7.6
-# pip install --user sqlalchemy_utils pymysql
+# pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
 #
 # Copyright [2020-21] EMBL-European Bioinformatics Institute
 
@@ -16,6 +16,7 @@ import gzip
 import bz2
 import errno
 import subprocess
+from string import maketrans
 
 import sqlalchemy as db
 import sqlalchemy_utils as db_utils
@@ -36,8 +37,9 @@ def _is_bz2_file(filepath):
         return test_f.read(2) == b'BZ'
 
 def parse_FASTA_sequences( genome_file , dirname ):
-    '''Takes a FASTA genome file name, which might be GZIP-compressed,
+    '''Takes a FASTA genome file name, which might be GZIP/BZIP2-compressed,
        parses individual sequences and saves them in multiple files in named directory.
+       Note: forbidden filesystem chars are removed from sequence names.
        Returns: list of successfully parsed sequence names'''
 
     seq_names = []
@@ -61,6 +63,11 @@ def parse_FASTA_sequences( genome_file , dirname ):
             print("# ERROR: cannot open/read file:", genome_file, error)
             return num_seqs
 
+    # prepare translation table for forbidden chars
+    forbidchars = "\/:*<>|"
+    dummychars  = "_______"
+    transtab = maketrans(forbidchars, dummychars)
+
     seq_filepath = ''
     prev_filepath = ''
     for line in file:
@@ -74,7 +81,9 @@ def parse_FASTA_sequences( genome_file , dirname ):
            # open temp FASTA file for this sequence only
            seq_name_match = re.search(r'^>(\S+)', line)
            if seq_name_match:
-               seq_name = seq_name_match.group(1)
+               raw_seq_name = seq_name_match.group(1)
+               seq_name = seq_name.translate(transtab)
+
                seq_filename = seq_name + '.fa'
                seq_filepath = os.path.join(dirname, seq_filename)
 

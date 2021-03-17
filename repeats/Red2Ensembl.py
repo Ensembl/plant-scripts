@@ -76,7 +76,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
            seq_name_match = re.search(r'^>(\S+)', line)
            if seq_name_match:
                raw_seq_name = seq_name_match.group(1)
-               seq_name = re.sub(r'\/:*<>|','_', raw_seq_name)
+               seq_name = re.sub(r'[\/:*<>|]','_', raw_seq_name)
 
                seq_filename = seq_name + '.fa'
                seq_filepath = os.path.join(dirname, seq_filename)

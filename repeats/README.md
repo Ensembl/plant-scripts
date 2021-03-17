@@ -37,19 +37,24 @@ Note that script [get_repeats_ensembl.sh](./get_repeats_ensembl.sh) has some mor
 
 ## Examples
 
-Note that the input FASTA file can be GZIP/BZIP2 compressed; 
-for large genomes you will need 20-40 GB of RAM to run Red (see below).
+Note that the input FASTA file can be GZIP/BZIP2 compressed.
+The script *Red2Ensembl.py* will attempt to estimate the GB RAM needed for the input genome.
 
 ### i) Masking
 
 ```
-# test run, saves results in folder 'test_Atha_chr4' 
+## test run, saves results in folder 'test_Atha_chr4' 
 ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna 
 
-# real example, with several chromosomes, taking 4 CPU cores 
+# parsing FASTA file
+# genome length = 18585056 bp
+...
+
+
+## real example, with several chromosomes, taking 4 CPU cores 
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon --cor 4 
 
-# local run & loading repeats in core Ensembl db
+## local run & loading repeats in core Ensembl db
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
 	--host pl1 --user xyz --pw XYZ --port 123 --db brachypodium_distachyon_core_49_102
 ```
@@ -59,14 +64,14 @@ for large genomes you will need 20-40 GB of RAM to run Red (see below).
 The repeats called by Red can be optionally annotated by similarity to sequences in an external FASTA file, 
 such as the library **nrTEplants**. The script does not load the resulting annotations in a core db just yet:
 ```
-# test run, re-uses folder 'test_Atha_chr4'
+## test run, re-uses folder 'test_Atha_chr4'
 ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
 
-# consider only repeats with length >= 200 bp
+## consider only repeats with length >= 200 bp
 ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna Brachypodium_distachyon --cor 4 \
 	--minlen 200
 
-# add annotated repeats to Ensembl core db and use a different minimap2 binary
+## add annotated repeats to Ensembl core db and use a different minimap2 binary
 ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna Brachypodium_distachyon --exe /path/to/minimap2 --cor 4 \
     --host pl1 --user xyz --pw XYZ \
     --port 123 --db brachypodium_distachyon_core_49_102

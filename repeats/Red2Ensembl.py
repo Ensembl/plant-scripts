@@ -65,7 +65,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
     seq_filepath = ''
     prev_filepath = ''
-	genome_length = 0
+    genome_length = 0
     for line in file:
        header = re.search(r'^>', line) 
        if header:
@@ -93,7 +93,7 @@ def parse_FASTA_sequences( genome_file , dirname ):
            else:
                print("# ERROR: cannot parse FASTA header:", header)
        else:
-		   genome_length = genome_length + len(line)
+           genome_length = genome_length + len(line)
            if seqfile:
                seqfile.write(line)
     

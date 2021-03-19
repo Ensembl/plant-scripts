@@ -36,6 +36,9 @@ install_repeats:
 	cd lib && git clone https://github.com/lh3/minimap2.git && cd minimap2 && make
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.3/nrTEplantsJune2020.fna.bz2 && bunzip2 nrTEplantsJune2020.fna.bz2
 
+install_redat:
+	cd files && wget -c ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz && gunzip mipsREdat_9.3p_ALL.fasta.gz
+
 test_repeats:
 	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
 

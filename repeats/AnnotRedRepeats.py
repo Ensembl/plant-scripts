@@ -27,10 +27,11 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
     '''Parses previous log and synonyms to retrieve repeat coords and puts 
        the corresponding sequence segments in a new FASTA file.
        Only repeats with length >= minlen are fetched.
-       Returns name of FASTA file.'''
+       Returns name of FASTA file and dictionary mapping seq_region_id to name.'''
 
     repeat_FASTA_file = ''
     name_to_seqregion = {}
+    seqregion_to_name = {}
 
     # check whether previous files and synonyms exist
     if(os.path.isfile(logpath)):
@@ -54,6 +55,7 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
                 synre = re.search(r'^(\S+)\t(\d+)', line)
                 if synre:
                     name_to_seqregion[ synre.group(1) ] = synre.group(2)
+                    seqregion_to_name[ synre.group(2) ] = synre.group(1)
  
     # create output FASTA file
     repeat_FASTA_file = os.path.join(annotdir, 'Red_repeats.fna')
@@ -124,7 +126,7 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
                         chrsequence[idx_start:idx_end]))
     
     outfile.close()
-    return repeat_FASTA_file
+    return repeat_FASTA_file, synre.group(1)
 
 
 def format_reference_minimap( miniexe, cores, fasta_file, outdir):
@@ -384,7 +386,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
 
 
 def make_annotation_report( map_filename, log_filename, 
-    minlen, bed_filename, verbose=False):
+    minlen, bed_filename, seqregion2name, verbose=False):
     '''Parses file with sorted mappings and print repeat annotation stats.
        Only alignments > minlen are considered.
        Returns dictionary with actual mapped repeat segment coords (tuple)
@@ -400,7 +402,7 @@ def make_annotation_report( map_filename, log_filename,
         try:
             outbedfile = open(bed_filename_unsorted, 'w')
         except OSError as error:
-            print("# ERROR: cannot create file ", bed_filename, error)
+            print("# ERROR: cannot create file ", bed_filename_unsorted, error)
             return {}
 
     try:
@@ -458,8 +460,11 @@ def make_annotation_report( map_filename, log_filename,
 
             # BED output
             if bed_filename:
+                seqname = repeat_coords[0]
+                if seqregion2name[ seqname ]: seqname = seqregion2name[seqname]
+
                 outbedfile.write("%s\t%d\t%d\t%s\n" % 
-                    (repeat_coords[0],repeat_coords[1],repeat_coords[2],paf[5]))
+                    (seqname,repeat_coords[1],repeat_coords[2],paf[5]))
 
             # Ensembl 1-based exclusive format
             repeat_coords[1] = repeat_coords[1] + 1
@@ -489,11 +494,18 @@ def make_annotation_report( map_filename, log_filename,
         # sort BED file
         cmd = 'sort -k1,1 -k2,2g' + bed_filename_unsorted
         try:
-            osresponse = subprocess.check_call(cmd.split(),stdout=bed_filename)
+            sortedBedfile = open(bed_filename,"w")
+        except OSError as error:
+            print("# ERROR: cannot create file ", bed_filename, error)
+            return {}
+
+        try:
+            osresponse = subprocess.check_call(cmd.split(),stdout=sortedBedfile)
         except subprocess.CalledProcessError as err:
             print("# ERROR: cannot run sort ", cmd, err.returncode)
         finally:
             os.remove(bed_filename_unsorted)
+            sortedBedfile.close()
             print("# BED file with annotated repeats: %s\n\n" % bed_filename)
 
     # fetch summary from log and print it with annotation stats
@@ -776,8 +788,8 @@ def main():
     log_filepath = os.path.join(gnmdir, 'log.txt')
     syn_filepath = os.path.join(gnmdir, 'synonyms.tsv')
 
-    # fetch sequences of Red repeats and save in FASTA file
-    repeats_filename = fetch_repeats_FASTA( log_filepath, syn_filepath,\
+    # fetch sequences of Red repeats, save in FASTA file and get seqregion2name mapping
+    repeats_filename, seqregion2name = fetch_repeats_FASTA( log_filepath, syn_filepath,\
         annotdir, int(args.minlen) )
     print("# FASTA file with repeat sequences (length>%s): %s\n\n"\
         % (args.minlen, repeats_filename))
@@ -795,7 +807,7 @@ def main():
     print("# mapped repeats: ", map_filename)
 
     matched_repeats = make_annotation_report( map_filename,\
-        log_filepath,int(args.minlen), args.bed_file)
+        log_filepath, int(args.minlen), args.bed_file, seqregion2name )
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:

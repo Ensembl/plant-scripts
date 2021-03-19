@@ -396,8 +396,9 @@ def make_annotation_report( map_filename, log_filename,
     stats = {}
 
     if bed_filename:
+        bed_filename_unsorted = bed_filename + '.unsorted'
         try:
-            outbedfile = open(bed_filename, 'w')
+            outbedfile = open(bed_filename_unsorted, 'w')
         except OSError as error:
             print("# ERROR: cannot create file ", bed_filename, error)
             return {}
@@ -484,7 +485,16 @@ def make_annotation_report( map_filename, log_filename,
 
     if bed_filename:
         outbedfile.close()
-        print("# BED file with annotated repeats: %s\n\n" % bed_filename)
+
+        # sort BED file
+        cmd = 'sort -k1,1 -k2,2g' + bed_filename_unsorted
+        try:
+            osresponse = subprocess.check_call(cmd.split(),stdout=bed_filename)
+        except subprocess.CalledProcessError as err:
+            print("# ERROR: cannot run sort ", cmd, err.returncode)
+        finally:
+            os.remove(bed_filename_unsorted)
+            print("# BED file with annotated repeats: %s\n\n" % bed_filename)
 
     # fetch summary from log and print it with annotation stats
     try:

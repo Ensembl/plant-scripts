@@ -126,7 +126,7 @@ def fetch_repeats_FASTA( logpath, synpath, annotdir, minlen ):
                         chrsequence[idx_start:idx_end]))
     
     outfile.close()
-    return repeat_FASTA_file, synre.group(1)
+    return repeat_FASTA_file, seqregion_to_name
 
 
 def format_reference_minimap( miniexe, cores, fasta_file, outdir):

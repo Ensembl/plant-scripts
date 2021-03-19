@@ -5,7 +5,7 @@
 #
 # Tested with: 
 # pyenv local 3.7.6
-# pip install --user sqlalchemy_utils pymysql
+# pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
 # 
 # Copyright [2020-21] EMBL-European Bioinformatics Institute
 

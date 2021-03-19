@@ -461,7 +461,9 @@ def make_annotation_report( map_filename, log_filename,
             # BED output
             if bed_filename:
                 seqname = repeat_coords[0]
-                if seqregion2name[ seqname ]: seqname = seqregion2name[seqname]
+                if seqregion2name:
+                    if seqregion2name[ seqname ]: 
+                        seqname = seqregion2name[seqname]
 
                 outbedfile.write("%s\t%d\t%d\t%s\n" % 
                     (seqname,repeat_coords[1],repeat_coords[2],paf[5]))
@@ -492,7 +494,7 @@ def make_annotation_report( map_filename, log_filename,
         outbedfile.close()
 
         # sort BED file
-        cmd = 'sort -k1,1 -k2,2g' + bed_filename_unsorted
+        cmd = 'sort -k1,1 -k2,2g ' + bed_filename_unsorted
         try:
             sortedBedfile = open(bed_filename,"w")
         except OSError as error:
@@ -789,7 +791,7 @@ def main():
     syn_filepath = os.path.join(gnmdir, 'synonyms.tsv')
 
     # fetch sequences of Red repeats, save in FASTA file and get seqregion2name mapping
-    repeats_filename, seqregion2name = fetch_repeats_FASTA( log_filepath, syn_filepath,\
+    (repeats_filename, seqregion2name) = fetch_repeats_FASTA( log_filepath, syn_filepath,\
         annotdir, int(args.minlen) )
     print("# FASTA file with repeat sequences (length>%s): %s\n\n"\
         % (args.minlen, repeats_filename))

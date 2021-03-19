@@ -339,7 +339,7 @@ def run_minimap( miniexe, cores, lib_filename, fasta_filename, outdir):
     # map-ont is actually the default as of Sep2020
     # Note: also tested map-pab, asm20, little difference
     cmd = miniexe + \
-            ' -K100M --score-N 0 ' +\
+            ' -K100M --score-N 0 -N 1000000' +\
             ' -x map-ont ' +\
             ' -t '+ str(cores) + ' ' +\
             lib_filename + ' ' +\

@@ -421,6 +421,12 @@ def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_conse
     
     return outfilename
 
+def citation_string():
+    '''Return string with citation information.'''
+
+    citation = "https://doi.org/10.5281/zenodo.4121769\n\n" +\
+        "Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5\n"
+    return citation
 
 def main():
 
@@ -450,8 +456,16 @@ def main():
         help="name of the core database, required to store repeats in Ensembl core")
     parser.add_argument("--logic_name", default="repeatdetector",
         help="logic name of Ensembl analysis, default: repeatdetector")
+    parser.add_argument("--citation", action='store_true',
+        help="print citation")
 
     args = parser.parse_args()
+
+    # print citation info
+    if args.citation:
+        print( citation_string() )
+        exit(0)
+
 
     # create output directory & subdirs if required,
     # these follow Red nomenclature

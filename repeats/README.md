@@ -44,7 +44,7 @@ The script *Red2Ensembl.py* will attempt to estimate the GB RAM needed for the i
 
 ```
 ## test run, saves results in folder 'test_Atha_chr4' 
-./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna 
+./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna --bed_file Atha.bed
 
 # parsing FASTA file
 # genome length = 18585056 bp

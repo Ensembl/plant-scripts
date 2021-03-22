@@ -144,7 +144,7 @@ done < list.cores.sp > log.updown500
 # -> gene_exon_updown_plot
 
  
-## check #copies, length of repeats
+## check #copies, length of repeats, and overlap among methods
 
 # repeat length stats 
 while read -r col1 col2; do
@@ -160,6 +160,16 @@ done < list.cores.sp > log.repeat.length
 cut -f 1 pfam/*redat*enrich.tsv | sort | uniq -c | sort -nr | perl -lane 'if(/PF/){ print "$F[1]\t$F[0]" }' > pfam/enrich.redat.tsv
 cut -f 1 pfam/*nrplants*enrich.tsv | sort | uniq -c | sort -nr | perl -lane 'if(/PF/){ print "$F[1]\t$F[0]" }' > pfam/enrich.nrplants.tsv
 cut -f 1 pfam/*Red*enrich.tsv | sort | uniq -c | sort -nr | perl -lane 'if(/PF/){ print "$F[1]\t$F[0]" }' > pfam/enrich.Red.tsv
+
+# Red repeat overlap vs others
+while read -r col1 col2; do
+	red=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.Red.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	nrplants=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	redat=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	printf "%s\t%d\t%d\t%d\n" $col2 $red $redat $nrplants
+
+done < list.cores.sp > log.repeat.overlap
+
 
 ## check GC content
 

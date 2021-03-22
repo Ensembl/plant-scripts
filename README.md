@@ -152,3 +152,8 @@ If you want to run any of those scripts you must first run:
 <!-- to be added chapter citation -->
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)
+
+For the scripts in the [repeats](./repeats/) folder please also cite:
+
+Girgis HZ (2015) Red: an intelligent, rapid, accurate tool for detecting repeats de-novo on the genomic scale. 
+BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5.

@@ -65,7 +65,7 @@ The repeats called by Red can be optionally annotated by similarity to sequences
 such as the library **nrTEplants**. The script does not load the resulting annotations in a core db just yet:
 ```
 ## test run, re-uses folder 'test_Atha_chr4'
-./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
+./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.nrTEplants.bed
 
 ## consider only repeats with length >= 200 bp
 ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna Brachypodium_distachyon --cor 4 \

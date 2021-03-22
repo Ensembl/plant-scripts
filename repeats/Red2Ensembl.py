@@ -262,6 +262,66 @@ def run_red( red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepat
     rpt_files = _parse_rptfiles_from_log(log_filepath)
     return rpt_files
 
+def produce_BED( rpt_file_list, bed_filename):
+    '''Parses rpt files and produces BED file with sorted repeated ranges.
+       Note: requires system sort.
+       Returns number of lines in BED file.'''
+
+    if not rpt_file_list:
+        print("# ERROR: got no repeat files")
+
+    # open new BED file
+    try:
+        bed_filename_raw = bed_filename + '.raw'
+        bedfile = open(bed_filename_raw,"w")
+        num_lines = 0
+    except OSError as error:
+        print("# ERROR: cannot create file ", bed_filename_raw, error)
+        return 0
+
+    # parse repeat coord files, one per sequence
+    for filename in rpt_file_list:
+        try:
+            rptfile = open(filename)
+        except OSError as error:
+            print("# ERROR: cannot open/read file:", filename, error)
+            return 0
+
+        for line in rptfile:
+            column = line.split()
+            seq_region_id = column[0]
+            bed_start = int(column[1])-1
+            bed_end = column[2]
+            num_lines = num_lines + 1
+
+            print("%s\t%s\t%s" % (\
+                seq_region_id, bed_start, bed_end),\
+                file=bedfile)
+
+        rptfile.close()
+
+    bedfile.close()
+
+    # sort BED file
+    cmd = 'sort -k1,1 -k2,2g ' + bed_filename_raw
+
+    try:
+        sortfile = open(bed_filename,"w")
+    except OSError as error:
+        print("# ERROR: cannot create file ", bed_filename, error)
+        return 0
+
+    try:
+        osresponse = subprocess.check_call(cmd.split(),stdout=sortfile)
+    except subprocess.CalledProcessError as err:
+        print("# ERROR: cannot run sort ", cmd, err.returncode)
+    finally:
+        sortfile.close()
+    
+    os.remove(bed_filename_raw)
+
+    return num_lines
+
 
 def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
     red_path,red_version, red_params, logic_name, db_url):
@@ -444,6 +504,8 @@ def main():
         help="number of cores for Red, default: 1")
     parser.add_argument("--msk_file", default='',
         help="name of output FASTA file with soft-masked sequences")
+    parser.add_argument("--bed_file", default='',
+        help="name of output BED file with repeated ranges, uses original sequence names")
     parser.add_argument("--host",
         help="name of the database host, required to store repeats in Ensembl core")
     parser.add_argument("--user",
@@ -465,7 +527,6 @@ def main():
     if args.citation:
         print( citation_string() )
         exit(0)
-
 
     # create output directory & subdirs if required,
     # these follow Red nomenclature
@@ -495,6 +556,11 @@ def main():
     repeat_filenames = run_red( args.exe, args.cor, \
 	    args.msk_file, gnmdir, rptdir, log_filepath) 
     print("# TSV files with repeat coords: %s\n\n" % rptdir)
+
+    # output BED if requested
+    if args.bed_file:
+        num_bed_lines = produce_BED( repeat_filenames, args.bed_file)
+        print("# BED file with repeat coords: %s\n\n" % args.bed_file)
 
     # (optionally) store repeat features in core database
     if args.user and args.pw and args.host and args.port and args.db:

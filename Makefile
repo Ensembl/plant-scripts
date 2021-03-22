@@ -40,11 +40,11 @@ install_redat:
 	cd files && wget -c ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz && gunzip mipsREdat_9.3p_ALL.fasta.gz
 
 test_repeats:
-	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.bed
+	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.nrTEplants.bed
 
 uninstall_repeats:
 	cd files && rm -rf nrTEplantsJune2020.fna*
 	cd lib && rm -rf Red minimap2 
 
 clean_repeats:
-	cd repeats && rm -rf test_Atha_chr4 Atha.sm.fna test.bed
+	cd repeats && rm -rf test_Atha_chr4 Atha.sm.fna test.nrTEplants.bed

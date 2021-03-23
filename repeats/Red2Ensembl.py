@@ -112,11 +112,13 @@ def parse_FASTA_sequences( genome_file , dirname ):
 
 
 def parse_params_from_log( log_filename ):
-    '''Parses Red stdout log and returns two strings: 
-       i) Red version ii) Parameters of this job'''
+    '''Parses Red stdout log and returns 3 strings: 
+       i) Red version ii) Parameters of this job 
+       iii) summary of masked repeats '''
 
     version = 'NA'
     params = ''
+    summary = ''
     try:
         logfile = open(log_filename)
     except OSError as error:
@@ -131,10 +133,14 @@ def parse_params_from_log( log_filename ):
             paramre = re.search(r'^(-\w+: \S+)', line)
             if paramre:
                 params = params + ' ' + paramre.group(1)
+            else:
+                sumre = re.search(r'^Genome length: \d+ - (Repeats length: .*)', line)
+                if sumre:
+                    summary = sumre.group(1)
 
     logfile.close
 
-    return version, params
+    return (version, params, summary)
 
 
 def _parse_rptfiles_from_log( log_filename ):
@@ -572,13 +578,20 @@ def main():
                 args.db + '?' + \
                'local_infile=1'
 
-        red_version, red_params = parse_params_from_log(log_filepath)
+        (red_version, red_params, red_summary) = \
+            parse_params_from_log(log_filepath)
 
         num_repeats, name2seqregion  = \
             store_repeats_database( rptdir, sequence_names, repeat_filenames, \
                 args.exe, red_version, red_params, args.logic_name,\
                 db_url)
         print("\n# stored %d repeats\n" % num_repeats);
+
+        # text report 
+        print("# summary report:\nRepeated sequences were called with the Repeat Detector, which is part of the " +\
+            "[Ensembl Genomes repeat feature pipelines]" +\
+            "(http://plants.ensembl.org/info/genome/annotation/repeat_features.html). %s\n" % 
+            red_summary)
 
         # print sequence name synonyms to file
         syn_filepath = os.path.join(gnmdir, 'synonyms.tsv')

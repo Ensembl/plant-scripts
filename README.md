@@ -153,7 +153,10 @@ If you want to run any of those scripts you must first run:
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)
 
-For the scripts in the [repeats](./repeats/) folder please also cite:
+For the scripts and data in the [repeats](./repeats/) folder please also cite:
+
+
+Contreras-Moreira B, Filippi CV, Naamati G, García Girón C, Allen JE, Flicek P (2021) Efficient masking of plant genomes by combining kmer counting and curated repeats. https://www.biorxiv.org/content/10.1101/2021.03.22.436504v1
 
 Girgis HZ (2015) Red: an intelligent, rapid, accurate tool for detecting repeats de-novo on the genomic scale. 
 BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5.

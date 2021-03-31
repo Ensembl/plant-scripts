@@ -12,10 +12,14 @@ https://docs.google.com/spreadsheets/d/1-Gaw8fP-BOESGO-kF4Jrce1lQT8VR8OhlKF7wCbI
 ~/plant_tools/production/core/repeats_pipeline_hive.pl -v 101 -R $p1panreg -P $reptmp -D ensembl_production -s aegilops_tauschii -s arabidopsis_halleri -s arabidopsis_thaliana -s arabis_alpina -s brassica_rapa -s malus_domestica_golden -s oryza_sativa -s prunus_dulcis -s setaria_viridis -s triticum_turgidum -s vitis_vinifera -s trifolium_pratense -s olea_europaea_sylvestris -s brachypodium_distachyon -s helianthus_annuus -s zea_mays -s camelina_sativa -w -n
 
 ## compute masked fraction Ensembl production way 
-## produce the corresponding BED files, which are moved to fodler bed/
+## produce the corresponding BED files, which are moved to folder bed/
 perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$p1panreg -species $sp -logic_name repeatmask_nrplants"; print $cmd; system("$cmd")' list.cores > log.nrplants.bed
 
 perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$p1panreg -species $sp -logic_name repeatmask_redat"; print $cmd; system("$cmd")' list.cores > log.redat.bed
+
+perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$p1panreg -species $sp -logic_name dust"; print $cmd; system("$cmd")' list.cores > log.dust.bed
+
+perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$p1panreg -species $sp -logic_name trf"; print $cmd; system("$cmd")' list.cores > log.trf.bed
 
 # make pretty for spreadsheet
 repeated_fraction]$ perl -ane 'if($F[1] =~ 'repeatmask'){ print "$F[2]\n" }elsif($F[1] =~ 'genome'){ print "$F[0]\t$F[2]\t" }' log.redat.bed
@@ -66,6 +70,8 @@ done < list.cores
 bedtools sort -i bed/aegilops_tauschii_core_48_101_3.bed 
 bedtools sort -i bed/aegilops_tauschii.repeatmask_nrplants.bed
 bedtools sort -i bed/aegilops_tauschii.repeatmask_redat.bed
+bedtools sort -i bed/aegilops_tauschii.dust.bed
+bedtools sort -i bed/aegilops_tauschii.trf.bed
 
 # 1st genes
 
@@ -166,7 +172,10 @@ while read -r col1 col2; do
 	red=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.Red.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	nrplants=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	redat=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-	printf "%s\t%d\t%d\t%d\n" $col2 $red $redat $nrplants
+	dust=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	trf=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+
+	printf "%s\t%d\t%d\t%d\t%d\t%d\n" $col2 $red $redat $nrplants $dust $trf
 
 done < list.cores.sp > log.repeat.overlap
 

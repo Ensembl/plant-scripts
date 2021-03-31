@@ -174,8 +174,9 @@ while read -r col1 col2; do
 	redat=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	dust=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	trf=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-
-	printf "%s\t%d\t%d\t%d\t%d\t%d\n" $col2 $red $redat $nrplants $dust $trf
+	totdust=$(bedtools intersect -a bed/${col2}.dust.bed -b bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	tottrf=$(bedtools intersect -a bed/${col2}.trf.bed -b bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	printf "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n" $col2 $red $redat $nrplants $dust $trf $totdust $tottrf
 
 done < list.cores.sp > log.repeat.overlap
 

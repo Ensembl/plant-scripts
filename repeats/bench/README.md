@@ -21,6 +21,12 @@ perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_
 
 perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$p1panreg -species $sp -logic_name trf"; print $cmd; system("$cmd")' list.cores > log.trf.bed
 
+# wheat pangenome suppl table
+perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$s3panreg -species $sp -logic_name repeatdetector"; print $cmd; system("$cmd")' list.cores.wheat > log.wheat.Red.bed
+
+perl -lne '$sp=(split(/_core/,$_))[0]; $cmd="perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file \$s3panreg -species $sp -logic_name repeatmask_redat"; print $cmd; system("$cmd")' list.cores.wheat > log.wheat.redat.bed
+
+
 # make pretty for spreadsheet
 repeated_fraction]$ perl -ane 'if($F[1] =~ 'repeatmask'){ print "$F[2]\n" }elsif($F[1] =~ 'genome'){ print "$F[0]\t$F[2]\t" }' log.redat.bed
 repeated_fraction]$ perl -ane 'if($F[1] =~ 'repeatmask'){ print "$F[2]\n" }elsif($F[1] =~ 'genome'){ print "$F[0]\t$F[2]\t" }' log.nrplants.bed

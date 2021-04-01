@@ -1,0 +1,30 @@
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_arinalrfor -logic_name repeatmask_redat
+triticum_aestivum_arinalrfor	genome_length	14659055505
+triticum_aestivum_arinalrfor	repeatmask_redat	10173498584
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_jagger -logic_name repeatmask_redat
+triticum_aestivum_jagger	genome_length	14552150998
+triticum_aestivum_jagger	repeatmask_redat	10067215340
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_julius -logic_name repeatmask_redat
+triticum_aestivum_julius	genome_length	14394882126
+triticum_aestivum_julius	repeatmask_redat	10120102277
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_lancer -logic_name repeatmask_redat
+triticum_aestivum_lancer	genome_length	14293273119
+triticum_aestivum_lancer	repeatmask_redat	9923751623
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_landmark -logic_name repeatmask_redat
+triticum_aestivum_landmark	genome_length	14443802583
+triticum_aestivum_landmark	repeatmask_redat	10047469943
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_mace -logic_name repeatmask_redat
+triticum_aestivum_mace	genome_length	14362806306
+triticum_aestivum_mace	repeatmask_redat	9997367079
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_mattis -logic_name repeatmask_redat
+triticum_aestivum_mattis	genome_length	14955365424
+triticum_aestivum_mattis	repeatmask_redat	10037233281
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_norin61 -logic_name repeatmask_redat
+triticum_aestivum_norin61	genome_length	14157632112
+triticum_aestivum_norin61	repeatmask_redat	10067342383
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_stanley -logic_name repeatmask_redat
+triticum_aestivum_stanley	genome_length	14207638630
+triticum_aestivum_stanley	repeatmask_redat	10114891908
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_spelta -logic_name repeatmask_redat
+triticum_spelta	genome_length	14453523434
+triticum_spelta	repeatmask_redat	10021321896

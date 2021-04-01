@@ -1,0 +1,30 @@
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_arinalrfor -logic_name repeatdetector
+triticum_aestivum_arinalrfor	genome_length	14659055505
+triticum_aestivum_arinalrfor	repeatdetector	11909171698
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_jagger -logic_name repeatdetector
+triticum_aestivum_jagger	genome_length	14552150998
+triticum_aestivum_jagger	repeatdetector	11870523645
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_julius -logic_name repeatdetector
+triticum_aestivum_julius	genome_length	14394882126
+triticum_aestivum_julius	repeatdetector	11868610789
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_lancer -logic_name repeatdetector
+triticum_aestivum_lancer	genome_length	14293273119
+triticum_aestivum_lancer	repeatdetector	11601105199
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_landmark -logic_name repeatdetector
+triticum_aestivum_landmark	genome_length	14443802583
+triticum_aestivum_landmark	repeatdetector	11849684520
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_mace -logic_name repeatdetector
+triticum_aestivum_mace	genome_length	14362806306
+triticum_aestivum_mace	repeatdetector	11692169342
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_mattis -logic_name repeatdetector
+triticum_aestivum_mattis	genome_length	14955365424
+triticum_aestivum_mattis	repeatdetector	11748313140
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_norin61 -logic_name repeatdetector
+triticum_aestivum_norin61	genome_length	14157632112
+triticum_aestivum_norin61	repeatdetector	11766521326
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_aestivum_stanley -logic_name repeatdetector
+triticum_aestivum_stanley	genome_length	14207638630
+triticum_aestivum_stanley	repeatdetector	11923454722
+perl ~/plant_tools/production/misc_scripts/repeat_feature_summary.pl -reg_file $s3panreg -species triticum_spelta -logic_name repeatdetector
+triticum_spelta	genome_length	14453523434
+triticum_spelta	repeatdetector	11727050595

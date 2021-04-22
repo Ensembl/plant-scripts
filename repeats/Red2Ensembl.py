@@ -506,8 +506,8 @@ def main():
 
     default_exe = os.path.join( os.path.dirname(__file__) , "../lib/Red/bin/Red")
 
-    default_description = 'Repeats detected using <a href="https://bmcbioinformatics.biomedcentral.com/articles/'+\
-        '10.1186/s12859-015-0654-5">Red (REPeatDetector)</a>'
+    default_description = 'Repeats detected using <a href="https://bmcbioinformatics.biomedcentral.com'+\
+        '/articles/10.1186/s12859-015-0654-5">Red (REPeatDetector)</a>'
 
     parser=argparse.ArgumentParser(
         description="Script to run RepeatDetector (a fork of Red v2) to mask repeats,\n"+\

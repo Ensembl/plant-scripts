@@ -490,7 +490,7 @@ def _parse_repeats(rptdir, rpt_file_list, name2region, analysis_id, repeat_conse
 def citation_string():
     '''Return string with citation information.'''
 
-    citation = "https://doi.org/10.5281/zenodo.4121769\n\n" +\
+    citation = "Contreras-Moreira et al (2021) https://doi.org/10.5281/zenodo.4121769\n" +\
         "Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5\n"
     return citation
 

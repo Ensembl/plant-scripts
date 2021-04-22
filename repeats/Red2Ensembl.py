@@ -330,7 +330,7 @@ def produce_BED( rpt_file_list, bed_filename):
 
 
 def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
-    red_path,red_version, red_params, logic_name, db_url):
+    red_path,red_version, red_params, logic_name, description, label, db_url):
     '''Store parsed Red repeats in Ensembl core database
        accessible from passed URL. Note that the analysis logic name
        and software details are also passed in order to
@@ -406,10 +406,8 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
     # insert Red analysis_description, fails if logic_name exists
     analysis_desc_insert = analysis_desc_table.insert().values({ \
         'analysis_id':analysis_id, \
-        'description':\
-            'Repeats detected using <a href="https://bmcbioinformatics.biomedcentral.com/articles/'+\
-            '10.1186/s12859-015-0654-5">Red (REPeatDetector)</a>', \
-        'display_label':'Repeats:Red' })
+        'description':description,\
+        'display_label':label })
     connection.execute(analysis_desc_insert)
 
     # insert dummy repeat consensus, will fail if it exists
@@ -508,6 +506,9 @@ def main():
 
     default_exe = os.path.join( os.path.dirname(__file__) , "../lib/Red/bin/Red")
 
+    default_description = 'Repeats detected using <a href="https://bmcbioinformatics.biomedcentral.com/articles/'+\
+        '10.1186/s12859-015-0654-5">Red (REPeatDetector)</a>'
+
     parser=argparse.ArgumentParser(
         description="Script to run RepeatDetector (a fork of Red v2) to mask repeats,\n"+\
             "and optionally feed results into an Ensembl core database.",
@@ -539,6 +540,10 @@ def main():
         help="name of the core database, required to store repeats in Ensembl core")
     parser.add_argument("--logic_name", default="repeatdetector",
         help="logic name of Ensembl analysis, default: repeatdetector")
+    parser.add_argument("--description", default=default_description,
+        help="quoted string with Ensembl analysis description, default: " + default_description)
+    parser.add_argument("--displaylabel", default="Repeats:Red",
+        help="string with Ensembl analysis display label, default: Repeats:Red")
 
     args = parser.parse_args()
 
@@ -591,13 +596,13 @@ def main():
 
         num_repeats, name2seqregion  = \
             store_repeats_database( rptdir, sequence_names, repeat_filenames, \
-                args.exe, red_version, red_params, args.logic_name,\
-                db_url)
+                args.exe, red_version, red_params, args.logic_name, \
+                args.description, args.displaylabel, db_url)
         print("\n# stored %d repeats\n" % num_repeats);
 
         # text report 
-        print("# summary report:\nRepeated sequences were called with the Repeat Detector, which is part of the " +\
-            "[Ensembl Genomes repeat feature pipelines]" +\
+        print("# summary report:\nRepeated sequences were called with the Repeat Detector," +\
+            " which is part of the [Ensembl Genomes repeat feature pipelines]" +\
             "(http://plants.ensembl.org/info/genome/annotation/repeat_features.html). %s\n" % 
             red_summary)
 

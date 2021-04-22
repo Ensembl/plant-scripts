@@ -334,7 +334,7 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
     '''Store parsed Red repeats in Ensembl core database
        accessible from passed URL. Note that the analysis logic name
        and software details are also passed in order to
-       fill the analysis table.
+       feed the analysis & analysis_description tables.
        Returns number of inserted repeats.'''
 
     name_to_seqregion = {}
@@ -346,6 +346,7 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
     
     # relevant db tables 
     analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
+    analysis_desc_table = db.Table('analysis_description',metadata,autoload=True,autoload_with=engine)
     meta_table = db.Table('meta',metadata,autoload=True,autoload_with=engine)
     repeat_consensus_table = \
         db.Table('repeat_consensus',metadata,autoload=True,autoload_with=engine)
@@ -401,6 +402,15 @@ def store_repeats_database( rptdir, seq_name_list, rpt_file_list,\
         'meta_key':'repeat.analysis', \
         'meta_value':logic_name })
     connection.execute(meta_insert)
+
+    # insert Red analysis_description, fails if logic_name exists
+    analysis_desc_insert = analysis_desc_table.insert().values({ \
+        'analysis_id':analysis_id, \
+        'description':\
+            'Repeats detected using <a href="https://bmcbioinformatics.biomedcentral.com/articles/'+\
+            '10.1186/s12859-015-0654-5">Red (REPeatDetector)</a>', \
+        'display_label':'Repeats:Red' })
+    connection.execute(analysis_desc_insert)
 
     # insert dummy repeat consensus, will fail if it exists
     # Note: Red repeats are not annotated by default, 

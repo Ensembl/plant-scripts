@@ -648,12 +648,12 @@ def _get_FASTA_sequences( filename ):
 
 
 def store_annotated_repeat_database( workdir, matched_repeats, 
-    exe, minimap_version, repeat_fasta_file, logic_name, db_url):
+    exe, minimap_version, repeat_fasta_file, logic_name, description, label, db_url):
     '''Stores parsed repeat annotations in Ensembl core database
        accessible from passed URL. Second param is dictionary
        with tuples (seq_region_id,start,end) and annotations as values.
-       Note that the analysis logic name and software details are 
-       also passed in order to fill the analysis table.
+       Note that the analysis logic name, desc, label and software details are 
+       also passed in order to fill the analysis & analysis_description tables.
        Returns number of inserted annotations.'''
 
     # core database handles
@@ -663,6 +663,7 @@ def store_annotated_repeat_database( workdir, matched_repeats,
     
     # relevant db tables 
     analysis_table = db.Table('analysis',metadata,autoload=True,autoload_with=engine)
+    analysis_desc_table = db.Table('analysis_description',metadata,autoload=True,autoload_with=engine)
     meta_table = db.Table('meta',metadata,autoload=True,autoload_with=engine)
     repeat_consensus_table = \
         db.Table('repeat_consensus',metadata,autoload=True,autoload_with=engine)
@@ -698,6 +699,13 @@ def store_annotated_repeat_database( workdir, matched_repeats,
         'meta_key':'repeat.analysis', \
         'meta_value':logic_name })
     connection.execute(meta_insert)
+
+    # insert Red analysis_description, fails if logic_name exists
+    analysis_desc_insert = analysis_desc_table.insert().values({ \
+        'analysis_id':analysis_id, \
+        'description':description,\
+        'display_label':label })
+    connection.execute(analysis_desc_insert)
 
     # insert dummy, default repeat consensus, will fail if it exists
     repeat_consensus_insert = repeat_consensus_table.insert().values({ \
@@ -756,8 +764,17 @@ def main():
 
     default_exe = os.path.join( os.path.dirname(__file__) , "../lib/minimap2/minimap2")
 
-    parser=argparse.ArgumentParser()
-   
+    default_description = 'Repeats detected using <a href="https://bmcbioinformatics.biomedcentral.com'+\
+        '/articles/10.1186/s12859-015-0654-5">Red (REPeatDetector)</a> '+\
+        'and annotated by alignment to a repeat library.'
+
+    parser=argparse.ArgumentParser(
+        description="Script to annotate Red repeats and optionally\n"+\
+            "feed the new consensus_repeats into an Ensembl core database.",
+        epilog="Citation:\n" + citation_string(),
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+
     parser.add_argument("repeat_fasta_file",
         help="path to FASTA file with repeat sequences in RepBase format")
     parser.add_argument("outdir",
@@ -782,15 +799,12 @@ def main():
         help="name of the core database")
     parser.add_argument("--logic_name", default="repeatdetector_annotated",
         help="logic name of Ensembl analysis, default: repeatdetector_annotated")
-    parser.add_argument("--citation", action='store_true',
-        help="print citation")
+    parser.add_argument("--description", default=default_description,
+        help="quoted string with Ensembl analysis description, default: " + default_description)
+    parser.add_argument("--displaylabel", default="Repeats:Red (annotated)",
+        help="string with Ensembl analysis display label, default: 'Repeats:Red (annotated)'")
 
     args = parser.parse_args()
-
-    # print citation info
-    if args.citation:
-        print( citation_string() )
-        exit(0)
 
     # create output subdir if required,
     # these follow Red nomenclature
@@ -837,7 +851,8 @@ def main():
         'local_infile=1'
 
         num_annot = store_annotated_repeat_database( annotdir, matched_repeats,\
-            args.exe, version, args.repeat_fasta_file, args.logic_name, db_url)
+            args.exe, version, args.repeat_fasta_file, args.logic_name,\
+            description, displaylabel, db_url)
 
         print("\n# stored %d repeat annotations\n" % num_annot)
 

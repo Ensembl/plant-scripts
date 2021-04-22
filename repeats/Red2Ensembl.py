@@ -498,7 +498,12 @@ def main():
 
     default_exe = os.path.join( os.path.dirname(__file__) , "../lib/Red/bin/Red")
 
-    parser=argparse.ArgumentParser()
+    parser=argparse.ArgumentParser(
+        description="Script to run RepeatDetector (a fork of Red v2) to mask repeats,\n"+\
+            "and optionally feed results into an Ensembl core database.",
+        epilog="Citation:\n" + citation_string(),
+        formatter_class=argparse.RawDescriptionHelpFormatter
+	)
    
     parser.add_argument("fasta_file",
         help="path to FASTA file with top-level genomic sequences")
@@ -524,15 +529,8 @@ def main():
         help="name of the core database, required to store repeats in Ensembl core")
     parser.add_argument("--logic_name", default="repeatdetector",
         help="logic name of Ensembl analysis, default: repeatdetector")
-    parser.add_argument("--citation", action='store_true',
-        help="print citation")
 
     args = parser.parse_args()
-
-    # print citation info
-    if args.citation:
-        print( citation_string() )
-        exit(0)
 
     # create output directory & subdirs if required,
     # these follow Red nomenclature

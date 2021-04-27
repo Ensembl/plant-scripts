@@ -17,6 +17,13 @@ use PlantCompUtils qw(
 # Produces pan-gene analyses based on clusters of orthologous genes shared by
 # species in a plant clade by querying pre-computed Compara data from Ensembl
 #
+# # Queries Ensembl Plants using the Perl API to find
+# # syntenic orthologous genes among i) reference and ii) another species.
+# # It uses precomputed Compara protein trees (orthology) and EPO
+# # multiple alignments (synteny).
+# # Optionally, pan-genes might be named consistently across aligned genomes.
+#
+#
 # Copyright [2019-2021] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
@@ -47,7 +54,7 @@ my ( $clusterdir, $comparadir, $fastadir, $outfolder, $out_genome, $params ) =
 my ( $help, $sp, $sp2, $show_supported, $request, $response );
 my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
-my ( $GOC, $WGA, $LOWCONF, $NOSINGLES ) = ( 0, 0, 0, 0 );
+my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH) = ( 0, 0, 0, 0, 0 );
 my ( @ignore_species, %ignore, %division_supported );
 
 GetOptions(
@@ -64,6 +71,7 @@ GetOptions(
     "WGA|W=i"       => \$WGA,
     "LC|L"          => \$LOWCONF,
     "S|S"           => \$NOSINGLES,
+	"growth|g"      => \$GROWTH,
     "folder|f=s"    => \$outfolder
 ) || help_message();
 
@@ -76,12 +84,12 @@ sub help_message {
       . "-d Ensembl division                        (optional, default: -d $division)\n"
       . "-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
-      .
 
 # commented until I find of matching protein ids to transcript ids
 #"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
 
-        "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
+      . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
+      . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
@@ -97,7 +105,7 @@ sub help_message {
 
     print "Example calls:\n\n"
       . " perl $0 -c Brassicaceae -f Brassicaceae -o beta_vulgaris\n"
-      . " perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75\n"
+      . " perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75 -g \n"
       . exit(0);
 }
 
@@ -211,7 +219,7 @@ else {
     }
 
     print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome "
-      . "-f $outfolder -t $seqtype -G $GOC -W $WGA -L $LOWCONF -S $NOSINGLES\n\n";
+      . "-f $outfolder -t $seqtype -G $GOC -W $WGA -g $GROWTH -L $LOWCONF -S $NOSINGLES\n\n";
 }
 
 my $start_time = new Benchmark();
@@ -655,12 +663,14 @@ print
   "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\n";
 print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
 
-## 5) make genome composition analysis to simulate pangene growth
+
+exit if(!$GROWTH);
+
+## 5) optionally make genome composition analysis to simulate pangene growth
 ## NOTE: this is measured in clusters added/missed per genome
 
-my ( $s,              @pangenome, @coregenome );              #$s = sample
-my ( $core_occup,     $mean,      $sd, $data_file, $sort );
-my ( %previous_sorts, @sample,    @clusters );
+my ( $core_occup, $mean, $sd, $data_file, $sort, $s ); #$s = sample
+my ( %previous_sorts, @sample, @clusters, @pangenome, @coregenome );
 my @taxa    = @supported_species;
 my @tmptaxa = @taxa;
 

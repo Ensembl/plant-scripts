@@ -15,14 +15,13 @@ use PlantCompUtils qw(
 );
 
 # Produces pan-gene analyses based on clusters of orthologous genes shared by
-# species in a plant clade by querying pre-computed Compara data from Ensembl
+# species in a plant clade by querying pre-computed Compara protein trees 
+# (orthology) and whole genome alignments (WGA, synteny, optional -W).
+# Optionally, pan-genes might be named consistently across aligned genomes.
 #
-# # Queries Ensembl Plants using the Perl API to find
-# # syntenic orthologous genes among i) reference and ii) another species.
-# # It uses precomputed Compara protein trees (orthology) and EPO
-# # multiple alignments (synteny).
-# # Optionally, pan-genes might be named consistently across aligned genomes.
-#
+# Note: most species have only LASTZ genome alignments to a reference genome;
+#       some clades ie Oryza also have EPO multiple alignments. Both types are
+#       used to compute WGAcoverage with argument -W.
 #
 # Copyright [2019-2021] EMBL-European Bioinformatics Institute
 

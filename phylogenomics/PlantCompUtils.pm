@@ -27,6 +27,7 @@ our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
 our $GTFDIR     = '/pub/current/xxx/gtf';
+our $MAFDIR     = '/pub/current/xxx/maf/ensembl-compara/';
 
 my  $MYSQLURL   = 'mysql-eg-publicsql.ebi.ac.uk';
 my  $MYSQLPORT  = 4157; 

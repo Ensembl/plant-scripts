@@ -20,8 +20,9 @@ use PlantCompUtils qw(
 # Optionally, pan-genes might be named consistently across aligned genomes.
 #
 # Note: most species have only LASTZ genome alignments to a reference genome;
-#       some clades ie Oryza also have EPO multiple alignments. Both types are
-#       used to compute WGAcoverage with argument -W.
+# some clades ie Oryza also have EPO multiple alignments, explained at
+# http://plants.ensembl.org/info/genome/compara/multiple_genome_alignments.html
+# Both types are used to compute WGAcoverage with argument -W.
 #
 # Copyright [2019-2021] EMBL-European Bioinformatics Institute
 

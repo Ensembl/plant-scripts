@@ -22,7 +22,7 @@ use PlantCompUtils qw(
 # Note: most species have only LASTZ genome alignments to a reference genome;
 # some clades ie Oryza also have EPO multiple alignments, explained at
 # http://plants.ensembl.org/info/genome/compara/multiple_genome_alignments.html
-# Both types are used to compute WGAcoverage with argument -W.
+# Both types are used to compute WGAcoverage. 
 #
 # Copyright [2019-2021] EMBL-European Bioinformatics Institute
 
@@ -48,11 +48,11 @@ my $taxonid    = '';
 # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 
 my $ref_genome = '';    # should be contained in $taxonid;
-my ( $clusterdir, $comparadir, $fastadir, $outfolder, $out_genome, $params ) =
-  ( '', '', '', '', '', '' );
+my ( $clusterdir, $comparadir, $fastadir, $mafdir ) = ( '', '', '', '' );
+my ($outfolder, $out_genome, $params) = ('', '', '');
 
 my ( $help, $sp, $sp2, $show_supported, $request, $response );
-my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
+my ( $filename, $dnafile, $pepfile, $seqfolder, $ext, $MAF );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH) = ( 0, 0, 0, 0, 0 );
 my ( @ignore_species, %ignore, %division_supported );
@@ -72,6 +72,7 @@ GetOptions(
     "LC|L"          => \$LOWCONF,
     "S|S"           => \$NOSINGLES,
 	"growth|g"      => \$GROWTH,
+	"MAF|M=s"       => \$MAF,     
     "folder|f=s"    => \$outfolder
 ) || help_message();
 
@@ -85,8 +86,8 @@ sub help_message {
       . "-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
 
-# commented until I find of matching protein ids to transcript ids
-#"-t sequence type [protein|cdna]            (optional, default: -t protein)\n".
+      # commented until I find a way of matching protein ids to transcript ids
+      #. "-t sequence type [protein|cdna]            (optional, default: -t protein)\n"
 
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
@@ -94,6 +95,7 @@ sub help_message {
       . "-v verbose                                 (optional, example: -v\n";
 
     print "\nThe following options are only available for some clades:\n\n"
+      . "-M parse multiple genome alignments        (optional, example: -M 8_rice.epo)\n\n"
       . "-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n"
       . "   see modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/Plants/ProteinTrees_conf.pm\n"
       . "   at https://github.com/Ensembl/ensembl-compara\n\n"
@@ -105,7 +107,8 @@ sub help_message {
 
     print "Example calls:\n\n"
       . " perl $0 -c Brassicaceae -f Brassicaceae -o beta_vulgaris\n"
-      . " perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75 -g \n"
+      . " perl $0 -f poaceae -c 4479 -r oryza_sativa -G 75 -g\n"
+      . " perl $0 -f poaceae -c 4479 -r oryza_sativa -WGA 75 -M 8_rice.epo\n"
       . exit(0);
 }
 
@@ -124,6 +127,12 @@ if ($division) {
 
         $fastadir = $PlantCompUtils::FASTADIR;
         $fastadir =~ s/xxx/$lcdiv/;
+
+        if(defined($MAF)){
+            $mafdir = $PlantCompUtils::MAFDIR;
+            $mafdir =~ s/xxx/$lcdiv/;
+            $mafdir .= $MAF;
+        }
     }
 }
 
@@ -170,7 +179,7 @@ else {
 
     if ($NOSINGLES) {
         $params .= "_nosingles";
-    }
+    }   
 
     if (@ignore_species) {
         foreach my $sp (@ignore_species) {
@@ -219,7 +228,7 @@ else {
     }
 
     print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome "
-      . "-f $outfolder -t $seqtype -G $GOC -W $WGA -g $GROWTH -L $LOWCONF -S $NOSINGLES\n\n";
+      . "-f $outfolder -t $seqtype -M $MAF -G $GOC -W $WGA -g $GROWTH -L $LOWCONF -S $NOSINGLES\n\n";
 }
 
 my $start_time = new Benchmark();
@@ -495,7 +504,8 @@ foreach $cluster_id (@cluster_ids) {
     my ( %cluster_stats, @cluster_species );
     open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$ext" )
       || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
-    foreach $species (@supported_species) {
+
+	foreach $species (@supported_species) {
         next if ( !$cluster{$cluster_id}{$species} );
         $n_cluster_sp++;
         foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {

@@ -10,7 +10,8 @@ require Exporter;
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
   perform_rest_action transverse_tree_json
   minimize_MSA write_boxplot_file factorial fisher_yates_shuffle
-  @DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $FTPURL
+  @DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $MAFDIR
+  $FTPURL
 );
 
 use strict;

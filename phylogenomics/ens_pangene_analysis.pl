@@ -9,9 +9,10 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use PlantCompUtils qw(
-  parse_isoform_FASTA_file download_compara_TSV_file download_FASTA_file
+  parse_isoform_FASTA_file download_FASTA_file
+  download_compara_TSV_file download_MAF_files
   perform_rest_action write_boxplot_file factorial fisher_yates_shuffle
-  $REQUEST_COUNT $COMPARADIR $FASTADIR @DIVISIONS
+  $REQUEST_COUNT $COMPARADIR $FASTADIR $MAFDIR @DIVISIONS
 );
 
 # Produces pan-gene analyses based on clusters of orthologous genes shared by
@@ -473,6 +474,14 @@ foreach $sp (@supported_species) {
 }
 
 printf( "\n# total sequences = %d\n", $total_seqs );
+
+# download multiple alignment files in MAF format if required
+if($MAF) {
+	my @stored_maf_files =
+      download_MAF_files( $mafdir, $MAF, $downloadir );
+}
+
+
 
 ## 3) write sequence clusters, summary text file and POCP matrix
 

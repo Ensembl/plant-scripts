@@ -473,14 +473,20 @@ foreach $sp (@supported_species) {
         $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons );
 }
 
-printf( "\n# total sequences = %d\n", $total_seqs );
+printf( "\n# total sequences = %d\n\n", $total_seqs );
 
 # download multiple alignment files in MAF format if required
 if($MAF) {
 	my @stored_maf_files =
       download_MAF_files( $mafdir, $MAF, $downloadir );
+
+    printf( "\n# total MAF files = %d\n", scalar(@stored_maf_files) );
 }
 
+# TODO: parse MAF files and store aligned blocks
+# species are summarized as Osat (oryza_sativa)
+# block stats: coverage, genes/block
+# find out genes included in each block
 
 
 ## 3) write sequence clusters, summary text file and POCP matrix

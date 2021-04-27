@@ -8,6 +8,7 @@ require Exporter;
   list_ensembl_mysql_dbs get_canonical_transcript_ids 
   download_FASTA_file parse_isoform_FASTA_file
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
+  download_MAF_files
   perform_rest_action transverse_tree_json
   minimize_MSA write_boxplot_file factorial fisher_yates_shuffle
   @DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $MAFDIR
@@ -28,7 +29,7 @@ our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
 our $FASTADIR   = '/pub/current/xxx/fasta';
 our $GTFDIR     = '/pub/current/xxx/gtf';
-our $MAFDIR     = '/pub/current/xxx/maf/ensembl-compara/';
+our $MAFDIR     = '/pub/current/xxx/maf/ensembl-compara/multiple_alignments/';
 
 my  $MYSQLURL   = 'mysql-eg-publicsql.ebi.ac.uk';
 my  $MYSQLPORT  = 4157; 
@@ -385,6 +386,63 @@ sub download_FASTA_file {
 
     return $stored_fasta_file;
 }
+
+# Download compressed MAF files from FTP site, and saves them in $targetdir.
+# Alignments are grouped by chromosome, and then by coordinate system.
+# The files named *.other*.maf contain alignments that do not include any reference
+# region. Each file contains up to 200 alignments.
+# uses FTP globals defined above
+sub download_MAF_files {
+
+    my ( $dir, $suffix, $targetdir ) = @_;
+    my ( $maf_file, $stored_maf_file, @stored_files ) = ( '', '' );
+
+    if ( my $ftp =
+           Net::FTP->new( $FTPURL, Passive => 1, Debug => 0, Timeout => 60 ) )
+    {
+        $ftp->login( "anonymous", '-anonymous@' )
+          || die "# ERROR(download_FASTA_file): cannot login "
+          . $ftp->message();
+        $ftp->cwd($dir)
+          || die "# ERROR(download_FASTA_file): cannot change working directory to $dir "
+          . $ftp->message();
+
+        # find out which files are to be downloaded
+        foreach my $file ( $ftp->ls() ) {
+            if ( $file =~ m/^$suffix.*.maf.gz/ ) {
+                $maf_file = $file;
+                $stored_maf_file = "$targetdir/$maf_file";
+
+                unless ( -s $stored_maf_file ) {
+                    $ftp->binary();
+                    # don't print progress as there are too many files
+                    #my $downsize = $ftp->size($maf_file);
+                    #$ftp->hash( \*STDOUT, $downsize / 20 ) if ($downsize);
+                    #printf( "# downloading %s (%1.1fMb) ...\n",
+                    #$maf_file, $downsize / ( 1024 * 1024 ) );
+                    #print "# [        50%       ]\n# ";
+                    if ( !$ftp->get($maf_file) ) {
+                        die "# ERROR(download_MAF_files): failed downloading $maf_file\n";
+                    }
+                    # rename file to final name
+                    rename( $maf_file, $stored_maf_file );
+                    print "# using $maf_file\n";
+                }
+                else {
+				    print "# re-using $stored_maf_file\n";
+               }
+
+               push(@stored_files, $stored_maf_file);
+			}
+		}
+	}
+	else {
+        die "# ERROR(download_MAF_files): cannot connect to ".
+            "$FTPURL , please try later\n";
+    }
+
+	return @stored_files;
+}	
 
 # uses global $REQUEST_COUNT
 # takes a HTTP::Tiny object as first param

@@ -21,6 +21,7 @@ use Net::FTP;
 use Time::HiRes;
 use HTTP::Tiny;
 use DBI;
+use Array::IntSpan;
 
 # Fungi Protists Metazoa have collections and one all-vs-all TSV file
 # This code won't work there
@@ -89,7 +90,7 @@ sub get_canonical_transcript_ids {
 # returns:
 # i) a isoform=>sequence hash with the (optionally) selected or
 #    (default) longest peptide/transcript per gene
-# ii) a isoform=>description hash with description & chr location
+# ii) a isoform=>description hash with chr location & description
 #    extracted from the FASTA header
 sub parse_isoform_FASTA_file {
 
@@ -105,17 +106,20 @@ sub parse_isoform_FASTA_file {
 
         #>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
         if ( $line =~ m/^>(\S+).*?gene:(\S+)/ ) {
+
             $stable_id      = $1;    # might pep or cdna id
             $gene_stable_id = $2;
 
+			# take genomic coordinates
+            $header{$stable_id} = ( split( /\s+/, $line ) )[2];
+
+            # add description if possible
             if ( $line =~ m/description:(.*)?\[/ ) {
-                $header{$stable_id} = $1;
+                $header{$stable_id} .= " $1";
             }
             else {
-                $header{$stable_id} = "no_description ";
+                $header{$stable_id} .= " no_description ";
             }
-            $header{$stable_id} .= ( split( /\s+/, $line ) )[2];
-
         }
         elsif ( $line =~ m/^(\S+)/ ) {
             $sequence{$gene_stable_id}{$stable_id} .= $1;
@@ -189,7 +193,7 @@ sub get_gene_coords_GTF_file {
 }
 
 # download compressed GTF file from FTP site, renames it
-# # and saves it in $targetdir; uses FTP globals defined above
+# and saves it in $targetdir; uses FTP globals defined above
 sub download_GTF_file {
 
     my ( $dir, $ref_genome, $targetdir ) = @_;
@@ -446,30 +450,80 @@ sub download_MAF_files {
 
 # takes hash ref of headers produced by parse_isoform_FASTA_file
 # and returns hash ref to lists of canonical isoforms, one per
-# chr/scaffold/contig, sorted by start (fwd strand) coordinate.
-# Each isoform is actually an Array::IntSpan-compatible tuple 
-# [start, end, stable_id]
+# chr:strand, sorted by start coordinate.
+# Each isoform is actually a [start, end, stable_id] tuple 
+# compatibe with Array::IntSpan.
+# IMPORTANT: only non-verlapping isoforms are considered
+# Returns hash ref with one Array::IntSpan object per chr:strand,
+# and also a list of removed isoforms under the key 'overlapping'
 sub sort_isoforms_chr {
-    my ($ref_header) = @_;
-    my ($stable_id,$chr,$start,$end,$dummy,$assembly,$strand);
-    my (%raw,%sorted);
+    my ($ref_header, $verbose) = @_;
+    my ($stable_id,$start,$end);
+    my ($chr,$strand,$chstrand,$isof);
+	my ($n_sorted,$n_overlapping) = (0,0);
+    my (%raw,%isoforms);
 
     for $stable_id (keys(%$ref_header)){
-        #no_description chromosome:IRGSP-1.0:12:8823315:8825166:-1
-        ($dummy,$assembly,$chr,$start,$end,$strand) = 
-            split(/:/,$ref_header->{$stable_id});
-        push(@{ $raw{$chr} }, [$start,$end,$stable_id] );
+        # chromosome:IRGSP-1.0:12:8823315:8825166:-1
+		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([^:]+)/) {
+            ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
+            $chstrand = "$chr:$strand";
+            push(@{ $raw{$chstrand} }, [$start,$end,$stable_id] );
+			print "$chstrand [$start,$end,$stable_id]\n" if($verbose);
+        }
     }
 
-    # sort chrmosomes/scaffolds
-	foreach $chr (keys(%raw)) {
-        $sorted{$chr} = sort {$a->[0] <=> $b->[0]} @{ $raw{$chr} };
+    # sort isoforms along chr/scaffolds, and skip overlapping ones, as
+    # http://plants.ensembl.org/Oryza_sativa/Gene/Summary?db=core;g=Os06g0168150;r=6:3426914-3434445
+	foreach $chstrand (keys(%raw)) {
+       
+        # create new integer span for this chr & strand
+        my $sorted_span = Array::IntSpan->new();
 
-		foreach my $isof (@{ $sorted{$chr} }) {
-            print "$chr $isof->[0] $isof->[1] $isof->[2]\n";
-		} exit;
+        if($chstrand =~ m/:-1/) { # reverse strand
+            my @sorted = sort {$a->[1] <=> $b->[1]} @{ $raw{$chstrand} };
+
+            for($isof=0;$isof<$#sorted;$isof++) {
+                if($sorted[$isof]->[0] > $sorted[$isof+1]->[0]) {
+
+					push(@{ $isoforms{'overlapping'} }, $sorted[$isof]->[2]);
+                    $n_overlapping++;
+
+                    printf("# WARNING(sort_isoforms_chr): skip overlapping %s %s:%d-%d\n",
+                        $sorted[$isof]->[2], $chstrand, $sorted[$isof]->[0],$sorted[$isof]->[1]) if($verbose);
+                } else {
+                    $sorted_span->set_range($sorted[$isof]->[0],$sorted[$isof]->[1],$sorted[$isof]->[2]);
+                    $n_sorted++;
+                }
+            }
+        } else { # forward strand
+            my @sorted = sort {$a->[0] <=> $b->[0]} @{ $raw{$chstrand} };
+
+            for($isof=1;$isof<$#sorted;$isof++) {
+                if($sorted[$isof]->[0] < $sorted[$isof-1]->[1]) {
+					push(@{ $isoforms{'overlapping'} }, $sorted[$isof]->[2]);
+                    $n_overlapping++;
+                    printf("# WARNING(sort_isoforms_chr): skip overlapping %s %s:%d-%d\n",
+                        $sorted[$isof]->[2], $chstrand, $sorted[$isof]->[0],$sorted[$isof]->[1]) if($verbose);
+                } else {
+                    $sorted_span->set_range($sorted[$isof]->[0],$sorted[$isof]->[1],$sorted[$isof]->[2]);
+                    $n_sorted++;
+                }
+            }
+        }
+
+        # debugging
+        #my $ref = $sorted_span->get_range(3400000,3440000);
+		#foreach my $isof (@{ $ref }) {
+        #    print "$isof->[0] $isof->[1] $isof->[2]\n";
+		#} 
+		
+        $isoforms{$chstrand} = $sorted_span;        
     }
+    
+	printf("# sorted %d isoforms, skipped %d overlapping\n",$n_sorted,$n_overlapping);
 
+    return \%isoforms;
 }
 
 # uses global $REQUEST_COUNT
@@ -563,7 +617,7 @@ sub factorial {
 # generates a random permutation of @array in place
 sub fisher_yates_shuffle {
     my $array = shift;
-    my ( $i, $j, $array_string );
+    my ( $i, $j );
 
     for ( $i = @$array ; --$i ; ) {
         $j = int( rand( $i + 1 ) );

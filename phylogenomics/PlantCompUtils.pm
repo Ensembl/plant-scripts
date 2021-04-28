@@ -8,7 +8,7 @@ require Exporter;
   list_ensembl_mysql_dbs get_canonical_transcript_ids 
   download_FASTA_file parse_isoform_FASTA_file sort_isoforms_chr
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
-  download_MAF_files
+  download_MAF_files parse_MAF_file
   perform_rest_action transverse_tree_json
   minimize_MSA write_boxplot_file factorial fisher_yates_shuffle
   @DIVISIONS $REQUEST_COUNT $COMPARADIR $FASTADIR $GTFDIR $MAFDIR
@@ -448,7 +448,51 @@ sub download_MAF_files {
 	return @stored_files;
 }	
 
-# takes hash ref of headers produced by parse_isoform_FASTA_file
+# Takes a ref to a list of Ensembl production names and 
+# returns a list of abbreviated names as those in MAF
+# Newick trees
+sub _shorten_production_name {
+    my ($ref_long_names) = @_;
+
+    my (@abbrev,$short);
+    foreach my $name (@$ref_long_names){
+        if($name =~ m/([^_]+)_([^_]+)_([^_]+)/) { # trinomial
+            $short = uc(substr($1,0,1)) . substr($2,0,1) . substr($3,0,2);
+        } elsif($name =~ m/([^_]+)_([^_]+)/) { # binomial
+            $short = uc(substr($1,0,1)) . substr($2,0,3);
+	    }		
+        push(@abbrev, $short);
+	}
+
+    return @abbrev;
+}
+
+# Takes 5 args:
+# i)   path to GZIP-compressed MAF file (readonly)
+# ii)  ref to list of target species, only those will be parsed (readonly)
+# iii) ref to hash with Array::IntSpan (readonly)
+# iv)  ref to hash with blocks to add parsed data
+# v)   ref to hash to added stats of parsed block
+sub parse_MAF_file {
+    my ($maf_filename, $ref_species, $ref_coords, $ref_blocks, $ref_stats) = @_;
+    my ($newick);
+
+    # shorten species names, to match those in Newick string
+    my @short_spnames = _shorten_production_name($ref_species);
+
+    open( MAF, "$GZIPEXE -dc $maf_filename |" )
+      || die "# ERROR(parse_MAF_file): cannot open $maf_filename\n";
+    while ( my $line = <MAF> ) {
+
+        # tree: ((Oind_4_11238666_11248253[+]:0.0061515,Oniv_4_7962011_7971991[+]:...
+        if($line =~ /^# tree: (\S+)/){
+            $newick = $1;
+        }
+    }
+    close(MAF);
+}
+
+# Takes hash ref of headers produced by parse_isoform_FASTA_file
 # and returns hash ref to lists of canonical isoforms, one per
 # chr:strand, sorted by start coordinate.
 # Each isoform is actually a [start, end, stable_id] tuple 

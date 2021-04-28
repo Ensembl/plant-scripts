@@ -6,7 +6,7 @@ require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(
   list_ensembl_mysql_dbs get_canonical_transcript_ids 
-  download_FASTA_file parse_isoform_FASTA_file
+  download_FASTA_file parse_isoform_FASTA_file sort_isoforms_chr
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
   download_MAF_files
   perform_rest_action transverse_tree_json
@@ -443,6 +443,34 @@ sub download_MAF_files {
 
 	return @stored_files;
 }	
+
+# takes hash ref of headers produced by parse_isoform_FASTA_file
+# and returns hash ref to lists of canonical isoforms, one per
+# chr/scaffold/contig, sorted by start (fwd strand) coordinate.
+# Each isoform is actually an Array::IntSpan-compatible tuple 
+# [start, end, stable_id]
+sub sort_isoforms_chr {
+    my ($ref_header) = @_;
+    my ($stable_id,$chr,$start,$end,$dummy,$assembly,$strand);
+    my (%raw,%sorted);
+
+    for $stable_id (keys(%$ref_header)){
+        #no_description chromosome:IRGSP-1.0:12:8823315:8825166:-1
+        ($dummy,$assembly,$chr,$start,$end,$strand) = 
+            split(/:/,$ref_header->{$stable_id});
+        push(@{ $raw{$chr} }, [$start,$end,$stable_id] );
+    }
+
+    # sort chrmosomes/scaffolds
+	foreach $chr (keys(%raw)) {
+        $sorted{$chr} = sort {$a->[0] <=> $b->[0]} @{ $raw{$chr} };
+
+		foreach my $isof (@{ $sorted{$chr} }) {
+            print "$chr $isof->[0] $isof->[1] $isof->[2]\n";
+		} exit;
+    }
+
+}
 
 # uses global $REQUEST_COUNT
 # takes a HTTP::Tiny object as first param

@@ -7,14 +7,10 @@ use Benchmark;
 use HTTP::Tiny;
 use JSON qw(decode_json);
 use FindBin '$Bin';
-
-# required for -M
-use Array::IntSpan;
-
 use lib $Bin;
 use PlantCompUtils qw(
-  parse_isoform_FASTA_file download_FASTA_file
-  download_compara_TSV_file download_MAF_files
+  parse_isoform_FASTA_file download_FASTA_file sort_isoforms_chr
+  download_compara_TSV_file download_MAF_files parse_MAF_file
   perform_rest_action write_boxplot_file factorial fisher_yates_shuffle
   $REQUEST_COUNT $COMPARADIR $FASTADIR $MAFDIR @DIVISIONS
 );
@@ -61,7 +57,6 @@ my ( $filename, $dnafile, $pepfile, $seqfolder, $ext, $MAF );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH) = ( 0, 0, 0, 0, 0 );
 my ( @ignore_species, %ignore, %division_supported );
-my ( %MAFblocks );
 
 GetOptions(
     "help|?"        => \$help,
@@ -275,8 +270,10 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 
 my ( $n_of_species, $cluster_id ) = ( 0, '' );
 my ( @supported_species, @cluster_ids, %supported );
-my ( %incluster, %cluster, %sequence, %coord );
+my ( %incluster, %cluster, %sequence, %coords );
+my %overlapping; # overlapping isoforms, not coord-sorted
 my ( %totalgenes, %totalclusters, %POCP_matrix );
+my (%MAFblocks, %MAFstats);
 
 $request = $TAXOPOINT . "$taxonid?";
 
@@ -349,10 +346,8 @@ foreach $sp (@supported_species) {
       || die "# ERROR: cannot open $stored_compara_file\n";
     while ( my $line = <TSV> ) {
 
-#ATMG00030       ATMG00030.1     arabidopsis_thaliana    52.3364 ortholog_one2many  \
-#Tp57577       Tp57577       trifolium_pratense      \
-#16.8675 NULL    NULL    NULL    NULL    0
-
+        #ATMG00030 ATMG00030.1 arabidopsis_thaliana 52.3364 ortholog_one2many \
+        #Tp57577 Tp57577 trifolium_pratense 16.8675 NULL NULL NULL NULL 0
         (
             $gene_stable_id,     $prot_stable_id, $species,
             $identity,           $homology_type,  $hom_gene_stable_id,
@@ -424,27 +419,25 @@ foreach $sp (@supported_species) {
     }
     close(TSV); 
 
-    # now get FASTA file and parse it, selected/longest isoforms are read
+    # now get FASTA file and parse it, canonical/longest isoforms are read,
+    # one per gene 
     my $stored_sequence_file =
       download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
 
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
+    print "# sorting isoforms of $sp\n";
+	($coords{$sp}, $overlapping{$sp}) = sort_isoforms_chr($ref_header);
+
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
 
-    # save these sequences and their genomic coordinates
+    # save these sequences
     foreach $prot_stable_id ( keys(%$ref_sequence) ) {
         $sequence{$species}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
-
-		# TODO: save gene coords per chr in Array::IntSpan format:
-		# [start, end, $prot_stable_id]
-		#no_description chromosome:IRGSP-1.0:12:8823315:8825166:-1
-		#$coord{$species}{$prot_stable_id} = (split(/:/,
-		#print "$ref_header->{$prot_stable_id}\n"; exit;
     }
-}
+} 
 
 # count how many clusters include each species
 foreach $cluster_id (@cluster_ids) {
@@ -498,17 +491,11 @@ if(defined($MAF)) {
 
     foreach $maf_file (@stored_maf_files) {
 
-        # TODO: foreach block:
-		# species are summarized as Osat (oryza_sativa)
-		# block stats: coverage, genes/block
-		# ind out genes included in each block
-		# translate gene coordinates per block to compute gene overlaps
-		#
-        #$n_of_blocks = parse_MAF_file( $maf_file, \%MAFblocks, @supported_species );
-
+        parse_MAF_file( $maf_file, \@supported_species,
+            \%coords, \%MAFblocks, \%MAFstats);
     }
 
-    # TODO: sort block per species, that will sort genes as well
+    # TODO: sort blockss per species, that will sort genes as well
 }
 
 ## 3) write sequence clusters, summary text file and POCP matrix

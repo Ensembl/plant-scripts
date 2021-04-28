@@ -475,13 +475,12 @@ sub _shorten_production_name {
 # v)   ref to hash to added stats of parsed block
 sub parse_MAF_file {
     my ($maf_filename, $ref_species, $ref_coords, $ref_blocks, $ref_stats) = @_;
-    my ($newick);
+    my ($newick, $sp, $chr, $start, $end, $strand, $chstrand);
+    my ($species);
 
     # shorten species names, to match those in Newick string
-    my @short_spnames = _shorten_production_name($ref_species);
+    my $ref_shortnames = _shorten_production_name($ref_species);
 
-    print "@short_spnames\n"; exit;
-  
     open( MAF, "$GZIPEXE -dc $maf_filename |" )
       || die "# ERROR(parse_MAF_file): cannot open $maf_filename\n";
     while ( my $line = <MAF> ) {
@@ -489,10 +488,36 @@ sub parse_MAF_file {
         # tree: ((Oind_4_11238666_11248253[+]:0.0061515,Oniv_4_7962011_7971991[+]:...
         if($line =~ /^# tree: (\S+)/){
             $newick = $1;
-            while($newick =~ m/(\w{4})_[^_]+_
+            while($newick =~ m/(\w{4})_([^_]+)_([^_]+)_([^\[]+)\[([^\]])/g){
+				
+                ($sp, $chr, $start, $end, $strand) = ($1,$2,$3,$4,$5);
+				next if not defined($ref_shortnames->{$sp});
+
+                $species = $ref_shortnames->{$sp};
+
+                # concat chr & strand, as that's what $ref_coords takes
+                if($strand eq '+'){ $chstrand = "$chr:1" }
+                else{ $chstrand = "$chr:-1" }
+
+                # compute block length
+                #print "$sp, $chstrand, $start, $end\n";
+				
+				# find genes within block
+				
+				# add stats
+            }
         }
     }
-    close(MAF);
+    close(MAF); exit;
+
+ # TODO: foreach block:
+ #         # species are summarized as Osat (oryza_sativa)
+ #                 # block stats: coverage, genes/block
+ #                         # ind out genes included in each block
+ #                                 # translate gene coordinates per block to compute gene overlaps
+ #                                         #
+ #
+
 }
 
 # Takes hash ref of headers produced by parse_isoform_FASTA_file

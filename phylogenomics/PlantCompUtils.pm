@@ -454,14 +454,15 @@ sub download_MAF_files {
 # Each isoform is actually a [start, end, stable_id] tuple 
 # compatibe with Array::IntSpan.
 # IMPORTANT: only non-verlapping isoforms are considered
-# Returns hash ref with one Array::IntSpan object per chr:strand,
-# and also a list of removed isoforms under the key 'overlapping'
+# Returns: 
+# i) hash ref with one Array::IntSpan object per chr:strand
+# ii) hash ref with removed overlapping isoforms
 sub sort_isoforms_chr {
     my ($ref_header, $verbose) = @_;
     my ($stable_id,$start,$end);
     my ($chr,$strand,$chstrand,$isof);
 	my ($n_sorted,$n_overlapping) = (0,0);
-    my (%raw,%isoforms);
+    my (%raw,%isoforms,%overlapping);
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1
@@ -486,7 +487,7 @@ sub sort_isoforms_chr {
             for($isof=0;$isof<$#sorted;$isof++) {
                 if($sorted[$isof]->[0] > $sorted[$isof+1]->[0]) {
 
-					push(@{ $isoforms{'overlapping'} }, $sorted[$isof]->[2]);
+					$overlapping{$sorted[$isof]->[2]} = 1;
                     $n_overlapping++;
 
                     printf("# WARNING(sort_isoforms_chr): skip overlapping %s %s:%d-%d\n",
@@ -501,7 +502,8 @@ sub sort_isoforms_chr {
 
             for($isof=1;$isof<$#sorted;$isof++) {
                 if($sorted[$isof]->[0] < $sorted[$isof-1]->[1]) {
-					push(@{ $isoforms{'overlapping'} }, $sorted[$isof]->[2]);
+
+					$overlapping{$sorted[$isof]->[2]} = 1;
                     $n_overlapping++;
                     printf("# WARNING(sort_isoforms_chr): skip overlapping %s %s:%d-%d\n",
                         $sorted[$isof]->[2], $chstrand, $sorted[$isof]->[0],$sorted[$isof]->[1]) if($verbose);
@@ -523,7 +525,7 @@ sub sort_isoforms_chr {
     
 	printf("# sorted %d isoforms, skipped %d overlapping\n",$n_sorted,$n_overlapping);
 
-    return \%isoforms;
+    return (\%isoforms, \%overlapping);
 }
 
 # uses global $REQUEST_COUNT

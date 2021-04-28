@@ -7,6 +7,10 @@ use Benchmark;
 use HTTP::Tiny;
 use JSON qw(decode_json);
 use FindBin '$Bin';
+
+# required for -M
+use Array::IntSpan;
+
 use lib $Bin;
 use PlantCompUtils qw(
   parse_isoform_FASTA_file download_FASTA_file
@@ -57,6 +61,7 @@ my ( $filename, $dnafile, $pepfile, $seqfolder, $ext, $MAF );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH) = ( 0, 0, 0, 0, 0 );
 my ( @ignore_species, %ignore, %division_supported );
+my ( %MAFblocks );
 
 GetOptions(
     "help|?"        => \$help,
@@ -270,8 +275,8 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 
 my ( $n_of_species, $cluster_id ) = ( 0, '' );
 my ( @supported_species, @cluster_ids, %supported );
-my ( %incluster, %cluster, %sequence, %totalgenes, %totalclusters,
-    %POCP_matrix );
+my ( %incluster, %cluster, %sequence, %coord );
+my ( %totalgenes, %totalclusters, %POCP_matrix );
 
 $request = $TAXOPOINT . "$taxonid?";
 
@@ -429,9 +434,15 @@ foreach $sp (@supported_species) {
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
 
-    # save these sequences
+    # save these sequences and their genomic coordinates
     foreach $prot_stable_id ( keys(%$ref_sequence) ) {
         $sequence{$species}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
+
+		# TODO: save gene coords per chr in Array::IntSpan format:
+		# [start, end, $prot_stable_id]
+		#no_description chromosome:IRGSP-1.0:12:8823315:8825166:-1
+		#$coord{$species}{$prot_stable_id} = (split(/:/,
+		#print "$ref_header->{$prot_stable_id}\n"; exit;
     }
 }
 
@@ -476,18 +487,29 @@ foreach $sp (@supported_species) {
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
 # download multiple alignment files in MAF format if required
-if($MAF) {
-	my @stored_maf_files =
-      download_MAF_files( $mafdir, $MAF, $downloadir );
+if(defined($MAF)) {
 
+    my ($n_of_blocks, $maf_file, @stored_maf_files) = (0);
+
+    print "# parsing multiple alignment MAF files\n";
+
+	@stored_maf_files = download_MAF_files( $mafdir, $MAF, $downloadir );
     printf( "\n# total MAF files = %d\n", scalar(@stored_maf_files) );
+
+    foreach $maf_file (@stored_maf_files) {
+
+        # TODO: foreach block:
+		# species are summarized as Osat (oryza_sativa)
+		# block stats: coverage, genes/block
+		# ind out genes included in each block
+		# translate gene coordinates per block to compute gene overlaps
+		#
+        #$n_of_blocks = parse_MAF_file( $maf_file, \%MAFblocks, @supported_species );
+
+    }
+
+    # TODO: sort block per species, that will sort genes as well
 }
-
-# TODO: parse MAF files and store aligned blocks
-# species are summarized as Osat (oryza_sativa)
-# block stats: coverage, genes/block
-# find out genes included in each block
-
 
 ## 3) write sequence clusters, summary text file and POCP matrix
 

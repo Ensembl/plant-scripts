@@ -449,22 +449,22 @@ sub download_MAF_files {
 }	
 
 # Takes a ref to a list of Ensembl production names and 
-# returns a list of abbreviated names as those in MAF
-# Newick trees
+# returns a hash with abbreviated names as keys (as those in MAF
+# Newick trees) and production names as values
 sub _shorten_production_name {
     my ($ref_long_names) = @_;
 
-    my (@abbrev,$short);
+    my (%abbrev,$short);
     foreach my $name (@$ref_long_names){
         if($name =~ m/([^_]+)_([^_]+)_([^_]+)/) { # trinomial
             $short = uc(substr($1,0,1)) . substr($2,0,1) . substr($3,0,2);
         } elsif($name =~ m/([^_]+)_([^_]+)/) { # binomial
             $short = uc(substr($1,0,1)) . substr($2,0,3);
 	    }		
-        push(@abbrev, $short);
+        $abbrev{ $short } = $name;
 	}
 
-    return @abbrev;
+    return \%abbrev;
 }
 
 # Takes 5 args:
@@ -480,6 +480,8 @@ sub parse_MAF_file {
     # shorten species names, to match those in Newick string
     my @short_spnames = _shorten_production_name($ref_species);
 
+    print "@short_spnames\n"; exit;
+  
     open( MAF, "$GZIPEXE -dc $maf_filename |" )
       || die "# ERROR(parse_MAF_file): cannot open $maf_filename\n";
     while ( my $line = <MAF> ) {
@@ -487,6 +489,7 @@ sub parse_MAF_file {
         # tree: ((Oind_4_11238666_11248253[+]:0.0061515,Oniv_4_7962011_7971991[+]:...
         if($line =~ /^# tree: (\S+)/){
             $newick = $1;
+            while($newick =~ m/(\w{4})_[^_]+_
         }
     }
     close(MAF);

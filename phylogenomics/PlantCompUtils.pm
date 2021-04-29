@@ -466,17 +466,19 @@ sub _shorten_production_name {
     return \%abbrev;
 }
 
-# Takes 5 args:
+# Takes 7 args:
 # i)   path to GZIP-compressed MAF file (readonly)
 # ii)  ref to list of target species, only those will be parsed (readonly)
 # iii) ref to hash with BED filenames  (readonly)
-# iv) path to bedtools
-# v)  ref to hash with blocks to add parsed data
-# vi)   ref to hash to added stats of parsed block
+# iv)  path to bedtools
+# v)   fraction of gene overlap [0-1] 
+# vi)  ref to hash with blocks to add parsed data
+# vii) ref to hash to added stats of parsed block
 sub parse_MAF_file {
     my ($maf_filename, $ref_species, $ref_bedfiles, 
-        $bedexe, $ref_blocks, $ref_stats) = @_;
-    my ($newick, $sp, $chr, $start, $end, $strand, $species);
+        $bedexe, $gene_overlap, $ref_blocks, $ref_stats) = @_;
+    my ($newick, $sp, $chr, $start, $end, $strand);
+    my ($species, $command);
 
     # shorten species names, to match those in Newick string
     my $ref_shortnames = _shorten_production_name($ref_species);
@@ -501,8 +503,19 @@ sub parse_MAF_file {
                 #print "$sp, $chstrand, $start, $end\n";
 				
 				# find genes within block
-                #open(BEDTOOLS,"echo $bedexe -a $ref_bedfiles->{$species}{$chr} -b 
-
+                if($ref_bedfiles->{$species}{$chr}) {
+                    $command = "echo -e \"$chr\t$start\t$end\" | " .
+                        "$bedexe intersect -sorted -f $gene_overlap " .
+                        "-a $ref_bedfiles->{$species}{$chr} -b stdin";
+                    open(BEDTOOLS,"$command |") 
+                      || die "# ERROR(parse_MAF_file): cannot run $command\n";
+                    while(<BEDTOOLS>) {
+                        print;
+                    }
+                    close(BEDTOOLS);
+                } else {
+                    print "# WARNING(parse_MAF_file): cannot find BED file $species $chr\n";
+                }
 				# add stats
             }
         }

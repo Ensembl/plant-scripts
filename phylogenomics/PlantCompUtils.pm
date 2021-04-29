@@ -473,12 +473,16 @@ sub _shorten_production_name {
 # iv)  path to bedtools
 # v)   fraction of gene overlap [0-1] 
 # vi)  ref to hash with blocks to add parsed data
-# vii) ref to hash to added stats of parsed block
+# vii) ref to hash mapping isoforms to blocks
+# viii)boolean to enable verbose mode
 sub parse_MAF_file {
+
     my ($maf_filename, $ref_species, $ref_bedfiles, 
-        $bedexe, $gene_overlap, $ref_blocks, $ref_stats) = @_;
-    my ($newick, $sp, $chr, $start, $end, $strand);
-    my ($species, $command);
+        $bedexe, $gene_overlap, $ref_blocks, 
+        $ref_iso2block, $verbose) = @_;
+
+    my ($sp, $chr, $start, $end, $strand);
+    my ($species, $command, $newick);
 
     # shorten species names, to match those in Newick string
     my $ref_shortnames = _shorten_production_name($ref_species);
@@ -489,9 +493,17 @@ sub parse_MAF_file {
 
         # tree: ((Oind_4_11238666_11248253[+]:0.0061515,Oniv_4_7962011_7971991[+]:...
         if($line =~ /^# tree: (\S+)/){
+
+            # we will use Newick tree to identify this block
             $newick = $1;
-            while($newick =~ m/(\w{4})_([^_]+)_([^_]+)_([^\[]+)\[([^\]])/g){
-				
+
+            while($newick =~ m/(\w{4})_([\w_]+?)_(\d+)_(\d+)\[([+-])\]:/g) {
+
+                #Osat_5_7890_14004[+]:1e-05
+                #Oruf_5_7624_13133[+]:0.001504
+                #Osat_Syng_TIGR_005_8011_14124[-]:0.000799
+                #Aseq_Ancestor_9910_23859_1_5502[+]:4.8e-05
+	            			   
                 ($sp, $chr, $start, $end, $strand) = ($1,$2,$3,$4,$5);
 
                 # skip unselected species
@@ -499,45 +511,43 @@ sub parse_MAF_file {
 
                 $species = $ref_shortnames->{$sp};
 
-                # compute block length
-                #print "$sp, $chstrand, $start, $end\n";
-				
-				# find genes within block
+                # compute block length per species
+                $ref_blocks->{$newick}{$species}{'length'} = ($end-$start)+1;
+
+                # block occupancy
+                $ref_blocks->{$newick}{'ocuppancy'}++;
+
+				# find genes within block, 
+				# should work only for scaffolds containing genes
                 if($ref_bedfiles->{$species}{$chr}) {
+
                     $command = "echo -e \"$chr\t$start\t$end\" | " .
                         "$bedexe intersect -sorted -f $gene_overlap " .
                         "-a $ref_bedfiles->{$species}{$chr} -b stdin";
                     open(BEDTOOLS,"$command |") 
                       || die "# ERROR(parse_MAF_file): cannot run $command\n";
                     while(<BEDTOOLS>) {
-                        print;
+                        #10	2645232	2645660	ONIVA10G02410.1	0	-
+						my @bedata = split;
+                        $ref_iso2block->{$species}{$bedata[3]} = $newick;
+                        push( @{ $ref_blocks->{$newick}{$species}{'genes'} }, $bedata[3] );
                     }
                     close(BEDTOOLS);
-                } else {
-                    print "# WARNING(parse_MAF_file): cannot find BED file $species $chr\n";
+                } elsif($verbose) {
+                    print "# WARNING(parse_MAF_file): cannot find BED file for $species chr $chr\n";
                 }
-				# add stats
             }
         }
     }
-    close(MAF); exit;
-
- # TODO: foreach block:
- #         # species are summarized as Osat (oryza_sativa)
- #                 # block stats: coverage, genes/block
- #                         # ind out genes included in each block
- #                                 # translate gene coordinates per block to compute gene overlaps
- #                                         #
- #
-
+    close(MAF); 
 }
 
 # Takes 3 args:
 # i)  hash ref of headers produced by parse_isoform_FASTA_file
 # ii) folder to place BED files
 # iii)species production_name
-# Produces BED file with canonical isoforms, one per chr/scaffold, 
-# sorted by start coordinate.
+# Produces 1-based inclusive BED file with canonical isoforms, one per chr/scaffold, 
+# sorted by start coordinate. These can be directly compared to intervals in MAF files
 # Returns hash with chr as key and BED filename as value
 sub sort_isoforms_chr {
     my ($ref_header, $bedfolder, $species) = @_;
@@ -546,7 +556,7 @@ sub sort_isoforms_chr {
     my (%raw,%bedfiles);
 
     for $stable_id (keys(%$ref_header)){
-        # chromosome:IRGSP-1.0:12:8823315:8825166:-1
+        # chromosome:IRGSP-1.0:12:8823315:8825166:-1 , Ensembl 1-based inclusive
 		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([\d-]+)/) {
             ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );

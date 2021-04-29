@@ -533,7 +533,7 @@ sub parse_MAF_file {
                         push( @{ $ref_blocks->{$newick}{$species}{'genes'} }, $bedata[3] );
                     }
                     close(BEDTOOLS);
-                } elsif($verbose) {
+                } elsif(1 || $verbose) {
                     print "# WARNING(parse_MAF_file): cannot find BED file for $species chr $chr\n";
                 }
             }

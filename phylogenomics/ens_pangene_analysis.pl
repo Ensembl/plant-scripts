@@ -32,7 +32,8 @@ my $RESTURL   = 'http://rest.ensembl.org';
 my $INFOPOINT = $RESTURL . '/info/genomes/division/';
 my $TAXOPOINT = $RESTURL . '/info/genomes/taxonomy/';
 
-my $GZIPEXE   = 'gzip' ;
+my $GZIPEXE   = 'gzip';
+my $BEDTOOLSEXE = 'bedtools';
 my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
@@ -42,20 +43,21 @@ my $RNDSEED          = 12345;
 my $NOFSAMPLESREPORT = 10;
 
 my $downloadir = $Bin . '/downloads';
-my $verbose    = 0;
 my $division   = 'Plants';
 my $seqtype    = 'protein';
 my $taxonid    = '';
 # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
 
 my $ref_genome = '';    # should be contained in $taxonid;
-my ( $clusterdir, $comparadir, $fastadir, $mafdir ) = ( '', '', '', '' );
+my ( $clusterdir, $comparadir, $fastadir) = ( '', '', '' );
+my ( $beddir, $mafdir ) = ( '', '' );
 my ($outfolder, $out_genome, $params) = ('', '', '');
 
 my ( $help, $sp, $sp2, $show_supported, $request, $response );
 my ( $filename, $dnafile, $pepfile, $seqfolder, $ext, $MAF );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH) = ( 0, 0, 0, 0, 0 );
+my ( $verbose, $bedtoolsexe ) = ( 0, $BEDTOOLSEXE );
 my ( @ignore_species, %ignore, %division_supported );
 
 GetOptions(
@@ -74,7 +76,8 @@ GetOptions(
     "S|S"           => \$NOSINGLES,
 	"growth|g"      => \$GROWTH,
 	"MAF|M=s"       => \$MAF,     
-    "folder|f=s"    => \$outfolder
+    "folder|f=s"    => \$outfolder,
+    "bedexe|exe=s"  => \$bedtoolsexe
 ) || help_message();
 
 sub help_message {
@@ -93,10 +96,11 @@ sub help_message {
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
+      . "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     print "\nThe following options are only available for some clades:\n\n"
-      . "-M parse multiple genome alignments        (optional, example: -M 8_rice.epo)\n\n"
+      . "-M parse multiple genome alignments        (optional, requires bedtools, example: -M 8_rice.epo)\n\n"
       . "-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n"
       . "   see modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/Plants/ProteinTrees_conf.pm\n"
       . "   at https://github.com/Ensembl/ensembl-compara\n\n"
@@ -180,7 +184,7 @@ else {
 
     if ($NOSINGLES) {
         $params .= "_nosingles";
-    }   
+    }      	
 
     if (@ignore_species) {
         foreach my $sp (@ignore_species) {
@@ -221,6 +225,14 @@ else {
                 die "# ERROR: cannot create $outfolder/$clusterdir\n";
             }
         }
+
+        # create $beddir 
+        $beddir = "$outfolder/bed";
+        if ( defined($MAF) && !-e $beddir ) {
+            if ( !mkdir("$beddir") ) {
+                die "# ERROR: cannot create $beddir\n";
+            }
+        }
     }
     else {
         print
@@ -229,7 +241,8 @@ else {
     }
 
     print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome "
-      . "-f $outfolder -t $seqtype -M $MAF -G $GOC -W $WGA -g $GROWTH -L $LOWCONF -S $NOSINGLES\n\n";
+      . "-f $outfolder -t $seqtype -b $bedtoolsexe -M $MAF -G $GOC -W $WGA "
+      . "-g $GROWTH -L $LOWCONF -S $NOSINGLES -v $verbose\n\n";
 }
 
 my $start_time = new Benchmark();
@@ -427,8 +440,9 @@ foreach $sp (@supported_species) {
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
-    print "# sorting isoforms of $sp\n";
-	($coords{$sp}, $overlapping{$sp}) = sort_isoforms_chr($ref_header);
+	my @bedfiles = sort_isoforms_chr($ref_header, $beddir, $sp);
+	printf("# wrote sorted isoforms of $sp in %d BED files\n",
+        scalar(@bedfiles));
 
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );

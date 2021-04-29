@@ -534,13 +534,14 @@ sub sort_isoforms_chr {
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1
-		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([^:]+)/) {
+		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([\d-]+)/) {
             ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
         }
-    }
+    } exit;
 
-    # sort isoforms along chr/scaffolds, and optional warn about overlapping ones, as in
+    # sort isoforms along chr/scaffolds
+	# Note: some times genes on the same strand can overlap, see
     # http://plants.ensembl.org/Oryza_sativa/Gene/Summary?db=core;g=Os06g0168150;r=6:3426914-3434445
 	foreach $chr (keys(%raw)) {
        

@@ -38,6 +38,9 @@ my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
+# gene overlap in MAF alignment block
+my $OVERLAP = 0.5;
+
 # genome composition report
 my $RNDSEED          = 12345;
 my $NOFSAMPLESREPORT = 10;
@@ -449,7 +452,7 @@ foreach $sp (@supported_species) {
 	my $ref_bedfiles = sort_isoforms_chr($ref_header, $beddir, $sp);
 	printf("# wrote sorted isoforms of $sp in %d BED files\n",
         scalar(keys(%$ref_bedfiles)));
-    $bedfiles{$species} = %{ $ref_bedfiles };    
+    $bedfiles{$species} = $ref_bedfiles;   
 
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
@@ -507,13 +510,14 @@ if(defined($MAF)) {
 
     print "# parsing multiple alignment MAF files\n";
 
-	@stored_maf_files = download_MAF_files( $mafdir, $MAF, $downloadir );
+	@stored_maf_files = download_MAF_files( $mafdir, $MAF, $downloadir, $verbose );
     printf( "\n# total MAF files = %d\n", scalar(@stored_maf_files) );
 
     foreach $maf_file (@stored_maf_files) {
 
         parse_MAF_file( $maf_file, \@supported_species,
-            \%bedfiles, \%MAFblocks, \%MAFstats);
+            \%bedfiles, $bedtoolsexe, $OVERLAP,
+            \%MAFblocks, \%MAFstats);
     }
 
     # TODO: sort blockss per species, that will sort genes as well

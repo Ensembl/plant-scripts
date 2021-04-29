@@ -137,6 +137,13 @@ if ($division) {
             $mafdir = $PlantCompUtils::MAFDIR;
             $mafdir =~ s/xxx/$lcdiv/;
             $mafdir .= $MAF;
+
+			# test bedtools is available
+            my $bedversion = `$bedtoolsexe -version`;
+            if($bedversion !~ "bedtools") {
+                print "# ERROR: please set a valid -b /path/to/bedtools with option -M\n";
+                exit;
+            }
         }
     }
 }
@@ -283,8 +290,7 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 
 my ( $n_of_species, $cluster_id ) = ( 0, '' );
 my ( @supported_species, @cluster_ids, %supported );
-my ( %incluster, %cluster, %sequence, %coords );
-my %overlapping; # overlapping isoforms, not coord-sorted
+my ( %incluster, %cluster, %sequence, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
 my (%MAFblocks, %MAFstats);
 
@@ -440,9 +446,10 @@ foreach $sp (@supported_species) {
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
-	my @bedfiles = sort_isoforms_chr($ref_header, $beddir, $sp);
+	my $ref_bedfiles = sort_isoforms_chr($ref_header, $beddir, $sp);
 	printf("# wrote sorted isoforms of $sp in %d BED files\n",
-        scalar(@bedfiles));
+        scalar(keys(%$ref_bedfiles)));
+    $bedfiles{$species} = %{ $ref_bedfiles };    
 
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
@@ -506,7 +513,7 @@ if(defined($MAF)) {
     foreach $maf_file (@stored_maf_files) {
 
         parse_MAF_file( $maf_file, \@supported_species,
-            \%coords, \%MAFblocks, \%MAFstats);
+            \%bedfiles, \%MAFblocks, \%MAFstats);
     }
 
     # TODO: sort blockss per species, that will sort genes as well

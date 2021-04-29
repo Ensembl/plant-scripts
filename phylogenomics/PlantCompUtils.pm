@@ -21,7 +21,6 @@ use Net::FTP;
 use Time::HiRes;
 use HTTP::Tiny;
 use DBI;
-use Array::IntSpan;
 
 # Fungi Protists Metazoa have collections and one all-vs-all TSV file
 # This code won't work there
@@ -86,7 +85,7 @@ sub get_canonical_transcript_ids {
   return \%canon_isofs;
 }
 
-# parses a FASTA file, either pep or cdna, downloaded with download_FASTA_file
+# Parse a FASTA file, either pep or cdna, downloaded with download_FASTA_file
 # returns:
 # i) a isoform=>sequence hash with the (optionally) selected or
 #    (default) longest peptide/transcript per gene
@@ -520,84 +519,45 @@ sub parse_MAF_file {
 
 }
 
-# Takes hash ref of headers produced by parse_isoform_FASTA_file
-# and returns hash ref to lists of canonical isoforms, one per
-# chr:strand, sorted by start coordinate.
-# Each isoform is actually a [start, end, stable_id] tuple 
-# compatibe with Array::IntSpan.
-# IMPORTANT: only non-verlapping isoforms are considered
-# Returns: 
-# i) hash ref with one Array::IntSpan object per chr:strand
-# ii) hash ref with removed overlapping isoforms
+# Takes 3 args:
+# i)  hash ref of headers produced by parse_isoform_FASTA_file
+# ii) folder to place BED files
+# iii)species production_name
+# Produces BED file with canonical isoforms, one per chr/scaffold, 
+# sorted by start coordinate.
+# Returns list with BED filenames.
 sub sort_isoforms_chr {
-    my ($ref_header, $verbose) = @_;
+    my ($ref_header, $bedfolder, $species) = @_;
     my ($stable_id,$start,$end);
-    my ($chr,$strand,$chstrand,$isof);
-	my ($n_sorted,$n_overlapping) = (0,0);
-    my (%raw,%isoforms,%overlapping);
+    my ($chr,$strand,$bedfile);
+    my (%raw,@bedfilenames);
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1
 		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([^:]+)/) {
             ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
-            $chstrand = "$chr:$strand";
-            push(@{ $raw{$chstrand} }, [$start,$end,$stable_id] );
-			print "$chstrand [$start,$end,$stable_id]\n" if($verbose);
+            push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
         }
     }
 
-    # sort isoforms along chr/scaffolds, and skip overlapping ones, as
+    # sort isoforms along chr/scaffolds, and optional warn about overlapping ones, as in
     # http://plants.ensembl.org/Oryza_sativa/Gene/Summary?db=core;g=Os06g0168150;r=6:3426914-3434445
-	foreach $chstrand (keys(%raw)) {
+	foreach $chr (keys(%raw)) {
        
-        # create new integer span for this chr & strand
-        my $sorted_span = Array::IntSpan->new();
+        # create new BED file for this chr
+        $bedfile = "$bedfolder/$species.$chr.bed";
+		open(BED,">",$bedfile) || die "# ERROR(sort_isoforms_chr): cannot create $bedfile\n";
 
-        if($chstrand =~ m/:-1/) { # reverse strand
-            my @sorted = sort {$a->[1] <=> $b->[1]} @{ $raw{$chstrand} };
-
-            for($isof=0;$isof<$#sorted;$isof++) {
-                if($sorted[$isof]->[0] > $sorted[$isof+1]->[0]) {
-
-					$overlapping{$sorted[$isof]->[2]} = 1;
-                    $n_overlapping++;
-
-                    printf("# WARNING(sort_isoforms_chr): skip overlapping %s %s:%d-%d\n",
-                        $sorted[$isof]->[2], $chstrand, $sorted[$isof]->[0],$sorted[$isof]->[1]) if($verbose);
-                } else {
-                    $sorted_span->set_range($sorted[$isof]->[0],$sorted[$isof]->[1],$sorted[$isof]->[2]);
-                    $n_sorted++;
-                }
-            }
-        } else { # forward strand
-            my @sorted = sort {$a->[0] <=> $b->[0]} @{ $raw{$chstrand} };
-
-            for($isof=1;$isof<$#sorted;$isof++) {
-                if($sorted[$isof]->[0] < $sorted[$isof-1]->[1]) {
-
-					$overlapping{$sorted[$isof]->[2]} = 1;
-                    $n_overlapping++;
-                    printf("# WARNING(sort_isoforms_chr): skip overlapping %s %s:%d-%d\n",
-                        $sorted[$isof]->[2], $chstrand, $sorted[$isof]->[0],$sorted[$isof]->[1]) if($verbose);
-                } else {
-                    $sorted_span->set_range($sorted[$isof]->[0],$sorted[$isof]->[1],$sorted[$isof]->[2]);
-                    $n_sorted++;
-                }
-            }
+        foreach my $isof (sort {$a->[0] <=> $b->[0]} @{ $raw{$chr} }) {
+            print BED "$chr\t$isof->[0]\t$isof->[1]\t$isof->[2]\t0\t$isof->[3]\n";
         }
 
-        # debugging
-        #my $ref = $sorted_span->get_range(3400000,3440000);
-		#foreach my $isof (@{ $ref }) {
-        #    print "$isof->[0] $isof->[1] $isof->[2]\n";
-		#} 
-		
-        $isoforms{$chstrand} = $sorted_span;        
+		close(BED);
+
+        push(@bedfilenames, $bedfile);
     }
     
-	printf("# sorted %d isoforms, skipped %d overlapping\n",$n_sorted,$n_overlapping);
-
-    return (\%isoforms, \%overlapping);
+    return @bedfilenames;
 }
 
 # uses global $REQUEST_COUNT

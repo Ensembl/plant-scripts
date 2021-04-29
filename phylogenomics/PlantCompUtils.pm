@@ -469,13 +469,14 @@ sub _shorten_production_name {
 # Takes 5 args:
 # i)   path to GZIP-compressed MAF file (readonly)
 # ii)  ref to list of target species, only those will be parsed (readonly)
-# iii) ref to hash with Array::IntSpan (readonly)
-# iv)  ref to hash with blocks to add parsed data
-# v)   ref to hash to added stats of parsed block
+# iii) ref to hash with BED filenames  (readonly)
+# iv) path to bedtools
+# v)  ref to hash with blocks to add parsed data
+# vi)   ref to hash to added stats of parsed block
 sub parse_MAF_file {
-    my ($maf_filename, $ref_species, $ref_coords, $ref_blocks, $ref_stats) = @_;
-    my ($newick, $sp, $chr, $start, $end, $strand, $chstrand);
-    my ($species);
+    my ($maf_filename, $ref_species, $ref_bedfiles, 
+        $bedexe, $ref_blocks, $ref_stats) = @_;
+    my ($newick, $sp, $chr, $start, $end, $strand, $species);
 
     # shorten species names, to match those in Newick string
     my $ref_shortnames = _shorten_production_name($ref_species);
@@ -490,19 +491,18 @@ sub parse_MAF_file {
             while($newick =~ m/(\w{4})_([^_]+)_([^_]+)_([^\[]+)\[([^\]])/g){
 				
                 ($sp, $chr, $start, $end, $strand) = ($1,$2,$3,$4,$5);
+
+                # skip unselected species
 				next if not defined($ref_shortnames->{$sp});
 
                 $species = $ref_shortnames->{$sp};
-
-                # concat chr & strand, as that's what $ref_coords takes
-                if($strand eq '+'){ $chstrand = "$chr:1" }
-                else{ $chstrand = "$chr:-1" }
 
                 # compute block length
                 #print "$sp, $chstrand, $start, $end\n";
 				
 				# find genes within block
-				
+                #open(BEDTOOLS,"echo $bedexe -a $ref_bedfiles->{$species}{$chr} -b 
+
 				# add stats
             }
         }
@@ -538,7 +538,7 @@ sub sort_isoforms_chr {
             ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
         }
-    } exit;
+    } 
 
     # sort isoforms along chr/scaffolds
 	# Note: some times genes on the same strand can overlap, see
@@ -550,7 +550,9 @@ sub sort_isoforms_chr {
 		open(BED,">",$bedfile) || die "# ERROR(sort_isoforms_chr): cannot create $bedfile\n";
 
         foreach my $isof (sort {$a->[0] <=> $b->[0]} @{ $raw{$chr} }) {
-            print BED "$chr\t$isof->[0]\t$isof->[1]\t$isof->[2]\t0\t$isof->[3]\n";
+            printf(BED "%s\t%d\t%d\t%s\t0\t%s\n",
+                $chr,$isof->[0],$isof->[1],$isof->[2],
+                $isof->[3] == -1 ? '-' : '+');
         }
 
 		close(BED);

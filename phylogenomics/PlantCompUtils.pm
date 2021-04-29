@@ -397,7 +397,7 @@ sub download_FASTA_file {
 # uses FTP globals defined above
 sub download_MAF_files {
 
-    my ( $dir, $suffix, $targetdir ) = @_;
+    my ( $dir, $suffix, $targetdir, $verbose ) = @_;
     my ( $maf_file, $stored_maf_file, @stored_files ) = ( '', '' );
 
     if ( my $ftp =
@@ -429,10 +429,10 @@ sub download_MAF_files {
                     }
                     # rename file to final name
                     rename( $maf_file, $stored_maf_file );
-                    print "# using $maf_file\n";
+                    print "# using $maf_file\n" if($verbose);
                 }
                 else {
-				    print "# re-using $stored_maf_file\n";
+				    print "# re-using $stored_maf_file\n" if($verbose);
                }
 
                push(@stored_files, $stored_maf_file);
@@ -525,12 +525,12 @@ sub parse_MAF_file {
 # iii)species production_name
 # Produces BED file with canonical isoforms, one per chr/scaffold, 
 # sorted by start coordinate.
-# Returns list with BED filenames.
+# Returns hash with chr as key and BED filename as value
 sub sort_isoforms_chr {
     my ($ref_header, $bedfolder, $species) = @_;
     my ($stable_id,$start,$end);
     my ($chr,$strand,$bedfile);
-    my (%raw,@bedfilenames);
+    my (%raw,%bedfiles);
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1
@@ -554,10 +554,10 @@ sub sort_isoforms_chr {
 
 		close(BED);
 
-        push(@bedfilenames, $bedfile);
+        $bedfiles{$chr} = $bedfile;
     }
     
-    return @bedfilenames;
+    return \%bedfiles;
 }
 
 # uses global $REQUEST_COUNT

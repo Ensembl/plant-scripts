@@ -183,6 +183,10 @@ else {
         $clusterdir .= "_$taxonid\_algEnsemblCompara";
     }
 
+    if ($CHRSORT) {
+        $params .= "_chrpos";
+    }
+
     if ($GOC) {
         $params .= "_GOC$GOC";
     }

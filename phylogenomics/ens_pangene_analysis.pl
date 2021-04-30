@@ -57,9 +57,10 @@ my ( $beddir, $mafdir ) = ( '', '' );
 my ($outfolder, $out_genome, $params) = ('', '', '');
 
 my ( $help, $sp, $sp2, $show_supported, $request, $response );
-my ( $filename, $dnafile, $pepfile, $seqfolder, $ext, $MAF );
+my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
-my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH) = ( 0, 0, 0, 0, 0 );
+my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH ) = ( 0, 0, 0, 0, 0 );
+my ( $CHRSORT, $MAF ) = ( 0, '');
 my ( $verbose, $bedtoolsexe ) = ( 0, $BEDTOOLSEXE );
 my ( @ignore_species, %ignore, %division_supported );
 
@@ -80,7 +81,8 @@ GetOptions(
 	"growth|g"      => \$GROWTH,
 	"MAF|M=s"       => \$MAF,     
     "folder|f=s"    => \$outfolder,
-    "bedexe|exe=s"  => \$bedtoolsexe
+    "bedexe|exe=s"  => \$bedtoolsexe,
+    "position|p"    => \$CHRSORT
 ) || help_message();
 
 sub help_message {
@@ -99,6 +101,7 @@ sub help_message {
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
+      . "-p sort pangene clusters by chr position   (optional, skips scaffolds, considers only genes in chr 1..N)\n"  
       . "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
@@ -251,7 +254,8 @@ else {
     }
 
     print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome "
-      . "-f $outfolder -t $seqtype -b $bedtoolsexe -M $MAF -G $GOC -W $WGA "
+      . "-f $outfolder -t $seqtype -b $bedtoolsexe -M $MAF "
+      . "-p $CHRSORT -G $GOC -W $WGA "
       . "-g $GROWTH -L $LOWCONF -S $NOSINGLES -v $verbose\n\n";
 }
 
@@ -292,10 +296,10 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 ## 1) check species in clade 
 
 my ( $n_of_species, $cluster_id ) = ( 0, '' );
-my ( @supported_species, @cluster_ids, %supported );
-my ( %incluster, %cluster, %sequence, %bedfiles );
+my ( @supported_species, @cluster_ids, @sorted_cluster_ids);
+my ( %supported, %incluster, %cluster, %sequence, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
-my (%MAFblocks, %MAFstats);
+my ( %MAFblocks, %isoform2block, %sorted_ids );
 
 $request = $TAXOPOINT . "$taxonid?";
 
@@ -320,6 +324,7 @@ if ( !$supported{$ref_genome} ) {
     die "# ERROR: cannot find $ref_genome within NCBI taxon $taxonid\n";
 }
 else {
+    # ref genome is first in array
     unshift( @supported_species, $ref_genome );
 
     if ($verbose) {
@@ -384,9 +389,9 @@ foreach $sp (@supported_species) {
             if ( $LOWCONF == 0
                 && ( $high_confidence eq 'NULL' || $high_confidence == 0 ) )
             {
-                print 
-                  "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n"
-                  if ($verbose);
+                #print 
+                #  "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n"
+                #  if ($verbose);
                 next;
             }
         }
@@ -421,7 +426,7 @@ foreach $sp (@supported_species) {
             else {
                 # set cluster for $hom_species anyway
                 $cluster_id = $incluster{$prot_stable_id};
-            }
+            } 
 
             # now add $hom_species protein to previously defined cluster
             if ( !$incluster{$hom_prot_stable_id} ) {
@@ -441,18 +446,22 @@ foreach $sp (@supported_species) {
     }
     close(TSV); 
 
-    # now get FASTA file and parse it, canonical/longest isoforms are read,
-    # one per gene 
+    # now get FASTA file and parse it, 
+	# for each gene the canonical transcript isoform is taken,
+	# as that's the one in Compara gene trees
     my $stored_sequence_file =
       download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
 
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
-	my $ref_bedfiles = sort_isoforms_chr($ref_header, $beddir, $sp);
-	printf("# wrote sorted isoforms of $sp in %d BED files\n",
+	my ($ref_bedfiles, $ref_sorted_ids) = 
+        sort_isoforms_chr($ref_header, $beddir, $sp);
+
+	printf("# wrote sorted isoforms of $sp in %d BED files\n\n",
         scalar(keys(%$ref_bedfiles)));
     $bedfiles{$species} = $ref_bedfiles;   
+	$sorted_ids{$species} = $ref_sorted_ids;
 
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
@@ -503,8 +512,9 @@ foreach $sp (@supported_species) {
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
-# download multiple alignment files in MAF format if required
-if(defined($MAF)) {
+# download multiple alignment files in MAF format if required,
+# parse them and get stats
+if($MAF ne '') {
 
     my ($n_of_blocks, $maf_file, @stored_maf_files) = (0);
 
@@ -513,14 +523,17 @@ if(defined($MAF)) {
 	@stored_maf_files = download_MAF_files( $mafdir, $MAF, $downloadir, $verbose );
     printf( "\n# total MAF files = %d\n", scalar(@stored_maf_files) );
 
+    #my $tmpi = 0;#debug
     foreach $maf_file (@stored_maf_files) {
 
         parse_MAF_file( $maf_file, \@supported_species,
             \%bedfiles, $bedtoolsexe, $OVERLAP,
-            \%MAFblocks, \%MAFstats);
+            \%MAFblocks, \%isoform2block, $verbose);
+
+		#last if($tmpi++ > 2);
     }
 
-    # TODO: sort blockss per species, that will sort genes as well
+	printf("# total aligned blocks = %d\n", scalar(keys(%MAFblocks)));
 }
 
 ## 3) write sequence clusters, summary text file and POCP matrix
@@ -551,16 +564,16 @@ foreach $cluster_id (@cluster_ids) {
 
     # write sequences and count sequences
     my ( %cluster_stats, @cluster_species );
-    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$ext" )
-      || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
+    #open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$ext" )
+    #  || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
 
 	foreach $species (@supported_species) {
         next if ( !$cluster{$cluster_id}{$species} );
         $n_cluster_sp++;
         foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
-            print CLUSTER ">$prot_stable_id [$species]\n";
+            #print CLUSTER ">$prot_stable_id [$species]\n";
             if ( $sequence{$species}{$prot_stable_id} ) {
-                print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
+            #    print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
             }
             else {
                 print "# cannot find peptide $prot_stable_id ($species)\n"
@@ -571,7 +584,7 @@ foreach $cluster_id (@cluster_ids) {
             $cluster_stats{$species}++;
         }
     }
-    close(CLUSTER);
+    #close(CLUSTER);
 
     # cluster summary
     @cluster_species = keys(%cluster_stats);
@@ -592,7 +605,7 @@ foreach $cluster_id (@cluster_ids) {
     foreach $sp ( 0 .. $#cluster_species - 1 ) {
         foreach $sp2 ( $sp + 1 .. $#cluster_species ) {
 
-       # add the number of sequences in this cluster from a pair of species/taxa
+            # add the number of sequences in this cluster from a pair of species/taxa
             $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
               $cluster_stats{ $cluster_species[$sp] };
             $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
@@ -624,24 +637,32 @@ foreach $sp ( 0 .. $#supported_species ) {
 }
 print POCPMATRIX "\n";
 
+my (%POCP2ref,$perc);
+
 foreach $sp ( 0 .. $#supported_species ) {
     print POCPMATRIX "$supported_species[$sp]";
     foreach $sp2 ( 0 .. $#supported_species ) {
 
-        if ( $sp == $sp2 ) { print POCPMATRIX "\t100" }
+        if ( $sp == $sp2 ) { 
+            print POCPMATRIX "\t100.00"
+        }
         else {
             if ( $POCP_matrix{ $supported_species[$sp] }
                 { $supported_species[$sp2] } )
             {
-                printf( POCPMATRIX "\t%1.2f",
+                $perc = sprintf("\t%1.2f",
                     (
                         100 * $POCP_matrix{ $supported_species[$sp] }
                           { $supported_species[$sp2] }
-                      ) / (
+                    ) / (
                         $totalgenes{ $supported_species[$sp] } +
                           $totalgenes{ $supported_species[$sp2] }
-                      )
+                    )
                 );
+                print POCPMATRIX "\t$perc";
+
+                # save %POCP for all species vs reference
+                if($sp == 0){ $POCP2ref{$supported_species[$sp2]} = $perc }
             }
             else {
                 print POCPMATRIX "\tNA";
@@ -654,7 +675,108 @@ close(POCPMATRIX);
 
 print "\n# percent_conserved_proteins_file = $POCP_matrix_file\n\n";
 
+# sort species from ref down by decreasing POCP
+my @supported_species_POCP;
+
+# reference goes in 1st place
+push(@supported_species_POCP, $ref_genome);
+
+foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
+    push(@supported_species_POCP, $sp2);
+}
+
+
 ## 4)  write pangenome matrices in output folder
+
+## if required sort clusters following gene order of i) ref species 
+## and ii) other supported species sorted by shared from close to distant
+## Note: only genes in chromosomes named 1..N are considered,
+## genes in unplaced scaffolds are excluded
+
+my ($species_seen, $isof, $isof2, $chr) = ( 0 );
+my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
+my ($previous_cluster_idx,$next_cluster_idx);
+my $prev_cluster; # cluster where previous $isof belongs
+my $last_cluster; # which cluster to which the f
+my (%cluster_seen);
+
+if(!$CHRSORT){
+    @sorted_cluster_ids = @cluster_ids
+}
+else {
+    foreach $species (@supported_species_POCP) {
+        $species_seen++;
+
+        # take only natural chrs
+        my @chrs = grep {/^\d+$/} keys(%{ $sorted_ids{$species} });
+
+        foreach $chr (@chrs) {
+
+            # init previous cluster
+            $prev_cluster = -999;
+            $last_cluster = -999;
+
+            $ref_sorted_chr_ids = $sorted_ids{$species}{$chr};
+            $last_isof = scalar(@$ref_sorted_chr_ids)-1;
+            for $isof (0 .. $last_isof) {
+
+                $prot_stable_id = $ref_sorted_chr_ids->[$isof]; 
+
+                # find out which cluster contains this isoform	
+                if(!defined($incluster{$prot_stable_id})){
+                    print "# WARNING: skip unclustered isoform $prot_stable_id\n" if($verbose);
+                    next;
+                } else {
+                     $cluster_id = $incluster{$prot_stable_id}; 
+                }
+
+                # if this is the first time this cluster was seen
+                # (a cluster can only be added once)
+                if(!$cluster_seen{$cluster_id}) {
+
+                    # non-reference species, find out where should this cluster 
+                    # be inserted 
+                    if($species_seen > 1) { 
+
+                        # get index of next clustered isoform ($prot_stable_id)
+                        $next_cluster_idx = -999;
+                        $next_cluster_id = '';
+                        #while($isof2 < $last_isof) {
+                        #    if($cluster_seen{$incluster{$ref_sorted_chr_ids->[$isof2]}}){
+                        #        $next_cluster_id = $incluster{$ref_sorted_chr_ids->[$isof2]};
+                                #$last_cluster = 
+                                #while($                            
+                                #$last_cluster
+                                #last;
+                        #    }
+                        #    $isof2++;
+                        #}
+
+                    # before previous clusters -> 
+                    # look ahead, 1st clustered $prot_stable_id is $sorted_cluster_ids[0]
+
+                    # inserted amid previous clusters -> 
+                    # previous $prot_stable_id in $sorted_cluster_ids[>0], next < $#sorted_cluster_ids]
+					
+                    # after previous clusters -> 
+                    # previous clustered $prot_stable_id in $sorted_cluster_ids[$#sorted_cluster_ids]
+
+                    } else { # reference, always 1st species
+                        push(@sorted_cluster_ids, $cluster_id);
+                        $cluster_seen{$cluster_id}++;
+                    }
+                } 
+
+                # save this cluster as previous for next iteration
+                #else {
+                #    $prev_cluster = 
+                #}
+            }
+        }
+    }
+}
+
+
 
 # set matrix filenames and write headers
 my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
@@ -680,13 +802,13 @@ print PANGENEMATRIX "\n";
 open( PANGEMATRIF, ">$pangenome_fasta_file" )
   || die "# EXIT: cannot create $pangenome_fasta_file\n";
 
-foreach $species (@supported_species) {
+foreach $species (@supported_species_POCP) {
 
     print PANGEMATRIX "$species";
     print PANGENEMATRIX "$species";
     print PANGEMATRIF ">$species\n";
 
-    foreach $cluster_id (@cluster_ids) {
+    foreach $cluster_id (@sorted_cluster_ids) {
 
         if ( $cluster{$cluster_id}{$species} ) {
             printf( PANGEMATRIX "\t%d",

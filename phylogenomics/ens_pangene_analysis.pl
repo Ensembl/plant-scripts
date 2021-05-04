@@ -303,7 +303,7 @@ my ( $n_of_species, $cluster_id ) = ( 0, '' );
 my ( @supported_species, @cluster_ids, @sorted_cluster_ids);
 my ( %supported, %incluster, %cluster, %sequence, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
-my ( %MAFblocks, %isoform2block, %sorted_ids );
+my ( %MAFblocks, %isoform2block, %sorted_ids, %unplaced_ids );
 
 $request = $TAXOPOINT . "$taxonid?";
 
@@ -459,13 +459,14 @@ foreach $sp (@supported_species) {
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
-	my ($ref_bedfiles, $ref_sorted_ids) = 
+	my ($ref_bedfiles, $ref_sorted_ids, $ref_not_in_chr) = 
         sort_isoforms_chr($ref_header, $beddir, $sp);
 
 	printf("# wrote sorted isoforms of $sp in %d BED files\n\n",
         scalar(keys(%$ref_bedfiles)));
     $bedfiles{$species} = $ref_bedfiles;   
 	$sorted_ids{$species} = $ref_sorted_ids;
+    $unplaced_ids{$species} = $ref_not_in_chr;
 
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );

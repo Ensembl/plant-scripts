@@ -511,8 +511,9 @@ foreach $sp (@supported_species) {
 
     $total_seqs += $totalgenes{$sp};
 
-    printf( "# %s : sequences = %d clusters = %d (singletons = %d)\n",
-        $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons );
+    printf( "# %s : sequences = %d clusters = %d (singletons = %d, unplaced=%d)\n",
+        $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons,  
+        scalar(keys(%{ $unplaced_ids{$sp} })));
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );

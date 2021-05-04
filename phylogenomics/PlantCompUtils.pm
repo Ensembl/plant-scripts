@@ -549,19 +549,26 @@ sub parse_MAF_file {
 # Produces 1-based inclusive BED file with canonical isoforms, one per chr/scaffold, 
 # sorted by start coordinate. These can be directly compared to intervals in MAF files
 # Returns:
-# i) hash ref with chr as key and BED filename as value
-# ii) hash ref with chr-sorted isoform names, one per chr
+# i)   hash ref with chr as key and BED filename as value
+# ii)  hash ref with chr-sorted isoform names, one per chr
+# iii) has ref with isoforms in scaffolds, not chr
 sub sort_isoforms_chr {
     my ($ref_header, $bedfolder, $species) = @_;
     my ($stable_id,$start,$end);
     my ($chr,$strand,$bedfile);
-    my (%raw,%bedfiles,%sorted_ids);
+    my (%raw,%bedfiles,%sorted_ids,%not_in_chr);
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1 , Ensembl 1-based inclusive
 		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([\d-]+)/) {
             ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
+
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
+            
+            # assumes chr names are naturals 1..99
+            if($chr !~ /^\d{1,2}$/) {
+                $not_in_chr{ $stable_id } = $chr;
+            }
         }
     } 
 
@@ -586,7 +593,7 @@ sub sort_isoforms_chr {
         $bedfiles{$chr} = $bedfile;
     }
     
-    return (\%bedfiles, \%sorted_ids);
+    return (\%bedfiles, \%sorted_ids, \%not_in_chr);
 }
 
 # uses global $REQUEST_COUNT

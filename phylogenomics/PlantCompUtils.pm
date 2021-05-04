@@ -666,14 +666,19 @@ sub sort_clusters_by_position {
                         #    $isof2++;
                         #}
 						
-                        # before previous clusters ->
-                        # look ahead, 1st clustered $prot_stable_id is $sorted_cluster_ids[0]
+                        # before previous clusters
+                        # look ahead, 1st clustered $isof_stable_id is $sorted_cluster_ids[0]
+                        # prev: NA
+                        # next: cluster-------->[0] 
 
-						# inserted amid previous clusters -> 
-						# previous $prot_stable_id in $sorted_cluster_ids[>0], next < $#sorted_cluster_ids]
+                        # inserted amid previous clusters
+                        # prev: [0..N]----->cluster
+                        # next: cluster-----> [N+1..$#sorted_cluster_ids]
 						
 						# after previous clusters -> 
-						# previous clustered $prot_stable_id in $sorted_cluster_ids[$#sorted_cluster_ids]
+						# previous clustered $isof_stable_id in $sorted_cluster_ids[$#sorted_cluster_ids]
+                        # prev: [$#sorted_cluster_ids]-------->cluster
+                        # next: NA 
 
 
                     } else { # reference, always 1st species

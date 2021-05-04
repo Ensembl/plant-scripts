@@ -6,7 +6,8 @@ require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(
   list_ensembl_mysql_dbs get_canonical_transcript_ids 
-  download_FASTA_file parse_isoform_FASTA_file sort_isoforms_chr
+  download_FASTA_file parse_isoform_FASTA_file 
+  sort_isoforms_chr sort_clusters_by_position
   download_compara_TSV_file download_GTF_file get_gene_coords_GTF_file
   download_MAF_files parse_MAF_file
   perform_rest_action transverse_tree_json
@@ -594,6 +595,102 @@ sub sort_isoforms_chr {
     }
     
     return (\%bedfiles, \%sorted_ids, \%not_in_chr);
+}
+
+# Returns a list of clusters sorted by chr position.
+# Note: only genes in chromosomes named 1..N are considered,
+# genes in unplaced scaffolds are excluded.
+# Takes 4 params:
+# i)   ref to list with species production names
+# ii)  ref to 2-way hash with chr-sorted lists of genes
+# iii) ref to hash mapping gene isoform ids to clusters
+# iv)  optional boolean flag to enable verbose output
+sub sort_clusters_by_position {
+    my ($ref_supported_species, $ref_sorted_ids, 
+        $ref_incluster, $verbose) = @_;
+
+    my ($species_seen, $isof, $isof2, $chr, $cluster_id) = ( 0 );
+    my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
+    my ($isof_stable_id, $previous_cluster_idx,$next_cluster_idx);
+    my $prev_cluster; # cluster where previous $isof belongs
+    my $last_cluster; # which cluster 
+    my (%cluster_seen, @sorted_cluster_ids);
+
+    foreach my $species (@$ref_supported_species) {
+        $species_seen++;
+
+        # take only natural chrs
+		my @chrs = grep {/^\d+$/} keys(%{ $ref_sorted_ids->{$species} });
+        @chrs = qw( 10 ); # debug
+
+        foreach $chr (@chrs) {
+            # init previous cluster
+            $prev_cluster = -999;
+            $last_cluster = -999;
+
+            $ref_sorted_chr_ids = $ref_sorted_ids->{$species}{$chr};
+            $last_isof = scalar(@$ref_sorted_chr_ids)-1;
+            for $isof (0 .. $last_isof) {
+
+                $isof_stable_id = $ref_sorted_chr_ids->[$isof];
+
+                # find out which cluster contains this isoform  
+                if(!defined($ref_incluster->{$isof_stable_id})){
+                    print "# WARNING(sort_clusters_by_position): skip unclustered ".
+                        "$isof_stable_id\n" if($verbose);
+                    next;
+                } else {
+                    $cluster_id = $ref_incluster->{$isof_stable_id};
+                }
+
+                # if this is the first time this cluster was seen
+                # (a cluster can only be added once)
+                if(!$cluster_seen{$cluster_id}) {
+
+                    # non-reference species, find out where should this cluster 
+                    # be inserted 
+                    if($species_seen > 1) {
+
+                        # get index of next clustered isoform ($isof_stable_id)
+                        $next_cluster_idx = -999;
+                        $next_cluster_id = '';
+                        
+                        #while($isof2 < $last_isof) {
+                        #    if($cluster_seen{$incluster{$ref_sorted_chr_ids->[$isof2]}}){
+                        #        $next_cluster_id = $incluster{$ref_sorted_chr_ids->[$isof2]};
+                        #$last_cluster = 
+                        #while($                            
+                        #$last_cluster
+                        #last;
+                        #    }
+                        #    $isof2++;
+                        #}
+						
+                        # before previous clusters ->
+                        # look ahead, 1st clustered $prot_stable_id is $sorted_cluster_ids[0]
+
+						# inserted amid previous clusters -> 
+						# previous $prot_stable_id in $sorted_cluster_ids[>0], next < $#sorted_cluster_ids]
+						
+						# after previous clusters -> 
+						# previous clustered $prot_stable_id in $sorted_cluster_ids[$#sorted_cluster_ids]
+
+
+                    } else { # reference, always 1st species
+                        push(@sorted_cluster_ids, $cluster_id);
+                        $cluster_seen{$cluster_id}++;
+                    }
+
+                    # save this cluster as previous for next iteration
+					#                 #else {
+					#                                 #    $prev_cluster = 
+					#                                                 #}
+                }
+            }
+        }
+    }
+
+    return @sorted_cluster_ids;
 }
 
 # uses global $REQUEST_COUNT

@@ -9,7 +9,8 @@ use JSON qw(decode_json);
 use FindBin '$Bin';
 use lib $Bin;
 use PlantCompUtils qw(
-  parse_isoform_FASTA_file download_FASTA_file sort_isoforms_chr
+  parse_isoform_FASTA_file download_FASTA_file 
+  sort_isoforms_chr sort_clusters_by_position
   download_compara_TSV_file download_MAF_files parse_MAF_file
   perform_rest_action write_boxplot_file factorial fisher_yates_shuffle
   $REQUEST_COUNT $COMPARADIR $FASTADIR $MAFDIR @DIVISIONS
@@ -696,93 +697,13 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 
 ## if required sort clusters following gene order of i) ref species 
 ## and ii) other supported species sorted by shared from close to distant
-## Note: only genes in chromosomes named 1..N are considered,
-## genes in unplaced scaffolds are excluded
-
-my ($species_seen, $isof, $isof2, $chr) = ( 0 );
-my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
-my ($previous_cluster_idx,$next_cluster_idx);
-my $prev_cluster; # cluster where previous $isof belongs
-my $last_cluster; # which cluster to which the f
-my (%cluster_seen);
-
 if(!$CHRSORT){
     @sorted_cluster_ids = @cluster_ids
 }
 else {
-    foreach $species (@supported_species_POCP) {
-        $species_seen++;
-
-        # take only natural chrs
-        my @chrs = grep {/^\d+$/} keys(%{ $sorted_ids{$species} });
-
-        foreach $chr (@chrs) {
-
-            # init previous cluster
-            $prev_cluster = -999;
-            $last_cluster = -999;
-
-            $ref_sorted_chr_ids = $sorted_ids{$species}{$chr};
-            $last_isof = scalar(@$ref_sorted_chr_ids)-1;
-            for $isof (0 .. $last_isof) {
-
-                $prot_stable_id = $ref_sorted_chr_ids->[$isof]; 
-
-                # find out which cluster contains this isoform	
-                if(!defined($incluster{$prot_stable_id})){
-                    print "# WARNING: skip unclustered isoform $prot_stable_id\n" if($verbose);
-                    next;
-                } else {
-                     $cluster_id = $incluster{$prot_stable_id}; 
-                }
-
-                # if this is the first time this cluster was seen
-                # (a cluster can only be added once)
-                if(!$cluster_seen{$cluster_id}) {
-
-                    # non-reference species, find out where should this cluster 
-                    # be inserted 
-                    if($species_seen > 1) { 
-
-                        # get index of next clustered isoform ($prot_stable_id)
-                        $next_cluster_idx = -999;
-                        $next_cluster_id = '';
-                        #while($isof2 < $last_isof) {
-                        #    if($cluster_seen{$incluster{$ref_sorted_chr_ids->[$isof2]}}){
-                        #        $next_cluster_id = $incluster{$ref_sorted_chr_ids->[$isof2]};
-                                #$last_cluster = 
-                                #while($                            
-                                #$last_cluster
-                                #last;
-                        #    }
-                        #    $isof2++;
-                        #}
-
-                    # before previous clusters -> 
-                    # look ahead, 1st clustered $prot_stable_id is $sorted_cluster_ids[0]
-
-                    # inserted amid previous clusters -> 
-                    # previous $prot_stable_id in $sorted_cluster_ids[>0], next < $#sorted_cluster_ids]
-					
-                    # after previous clusters -> 
-                    # previous clustered $prot_stable_id in $sorted_cluster_ids[$#sorted_cluster_ids]
-
-                    } else { # reference, always 1st species
-                        push(@sorted_cluster_ids, $cluster_id);
-                        $cluster_seen{$cluster_id}++;
-                    }
-                } 
-
-                # save this cluster as previous for next iteration
-                #else {
-                #    $prev_cluster = 
-                #}
-            }
-        }
-    }
+    @sorted_cluster_ids = sort_clusters_by_position( 
+        \@supported_species_POCP, \%sorted_ids, \%incluster );
 }
-
-
 
 # set matrix filenames and write headers
 my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";

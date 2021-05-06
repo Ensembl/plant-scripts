@@ -102,8 +102,10 @@ sub help_message {
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\')' 
-      . "\n-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
+      . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\';'
+      . "\n                                            the example regular expression matches natural numbers,\n"
+      . "                                            like the default chr names used in Ensembl Plants)\n"
+      . "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     print "\nThe following options are only available for some clades:\n\n"

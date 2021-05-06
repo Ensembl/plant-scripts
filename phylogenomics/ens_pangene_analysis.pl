@@ -61,7 +61,7 @@ my ( $help, $sp, $sp2, $show_supported, $request, $response );
 my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH ) = ( 0, 0, 0, 0, 0 );
-my ( $CHRSORT, $MAF ) = ( 0, '');
+my ( $CHREGEX, $MAF ) = ( '', '' );
 my ( $verbose, $bedtoolsexe ) = ( 0, $BEDTOOLSEXE );
 my ( @ignore_species, %ignore, %division_supported );
 
@@ -83,7 +83,7 @@ GetOptions(
 	"MAF|M=s"       => \$MAF,     
     "folder|f=s"    => \$outfolder,
     "bedexe|exe=s"  => \$bedtoolsexe,
-    "position|p"    => \$CHRSORT
+    "position|p=s"  => \$CHREGEX
 ) || help_message();
 
 sub help_message {
@@ -102,8 +102,8 @@ sub help_message {
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      . "-p sort pangene clusters by chr position   (optional, skips scaffolds, considers only genes in chr 1..N)\n"  
-      . "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
+      . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\')' 
+      . "\n-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     print "\nThe following options are only available for some clades:\n\n"
@@ -184,7 +184,7 @@ else {
         $clusterdir .= "_$taxonid\_algEnsemblCompara";
     }
 
-    if ($CHRSORT) {
+    if ($CHREGEX) {
         $params .= "_chrpos";
     }
 
@@ -260,7 +260,7 @@ else {
 
     print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome "
       . "-f $outfolder -t $seqtype -b $bedtoolsexe -M $MAF "
-      . "-p $CHRSORT -G $GOC -W $WGA "
+      . "-p $CHREGEX -G $GOC -W $WGA "
       . "-g $GROWTH -L $LOWCONF -S $NOSINGLES -v $verbose\n\n";
 }
 
@@ -697,12 +697,12 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 
 ## if required sort clusters following gene order of i) ref species 
 ## and ii) other supported species sorted by shared from close to distant
-if(!$CHRSORT){
+if(!$CHREGEX){
     @sorted_cluster_ids = @cluster_ids
 }
 else {
     @sorted_cluster_ids = sort_clusters_by_position( 
-        \@supported_species_POCP, \%sorted_ids, \%incluster );
+        \@supported_species_POCP, \%sorted_ids, \%incluster, $CHREGEX );
 }
 
 # set matrix filenames and write headers

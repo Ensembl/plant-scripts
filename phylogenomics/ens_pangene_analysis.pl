@@ -260,7 +260,7 @@ else {
 
     print "# $0 -d $division -c $taxonid -r $ref_genome -o $out_genome "
       . "-f $outfolder -t $seqtype -b $bedtoolsexe -M $MAF "
-      . "-p $CHREGEX -G $GOC -W $WGA "
+      . "-p '$CHREGEX' -G $GOC -W $WGA "
       . "-g $GROWTH -L $LOWCONF -S $NOSINGLES -v $verbose\n\n";
 }
 

@@ -604,10 +604,11 @@ sub sort_isoforms_chr {
 # i)   ref to list with species production names
 # ii)  ref to 2-way hash with chr-sorted lists of genes
 # iii) ref to hash mapping gene isoform ids to clusters
-# iv)  optional boolean flag to enable verbose output
+# iv)  regex to match chr names
+# v)  optional boolean flag to enable verbose output
 sub sort_clusters_by_position {
     my ($ref_supported_species, $ref_sorted_ids, 
-        $ref_incluster, $verbose) = @_;
+        $ref_incluster, $regex, $verbose) = @_;
 
     my ($species_seen, $isof, $isof2, $chr, $cluster_id) = ( 0 );
     my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
@@ -619,8 +620,9 @@ sub sort_clusters_by_position {
     foreach my $species (@$ref_supported_species) {
         $species_seen++;
 
-        # take only natural chrs
-		my @chrs = grep {/^\d+$/} keys(%{ $ref_sorted_ids->{$species} });
+        # take only chrs matching passed regex
+		my @chrs = grep {/$regex/} keys(%{ $ref_sorted_ids->{$species} });
+
         @chrs = qw( 10 ); # debug
 
         foreach $chr (@chrs) {
@@ -643,8 +645,7 @@ sub sort_clusters_by_position {
                     $cluster_id = $ref_incluster->{$isof_stable_id};
                 }
 
-                # if this is the first time this cluster was seen
-                # (a cluster can only be added once)
+                # first time this cluster was seen (a cluster can only be added once)
                 if(!$cluster_seen{$cluster_id}) {
 
                     # non-reference species, find out where should this cluster 

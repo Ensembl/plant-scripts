@@ -624,8 +624,7 @@ sub sort_clusters_by_position {
 
         # take only chrs matching passed regex
 		my @chrs = grep {/$regex/} keys(%{ $ref_sorted_ids->{$species} });
-
-        @chrs = qw( 10 ); # debug
+        #@chrs = qw( 10 ); # debug
 
         foreach $chr (@chrs) {
 

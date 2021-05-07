@@ -36,6 +36,8 @@ my  $MYSQLURL   = 'mysql-eg-publicsql.ebi.ac.uk';
 my  $MYSQLPORT  = 4157; 
 my  $MYSQLUSER  = 'anonymous';
 
+my $VOIDVALUE   = -999;
+
 our $REQUEST_COUNT = 0;
 
 my $GZIPEXE = 'gzip';  #default system gzip
@@ -597,7 +599,7 @@ sub sort_isoforms_chr {
     return (\%bedfiles, \%sorted_ids, \%not_in_chr);
 }
 
-# Returns a list of clusters sorted by chr position.
+# Returns a  a hash perl chr with lists of clusters sorted by chr position.
 # Note: only genes in chromosomes named 1..N are considered,
 # genes in unplaced scaffolds are excluded.
 # Takes 4 params:
@@ -612,10 +614,10 @@ sub sort_clusters_by_position {
 
     my ($species_seen, $isof, $isof2, $chr, $cluster_id) = ( 0 );
     my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
-    my ($isof_stable_id, $previous_cluster_idx,$next_cluster_idx);
-    my $prev_cluster; # cluster where previous $isof belongs
-    my $last_cluster; # which cluster 
-    my (%cluster_seen, @sorted_cluster_ids);
+    my ($isof_stable_id, $cluster_idx);
+    my $prev_cluster_idx; # index of cluster where previous clustered $isof sits
+    my $next_cluster_idx; # index of cluster where next clustered $isof sits
+    my (%cluster_seen, %sorted_cluster_ids);
 
     foreach my $species (@$ref_supported_species) {
         $species_seen++;
@@ -626,9 +628,9 @@ sub sort_clusters_by_position {
         @chrs = qw( 10 ); # debug
 
         foreach $chr (@chrs) {
+
             # init previous cluster
-            $prev_cluster = -999;
-            $last_cluster = -999;
+            $prev_cluster_idx = $VOIDVALUE;
 
             $ref_sorted_chr_ids = $ref_sorted_ids->{$species}{$chr};
             $last_isof = scalar(@$ref_sorted_chr_ids)-1;
@@ -648,56 +650,98 @@ sub sort_clusters_by_position {
                 # first time this cluster was seen (a cluster can only be added once)
                 if(!$cluster_seen{$cluster_id}) {
 
-                    # non-reference species, find out where should this cluster 
+                    # non-reference species, find out  should this cluster 
                     # be inserted 
                     if($species_seen > 1) {
 
-                        # get index of next clustered isoform ($isof_stable_id)
-                        $next_cluster_idx = -999;
-                        $next_cluster_id = '';
-                        
-                        #while($isof2 < $last_isof) {
-                        #    if($cluster_seen{$incluster{$ref_sorted_chr_ids->[$isof2]}}){
-                        #        $next_cluster_id = $incluster{$ref_sorted_chr_ids->[$isof2]};
-                        #$last_cluster = 
-                        #while($                            
-                        #$last_cluster
-                        #last;
-                        #    }
-                        #    $isof2++;
-                        #}
-						
+                        # 1) get index of cluster harborig next clustered isoform ($isof_stable_id)
+                        $next_cluster_idx = $VOIDVALUE;
+                        foreach $isof2 ($isof .. $last_isof) {
+                            
+                            if($ref_incluster->{$ref_sorted_chr_ids->[$isof2]} && 
+                                   $cluster_seen{$ref_incluster->{$ref_sorted_chr_ids->[$isof2]}}){
+
+                                # cluster containg this sequence
+                                $next_cluster_id = $ref_incluster->{$ref_sorted_chr_ids->[$isof2]};
+
+                                # index of this cluster in sorted list
+                                $next_cluster_idx = _get_element_index( $sorted_cluster_ids{$chr}, $next_cluster_id);
+                                last;
+                            }
+                        }
+
+                        # this should not happen: chr of isof not seen before
+
+                        #print "$species $isof_stable_id $cluster_id $chr $prev_cluster_idx $next_cluster_idx $next_cluster_id $ref_sorted_chr_ids->[$last_isof]\n"; 
+                        #foreach my $sp2 (@$ref_supported_species) { if ( $cluster{$cluster_id}{$species} ) { } }				              
+
+                        ## actually insert new cluster
+                       
                         # before previous clusters
-                        # look ahead, 1st clustered $isof_stable_id is $sorted_cluster_ids[0]
                         # prev: NA
                         # next: cluster-------->[0] 
+                        if($prev_cluster_idx == $VOIDVALUE) {
 
-                        # inserted amid previous clusters
-                        # prev: [0..N]----->cluster
-                        # next: cluster-----> [N+1..$#sorted_cluster_ids]
-						
-						# after previous clusters -> 
-						# previous clustered $isof_stable_id in $sorted_cluster_ids[$#sorted_cluster_ids]
-                        # prev: [$#sorted_cluster_ids]-------->cluster
-                        # next: NA 
+                            unshift( @{ $sorted_cluster_ids{$chr} }, $cluster_id );
+                            $cluster_idx = 0 
+                        } 
+                        elsif($next_cluster_idx == $VOIDVALUE) {
+                            # after previous clusters -> 
+                            # prev: [$#sorted_cluster_ids]-------->cluster
+                            # next: NA
+							
+							push( @{ $sorted_cluster_ids{$chr} }, $cluster_id );
+                            $cluster_idx = scalar(@{ $sorted_cluster_ids{$chr} })-1;
+                        }
+                        else {
+                            # inserted amid previous clusters
+                            # prev: [0..N]----->cluster
+                            # next: cluster-----> [N+1..$#sorted_cluster_ids]
+					
+                            splice( @{ $sorted_cluster_ids{$chr} }, $prev_cluster_idx+1, 0, $cluster_id );
+                            $cluster_idx = $prev_cluster_idx+1
+                        }
 
 
                     } else { # reference, always 1st species
-                        push(@sorted_cluster_ids, $cluster_id);
+                        push(@{ $sorted_cluster_ids{$chr} }, $cluster_id);
                         $cluster_seen{$cluster_id}++;
+
+						#printf("> %s %d\n",$cluster_id,scalar(@{ $sorted_cluster_ids{$chr} })); # debug
                     }
 
-                    # save this cluster as previous for next iteration
-					#                 #else {
-					#                                 #    $prev_cluster = 
-					#                                                 #}
+                } else {
+                    # cluster already sorted, can only happen with non-ref species
+                    $cluster_idx = _get_element_index( $sorted_cluster_ids{$chr}, $cluster_id);                        
                 }
+
+				# save this cluster as previous for next iteration
+                $prev_cluster_idx = $cluster_idx;
             }
         }
     }
 
-    return @sorted_cluster_ids;
+    return %sorted_cluster_ids;
 }
+
+# Takes 3 params:
+# i) list ref
+# ii) string of element to search
+# iii) integer with 0-based starting index, optional
+# Return index of elem in list, else $VOIDVALUE
+sub _get_element_index {
+
+    my ($ref_list, $elem) = @_;
+	
+    foreach my $idx (0 .. $#$ref_list) {
+        if($ref_list->[$idx] eq $elem) {
+            return $idx
+        }
+    }
+
+    return $VOIDVALUE;
+}
+
 
 # uses global $REQUEST_COUNT
 # takes a HTTP::Tiny object as first param

@@ -527,6 +527,8 @@ foreach $sp (@supported_species) {
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
+# NOTE: not used so far
+# Ideas: % genome in blocks, <genes> / block, detection of overlapping non-orths
 # download multiple alignment files in MAF format if required,
 # parse them and get stats
 if($MAF ne '') {
@@ -802,6 +804,9 @@ print
 print
   "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\n";
 print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
+
+
+## TODO: haplotypes per cluster
 
 
 exit if(!$GROWTH);

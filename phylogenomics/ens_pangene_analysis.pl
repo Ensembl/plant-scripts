@@ -302,8 +302,8 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 
 ## 1) check species in clade 
 
-my ( $n_of_species, $cluster_id ) = ( 0, '' );
-my ( @supported_species, @cluster_ids, @sorted_cluster_ids);
+my ( $n_of_species, $cluster_id, $chr ) = ( 0, '' );
+my ( @supported_species, @cluster_ids, %sorted_cluster_ids );
 my ( %supported, %incluster, %cluster, %sequence, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
 my ( %MAFblocks, %isoform2block, %sorted_ids, %unplaced_ids );
@@ -488,6 +488,12 @@ foreach $cluster_id (@cluster_ids) {
         }
     }
 }
+
+# Note: even using -W clusters might contain sequences from different chr
+# We might want to split or duplicate these clusters
+# Example: Os07t0248800-02,Os10t0102900-00 (oryza_sativa)	BGIOSGA024529-PA (oryza_indica)
+# http://plants.ensembl.org/Oryza_sativa/Location/Multi?db=core;g=Os10g0102900;g1=BGIOSGA024529;r=10:227687-234770;s1=Oryza_indica;t=Os10t0102900-00;r1=7:8306227-8312670:1;time=1620306359
+# http://plants.ensembl.org/Oryza_sativa/Location/Multi?db=core;g=Os07g0248800;g1=BGIOSGA024529;r=7:8264635-8271779;s1=Oryza_indica;r1=7:8306227-8312670:1;time=1620306355
 
 # add unclustered sequences as singletons
 my $total_seqs = 0;
@@ -700,11 +706,18 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 ## if required sort clusters following gene order of i) ref species 
 ## and ii) other supported species sorted by shared from close to distant
 if(!$CHREGEX){
-    @sorted_cluster_ids = @cluster_ids
+	%sorted_cluster_ids = map { $_ => 'unsorted' } @cluster_ids;
 }
 else {
-    @sorted_cluster_ids = sort_clusters_by_position( 
+    %sorted_cluster_ids = sort_clusters_by_position( 
         \@supported_species_POCP, \%sorted_ids, \%incluster, $CHREGEX );
+
+    foreach $chr (sort keys(%sorted_cluster_ids)) {
+	    printf("# clusters sorted by position in chr %s = %d\n", 
+        $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
+    }
+
+    # TODO: print clusters and cluster_list
 }
 
 # set matrix filenames and write headers
@@ -721,11 +734,21 @@ open( PANGENEMATRIX, ">$pangenome_gene_file" )
   || die "# EXIT: cannot create $pangenome_gene_file\n";
 
 print PANGEMATRIX "source:$outfolder/$clusterdir";
-foreach $cluster_id (@cluster_ids) { print PANGEMATRIX "\t$cluster_id$ext"; }
+foreach $chr (keys(%sorted_cluster_ids)) {
+    print PANGEMATRIX "\tchr$chr";
+    foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+        print PANGEMATRIX "\t$cluster_id$ext"; 
+    }
+}	
 print PANGEMATRIX "\n";
 
 print PANGENEMATRIX "source:$outfolder/$clusterdir";
-foreach $cluster_id (@cluster_ids) { print PANGENEMATRIX "\t$cluster_id$ext"; }
+foreach $chr (keys(%sorted_cluster_ids)) {
+    print PANGENEMATRIX "\tchr$chr";
+    foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+        print PANGENEMATRIX "\t$cluster_id$ext"; 
+    }
+}	
 print PANGENEMATRIX "\n";
 
 open( PANGEMATRIF, ">$pangenome_fasta_file" )
@@ -737,21 +760,28 @@ foreach $species (@supported_species_POCP) {
     print PANGENEMATRIX "$species";
     print PANGEMATRIF ">$species\n";
 
-    foreach $cluster_id (@sorted_cluster_ids) {
+    foreach $chr (keys(%sorted_cluster_ids)) {
 
-        if ( $cluster{$cluster_id}{$species} ) {
-            printf( PANGEMATRIX "\t%d",
-                scalar( @{ $cluster{$cluster_id}{$species} } )
-            );
-            printf( PANGENEMATRIX "\t%s",
-                join( ',', @{ $cluster{$cluster_id}{$species} } )
-            );
-            print PANGEMATRIF "1";
-        }
-        else {    # absent genes
-            print PANGEMATRIX "\t0";
-            print PANGENEMATRIX "\t-";
-            print PANGEMATRIF "0";
+        # chr lines have no genes
+        print PANGEMATRIX "\tNA";
+        print PANGENEMATRIX "\tNA";
+
+        foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+
+            if ( $cluster{$cluster_id}{$species} ) {
+                printf( PANGEMATRIX "\t%d",
+                    scalar( @{ $cluster{$cluster_id}{$species} } )
+                );
+                printf( PANGENEMATRIX "\t%s",
+                    join( ',', @{ $cluster{$cluster_id}{$species} } )
+                );
+                print PANGEMATRIF "1";
+            }
+            else {    # absent genes
+                print PANGEMATRIX "\t0";
+                print PANGENEMATRIX "\t-";
+                print PANGEMATRIF "0";
+            }
         }
     }
 
@@ -833,36 +863,37 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
         $pangenome[$s][$sp]  = $pangenome[$s][ $sp - 1 ];
         $core_occup          = $sp + 1;
 
-        foreach $cluster_id (@cluster_ids) {
+        foreach $chr (keys(%sorted_cluster_ids)) {
+	        foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
 
-            # check reference species is in this cluster (1st iteration only)
-            if ( $sp == 1 && $cluster{$cluster_id}{ $tmptaxa[0] } ) {
-                $n_of_taxa_in_cluster{$cluster_id}++;
-            }
+                # check reference species is in this cluster (1st iteration only)
+                if ( $sp == 1 && $cluster{$cluster_id}{ $tmptaxa[0] } ) {
+                     $n_of_taxa_in_cluster{$cluster_id}++;
+                }
 
-            # check $sp is in this cluster
-            if ( $cluster{$cluster_id}{ $tmptaxa[$sp] } ) {
-                $n_of_taxa_in_cluster{$cluster_id}++;
-            }
+                # check $sp is in this cluster
+                if ( $cluster{$cluster_id}{ $tmptaxa[$sp] } ) {
+                    $n_of_taxa_in_cluster{$cluster_id}++;
+                }
 
-            # check cluster occupancy
-            if (   $n_of_taxa_in_cluster{$cluster_id}
-                && $cluster{$cluster_id}{ $tmptaxa[$sp] } )
-            {
+                # check cluster occupancy
+                if (   $n_of_taxa_in_cluster{$cluster_id}
+                    && $cluster{$cluster_id}{ $tmptaxa[$sp] } )
+                {
 
-                # core genes must contain all previously seen species
-                if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {
-                    $coregenome[$s][$sp]++;
+                    # core genes must contain all previously seen species
+                    if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {
+                        $coregenome[$s][$sp]++;
 
-                }    # pan genes must be novel to this species
-                elsif ( $n_of_taxa_in_cluster{$cluster_id} == 1 ) {
-                    $pangenome[$s][$sp]++;
+                    }    # pan genes must be novel to this species
+                    elsif ( $n_of_taxa_in_cluster{$cluster_id} == 1 ) {
+                        $pangenome[$s][$sp]++;
+                    }
                 }
             }
         }
 
-        print
-"# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n"
+        print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n"
           if ($verbose);
     }
 }

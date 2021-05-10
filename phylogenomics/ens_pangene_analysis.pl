@@ -710,7 +710,7 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 ## if required sort clusters following gene order of i) ref species 
 ## and ii) other supported species sorted by shared from close to distant
 if(!$CHREGEX){
-	%sorted_cluster_ids = map { $_ => 'unsorted' } @cluster_ids;
+	push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
 }
 else {
     %sorted_cluster_ids = sort_clusters_by_position( 

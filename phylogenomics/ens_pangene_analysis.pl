@@ -304,7 +304,8 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 
 my ( $n_of_species, $cluster_id, $chr ) = ( 0, '' );
 my ( @supported_species, @cluster_ids, %sorted_cluster_ids );
-my ( %supported, %incluster, %cluster, %sequence, %bedfiles );
+my ( %supported, %incluster, %cluster);
+my ( %sequence, %header, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
 my ( %MAFblocks, %isoform2block, %sorted_ids, %unplaced_ids );
 
@@ -477,6 +478,7 @@ foreach $sp (@supported_species) {
     # save these sequences
     foreach $prot_stable_id ( keys(%$ref_sequence) ) {
         $sequence{$species}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
+        $header{$species}{$prot_stable_id} = $ref_header->{$prot_stable_id};
     }
 } 
 
@@ -581,16 +583,16 @@ foreach $cluster_id (@cluster_ids) {
 
     # write sequences and count sequences
     my ( %cluster_stats, @cluster_species );
-    #open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$ext" )
-    #  || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
+    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$ext" )
+      || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
 
 	foreach $species (@supported_species) {
         next if ( !$cluster{$cluster_id}{$species} );
         $n_cluster_sp++;
         foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
-            #print CLUSTER ">$prot_stable_id [$species]\n";
+            print CLUSTER ">$prot_stable_id [$species] $header{$species}{$prot_stable_id};\n";
             if ( $sequence{$species}{$prot_stable_id} ) {
-            #    print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
+                print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
             }
             else {
                 print "# cannot find peptide $prot_stable_id ($species)\n"
@@ -601,7 +603,7 @@ foreach $cluster_id (@cluster_ids) {
             $cluster_stats{$species}++;
         }
     }
-    #close(CLUSTER);
+    close(CLUSTER);
 
     # cluster summary
     @cluster_species = keys(%cluster_stats);
@@ -718,8 +720,6 @@ else {
 	    printf("# clusters sorted by position in chr %s = %d\n", 
         $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
     }
-
-    # TODO: print clusters and cluster_list
 }
 
 # set matrix filenames and write headers

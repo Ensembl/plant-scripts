@@ -555,7 +555,7 @@ sub parse_MAF_file {
 # Returns:
 # i)   hash ref with chr as key and BED filename as value
 # ii)  hash ref with chr-sorted isoform names, one per chr
-# iii) hash ref matching isoform ids to chrs
+# iii) hash ref matching isoform ids to chrs (those in scaffols are excluded)
 sub sort_isoforms_chr {
     my ($ref_header, $bedfolder, $species, $regex) = @_;
     my ($stable_id,$start,$end);
@@ -669,10 +669,12 @@ sub sort_clusters_by_position {
                     my %cluster_chrs;
                     foreach $sp (keys(%{ $ref_cluster->{$cluster_id} })) {
                         foreach $isof2 (@{ $ref_cluster->{$cluster_id}{$sp} }) { 
-                            $chr2 = $ref_id2chr->{$sp}{$isof2};
-                            print "$cluster_id $sp $isof2 $chr2\n"; # if($verbose);
-
-                            $cluster_chrs{$chr2}++;								
+                            if($ref_id2chr->{$sp}{$isof2}) { 
+                                # only genes in chr matching regex count
+                                $chr2 = $ref_id2chr->{$sp}{$isof2};
+                                print "$cluster_id $sp $isof2 $chr2\n" if($verbose);
+                                $cluster_chrs{$chr2}++;
+                            }
                         } 
                     }
                         

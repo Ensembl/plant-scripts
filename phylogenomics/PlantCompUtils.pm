@@ -564,8 +564,9 @@ sub sort_isoforms_chr {
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1 , Ensembl 1-based inclusive
+        # scaffold:v.1.0:scaffold_9:1012538:1013882:-1
 		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([\d-]+)/) {
-            ($chr,$start,$end,$strand) = ($1,$2,$3,$4);
+            ($chr,$start,$end,$strand) = ($1,$2,$3,$4); print "$chr,$start,$end,$strand\n";
 
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
             
@@ -576,7 +577,7 @@ sub sort_isoforms_chr {
     } 
 
     # sort isoforms along chr/scaffolds
-	# Note: some times genes on the same strand can overlap, see
+	# Note: sometimes genes on the same strand can overlap, see
     # http://plants.ensembl.org/Oryza_sativa/Gene/Summary?db=core;g=Os06g0168150;r=6:3426914-3434445
 	foreach $chr (keys(%raw)) {
        
@@ -599,20 +600,21 @@ sub sort_isoforms_chr {
     return (\%bedfiles, \%sorted_ids, \%id2chr);
 }
 
-# Returns a  a hash perl chr with lists of clusters sorted by chr position.
+# Returns a hash with lists of clusters sorted by chr position.
 # Only genes in chromosomes, named according to regex, are sorted; all
 # other genes are added to chr 'unplaced', and clusters containing genes from
 # different chromosomes added to 'mixed' virtual chromosome
-# Takes 5(6) params:
+# Takes 5(6) parms:
 # i)   ref to list with species production names
 # ii)  ref to 2-way hash with chr-sorted lists of genes
 # iii) ref to hash mapping gene isoform ids to clusters
-# iv)  ref to hash (id, sp) with cluster contents
-# v)   regex to match chr names
-# vi)  optional boolean flag to enable verbose output
+# iv)  ref to 2-way hash containing clustered isoforms
+# v)   ref to hash mapping gene isoform ids to chr
+# vi)  regex to match chr names
+# vii) optional boolean flag to enable verbose output
 sub sort_clusters_by_position {
     my ($ref_supported_species, $ref_sorted_ids, 
-        $ref_incluster, $ref_cluster, $regex, $verbose) = @_;
+        $ref_incluster, $ref_cluster, $ref_id2chr, $regex, $verbose) = @_;
 
     my ($species_seen, $isof, $isof2, $chr, $chr2, $sp, $cluster_id) = ( 0 );
     my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id, $is_mixed);
@@ -663,33 +665,23 @@ sub sort_clusters_by_position {
                 # first time this cluster was seen (a cluster can only be added once)
                 if(!$cluster_seen{$cluster_id}) {
 				
-                    # does cluster contain seqs from different species & chrs?
-                    my @cluster_sps = keys(%{ $ref_cluster->{$cluster_id} });
-                    if(scalar(@cluster_sps) > 1) { 
-                        my %cluster_chrs;
+                    # does cluster contain seqs from different chrs?
+                    my %cluster_chrs;
+                    foreach $sp (keys(%{ $ref_cluster->{$cluster_id} })) {
+                        foreach $isof2 (@{ $ref_cluster->{$cluster_id}{$sp} }) { 
+                            $chr2 = $ref_id2chr->{$sp}{$isof2};
+                            print "$cluster_id $sp $isof2 $chr2\n"; # if($verbose);
 
-                        foreach $sp (@cluster_sps) {  
-                            ISOF: foreach $isof2 (@{ $ref_cluster->{$cluster_id}{$sp} }) { 
-                                foreach $chr2 (@chrs) {
-                                    $isof_idx = 
-                                        _get_element_index( $ref_sorted_ids->{$sp}{$chr2}, $isof2);
-                                    print "$cluster_id $sp $isof2 $chr2 $isof_idx\n" if($verbose);
-
-                                    if($isof_idx != $VOIDVALUE) {
-                                        $cluster_chrs{$chr2}++;								
-                                        next ISOF;
-                                    }  								
-                                }
-                            }
+                            $cluster_chrs{$chr2}++;								
                         } 
-
-                        # add it virtual chr 'mixed'
-                        if(scalar(keys(%cluster_chrs)) > 1) {
-							$n_mixed++;
-                            #$chr_name = 'mixed';
-                            #$is_mixed = 1;
-                            #foreach $chr2 (keys(%cluster_chrs)){ print "$cluster_id $chr2 $n_mixed\n"; }
-                        }
+                    }
+                        
+                    # add it virtual chr 'mixed' if so
+                    if(scalar(keys(%cluster_chrs)) > 1) {
+                        $n_mixed++;
+                        $chr_name = 'mixed';
+                        $is_mixed = 1;
+                        foreach $chr2 (keys(%cluster_chrs)){ print "$cluster_id $chr2 $n_mixed\n"; }
 				    }	
 
                     # non-reference species, find out where to insert this cluster 

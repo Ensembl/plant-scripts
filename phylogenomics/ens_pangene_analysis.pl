@@ -307,7 +307,7 @@ my ( @supported_species, @cluster_ids, %sorted_cluster_ids );
 my ( %supported, %incluster, %cluster);
 my ( %sequence, %header, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
-my ( %MAFblocks, %isoform2block, %sorted_ids, %unplaced_ids );
+my ( %MAFblocks, %isoform2block, %sorted_ids, %id2chr );
 
 $request = $TAXOPOINT . "$taxonid?";
 
@@ -463,14 +463,15 @@ foreach $sp (@supported_species) {
     my ( $ref_sequence, $ref_header ) =
       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
-	my ($ref_bedfiles, $ref_sorted_ids, $ref_not_in_chr) = 
-        sort_isoforms_chr($ref_header, $beddir, $sp);
+	my ($ref_bedfiles, $ref_sorted_ids, $ref_id2chr) = 
+        sort_isoforms_chr($ref_header, $beddir, $sp, $CHREGEX);
 
 	printf("# wrote sorted isoforms of $sp in %d BED files\n\n",
         scalar(keys(%$ref_bedfiles)));
+
     $bedfiles{$species} = $ref_bedfiles;   
 	$sorted_ids{$species} = $ref_sorted_ids;
-    $unplaced_ids{$species} = $ref_not_in_chr;
+    $id2chr{$species} = $ref_id2chr;
 
     # count number of genes/selected isoforms in this species
     $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
@@ -522,9 +523,14 @@ foreach $sp (@supported_species) {
 
     $total_seqs += $totalgenes{$sp};
 
-    printf( "# %s : sequences = %d clusters = %d (singletons = %d, unplaced=%d)\n",
-        $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons,  
-        scalar(keys(%{ $unplaced_ids{$sp} })));
+    if($CHREGEX) {
+        printf( "# %s : sequences = %d clusters = %d (singletons = %d, placed = %d)\n",
+            $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons,  
+            scalar(keys(%{ $id2chr{$sp} })));
+    } else {
+        printf( "# %s : sequences = %d clusters = %d (singletons = %d)\n",
+            $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons );
+    }
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
@@ -714,7 +720,8 @@ if(!$CHREGEX){
 }
 else {
     %sorted_cluster_ids = sort_clusters_by_position( 
-        \@supported_species_POCP, \%sorted_ids, \%incluster, $CHREGEX );
+        \@supported_species_POCP, \%sorted_ids, \%incluster, 
+        \%cluster, \%id2chr, $CHREGEX );
 
     foreach $chr (sort keys(%sorted_cluster_ids)) {
 	    printf("# clusters sorted by position in chr %s = %d\n", 

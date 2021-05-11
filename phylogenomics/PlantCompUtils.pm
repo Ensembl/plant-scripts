@@ -616,13 +616,14 @@ sub sort_clusters_by_position {
     my ($ref_supported_species, $ref_sorted_ids, 
         $ref_incluster, $ref_cluster, $ref_id2chr, $regex, $verbose) = @_;
 
-    my ($species_seen, $isof, $isof2, $chr, $chr2, $sp, $cluster_id) = ( 0 );
-    my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id, $is_mixed);
-    my ($isof_stable_id, $cluster_idx, $isof_idx, $sortable_chr, $chr_name);
+    my ($species_seen, $mixed_clusters) = ( 0, 0 );
+    my ($isof, $isof2, $chr, $chr2, $sp, $cluster_id);
+    my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
+    my ($isof_stable_id, $cluster_idx, $isof_idx);
+    my ($chr_name, $chr_name2, $is_mixed, $sortable_chr);
     my $prev_cluster_idx; # index of cluster where previous clustered $isof sits
     my $next_cluster_idx; # index of cluster where next clustered $isof sits
     my (%cluster_seen, %sorted_cluster_ids);
-    my $n_mixed = 0; # debug
 
     foreach my $species (@$ref_supported_species) {
 
@@ -665,25 +666,30 @@ sub sort_clusters_by_position {
                 # first time this cluster was seen (a cluster can only be added once)
                 if(!$cluster_seen{$cluster_id}) {
 				
-                    # does cluster contain seqs from different chrs?
-                    my %cluster_chrs;
+                    # does cluster contain seqs from different chrs of same species?
                     foreach $sp (keys(%{ $ref_cluster->{$cluster_id} })) {
+                        my %sp_chrs;
                         foreach $isof2 (@{ $ref_cluster->{$cluster_id}{$sp} }) { 
                             if($ref_id2chr->{$sp}{$isof2}) { 
                                 # only genes in chr matching regex count
                                 $chr2 = $ref_id2chr->{$sp}{$isof2};
                                 print "$cluster_id $sp $isof2 $chr2\n" if($verbose);
-                                $cluster_chrs{$chr2}++;
+                                $sp_chrs{$chr2}++;
                             }
                         } 
-                    }
+                    
+                        # mark it for virtual chr 'mixed' if so
+                        if(scalar(keys(%sp_chrs)) > 1) {
+                            $is_mixed = 1;
                         
-                    # add it virtual chr 'mixed' if so
-                    if(scalar(keys(%cluster_chrs)) > 1) {
-                        $n_mixed++;
-                        $chr_name = 'mixed';
-                        $is_mixed = 1;
-                        foreach $chr2 (keys(%cluster_chrs)){ print "$cluster_id $chr2 $n_mixed\n"; }
+                            if($verbose){						
+                                print "# sort_clusters_by_position: cluster $cluster_id ".
+                                    "is mixed (".join(",", keys(%sp_chrs)).")\n";
+                            }
+
+                            $mixed_clusters++;
+                            last;
+                        }
 				    }	
 
                     # non-reference species, find out where to insert this cluster 
@@ -736,12 +742,19 @@ sub sort_clusters_by_position {
                             $cluster_idx = $prev_cluster_idx+1
                         }
 
-                    } else { 
-                        push(@{ $sorted_cluster_ids{$chr_name} }, $cluster_id);
+                    } else {
+
+                        if($is_mixed) {
+                            $chr_name2 = 'mixed'
+                        } else {
+                            $chr_name2 = $chr_name;
+                        }
+	
+                        push(@{ $sorted_cluster_ids{$chr_name2} }, $cluster_id);
                         $cluster_seen{$cluster_id}++;
 
 						printf("> %s %d\n",
-                            $cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name} })) if($verbose);
+                            $cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name2} })) if($verbose);
                     }
 
                 } else {

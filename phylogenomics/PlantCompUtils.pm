@@ -566,7 +566,7 @@ sub sort_isoforms_chr {
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1 , Ensembl 1-based inclusive
         # scaffold:v.1.0:scaffold_9:1012538:1013882:-1
 		if($ref_header->{$stable_id} =~ m/[^:]+:[^:]+:([^:]+):([^:]+):([^:]+):([\d-]+)/) {
-            ($chr,$start,$end,$strand) = ($1,$2,$3,$4); print "$chr,$start,$end,$strand\n";
+            ($chr,$start,$end,$strand) = ($1,$2,$3,$4); 
 
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
             

@@ -545,21 +545,22 @@ sub parse_MAF_file {
     close(MAF); 
 }
 
-# Takes 3 args:
-# i)  hash ref of headers produced by parse_isoform_FASTA_file
-# ii) folder to place BED files
-# iii)species production_name
+# Takes 4 args:
+# i)   hash ref of headers produced by parse_isoform_FASTA_file
+# ii)  folder to place BED files
+# iii) species production_name
+# iv)  string with regex to match chr names
 # Produces 1-based inclusive BED file with canonical isoforms, one per chr/scaffold, 
 # sorted by start coordinate. These can be directly compared to intervals in MAF files
 # Returns:
 # i)   hash ref with chr as key and BED filename as value
 # ii)  hash ref with chr-sorted isoform names, one per chr
-# iii) has ref with isoforms in scaffolds, not chr
+# iii) hash ref matching isoform ids to chrs
 sub sort_isoforms_chr {
-    my ($ref_header, $bedfolder, $species) = @_;
+    my ($ref_header, $bedfolder, $species, $regex) = @_;
     my ($stable_id,$start,$end);
     my ($chr,$strand,$bedfile);
-    my (%raw,%bedfiles,%sorted_ids,%not_in_chr);
+    my (%raw,%bedfiles,%sorted_ids,%id2chr);
 
     for $stable_id (keys(%$ref_header)){
         # chromosome:IRGSP-1.0:12:8823315:8825166:-1 , Ensembl 1-based inclusive
@@ -568,9 +569,8 @@ sub sort_isoforms_chr {
 
             push(@{ $raw{$chr} }, [$start,$end,$stable_id,$strand] );
             
-            # assumes chr names are naturals 1..99
-            if($chr !~ /^\d{1,2}$/) {
-                $not_in_chr{ $stable_id } = $chr;
+            if($chr =~ m/$regex/) {
+                $id2chr{ $stable_id } = $chr;
             }
         }
     } 
@@ -596,37 +596,38 @@ sub sort_isoforms_chr {
         $bedfiles{$chr} = $bedfile;
     }
     
-    return (\%bedfiles, \%sorted_ids, \%not_in_chr);
+    return (\%bedfiles, \%sorted_ids, \%id2chr);
 }
 
 # Returns a  a hash perl chr with lists of clusters sorted by chr position.
-# Note: only genes in chromosomes, named according to regex, are sorted; all
-# other genes are added to chr 'unplaced'.
-# Takes 4(5) params:
+# Only genes in chromosomes, named according to regex, are sorted; all
+# other genes are added to chr 'unplaced', and clusters containing genes from
+# different chromosomes added to 'mixed' virtual chromosome
+# Takes 5(6) params:
 # i)   ref to list with species production names
 # ii)  ref to 2-way hash with chr-sorted lists of genes
 # iii) ref to hash mapping gene isoform ids to clusters
-# iv)  regex to match chr names
-# v)  optional boolean flag to enable verbose output
+# iv)  ref to hash (id, sp) with cluster contents
+# v)   regex to match chr names
+# vi)  optional boolean flag to enable verbose output
 sub sort_clusters_by_position {
     my ($ref_supported_species, $ref_sorted_ids, 
-        $ref_incluster, $regex, $verbose) = @_;
+        $ref_incluster, $ref_cluster, $regex, $verbose) = @_;
 
-    my ($species_seen, $isof, $isof2, $chr, $cluster_id) = ( 0 );
-    my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id);
-    my ($isof_stable_id, $cluster_idx, $sortable_chr, $chr_name);
+    my ($species_seen, $isof, $isof2, $chr, $chr2, $sp, $cluster_id) = ( 0 );
+    my ($ref_sorted_chr_ids,$last_isof,$next_cluster_id, $is_mixed);
+    my ($isof_stable_id, $cluster_idx, $isof_idx, $sortable_chr, $chr_name);
     my $prev_cluster_idx; # index of cluster where previous clustered $isof sits
     my $next_cluster_idx; # index of cluster where next clustered $isof sits
     my (%cluster_seen, %sorted_cluster_ids);
+    my $n_mixed = 0; # debug
 
     foreach my $species (@$ref_supported_species) {
 
         $species_seen++;
         
         my @chrs = keys(%{ $ref_sorted_ids->{$species} });
-
-        #debug
-		#my @chrs = grep {/$regex/} keys(%{ $ref_sorted_ids->{$species} }); @chrs = qw( 10 ); 
+		#@chrs = qw( 10 ); # debug
 
         foreach $chr (@chrs) {
 
@@ -642,8 +643,12 @@ sub sort_clusters_by_position {
 
             $ref_sorted_chr_ids = $ref_sorted_ids->{$species}{$chr};
             $last_isof = scalar(@$ref_sorted_chr_ids)-1;
+
             for $isof (0 .. $last_isof) {
 
+                # init 
+                $cluster_id = '';
+                $is_mixed = 0;
                 $isof_stable_id = $ref_sorted_chr_ids->[$isof];
 
                 # find out which cluster contains this isoform  
@@ -657,10 +662,38 @@ sub sort_clusters_by_position {
 
                 # first time this cluster was seen (a cluster can only be added once)
                 if(!$cluster_seen{$cluster_id}) {
+				
+                    # does cluster contain seqs from different species & chrs?
+                    my @cluster_sps = keys(%{ $ref_cluster->{$cluster_id} });
+                    if(scalar(@cluster_sps) > 1) { 
+                        my %cluster_chrs;
 
-                    # non-reference species, find out  should this cluster 
-                    # be inserted 
-                    if($species_seen > 1 && $sortable_chr == 1) {
+                        foreach $sp (@cluster_sps) {  
+                            ISOF: foreach $isof2 (@{ $ref_cluster->{$cluster_id}{$sp} }) { 
+                                foreach $chr2 (@chrs) {
+                                    $isof_idx = 
+                                        _get_element_index( $ref_sorted_ids->{$sp}{$chr2}, $isof2);
+                                    print "$cluster_id $sp $isof2 $chr2 $isof_idx\n" if($verbose);
+
+                                    if($isof_idx != $VOIDVALUE) {
+                                        $cluster_chrs{$chr2}++;								
+                                        next ISOF;
+                                    }  								
+                                }
+                            }
+                        } 
+
+                        # add it virtual chr 'mixed'
+                        if(scalar(keys(%cluster_chrs)) > 1) {
+							$n_mixed++;
+                            #$chr_name = 'mixed';
+                            #$is_mixed = 1;
+                            #foreach $chr2 (keys(%cluster_chrs)){ print "$cluster_id $chr2 $n_mixed\n"; }
+                        }
+				    }	
+
+                    # non-reference species, find out where to insert this cluster 
+                    if($species_seen > 1 && $sortable_chr == 1 && $is_mixed == 0) {
 
                         # 1) get index of cluster harborig next clustered isoform ($isof_stable_id)
                         $next_cluster_idx = $VOIDVALUE;
@@ -678,13 +711,11 @@ sub sort_clusters_by_position {
                             }
                         }
 
-                        # this should not happen: chr of isof not seen before
+                        print "$species $isof_stable_id $cluster_id $chr $prev_cluster_idx ".
+                            "$next_cluster_idx $next_cluster_id $ref_sorted_chr_ids->[$last_isof]\n" if($verbose); 
 
-                        #print "$species $isof_stable_id $cluster_id $chr $prev_cluster_idx $next_cluster_idx $next_cluster_id $ref_sorted_chr_ids->[$last_isof]\n"; 
-                        #foreach my $sp2 (@$ref_supported_species) { if ( $cluster{$cluster_id}{$species} ) { } }				              
+                        # 2) actually insert cluster in list 
 
-                        ## actually insert new cluster
-                       
                         # before previous clusters
                         # prev: NA
                         # next: cluster-------->[0] 
@@ -711,18 +742,19 @@ sub sort_clusters_by_position {
                             $cluster_idx = $prev_cluster_idx+1
                         }
 
-
-                    } else { # reference, always 1st species
+                    } else { 
                         push(@{ $sorted_cluster_ids{$chr_name} }, $cluster_id);
                         $cluster_seen{$cluster_id}++;
 
-						#printf("> %s %d\n",$cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name} })); # debug
+						printf("> %s %d\n",
+                            $cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name} })) if($verbose);
                     }
 
                 } else {
                     # cluster already sorted, can only happen with non-ref species
                     if($sortable_chr == 1) {
-                        $cluster_idx = _get_element_index( $sorted_cluster_ids{$chr_name}, $cluster_id);
+                        $cluster_idx =
+                            _get_element_index( $sorted_cluster_ids{$chr_name}, $cluster_id);
                     }
                 }
 

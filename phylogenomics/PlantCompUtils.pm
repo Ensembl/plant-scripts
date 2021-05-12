@@ -107,6 +107,7 @@ sub parse_isoform_FASTA_file {
     while ( my $line = <FASTA> ) {
 
         #>g00297.t1 pep supercontig:Ahal2.2:FJVB01000001.1:1390275:1393444:1 gene:g00297 ...
+		#>ONIVA02G19500.2 pep chromosome:Oryza_nivara_v1.0:2:17746874:17752500:1 gene:ONIVA02G19500 ...
         if ( $line =~ m/^>(\S+).*?gene:(\S+)/ ) {
 
             $stable_id      = $1;    # might pep or cdna id

@@ -225,6 +225,8 @@ else {
             $ext       = '.fna';
             $seqfolder = 'cdna';
             die "# ERROR: currently cannot accept seqtype = cdna\n";
+            # TODO: the trick would be to download both pep & cdna and pair protein stable_ids 
+            # (used in Compara) to transcript ids from the FASTA header in pep
         }
     }
 
@@ -304,7 +306,7 @@ if ( $out_genome && !$division_supported{$out_genome} ) {
 
 my ( $n_of_species, $cluster_id, $chr ) = ( 0, '' );
 my ( @supported_species, @cluster_ids, %sorted_cluster_ids );
-my ( %supported, %incluster, %cluster);
+my ( %supported, %incluster, %cluster, %compara_isoform );
 my ( %sequence, %header, %bedfiles );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
 my ( %MAFblocks, %isoform2block, %sorted_ids, %id2chr );
@@ -367,8 +369,14 @@ my (
     $wga_coverage,       $high_confidence
 );
 
-# iteratively get and parse TSV & FASTA files, starting with reference, to compile clusters
-# of sequences made by Ensembl Compara
+# Iteratively get and parse TSV files that define pairs of orthologues
+# sequences computed by Ensembl Compara. After parsing all pairwise
+# TSV files clusters emerge.
+# Note: each sequence is identified with a protein stable_id that
+# corresponds to the canonical isoform of that gene.
+# Read more at
+# http://plants.ensembl.org/info/genome/compara/peptide_compara.html
+# http://plants.ensembl.org/info/website/glossary.html
 foreach $sp (@supported_species) {
 
     # get TSV file; these files are bulky and might take some time to download
@@ -376,7 +384,6 @@ foreach $sp (@supported_species) {
       download_compara_TSV_file( $comparadir, $sp, $downloadir );
 
     # uncompress on the fly and parse
-    my %compara_isoform;
     open( TSV, "$GZIPEXE -dc $stored_compara_file |" )
       || die "# ERROR: cannot open $stored_compara_file\n";
     while ( my $line = <TSV> ) {
@@ -450,37 +457,10 @@ foreach $sp (@supported_species) {
 
             # save isoforms used in compara
             $compara_isoform{$prot_stable_id} = 1;
+            $compara_isoform{$hom_prot_stable_id} = 1;
         }
     }
     close(TSV); 
-
-    # now get FASTA file and parse it, 
-	# for each gene the canonical transcript isoform is taken,
-	# as that's the one in Compara gene trees
-    my $stored_sequence_file =
-      download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
-
-    my ( $ref_sequence, $ref_header ) =
-      parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
-
-	my ($ref_bedfiles, $ref_sorted_ids, $ref_id2chr) = 
-        sort_isoforms_chr($ref_header, $beddir, $sp, $CHREGEX);
-
-	printf("# wrote sorted isoforms of $sp in %d BED files\n\n",
-        scalar(keys(%$ref_bedfiles)));
-
-    $bedfiles{$species} = $ref_bedfiles;   
-	$sorted_ids{$species} = $ref_sorted_ids;
-    $id2chr{$species} = $ref_id2chr;
-
-    # count number of genes/selected isoforms in this species
-    $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
-
-    # save these sequences
-    foreach $prot_stable_id ( keys(%$ref_sequence) ) {
-        $sequence{$species}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
-        $header{$species}{$prot_stable_id} = $ref_header->{$prot_stable_id};
-    }
 } 
 
 # count how many clusters include each species
@@ -490,6 +470,37 @@ foreach $cluster_id (@cluster_ids) {
             $totalclusters{$species}++;
         }
     }
+}
+
+# Get and parse FASTA files to get sequences & headers 
+# of isoforms in the Compara clusters
+# Note: uses %compara_isoform, created previously
+foreach $sp (@supported_species) {
+
+    my $stored_sequence_file =
+        download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
+
+    my ( $ref_sequence, $ref_header ) =
+       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
+
+    my ($ref_bedfiles, $ref_sorted_ids, $ref_id2chr) =
+       sort_isoforms_chr($ref_header, $beddir, $sp, $CHREGEX);
+
+    printf("# wrote sorted isoforms of $sp in %d BED files (1-based)\n\n",
+       scalar(keys(%$ref_bedfiles)));
+
+    $bedfiles{$sp} = $ref_bedfiles;
+    $sorted_ids{$sp} = $ref_sorted_ids;
+    $id2chr{$sp} = $ref_id2chr;
+
+    # count number of genes/selected isoforms in this species
+    $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
+
+    # save these sequences
+    foreach $prot_stable_id ( keys(%$ref_sequence) ) {
+        $sequence{$sp}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
+        $header{$sp}{$prot_stable_id} = $ref_header->{$prot_stable_id};
+    } 
 }
 
 # Note: even using -W clusters might contain sequences from different chr
@@ -596,7 +607,8 @@ foreach $cluster_id (@cluster_ids) {
         next if ( !$cluster{$cluster_id}{$species} );
         $n_cluster_sp++;
         foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
-            print CLUSTER ">$prot_stable_id [$species] $header{$species}{$prot_stable_id};\n";
+            printf(CLUSTER ">%s [%s] %s\n", $prot_stable_id, $species, 
+                $header{$species}{$prot_stable_id} || "no_header");
             if ( $sequence{$species}{$prot_stable_id} ) {
                 print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
             }

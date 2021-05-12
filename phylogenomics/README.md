@@ -92,11 +92,18 @@ usage: ens_pangene_analysis.pl [options]
 -d Ensembl division                        (optional, default: -d Plants)
 -o outgroup species_name                   (optional, example: -o brachypodium_distachyon)
 -i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)
+-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)
 -L allow low-confidence orthologues        (optional, by default these are skipped)
 -S skip singletons                         (optional, by default unclustered sequences are taken)
+-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p '^\d+$';
+                                            the example regular expression matches natural numbers,
+                                            like the default chr names used in Ensembl Plants)
+-b path to bedtools, useful with -M        (optional, if not in $PATH, example: -b /path/to/bedtools)
 -v verbose                                 (optional, example: -v
 
 The following options are only available for some clades:
+
+-M parse multiple genome alignments        (optional, requires bedtools, example: -M 8_rice.epo)
 
 -G min Gene Order Conservation [0:100]  (optional, example: -G 75)
    see modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/Plants/ProteinTrees_conf.pm
@@ -105,20 +112,56 @@ The following options are only available for some clades:
 -W min Whole Genome Align score [0:100] (optional, example: -W 75)
    see ensembl-compara/scripts/pipeline/compara_plants.xml
    at https://github.com/Ensembl/ensembl-compara
+
 ```
 Read about GOC and WGA at https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html
 
-WARNING: not all species are included in the Compara gene-tree analysis. You can exclude them with -i. 
+WARNING: not all species are included in the Compara gene-tree analysis. You can exclude them with flag -i. 
 
-These examples generate results in folders [Brassicaceae](./Brassicaceae) and [Oryza](./Oryza) and produce the following log files: [Brassicaceae.log](./Brassicaceae.log) and [Oryza.log](./Oryza.log).
-The output folders contain pan-gene clusters, pangenome matrices in several formats and also a matrix of Percent Conserved Sequences (POCP), computed for the fraction of clusters shared by pairs of taxa being compared:
+These are some example calls:
 ```
+# Genus analysis
 perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa > Oryza.log
-perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -S > Oryza.nosingletons.log
+
+# Genes analysis leaving singletons out, with pangenome growth simulation
+perl ens_pangene_analysis.pl -c Oryza -f Oryza -r oryza_sativa -g -S > Oryza.nosingletons.log
+
+# Three species compared using chr-based gene order, with chromosomes matching -p regular expression,
+# and considering only orthologous pairs supported by Whole Genome Alignments (-W)
+perl ens_pangene_analysis.pl -r oryza_sativa -c oryza_sativa -o oryza_nivara -f Oryza_pangenes -W 75 -p '^\d{1,2}$' 
+
 perl ens_pangene_analysis.pl -r arabidopsis_thaliana -c Brassicaceae -f Brassicaceae > Brassicaceae.log
 ```
 
-Those files can be used to produce pan-gene plots. 
+A subset of the results produced by these examples can be found in folders 
+[Brassicaceae](./Brassicaceae), [Oryza](./Oryza) and [Oryza_pangenes](./Oryza_pangenes) 
+and produce the following log files: 
+[Brassicaceae.log](./Brassicaceae.log), [Oryza.log](./Oryza.log) and 
+[Oryza_pangenes.log](./Oryza_pangenes.log).
+
+Output folders typically contain pan-genome gene clusters (pangene set), 
+pangenome matrices in several formats and also a matrix of Percent Conserved Sequences (POCP), 
+computed for the fraction of clusters shared by pairs of taxa being compared. 
+
+These are the first few lines of file [pangenome_matrix_genes_chrpos_WGA75.tr.tab](./Oryza_pangenes/pangenome_matrix_genes_chrpos_WGA75.tr.tab),
+with the first genes on chr6:
+
+```
+source:Oryza_pangenes/oryzasativa_plus_oryza_nivara_oryza_sativa_algEnsemblCompara_chrpos_WGA75	oryza_sativa	oryza_indica	oryza_nivara	
+chr6	NA	NA	NA	
+ONIVA06G26980.1.faa	-	-	ONIVA06G26980.1	
+ONIVA06G26990.1.faa	-	-	ONIVA06G26990.1	
+ONIVA06G27000.1.faa	-	-	ONIVA06G27000.1	
+ONIVA06G27010.3.faa	-	-	ONIVA06G27010.3	
+BGIOSGA028317-PA.faa	-	BGIOSGA028317-PA	ONIVA06G26950.1	
+ONIVA06G26930.1.faa	-	-	ONIVA06G26930.1	
+BGIOSGA028319-PA.faa	-	BGIOSGA028319-PA,BGIOSGA028320-PA	ONIVA06G26900.1	
+ONIVA06G26850.1.faa	-	-	ONIVA06G26850.1	
+```
+
+This TSV file contains chr-sorted gene clusters that can be useful to define a common gene naming space.
+
+If flag -g is used, files core_gene.tab and pan_gene.tab are generated, which can be used to produce pan-gene plots. 
 The examples below use scripts from third-party [GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues).
 
 ```

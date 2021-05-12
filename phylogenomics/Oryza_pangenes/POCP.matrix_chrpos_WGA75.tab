@@ -1,0 +1,4 @@
+genomes	oryza_sativa	oryza_indica	oryza_nivara
+oryza_sativa	100.00		59.88		58.66
+oryza_indica		59.88	100.00		65.34
+oryza_nivara		58.66		65.34	100.00

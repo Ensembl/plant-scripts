@@ -1,0 +1,57 @@
+
+# ens_pangene_analysis.pl -d Plants -c oryza_sativa -r oryza_sativa -o oryza_nivara -f Oryza_pangenes -t protein -b bedtools -M  -p '^\d{1,2}$' -G 0 -W 75 -g 0 -L 0 -S 0 -v 0
+
+# supported species in NCBI taxon oryza_sativa : 2
+
+# outgenome: oryza_nivara
+# total selected species : 3
+
+# re-using plant-scripts/phylogenomics/downloads/Compara.104.protein_default.homologies.oryza_sativa.tsv.gz
+
+# re-using plant-scripts/phylogenomics/downloads/Compara.104.protein_default.homologies.oryza_indica.tsv.gz
+
+# re-using plant-scripts/phylogenomics/downloads/Compara.104.protein_default.homologies.oryza_nivara.tsv.gz
+
+# re-using plant-scripts/phylogenomics/downloads/Oryza_sativa.IRGSP-1.0.pep.all.fa.gz
+
+# wrote sorted isoforms of oryza_sativa in 14 BED files (1-based)
+
+# re-using plant-scripts/phylogenomics/downloads/Oryza_indica.ASM465v1.pep.all.fa.gz
+
+# wrote sorted isoforms of oryza_indica in 1979 BED files (1-based)
+
+# re-using plant-scripts/phylogenomics/downloads/Oryza_nivara.Oryza_nivara_v1.0.pep.all.fa.gz
+
+# wrote sorted isoforms of oryza_nivara in 12 BED files (1-based)
+
+# oryza_sativa : sequences = 35775 clusters = 35523 (singletons = 11325, placed = 35666)
+# oryza_indica : sequences = 40745 clusters = 40181 (singletons = 12134, placed = 37878)
+# oryza_nivara : sequences = 36313 clusters = 36275 (singletons = 9760, placed = 36313)
+
+# total sequences = 112833
+
+
+# number_of_clusters = 62894 (core = 19410)
+
+# cluster_list = Oryza_pangenes/oryzasativa_plus_oryza_nivara_oryza_sativa_algEnsemblCompara_chrpos_WGA75.cluster_list
+# cluster_directory = Oryza_pangenes/oryzasativa_plus_oryza_nivara_oryza_sativa_algEnsemblCompara_chrpos_WGA75
+
+# percent_conserved_proteins_file = Oryza_pangenes/POCP.matrix_chrpos_WGA75.tab
+
+# clusters sorted by position in chr 1 = 8821
+# clusters sorted by position in chr 10 = 3990
+# clusters sorted by position in chr 11 = 4639
+# clusters sorted by position in chr 12 = 3907
+# clusters sorted by position in chr 2 = 6927
+# clusters sorted by position in chr 3 = 7481
+# clusters sorted by position in chr 4 = 5573
+# clusters sorted by position in chr 5 = 5117
+# clusters sorted by position in chr 6 = 5517
+# clusters sorted by position in chr 7 = 4917
+# clusters sorted by position in chr 8 = 4816
+# clusters sorted by position in chr 9 = 3696
+# clusters sorted by position in chr mixed = 96
+# clusters sorted by position in chr unplaced = 2934
+# pangenome_file = Oryza_pangenes/pangenome_matrix_chrpos_WGA75.tab tranposed = Oryza_pangenes/pangenome_matrix_chrpos_WGA75.tr.tab
+# pangenome_genes = Oryza_pangenes/pangenome_matrix_genes_chrpos_WGA75.tab transposed = Oryza_pangenes/pangenome_matrix_genes_chrpos_WGA75.tr.tab
+# pangenome_FASTA_file = Oryza_pangenes/pangenome_matrix_chrpos_WGA75.fasta

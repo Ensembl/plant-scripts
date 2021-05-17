@@ -118,6 +118,8 @@ Read about GOC and WGA at https://www.ensembl.org/info/genome/compara/Ortholog_q
 
 WARNING: not all species are included in the Compara gene-tree analysis. You can exclude them with flag -i. 
 
+![Graphical summary of pangene set analysis](./pangene_set_nomenclature.png)
+
 These are some example calls:
 ```
 # Genus analysis

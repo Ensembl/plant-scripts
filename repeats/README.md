@@ -18,7 +18,7 @@ The following dependencies can be installed in the parent folder with:
 
     make install install_repeats
 
-There are two binaries, for which the GNU C++ compiler v8 is needed (g++-8):
+There are two binaries, for a version of the GNU C++ compiler >= v8 is needed (ie g++-8):
 
 * A clone of Red from https://github.com/EnsemblGenomes/Red (the original repo is [here](https://github.com/BioinformaticsToolsmith/Red))
 * A clone of minimap2 from https://github.com/lh3/minimap2
@@ -34,6 +34,116 @@ And three Python3 modules:
 * [pymysql](https://pypi.org/project/PyMySQL)
 
 Note that script [get_repeats_ensembl.sh](./get_repeats_ensembl.sh) has some more dependencies listed at its header.
+
+## Argument lists
+
+If you run 
+
+    ./Red2Ensembl.py -h
+
+you'll get the list of supported arguments and what they're for:
+
+```
+./Red2Ensembl.py -h
+usage: Red2Ensembl.py [-h] [--exe EXE] [--cor COR] [--msk_file MSK_FILE]
+                      [--bed_file BED_FILE] [--host HOST] [--user USER]
+                      [--pw PW] [--port PORT] [--db DB]
+                      [--logic_name LOGIC_NAME] [--description DESCRIPTION]
+                      [--displaylabel DISPLAYLABEL]
+                      fasta_file outdir
+
+Script to run RepeatDetector (a fork of Red v2) to mask repeats,
+and optionally feed results into an Ensembl core database.
+
+positional arguments:
+  fasta_file            path to FASTA file with top-level genomic sequences
+  outdir                path to directory to store Red temp results
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --exe EXE             path to Red executable, default: ./../lib/Red/bin/Red
+  --cor COR             number of cores for Red, default: 1
+  --msk_file MSK_FILE   name of output FASTA file with soft-masked sequences
+  --bed_file BED_FILE   name of output BED file with repeated ranges, uses
+                        original sequence names
+  --host HOST           name of the database host, required to store repeats
+                        in Ensembl core
+  --user USER           host user, required to store repeats in Ensembl core
+  --pw PW               host password, required to store repeats in Ensembl
+                        core
+  --port PORT           host port, required to store repeats in Ensembl core
+  --db DB               name of the core database, required to store repeats
+                        in Ensembl core
+  --logic_name LOGIC_NAME
+                        logic name of Ensembl analysis, default:
+                        repeatdetector
+  --description DESCRIPTION
+                        quoted string with Ensembl analysis description,
+                        default: Repeats detected using <a href="https://bmcbi
+                        oinformatics.biomedcentral.com/articles/10.1186/s12859
+                        -015-0654-5">Red (REPeatDetector)</a>
+  --displaylabel DISPLAYLABEL
+                        string with Ensembl analysis display label, default:
+                        Repeats:Red
+
+Citation:
+Contreras-Moreira et al (2021) https://doi.org/10.5281/zenodo.4121769
+Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5
+```
+
+Similarly, if you run
+
+    ./AnnotRedRepeats.py -h
+
+you'll get:
+
+```
+usage: AnnotRedRepeats.py [-h] [--exe EXE] [--cor COR] [--minlen MINLEN]
+                          [--bed_file BED_FILE] [--host HOST] [--user USER]
+                          [--pw PW] [--port PORT] [--db DB]
+                          [--logic_name LOGIC_NAME]
+                          [--description DESCRIPTION]
+                          [--displaylabel DISPLAYLABEL]
+                          repeat_fasta_file outdir
+
+Script to annotate Red repeats and optionally
+feed the new consensus_repeats into an Ensembl core database.
+
+positional arguments:
+  repeat_fasta_file     path to FASTA file with repeat sequences in RepBase
+                        format
+  outdir                path to directory with stored Red results
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --exe EXE             path to minimap2 executable, default:
+                        ./../lib/minimap2/minimap2
+  --cor COR             number of cores for minimap2, default: 1
+  --minlen MINLEN       min length of repeats to be annotated, default: 90bp
+  --bed_file BED_FILE   name of output BED file with annotated repeats
+  --host HOST           name of the database host
+  --user USER           host user
+  --pw PW               host password
+  --port PORT           host port
+  --db DB               name of the core database
+  --logic_name LOGIC_NAME
+                        logic name of Ensembl analysis, default:
+                        repeatdetector_annotated
+  --description DESCRIPTION
+                        quoted string with Ensembl analysis description,
+                        default: Repeats detected using <a href="https://bmcbi
+                        oinformatics.biomedcentral.com/articles/10.1186/s12859
+                        -015-0654-5">Red (REPeatDetector)</a> and annotated by
+                        alignment to a repeat library.
+  --displaylabel DISPLAYLABEL
+                        string with Ensembl analysis display label, default:
+                        'Repeats:Red (annotated)'
+
+Citation:
+Contreras-Moreira et al (2021) https://doi.org/10.5281/zenodo.4121769
+Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5
+Li H (2018) Bioinformatics 34(18):3094–3100. doi: 10.1093/bioinformatics/bty191
+```
 
 ## Examples
 

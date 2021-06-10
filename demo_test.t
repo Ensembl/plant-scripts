@@ -8,12 +8,12 @@ ok( eval{ `recipes/exampleMySQL.sh test` } =~ /_core_/ , 'exampleMySQL.sh' );
 
 if($ARGV[0] && $ARGV[0] ne 'travis'){
 
-	# FTP/REST/API tests often timeout
+	# FTP/REST/API tests might timeout from Travis
 	
 	$number_of_tests += 5;
 	    
 	ok( eval{ `recipes/exampleFTP.sh --spider test 2>&1` } =~ /Brachypodium_distachyon/ ,
-		'exampleFTP.sh' )
+		'exampleFTP.sh' );
 
 	ok( eval{ `python recipes/exampleREST.py test` } =~ /hordeum_vulgare/ , 'exampleREST.py' );
 

@@ -158,7 +158,7 @@ done < list.cores.sp > log.updown500
  
 ## check #copies, length of repeats, and overlap among methods
 
-# repeat length stats 
+# repeat length stats (median) 
 while read -r col1 col2; do
 	printf "$col2"
 	perl -lane 'print $F[2]-$F[1]' bed/${col2}.Red.bed | Rscript -e 'median(scan(file="stdin"))' 2>&1 | perl -ne 'if(/Read (\d+) items/){ print "\t$1" } elsif(/\[1\] (\d+)/){ print "\t$1" }'
@@ -166,6 +166,15 @@ while read -r col1 col2; do
 	perl -lane 'print $F[2]-$F[1]' bed/${col2}.repeatmask_redat.bed | Rscript -e 'median(scan(file="stdin"))' 2>&1 | perl -ne 'if(/Read (\d+) items/){ print "\t$1" } elsif(/\[1\] (\d+)/){ print "\t$1\n" }'
 
 done < list.cores.sp > log.repeat.length
+
+# repeat length stats (N50)
+while read -r col1 col2; do
+	printf "$col2"
+	perl -ane '$l=$F[2]-$F[1]; $TL+=$l; $R{$.}=$l; END{ foreach $s (sort {$R{$b}<=>$R{$a}} keys(%R)){ $t+=$R{$s}; if($t>$TL/2){ print "\t$R{$s}"; exit }}}' bed/${col2}.Red.bed
+	perl -ane '$l=$F[2]-$F[1]; $TL+=$l; $R{$.}=$l; END{ foreach $s (sort {$R{$b}<=>$R{$a}} keys(%R)){ $t+=$R{$s}; if($t>$TL/2){ print "\t$R{$s}"; exit }}}' bed/${col2}.repeatmask_nrplants.bed
+	perl -ane '$l=$F[2]-$F[1]; $TL+=$l; $R{$.}=$l; END{ foreach $s (sort {$R{$b}<=>$R{$a}} keys(%R)){ $t+=$R{$s}; if($t>$TL/2){ print "\t$R{$s}\n"; exit }}}' bed/${col2}.repeatmask_redat.bed
+
+done < list.cores.sp > log.repeat.N50
 
 # check Pfam enrichment of gene overlap
 
@@ -175,6 +184,7 @@ cut -f 1 pfam/*Red*enrich.tsv | sort | uniq -c | sort -nr | perl -lane 'if(/PF/)
 
 # Red repeat overlap vs others
 while read -r col1 col2; do
+	printf "$col2"
 	red=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.Red.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	nrplants=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	redat=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
@@ -182,6 +192,7 @@ while read -r col1 col2; do
 	trf=$(bedtools intersect -a bed/${col2}.Red.bed -b bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	totdust=$(bedtools intersect -a bed/${col2}.dust.bed -b bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
 	tottrf=$(bedtools intersect -a bed/${col2}.trf.bed -b bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	
 	printf "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n" $col2 $red $redat $nrplants $dust $trf $totdust $tottrf
 
 done < list.cores.sp > log.repeat.overlap
@@ -196,8 +207,10 @@ while read sptop; do
 done < list.toplevel > log.gc
 
 ## kmer analysis of up & downstream regions
+
 K=31    # 21 odd, close to tallymer and DUK,2^21 (2G), 16 used by Red
 MINCP=20 # min copies of K-mer to be dumped 
+REDIR=../Red_minimap2/
 while read -r col1 col2 col3; do
  
  	# get overlapping BED intervals   
@@ -233,6 +246,7 @@ while read -r col1 col2 col3; do
 	printf "%s\t%s\t%s\t%s\t%d\t%d\t%d\n" $col2 $redat $nrplants $red $redat20 $nrplants20 $red20
 
 done < list.cores.sp.toplevel > log.updown500.${K}mer
+
 
 ## check overlap with denovo called Rgenes (NLR-annotator)
 

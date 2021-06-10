@@ -1,0 +1,126 @@
+
+## gene/exon overlap stats
+
+# 1st genes
+
+export MINOVER=50
+
+while read -r col1 col2; do	
+	rm=$(bedtools intersect -a ../bed/${col1}.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[7]; END{print $over}')
+	genes=$(bedtools intersect -a ../bed/${col1}.bed -b ../bed/${col1}.bed -sorted -wo | perl -lane '$over+=$F[8]; END{print $over}')
+	read tgenes filename <<< $(wc -l ../bed/${col1}.bed)
+	printf "%s\t%d\t%d\t%d\n" $col2 $tgenes $genes $rm
+
+	# save overlapped genes
+	bedtools intersect -a ../bed/${col1}.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo > bed/${col2}.repeatmodeller.genes.bed
+
+	# MINOVER is required
+	perl -lane 'print $F[3] if($F[7] > ${MINOVER})' bed/${col2}.repeatmodeller.genes.bed | uniq > bed/${col2}.repeatmodeller.genes.ovl${MINOVER}.list
+
+	# tally Pfam domain occurrences
+	if [ ! -f "pfam/${col2}.repeatmodeller.genes.ovl${MINOVER}.enrich.tsv" ];
+	then
+		while read ln; do fgrep "$ln" ../pfam/${col2}.tsv; done < bed/${col2}.repeatmodeller.genes.ovl${MINOVER}.list | cut -f 2 | sort | uniq -c | perl -lane 'if(/PF/){ print "$F[1]\t$F[0]" }' > pfam/${col2}.repeatmodeller.genes.ovl${MINOVER}.tsv
+
+		# compute enrichment
+		Rscript ../pfam/enrich.R pfam/${col2}.repeatmodeller.genes.ovl${MINOVER}.tsv ../pfam/${col2}.tsv.count.tsv pfam/${col2}.repeatmodeller.genes.ovl${MINOVER}.all.tsv
+		perl -lane 'print if($F[2] < 0.05)' pfam/${col2}.repeatmodeller.genes.ovl${MINOVER}.all.tsv > pfam/${col2}.repeatmodeller.genes.ovl${MINOVER}.enrich.tsv
+	else
+		continue
+	fi
+
+done < list.cores.sp > log.genes
+
+
+# now exons
+while read -r col1 col2; do
+    rm=$(bedtools intersect -a ../bed/${col1}.exon.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[7]; END{print $over}')
+	exons=$(bedtools intersect -a ../bed/${col1}.exon.bed -b ../bed/${col1}.exon.bed -sorted -wo | perl -lane '$over+=$F[8]; END{print $over}')
+	read texons filename <<< $(wc -l ../bed/${col1}.exon.bed)
+	printf "%s\t%d\t%d\t%d\n" $col2 $texons $exons $rm
+
+	# save overlapped exons
+    bedtools intersect -a ../bed/${col1}.exon.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo > bed/${col2}.repeatmodeller.exons.bed
+
+	perl -lane 'print $F[3] if($F[7] > ${MINOVER})' bed/${col2}.repeatmodeller.exons.bed | uniq > bed/${col2}.repeatmodeller.exons.${MINOVER}list
+
+done < list.cores.sp > log.exons
+
+# now up & downstream
+while read -r col1 col2; do
+	rm=$(bedtools intersect -a ../bed/${col1}.updown500.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	updown=$(bedtools intersect -a ../bed/${col1}.updown500.bed -b ../bed/${col1}.updown500.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	printf "%s\t%d\t%d\n" $col2 $updown $rm
+done < list.cores.sp > log.updown500
+
+# -> gene_exon_updown_plot
+
+ 
+## check #copies, length of repeats and overlap among methods
+
+# repeat length stats 
+while read -r col1 col2; do
+	printf "$col2"
+	perl -lane 'print $F[2]-$F[1]' ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed | Rscript -e 'median(scan(file="stdin"))' 2>&1 | perl -ne 'if(/Read (\d+) items/){ print "\t$1" } elsif(/\[1\] (\d+)/){ print "\t$1\n" }'
+
+done < list.cores.sp > log.repeat.length
+
+# repeat length stats (N50)
+while read -r col1 col2; do
+    printf "$col2"
+    perl -ane '$l=$F[2]-$F[1]; $TL+=$l; $R{$.}=$l; END{ foreach $s (sort {$R{$b}<=>$R{$a}} keys(%R)){ $t+=$R{$s}; if($t>$TL/2){ print "\t$R{$s}\n"; exit }}}' ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed
+
+done < list.cores.sp > log.repeat.N50
+
+# check Pfam enrichment of gene overlap
+
+cut -f 1 pfam/*repeatmodeller*enrich.tsv | sort | uniq -c | sort -nr | perl -lane 'if(/PF/){ print "$F[1]\t$F[0]" }' > pfam/enrich.repeatmodeller.tsv
+
+# repeatmodeller repeat overlap vs others (not done, see below using Red as reference)
+#while read -r col1 col2; do
+#	rm=$(bedtools intersect -a  ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	red=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.Red.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	nrplants=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	redat=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	dust=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	trf=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	totdust=$(bedtools intersect -a ../bed/${col2}.dust.bed -b ../bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#	tottrf=$(bedtools intersect -a ../bed/${col2}.trf.bed -b ../bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+#
+#	printf "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n" $col2 $rm $red $redat $nrplants $dust $trf $totdust $tottrf
+#done < list.cores.sp > log.repeat.overlap
+
+# Red repeat overlap vs others
+while read -r col1 col2; do
+	printf "$col2"
+	red=$(bedtools intersect -a ../bed/${col2}.Red.bed -b ../bed/${col2}.Red.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	rm=$(bedtools intersect -b  ../bed/${col2}.Red.bed -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	nrplants=$(bedtools intersect -a ../bed/${col2}.Red.bed -b ../bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	redat=$(bedtools intersect -a ../bed/${col2}.Red.bed -b ../bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	dust=$(bedtools intersect -a ../bed/${col2}.Red.bed -b ../bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	trf=$(bedtools intersect -a ../bed/${col2}.Red.bed -b ../bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	totdust=$(bedtools intersect -a ../bed/${col2}.dust.bed -b ../bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+	tottrf=$(bedtools intersect -a ../bed/${col2}.trf.bed -b ../bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
+
+	printf "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n" $col2 $red $rm $redat $nrplants $dust $trf $totdust $tottrf
+
+done < list.cores.sp > log.repeat.overlap
+
+
+## check overlap with denovo called Rgenes (NLR-annotator)
+
+while read -r col1 col2; do
+	rm=$(bedtools intersect -a ../denovoRgenes/${col2}.nlr.bed.sorted -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[9]; END{print $over}')
+	genes=$(bedtools intersect -a ../denovoRgenes/${col2}.nlr.bed.sorted -b ../denovoRgenes/${col2}.nlr.bed.sorted -sorted -wo | perl -lane '$over+=$F[12]; END{print $over}')
+	read tgenes filename <<< $(wc -l ../denovoRgenes/${col2}.nlr.bed.sorted)
+	printf "%s\t%d\t%d\t%d\n" $col2 $tgenes $genes $rm
+
+done < list.cores.sp > log.Rgenes
+
+while read -r col1 col2; do
+	rm=$(bedtools intersect -a ../denovoRgenes/${col2}.nlr.bed.sorted -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane 'next if($F[9] <= $ENV{"MINOVER"}); $over+=$F[9]; END{print $over}')
+	genes=$(bedtools intersect -a ../denovoRgenes/${col2}.nlr.bed.sorted -b ../denovoRgenes/${col2}.nlr.bed.sorted -sorted -wo | perl -lane '$over+=$F[12]; END{print $over}')
+	read tgenes filename <<< $(wc -l ../denovoRgenes/${col2}.nlr.bed.sorted)
+	printf "%s\t%d\t%d\t%d\n" $col2 $tgenes $genes $rm
+
+done < list.cores.sp > log.Rgenes.$MINOVER

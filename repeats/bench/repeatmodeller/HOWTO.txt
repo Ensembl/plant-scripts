@@ -76,20 +76,6 @@ done < list.cores.sp > log.repeat.N50
 
 cut -f 1 pfam/*repeatmodeller*enrich.tsv | sort | uniq -c | sort -nr | perl -lane 'if(/PF/){ print "$F[1]\t$F[0]" }' > pfam/enrich.repeatmodeller.tsv
 
-# repeatmodeller repeat overlap vs others (not done, see below using Red as reference)
-#while read -r col1 col2; do
-#	rm=$(bedtools intersect -a  ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	red=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.Red.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	nrplants=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.repeatmask_nrplants.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	redat=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.repeatmask_redat.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	dust=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	trf=$(bedtools intersect -a ../../RepeatModeller/${col2^}.repeatmodeller.sort.bed -b ../bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	totdust=$(bedtools intersect -a ../bed/${col2}.dust.bed -b ../bed/${col2}.dust.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#	tottrf=$(bedtools intersect -a ../bed/${col2}.trf.bed -b ../bed/${col2}.trf.bed -sorted -wo | perl -lane '$over+=$F[6]; END{print $over}')
-#
-#	printf "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n" $col2 $rm $red $redat $nrplants $dust $trf $totdust $tottrf
-#done < list.cores.sp > log.repeat.overlap
-
 # Red repeat overlap vs others
 while read -r col1 col2; do
 	printf "$col2"

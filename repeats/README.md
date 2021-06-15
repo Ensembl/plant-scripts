@@ -9,8 +9,8 @@ and
 described in full detail [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs)
 	* annotated repeats from species in Ensembl Plants, obtained with *get_repeats_ensembl.sh*
 
-Optionally, repeats can be loaded into an Ensembl core db as an analysis with logic_name='repeatdetector'. 
-Annotated repeats are imported with logic_name='repeatdetector_annotated'.
+Optionally, repeats and annotated repeats can be loaded into an [Ensembl core db](https://www.ensembl.org/info/docs/api/core/core_schema.html) 
+as new analyses with default logic names are 'repeatdetector' and 'repeatdetector_annotated'. 
 
 ## Dependencies
 

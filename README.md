@@ -93,8 +93,6 @@ exampleVEP.sh:## V3) Predict effect of variants
 exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
-A few more advanced scripts for phylogenomic studies are documented in repository [plant_tools](https://github.com/Ensembl/plant_tools/tree/master/phylogenomics)
-
 ### Dependencies of recipes
 
 Some of the scripts depend on additional software packages, see below to learn how to install them.

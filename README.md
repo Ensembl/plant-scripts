@@ -153,8 +153,13 @@ If you want to run any of those scripts you must first run:
 
 For the scripts and data in the [repeats](./repeats/) folder please also cite:
 
-
-Contreras-Moreira B, Filippi CV, Naamati G, García Girón C, Allen JE, Flicek P (2021) Efficient masking of plant genomes by combining kmer counting and curated repeats. https://www.biorxiv.org/content/10.1101/2021.03.22.436504v1
+Contreras-Moreira B, Filippi CV, Naamati G, García Girón C, Allen JE, Flicek P (2021) 
+Efficient masking of plant genomes by combining kmer counting and curated repeats. 
+https://www.biorxiv.org/content/10.1101/2021.03.22.436504v1
 
 Girgis HZ (2015) Red: an intelligent, rapid, accurate tool for detecting repeats de-novo on the genomic scale. 
-BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5.
+BMC Bioinformatics 16:227. https://doi.org/10.1186/s12859-015-0654-5
+
+Li H (2018) Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics 34(18):3094–3100.
+https://doi.org/10.1093/bioinformatics/bty191
+

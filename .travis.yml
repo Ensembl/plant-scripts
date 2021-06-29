@@ -21,7 +21,7 @@ before_script:
 
 script:
   - "make test_travis"
-  - "make test_repeats"
+  - "make test_repeats_travis"
 
 notifications:
   email:

@@ -29,8 +29,20 @@ If you want to annotate repeats you must first run:
 
 ## List of recipes
 
-These are the script recipes, obtained with grep -P "^## \w\d+" recipes/example* .
-You can check the source code in folder [recipes](./recipes/):
+The code for the recipes in this section can be found in folder [recipes](./recipes/).
+They are grouped by type (API, BioMart, CRAM, FTP, MySQL, REST & VEP) and their dependencies 
+are explained below. To create your own recipes please read the appropriate documentation:
+
+| type | URLs |
+|---|---|
+| API | http://plants.ensembl.org/info/data/api.html |
+| BioMart | http://plants.ensembl.org/info/data/biomart/index.html |
+| FTP | http://plants.ensembl.org/info/data/ftp |
+| MySQL | http://plants.ensembl.org/info/data/mysql.html |
+| REST | http://plants.ensembl.org/info/data/rest.html |
+| VEP | http://plants.ensembl.org/info/docs/tools/vep/index.html |
+
+These are the script recipes, obtained with grep -P "^## \w\d+" recipes/example* :
 
 ```
 exampleAPI.pl:## A1) Load the Registry object with details of genomes available

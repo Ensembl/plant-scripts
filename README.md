@@ -1,7 +1,7 @@
 
 # Scripting analyses of genomes in Ensembl Plants
 
-This repo contains code examples for interrogating Ensembl Plants from your own scripts,
+This repo contains code examples for interrogating [Ensembl Plants](https://plants.ensembl.org/index.html) from your own scripts,
 and for masking & annotating [repeats](./repeats) in plant genomes.
 
 [![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://travis-ci.com/Ensembl/plant-scripts)

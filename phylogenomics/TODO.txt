@@ -1,0 +1,14 @@
+
+1) workout stable id from cluster content, so it is reasonable stable
+
+1.1) IDEA 1
+1.1.1) produce a list of ordered core markers/genes along chrs -> how to be sure they will be core in the future?
+1.1.2) for each cluster, find the closest marker both sides and define interval
+1.1.3) number clusters per interval
+
+1.2) IDEA 2
+1.2.1) compute N most frequent 21-mers in cluster
+1.2.2) work out cluster id from kmer composition
+
+1.3) IDEA 3
+1.3.1) Use previous clusters to compare to new and reuse stable ids as much as possible

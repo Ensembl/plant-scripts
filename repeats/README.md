@@ -164,7 +164,7 @@ The script *Red2Ensembl.py* will attempt to estimate the GB RAM needed for the i
 ## real example, with several chromosomes, taking 4 CPU cores 
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon --cor 4 
 
-## local run & loading repeats in core Ensembl db
+## local run & loading repeats in core Ensembl db (will re-use previous Red results)
 ./Red2Ensembl.py Brachypodium_distachyon_v3.0.dna.toplevel.fa Brachypodium_distachyon \
 	--host pl1 --user xyz --pw XYZ --port 123 --db brachypodium_distachyon_core_49_102
 ```
@@ -251,4 +251,9 @@ Unclassified	126483
 These data were measured on a CentOS7.9 computer using 4 cores of a Xeon E5-2620 v4 (2.10GHz) CPU.
 
 ![](../files/runtime_ram.png)
+
+
+## Error messages
+
++ ERROR: cannot run Red -9: This means the Red process was killed by the Operating system, usually for taking too much RAM. You will need more RAM to run this job.
 

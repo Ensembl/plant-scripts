@@ -408,13 +408,18 @@ def store_repeats_database(
         name_to_seqregion[seq_name] = seq_region_id
 
     # insert Red analysis, fails if logic_name exists
+    #   (make sure binary_path is within the limits of column 'program_file')
+    binary_path = red_path
+    if len(binary_path) > 80:
+        binary_path = '...' + binary_path[75:]
+
     analysis_insert = analysis_table.insert().values(
         {
             "created": db.sql.func.now(),
             "logic_name": logic_name,
             "program": "Red",
             "program_version": red_version,
-            "program_file": red_path,
+            "program_file": binary_path,
             "parameters": red_params,
             "gff_source": logic_name,
             "gff_feature": "repeat",

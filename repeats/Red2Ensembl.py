@@ -265,6 +265,7 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepath
         print("# ERROR: cannot run Red ", err.returncode)
     finally:
         logfile.close()
+        return rpt_files
 
     # merge masked chromosomes if requested
     if outmskfilename:

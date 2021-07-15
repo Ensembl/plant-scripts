@@ -10,6 +10,7 @@
 # Copyright [2020-21] EMBL-European Bioinformatics Institute
 
 import argparse
+import sys
 import os
 import re
 import gzip
@@ -658,7 +659,12 @@ def main():
     repeat_filenames = run_red(
         args.exe, args.cor, args.msk_file, gnmdir, rptdir, log_filepath
     )
-    print("# TSV files with repeat coords: %s\n\n" % rptdir)
+    
+    if repeat_filenames:
+        print("# TSV files with repeat coords: %s\n\n" % rptdir)
+    else:
+        print("# Red process interrupted\n")
+        sys.exit(-1)
 
     # output BED if requested
     if args.bed_file:

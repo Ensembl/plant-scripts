@@ -264,9 +264,10 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepath
         osresponse = subprocess.check_call(cmd.split(), stdout=logfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run Red ", err.returncode)
-    finally:
         logfile.close()
         return rpt_files
+    finally:
+        logfile.close()
 
     # merge masked chromosomes if requested
     if outmskfilename:

@@ -152,7 +152,7 @@ printf("# %d genes mapped in %s (%d unmapped)\n",
 
 my $gene_intersectBEDfile = "$sp1.$sp2.gene.intersect.bed";
 
-system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR | ".
+system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");
 if($? != 0){
     die "# ERROR: failed running bedtools\n";

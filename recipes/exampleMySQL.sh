@@ -221,6 +221,6 @@ mysql --host $SERVER --user $USER --port $PORT $SPECIESCORE -Nb -e \
 	WHERE r.seq_region_id=sr.seq_region_id \
 	AND r.repeat_consensus_id=rc.repeat_consensus_id \
 	AND (r.seq_region_end-r.seq_region_start+1) > 90" | sort -k1,1 -k4,4n | \
-	perl -lane 'if($F[5] eq "NULL"){ $F[5] = "."}; if($F[6]==1){ $F[6]= "+" } else {$F[6]= "-" }; print join("\t",@F)'
+	perl -lane 'if($F[5] eq "NULL"){ $F[5]="."}; if($F[6]==1){ $F[6]="+" } else {$F[6]="-" }; $F[8]="Note=\"$F[8]\";"; print join("\t",@F)'
 
 :

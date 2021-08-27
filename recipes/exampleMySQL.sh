@@ -178,11 +178,12 @@ WHERE
     variation.name LIKE "${LINE}%" 
 SQL
 
-## S8) Get annotated repeated sequences from selected species
+## S8) Get FASTA of repeated sequences from selected species
 
 # This recipe first interrogates the MySQL server (BED file) and 
 # then the FTP server (genome FASTA file) and finally produces a 
-# FASTA file with repeat sequences. Uses MINLEN to skip short repeats.
+# FASTA file with repeated sequences. Uses MINLEN to skip short repeats
+# and skips repeats starting on some coordinate.
 # Note: requires wget, sort, gzip and bedtools
 
 MINLEN=90
@@ -205,5 +206,21 @@ mysql --host $SERVER --user $USER --port $PORT $SPECIESCORE -Nb -e \
 # similar to recipe F4
 URL="${FTPSERVER}/${DIV}/current/fasta/${SPECIES}/dna/${FASTANAME}"
 wget -c $URL -O- | gunzip > $FASTA
-
 bedtools getfasta -name -fi $FASTA -bed $BEDFILE > $REPFASTA
+
+## S9) Get GFF of repeated sequences from selected species
+
+# This recipe first interrogates the MySQL server and produces a GFF file 
+# with repeat sequences. Uses MINLEN to skip short repeats.
+# Note: requires wget, sort and perl
+
+mysql --host $SERVER --user $USER --port $PORT $SPECIESCORE -Nb -e \
+	"SELECT sr.name,rc.repeat_class,'Repeat',r.seq_region_start, \
+	r.seq_region_end,r.score,r.seq_region_strand,0,rc.repeat_name \
+	FROM repeat_feature r JOIN seq_region sr JOIN repeat_consensus rc \
+	WHERE r.seq_region_id=sr.seq_region_id \
+	AND r.repeat_consensus_id=rc.repeat_consensus_id \
+	AND (r.seq_region_end-r.seq_region_start+1) > 90" | sort -k1,1 -k4,4n | \
+	perl -lane 'if($F[5] eq "NULL"){ $F[5] = "."}; if($F[6]==1){ $F[6]= "+" } else {$F[6]= "-" }; print join("\t",@F)'
+
+:

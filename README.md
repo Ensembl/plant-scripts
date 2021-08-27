@@ -84,7 +84,8 @@ exampleMySQL.sh:## S4) Get variants significantly associated to phenotypes
 exampleMySQL.sh:## S5) Get Triticum aestivum homeologous genes across A,B & D subgenomes
 exampleMySQL.sh:## S6) Count the number of whole-genome alignments of all genomes 
 exampleMySQL.sh:## S7) Extract all the mutations and consequences for a selected wheat line
-exampleMySQL.sh:## S8) Get annotated repeated sequences from selected species
+exampleMySQL.sh:## S8) Get FASTA of repeated sequences from selected species
+exampleMySQL.sh:## S9) Get GFF of repeated sequences from selected species
 
 exampleREST:## R1) Create a HTTP client and a helper functions 
 exampleREST:## R2) Get metadata for all plant species 

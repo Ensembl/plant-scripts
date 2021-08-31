@@ -81,7 +81,7 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 !$label1 ".
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654
 
-my $PAFfile = "$sp2.$sp1.minimap.paf";
+my $PAFfile = "_$sp2.$sp1.minimap.paf";
 
 print "# computing pairwise genome alignment with minimap2\n\n";
 
@@ -103,7 +103,7 @@ if($reuse && -s $PAFfile){
 ## 2) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
-my $wgaBEDfile = "$sp2.$sp1.minimap.bed";
+my $wgaBEDfile = "_$sp2.$sp1.minimap.bed";
 
 open(PAF,"<",$PAFfile) || die "# ERROR: cannot read $PAFfile\n";
 open(BED,">",$wgaBEDfile) || die "# ERROR: cannot create $wgaBEDfile\n";
@@ -119,8 +119,8 @@ close(PAF);
 ## 3) Parse GFFs and produce BED files with gene coords
 ## Note: add dummy match score=9999
 
-my $geneBEDfile1 = "$sp1.gene.bed";
-my $geneBEDfile2 = "$sp2.gene.bed";
+my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
+my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
 
 my $num_genes1 = parse_genes_GFF($gff1,$geneBEDfile1);
 printf("# %d genes parsed in %s\n",$num_genes1,$gff1);
@@ -130,7 +130,7 @@ printf("# %d genes parsed in %s\n",$num_genes2,$gff2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
-my $sp2wgaBEDfile = "$sp2.gene.$sp2.$sp1.minimap.intersect.bed";
+my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.minimap.intersect.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
@@ -141,7 +141,7 @@ elsif(!-s $sp2wgaBEDfile){
 	die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
 }
 
-my $geneBEDfile2mapped = "$sp2.gene.mapped.bed";
+my $geneBEDfile2mapped = "_$sp2.$label2.gene.mapped.bed";
 
 my ($num_matched, @unmatched) = 
 	query2ref_coords($sp2wgaBEDfile, $geneBEDfile2mapped, 
@@ -152,7 +152,7 @@ printf("# %d genes mapped in %s (%d unmapped)\n",
 
 ## 5) produce list of pairs of collinear genes
 
-my $gene_intersectBEDfile = "$sp1.$sp2.gene.intersect.bed";
+my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.gene.intersect.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");
@@ -163,7 +163,7 @@ elsif(!-s $gene_intersectBEDfile){
     die "# ERROR: failed generating $gene_intersectBEDfile file (bedtools)\n";
 }
 
-my $TSVfile = "Minimap.homologies.$sp1.$sp2.tsv";
+my $TSVfile = "Minimap.homologies.$sp1.$label1.$sp2.$label2.tsv";
 my $num_pairs = bed2compara($gene_intersectBEDfile, $TSVfile, $sp1, $sp2,
 	$noheader, $TRANSCRIPT2GENE);
 

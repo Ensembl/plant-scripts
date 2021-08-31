@@ -276,7 +276,6 @@ sub query2ref_coords {
 
 		#next if($cname ne 'ONIVA01G00100'); # debug
 		#next if($cname ne 'LOC_Os01g01010'); 
-		#print;
 
 		# estimate offset of aligned cDNA in genomic coords of query 
 		$qoffset = $cstart - $qstart;
@@ -338,14 +337,16 @@ sub query2ref_coords {
 				($SAMqcoord + $deltaq) >= ($qstart + $qoffset)){
 
 				# refine delta to match exactly the start (end for strand -)
+				# NOTE: important for ~identical assemblies
                 $start_deltar = ($rstart + $qoffset) - $SAMrcoord;
+				if($start_deltar < $start_deltar || $start_deltar > $deltar){ $start_deltar = $deltar }
 
 				if($WGAstrand eq '+') {
 					$ref_coords{$cname}{'start'} = $SAMrcoord + $start_deltar;
 				} else {
 					$ref_coords{$cname}{'end'} = $SAMrcoord + $start_deltar;
 				}	
-				print ">$deltaq $start_deltar\n" if($verbose > 1);
+				print ">$deltaq $deltar $start_deltar\n" if($verbose > 1);
 			} 
 
 			# end coords (start in -strand), actually copied out of loop
@@ -353,10 +354,12 @@ sub query2ref_coords {
 	            $SAMqcoord + $deltaq >= ($qstart + $qoffset + $length)){	
 
 				# refine delta to match exactly the end (start for strand -)
+				# NOTE: important for ~identical assemblies
                 $end_deltar = ($rstart + $qoffset + $length) - $SAMrcoord;
+				if($end_deltar < 0 || $end_deltar > $deltar){ $end_deltar = $deltar }
 
 				$done = 1;
-				print "<$deltaq $end_deltar\n" if($verbose > 1);
+				print "<$deltaq $deltar $end_deltar\n" if($verbose > 1);
 			}
 
 			# update coords with deltas

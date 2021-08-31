@@ -230,6 +230,7 @@ sub parse_genes_GFF {
 # Note: takes first match of each cDNA only
 # example input:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
+# 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:... 11405
 # Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 1000 10053455 + 1 1000 10053455 10052455 60 cs:Z::10052455         7914
 # <--             (c)DNA/gene       --> <- (q)uery genome -> <-- (r)eference genome                         --> ovlp
 #
@@ -256,7 +257,8 @@ sub query2ref_coords {
 	#1 98773 99875 ONIVA01G00080.1 258 + 1 98032 101175 - 6 27346427 27348975 2375 60 cs:Z::29-ggt.. 15904
     #GFF/gene format
 	#1  4848 20752 ONIVA01G00010 9999  + 1 3331 33993 + 6 26020714 26051403 29819 60 cs:Z::303*ag.. 15904
-	
+	#1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:... 11405
+
 		($cchr,$cstart,$cend,$cname,$cmatch,$cstrand,
 			$qchr,$qstart,$qend,$WGAstrand,
 			$rchr,$rstart,$rend,$rmatch,$rmapqual,
@@ -271,7 +273,7 @@ sub query2ref_coords {
 		# take 1st mapping only
 		next if(defined($ref_coords{$cname}));
 
-		#next if($cname ne 'LOC_Os01g01010'); # debug
+		next if($cname ne 'ONIVA01G00100'); # debug
 		#print;
 
 		# estimate offset of aligned cDNA in genomic coords of query 
@@ -310,9 +312,6 @@ sub query2ref_coords {
 			if($feat =~ m/(\d+)/){ 
 				$deltar += $1; 
 				$deltaq += $1;
-
-				#$qstart + $qoffset + $length
-
 			} 
 		
 			# insertion (+) / deletion (-)
@@ -336,12 +335,15 @@ sub query2ref_coords {
 			if($SAMqcoord < ($qstart + $qoffset) && 
 				($SAMqcoord + $deltaq) >= ($qstart + $qoffset)){
 
+                # refine deltaq
+                my $refined_deltaq = ($qstart + $qoffset) - $SAMqcoord;
+
 				if($WGAstrand eq '+') {
-					$ref_coords{$cname}{'start'} = $SAMrcoord + $qoffset;
+					$ref_coords{$cname}{'start'} = $SAMrcoord + $refined_deltaq;
 				} else {
-					$ref_coords{$cname}{'end'} = $SAMrcoord + $qoffset;
+					$ref_coords{$cname}{'end'} = $SAMrcoord + $refined_deltaq;
 				}	
-				print ">$deltaq" if($verbose > 1);
+				print ">$deltaq $refined_deltaq\n" if($verbose > 1);
 			} 
 
 			# end coords (start in -strand), actually copied out of loop

@@ -9,7 +9,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]
 
-#perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
+#perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
 
 my $MINIMAP2EXE = 'minimap2'; # tested with 2.17-r941
@@ -47,7 +47,7 @@ GetOptions(
 	"sp2|species2=s" => \$sp2,
 	"fa2|fasta2=s"   => \$fasta2,
 	"gf2|gff2=s"     => \$gff2,
-	"l2|label2=s"    => \$label2,
+	"al2|label2=s"   => \$label2,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"n|noheader"     => \$noheader

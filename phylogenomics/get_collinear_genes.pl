@@ -9,7 +9,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]
 
-#perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -o kk -r
+#perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
 
 
 my $MINIMAP2EXE = 'minimap2'; # tested with 2.17-r941
@@ -35,18 +35,19 @@ my $VERBOSE    = 0;
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 1;
 
-my ( $help, $do_sequence_check, $reuse, $noheader, $outfile ) = (0,0,0,0,'');
-my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2  );
+my ( $help, $do_sequence_check, $reuse, $noheader ) = (0,0,0,0);
+my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
 
 GetOptions(
 	"help|?"         => \$help,
 	"sp1|species1=s" => \$sp1,
 	"fa1|fasta1=s"   => \$fasta1,
 	"gf1|gff1=s"     => \$gff1,
+	"al1|label1=s"   => \$label1,
 	"sp2|species2=s" => \$sp2,
 	"fa2|fasta2=s"   => \$fasta2,
 	"gf2|gff2=s"     => \$gff2,
-	"o|outfile=s"    => \$outfile,
+	"l2|label2=s"    => \$label2,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"n|noheader"     => \$noheader
@@ -56,25 +57,26 @@ sub help_message {
 	print "\nusage: $0 [options]\n\n"
 		. "-sp1 binomial/trinomial species name    (required, example: -sp1 oryza_sativa)\n"
 		. "-fa1 genome FASTA filename              (required, example: -fa1 oryza_sativa.fna)\n"
-		. "-gf1 GFF filename                       (required, example: -gf1 oryza_sativa.gff)\n"
+		. "-gf1 GFF filename                       (required, example: -gf1 oryza_sativa.RAPDB.gff)\n"
+		. "-al1 annotation label                   (required, example: -al1 RAPDB)\n"
 		. "-sp2 binomial/trinomial species name    (required, example: -sp2 oryza_nivara)\n"
 		. "-fa2 genome FASTA filename              (required, example: -fa2 oryza_nivara.fna)\n"
-		. "-gf2 GFF filename                       (required, example: -gf2 oryza_nivara.gff)\n"
-		. "-o output TSV filename                  (required, example: -o oryza_sativa.oryza_nivara.tsv)\n"
+		. "-gf2 GFF filename                       (required, example: -gf2 oryza_nivara.OGE.gff)\n"
+		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-c compare sequences of collinear genes (optional)\n"
 		. "-n no header in TSV file                (optional, useful to concatenate files)\n"
 		. "-r re-use previous minimap2 results     (optional)\n";
 }
 
 if($help || 
-	(!$sp1 || !$fasta1 || !$gff1 || 
-		!$sp2 || !$fasta2 || !$gff2 || !$outfile)){ 
+	(!$sp1 || !$fasta1 || !$gff1 || !$label1 ||
+		!$sp2 || !$fasta2 || !$gff2 || !$label2)){ 
 	help_message();
 	exit(0);
 }
 
-print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 ".
-	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -o $outfile -c $do_sequence_check -r $reuse\n\n";
+print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 !$label1 ".
+	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 !$label2 -c $do_sequence_check -r $reuse\n\n";
 
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654

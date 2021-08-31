@@ -12,11 +12,12 @@ use Getopt::Long qw(:config no_ignore_case);
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
 
-my $MINIMAP2EXE = 'minimap2'; # tested with 2.17-r941
+my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
 my $MINIMAPPARS = '--cs -x asm20';
-my $BEDTOOLSEXE = 'bedtools'; # tested with v2.30.0
+my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f 0.5 -F 0.5 -e';
-my $BLASTNEXE   = 'blastn';   # tested with 2.2.30+
+
+#my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
 our $SORTLIMITRAM = "500M"; # buffer size
 our $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
@@ -27,7 +28,7 @@ my $DUMMYSCORE = 9999;
 my $MINQUAL    = 60; 
 my $MINALNLEN  = 100;
 my $SAMESTRAND = 1;
-my $VERBOSE    = 0;
+my $VERBOSE    = 2; # values > 1
 
 # Work out gene names from transcripts':
 # 1) remove suffix after . or -
@@ -75,8 +76,8 @@ if($help ||
 	exit(0);
 }
 
-print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 !$label1 ".
-	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 !$label2 -c $do_sequence_check -r $reuse\n\n";
+print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
+	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -c $do_sequence_check -r $reuse\n\n";
 
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654
@@ -135,7 +136,7 @@ my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.minimap.intersect.bed";
 system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
 if($? != 0){
-	die "# ERROR: failed running bedtools\n";
+	die "# ERROR: failed running bedtools (WGA)\n";
 }
 elsif(!-s $sp2wgaBEDfile){
 	die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
@@ -157,7 +158,7 @@ my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.gene.intersect.bed";
 system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");
 if($? != 0){
-    die "# ERROR: failed running bedtools\n";
+    die "# ERROR: failed running bedtools (genes)\n";
 }
 elsif(!-s $gene_intersectBEDfile){
     die "# ERROR: failed generating $gene_intersectBEDfile file (bedtools)\n";
@@ -228,8 +229,10 @@ sub parse_genes_GFF {
 # Parses sorted BED intersect -wo output and produces BED file with cDNA/transcripts mapped on ref
 # Note: takes first match of each cDNA only
 # example input:
-# 7	17764202 17769979 ONIVA07G18210.2 1684 7 17758528 17798398 + 7 23334256 23377175 32397 60 cs:Z::23-cc:...    5777
-# <--             (c)DNA/gene          --> <- (q)uery genome-> <-- (r)eference genome                        --> ovlp
+# 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
+# Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 1000 10053455 + 1 1000 10053455 10052455 60 cs:Z::10052455         7914
+# <--             (c)DNA/gene       --> <- (q)uery genome -> <-- (r)eference genome                         --> ovlp
+#
 sub query2ref_coords {
 
 	my ($infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose) = @_;
@@ -268,7 +271,7 @@ sub query2ref_coords {
 		# take 1st mapping only
 		next if(defined($ref_coords{$cname}));
 
-		#next if($cname ne 'ONIVA06G10510.1'); # debug
+		#next if($cname ne 'LOC_Os01g01010'); # debug
 		#print;
 
 		# estimate offset of aligned cDNA in genomic coords of query 
@@ -307,6 +310,9 @@ sub query2ref_coords {
 			if($feat =~ m/(\d+)/){ 
 				$deltar += $1; 
 				$deltaq += $1;
+
+				#$qstart + $qoffset + $length
+
 			} 
 		
 			# insertion (+) / deletion (-)
@@ -331,9 +337,9 @@ sub query2ref_coords {
 				($SAMqcoord + $deltaq) >= ($qstart + $qoffset)){
 
 				if($WGAstrand eq '+') {
-					$ref_coords{$cname}{'start'} = $SAMrcoord;
+					$ref_coords{$cname}{'start'} = $SAMrcoord + $qoffset;
 				} else {
-					$ref_coords{$cname}{'end'} = $SAMrcoord;
+					$ref_coords{$cname}{'end'} = $SAMrcoord + $qoffset;
 				}	
 				print ">$deltaq" if($verbose > 1);
 			} 

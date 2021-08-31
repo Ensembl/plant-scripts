@@ -28,7 +28,7 @@ my $DUMMYSCORE = 9999;
 my $MINQUAL    = 60; 
 my $MINALNLEN  = 100;
 my $SAMESTRAND = 1;
-my $VERBOSE    = 2; # values > 1
+my $VERBOSE    = 0; # values > 1
 
 # Work out gene names from transcripts':
 # 1) remove suffix after . or -
@@ -243,7 +243,8 @@ sub query2ref_coords {
 	my ($WGAstrand,$rchr,$rstart,$rend);
 	my ($rmatch,$rmapqual,$SAMPAFtag,$overlap);
 	my ($qoffset,$roffset,$length,$done,$strand);
-	my ($SAMqcoord,$SAMrcoord,$feat,$deltaq,$deltar);
+	my ($SAMqcoord,$SAMrcoord,$feat);
+	my ($deltaq,$deltar,$start_deltar,$end_deltar);
 	my $num_matched = 0;
 	my (%ref_coords,@unmatched);
 
@@ -273,7 +274,8 @@ sub query2ref_coords {
 		# take 1st mapping only
 		next if(defined($ref_coords{$cname}));
 
-		next if($cname ne 'ONIVA01G00100'); # debug
+		#next if($cname ne 'ONIVA01G00100'); # debug
+		#next if($cname ne 'LOC_Os01g01010'); 
 		#print;
 
 		# estimate offset of aligned cDNA in genomic coords of query 
@@ -335,27 +337,35 @@ sub query2ref_coords {
 			if($SAMqcoord < ($qstart + $qoffset) && 
 				($SAMqcoord + $deltaq) >= ($qstart + $qoffset)){
 
-                # refine deltaq
-                my $refined_deltaq = ($qstart + $qoffset) - $SAMqcoord;
+				# refine delta to match exactly the start (end for strand -)
+                $start_deltar = ($rstart + $qoffset) - $SAMrcoord;
 
 				if($WGAstrand eq '+') {
-					$ref_coords{$cname}{'start'} = $SAMrcoord + $refined_deltaq;
+					$ref_coords{$cname}{'start'} = $SAMrcoord + $start_deltar;
 				} else {
-					$ref_coords{$cname}{'end'} = $SAMrcoord + $refined_deltaq;
+					$ref_coords{$cname}{'end'} = $SAMrcoord + $start_deltar;
 				}	
-				print ">$deltaq $refined_deltaq\n" if($verbose > 1);
+				print ">$deltaq $start_deltar\n" if($verbose > 1);
 			} 
 
 			# end coords (start in -strand), actually copied out of loop
 			if($SAMqcoord < ($qstart + $qoffset + $length) &&
 	            $SAMqcoord + $deltaq >= ($qstart + $qoffset + $length)){	
 
+				# refine delta to match exactly the end (start for strand -)
+                $end_deltar = ($rstart + $qoffset + $length) - $SAMrcoord;
+
 				$done = 1;
-				print "<$deltaq\n" if($verbose > 1);
+				print "<$deltaq $end_deltar\n" if($verbose > 1);
 			}
 
 			# update coords with deltas
 	        $SAMqcoord += $deltaq;
+
+			if($done) {
+				$deltar = $end_deltar;
+			}
+
 	        if($WGAstrand eq '+') {
 	            $SAMrcoord += $deltar;
 	        } else {

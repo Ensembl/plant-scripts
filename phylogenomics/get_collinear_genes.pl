@@ -241,9 +241,8 @@ sub query2ref_coords {
 	my ($cchr,$cstart,$cend,$cname,$cmatch,$cstrand);
 	my ($qchr,$qstart,$qend);
 	my ($WGAstrand,$rchr,$rstart,$rend);
-	my ($rmatch,$rmapqual,$SAMPAFtag,$overlap);
-	my ($qoffset,$roffset,$length,$done,$strand);
-	my ($SAMqcoord,$SAMrcoord,$feat);
+	my ($rmatch,$rmapqual,$SAMPAFtag,$overlap,$done,$strand);
+	my ($SAMqcoord,$SAMrcoord,$feat,$coordr);
 	my ($deltaq,$deltar,$start_deltar,$end_deltar);
 	my $num_matched = 0;
 	my (%ref_coords,@unmatched);
@@ -274,13 +273,9 @@ sub query2ref_coords {
 		# take 1st mapping only
 		next if(defined($ref_coords{$cname}));
 
-		#next if($cname ne 'ONIVA01G00100'); # debug
+	 	#next if($cname ne 'ONIVA01G00100'); # debug
+		#next if($cname ne 'ONIVA01G00150');
 		#next if($cname ne 'LOC_Os01g01010'); 
-
-		# estimate offset of aligned cDNA in genomic coords of query 
-		$qoffset = $cstart - $qstart;
-		if($qoffset < 0){ $qoffset = 0 } # genomic segment contains 5' half of cDNA only
-		$length = $cend - $cstart;
 
 		# make sure ref chr is taken
     	$ref_coords{$cname}{'chr'} = $rchr;
@@ -301,65 +296,54 @@ sub query2ref_coords {
 			$ref_coords{$cname}{'end'} = $rend;
 		}
 
-		print "$SAMqcoord $SAMrcoord\n" if($verbose > 1);
+		print "# $SAMqcoord $SAMrcoord $cname $num_matched\n" if($verbose > 1);
 
 		$SAMPAFtag =~ s/cs:Z:://;
 		$done = 0;
 		foreach $feat (split(/:/,$SAMPAFtag)){
 
-			$deltaq = $deltar = 0;
-		
-			# identical segment
-			if($feat =~ m/(\d+)/){ 
-				$deltar += $1; 
-				$deltaq += $1;
-			} 
-		
-			# insertion (+) / deletion (-)
-			if($feat =~ m/([\+\-])([A-Za-z]+)/){
-				if($1 eq '+'){
-					$deltaq += length($2);
-				} else {
-					$deltar += length($2);
-				}
-			}
+            ($deltaq,$deltar,$coordr) = _parseCSfeature($feat,$SAMqcoord,$SAMrcoord);
 
-			# SNPs
-			while($feat =~ m/\*\w{2}/g){ 
-				$deltar++; 
-				$deltaq++;
-        	}
-
-			## check if current position in alignment matches cDNA coords  
+			## check if current position in alignment matches cDNA/gene coords  
 
 			# start coords (end in - strand)
-			if($SAMqcoord < ($qstart + $qoffset) && 
-				($SAMqcoord + $deltaq) >= ($qstart + $qoffset)){
+			if($SAMqcoord < $cstart && 
+				($SAMqcoord + $deltaq) >= $cstart){
 
 				# refine delta to match exactly the start (end for strand -)
-				# NOTE: important for ~identical assemblies
-                $start_deltar = ($rstart + $qoffset) - $SAMrcoord;
-				if($start_deltar < $start_deltar || $start_deltar > $deltar){ $start_deltar = $deltar }
+				($deltaq,$deltar,$coordr) = _parseCSfeature($feat,$SAMqcoord,$SAMrcoord,$cstart);
+				$start_deltar = -1;
+				if($coordr > -1) {
+					$start_deltar = $coordr - $SAMrcoord;
+				}
+
+				print ">$deltaq $deltar $start_deltar $cstart\n" if($verbose > 1);
+
+				if($start_deltar < 0 || $start_deltar > $deltar){ $start_deltar = $deltar }
 
 				if($WGAstrand eq '+') {
 					$ref_coords{$cname}{'start'} = $SAMrcoord + $start_deltar;
 				} else {
 					$ref_coords{$cname}{'end'} = $SAMrcoord + $start_deltar;
 				}	
-				print ">$deltaq $deltar $start_deltar\n" if($verbose > 1);
 			} 
 
 			# end coords (start in -strand), actually copied out of loop
-			if($SAMqcoord < ($qstart + $qoffset + $length) &&
-	            $SAMqcoord + $deltaq >= ($qstart + $qoffset + $length)){	
+			if($SAMqcoord < $cend &&
+                ($SAMqcoord + $deltaq) >= $cend){
 
 				# refine delta to match exactly the end (start for strand -)
-				# NOTE: important for ~identical assemblies
-                $end_deltar = ($rstart + $qoffset + $length) - $SAMrcoord;
+				($deltaq,$deltar,$coordr) = _parseCSfeature($feat,$SAMqcoord,$SAMrcoord,$cend);
+				$end_deltar = -1;
+                if($coordr > -1) {
+                    $end_deltar = $coordr - $SAMrcoord;
+                }
+
+				print "<$deltaq $deltar $end_deltar $cend\n" if($verbose > 1);
+
 				if($end_deltar < 0 || $end_deltar > $deltar){ $end_deltar = $deltar }
 
 				$done = 1;
-				print "<$deltaq $deltar $end_deltar\n" if($verbose > 1);
 			}
 
 			# update coords with deltas
@@ -375,8 +359,7 @@ sub query2ref_coords {
 	            $SAMrcoord -= $deltar;
 	        }
 
-			print "$SAMqcoord $SAMrcoord $feat $deltaq ".
-				"($qstart + $qoffset + $length) $deltar\n" if($verbose > 1);
+			print "$SAMqcoord $SAMrcoord $feat $deltaq $deltar\n" if($verbose > 1);
 
 			last if($done);
 		}
@@ -419,6 +402,92 @@ sub query2ref_coords {
 	return ($num_matched, @unmatched);
 }
 
+# Takes 3 scalars:
+# 1) CS tag feature
+# 2) start query coordinate
+# 3) start reference coordinate
+# 4 optional) target query coordinate 
+# Returns 3 scalars:
+# 1) the increment (delta) in query (q) coords after adding the new CS feature 
+# 2) the increment in reference (r) coords
+# 3) the reference coor matching to the optional target query coord, -1 by default 
+# Note: CS tag string are CIGAR-like strings produced by minimap2 with flag --cs; 
+# CS tags start with preffix 'cs:Z::' and can be :-split into features. 
+sub _parseCSfeature {
+
+	my ($feat,$Qstart,$Rstart,$opt_query_coord) = @_;
+
+	my ($deltaq,$deltar,$totsnps,$rcoord) = (0,0,0,-1);
+	my ($delta,$offset,$res,$qcoord);
+
+	# example CS tag (coords are 0-based):
+	# cs:Z::303*ag:30*ga:32*ga:27+ctattcta*ag*ca:20*ag:3*ga:18*tc:39*ga:76-tc
+	# example features:
+	# 303*ag, 30*ga, .. , 27+ctattcta, .. , 76-tc
+
+	# identical segment
+	if($feat =~ m/(\d+)/) {
+		$delta = $1;	
+		$deltar += $delta;
+		$deltaq += $delta;
+
+        # look up query coord (optional)
+		if(defined($opt_query_coord)) {
+			$offset = $opt_query_coord - $Qstart;
+			if($offset <= $delta) {	
+				$rcoord = $Rstart + $offset;
+			}
+		}
+	}
+
+	# insertion (+) / deletion (-)
+	if($feat =~ m/([\+\-])([A-Za-z]+)/) {
+		$delta = length($2);
+                
+		if($1 eq '+') {
+                    
+			# look up query coord (optional)
+			if(defined($opt_query_coord) && $rcoord == -1) {
+				$offset = $opt_query_coord - $Qstart;
+				if($offset <= $delta + $deltaq) { 
+					$rcoord	= $Rstart + $deltar;
+				}
+			}
+					
+			$deltaq += $delta;
+
+		} else {
+			
+			# look up query coord (optional)
+            if(defined($opt_query_coord) && $rcoord == -1) {
+                $offset = $opt_query_coord - $Qstart;
+                if($offset <= $deltaq) {
+                    $rcoord = $Rstart + $deltar + $offset;
+                }
+            }
+
+			$deltar += $delta;
+		}
+	}
+
+	# SNPs
+	while($feat =~ m/\*\w{2}/g){
+
+		# look up query coord (optional)
+		if(defined($opt_query_coord) && $rcoord == -1) {
+			$qcoord = $Qstart + $totsnps + $deltaq;
+			if($qcoord == $opt_query_coord && $rcoord == -1) {
+				$rcoord = $Rstart + $totsnps + $deltar;
+			}
+		}
+
+		$totsnps++;
+	}
+	$deltar += $totsnps;
+	$deltaq += $totsnps;
+
+	return ($deltaq, $deltar, $rcoord);
+}
 
 # Takes i) input BED intersect filename ii) output TSV filename and
 # returns i) number of collinear gene pairs.

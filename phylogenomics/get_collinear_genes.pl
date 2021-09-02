@@ -192,6 +192,7 @@ elsif(!-s $gene_intersectBEDfile){
 my $num_pairs = bed2compara($gene_intersectBEDfile, $outfilename, $sp1, $sp2,
 	$noheader, $TRANSCRIPT2GENE);
 
+printf("# %d collinear gene pairs\n",$num_pairs); 
 print "# TSV file: $outfilename\n";
 
 

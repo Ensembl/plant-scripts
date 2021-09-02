@@ -15,7 +15,7 @@ use Getopt::Long qw(:config no_ignore_case);
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
 my $MINIMAPPARS = '--cs -x asm20';
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
-my $BEDINTSCPAR = '-wo -f 0.5 -F 0.5 -e';
+my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
 #my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
@@ -28,6 +28,7 @@ my $DUMMYSCORE = 9999;
 my $MINQUAL    = 60; 
 my $MINALNLEN  = 100;
 my $SAMESTRAND = 1;
+my $MINOVERLAP = 0.50;
 my $VERBOSE    = 0; # values > 1
 
 # Work out gene names from transcripts':
@@ -38,6 +39,7 @@ my $TRANSCRIPT2GENE = 1;
 
 my ( $help, $do_sequence_check, $reuse, $noheader ) = (0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
+my ( $minoverlap, $outfilename ) = $MINOVERLAP;
 
 GetOptions(
 	"help|?"         => \$help,
@@ -49,9 +51,11 @@ GetOptions(
 	"fa2|fasta2=s"   => \$fasta2,
 	"gf2|gff2=s"     => \$gff2,
 	"al2|label2=s"   => \$label2,
+	"out|outfile=s"  => \$outfilename,
+	"ovl|overlap=f"  => \$minoverlap,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
-	"n|noheader"     => \$noheader
+	"a|add"          => \$noheader
 ) || help_message();
 
 sub help_message {
@@ -64,9 +68,11 @@ sub help_message {
 		. "-fa2 genome FASTA filename              (required, example: -fa2 oryza_nivara.fna)\n"
 		. "-gf2 GFF filename                       (required, example: -gf2 oryza_nivara.OGE.gff)\n"
 		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
-		. "-c compare sequences of collinear genes (optional)\n"
-		. "-n no header in TSV file                (optional, useful to concatenate files)\n"
-		. "-r re-use previous minimap2 results     (optional)\n";
+		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
+		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
+		#. "-c   check sequences of collinear genes (optional)\n"
+		. "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
+		. "-r   re-use previous minimap2 results   (optional)\n";
 }
 
 if($help || 
@@ -76,8 +82,27 @@ if($help ||
 	exit(0);
 }
 
+if($minoverlap && ($minoverlap < 0 || $minoverlap > 1)) {
+	print "# ERROR: option -ovl requires values [0,1]\n";
+    exit(0);
+} 
+
+# add actual value to dummy values in param string
+$BEDINTSCPAR =~ s/XXX/$minoverlap/g; 
+
+if($noheader && !$outfilename) {
+	print "# ERROR: option -add requires -out filename to concat results\n";
+	exit(0);
+}
+
+# set default outfile
+if(!$outfilename) {
+	$outfilename = "Minimap.homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
+}
+
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
-	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -c $do_sequence_check -r $reuse\n\n";
+	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
+	"-ovl $minoverlap -c $do_sequence_check -r $reuse\n\n";
 
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654
@@ -131,7 +156,7 @@ printf("# %d genes parsed in %s\n",$num_genes2,$gff2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
-my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.minimap.intersect.bed";
+my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.minimap.intersect.overlap$minoverlap.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
@@ -153,7 +178,7 @@ printf("# %d genes mapped in %s (%d unmapped)\n",
 
 ## 5) produce list of pairs of collinear genes
 
-my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.gene.intersect.bed";
+my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.gene.intersect.overlap$minoverlap.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");
@@ -164,11 +189,10 @@ elsif(!-s $gene_intersectBEDfile){
     die "# ERROR: failed generating $gene_intersectBEDfile file (bedtools)\n";
 }
 
-my $TSVfile = "Minimap.homologies.$sp1.$label1.$sp2.$label2.tsv";
-my $num_pairs = bed2compara($gene_intersectBEDfile, $TSVfile, $sp1, $sp2,
+my $num_pairs = bed2compara($gene_intersectBEDfile, $outfilename, $sp1, $sp2,
 	$noheader, $TRANSCRIPT2GENE);
 
-print "# TSV file: $TSVfile\n";
+print "# TSV file: $outfilename\n";
 
 
 ## sequence check (TODO)
@@ -507,10 +531,11 @@ sub bed2compara {
 	# parse input and produce TSV output
 	open(BEDINT,"<",$infile) || die "# ERROR(bed2compara): cannot read $infile\n";
 
-	open(TSV,">",$TSVfile) || die "# ERROR(bed2compara): cannot create $TSVfile\n";
-
-	# print header
-    if(!$noheader){
+	if($noheader) {
+		open(TSV,">>",$TSVfile) || die "# ERROR(bed2compara): cannot re-open $TSVfile\n";
+	} else {
+		open(TSV,">",$TSVfile) || die "# ERROR(bed2compara): cannot create $TSVfile\n";
+	
         print TSV "gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t".
             "homology_protein_stable_id\thomology_species\toverlap\tdn\tds\tgoc_score\twga_coverage\t".
             "is_high_confidence\tcoordinates\n";

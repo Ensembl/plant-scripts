@@ -301,6 +301,7 @@ sub query2ref_coords {
 	 	#next if($cname ne 'ONIVA01G00100'); # debug
 		#next if($cname ne 'ONIVA01G00150');
 		#next if($cname ne 'LOC_Os01g01010'); 
+		#next if($cname ne 'LOC_Os11g34300');
 
 		# make sure ref chr is taken
     	$ref_coords{$cname}{'chr'} = $rchr;

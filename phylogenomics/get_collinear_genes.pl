@@ -109,8 +109,8 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654
 
-my $index_fasta1 = "_$sp1.mmi";
-my $PAFfile = "_$sp2.$sp1.minimap.paf";
+my $index_fasta1 = "_$sp1.$label1.mmi";
+my $PAFfile = "_$sp2.$label2.$sp1.$label1.minimap.paf";
 
 print "# computing pairwise genome alignment with minimap2\n\n";
 
@@ -145,7 +145,7 @@ if($reuse && -s $PAFfile){
 ## 2) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
-my $wgaBEDfile = "_$sp2.$sp1.minimap.bed";
+my $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.minimap.bed";
 
 open(PAF,"<",$PAFfile) || die "# ERROR: cannot read $PAFfile\n";
 open(BED,">",$wgaBEDfile) || die "# ERROR: cannot create $wgaBEDfile\n";

@@ -13,7 +13,8 @@ use Getopt::Long qw(:config no_ignore_case);
 
 
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
-my $MINIMAPPARS = '--secondary=no --cs -x asm20';
+my $MINIMAPTYPE = '-x asm20';
+my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE";
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
@@ -108,6 +109,7 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654
 
+my $index_fasta1 = "_$sp1.mmi";
 my $PAFfile = "_$sp2.$sp1.minimap.paf";
 
 print "# computing pairwise genome alignment with minimap2\n\n";
@@ -115,7 +117,16 @@ print "# computing pairwise genome alignment with minimap2\n\n";
 if($reuse && -s $PAFfile){
 	print "# re-using $PAFfile\n";
 } else {
-	system("$MINIMAP2EXE $MINIMAPPARS $fasta1 $fasta2 -o $PAFfile 2>&1");
+
+	system("$MINIMAP2EXE $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
+	if($? != 0){
+		die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+	}
+	elsif(!-s $index_fasta1){
+        die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
+    }
+
+	system("$MINIMAP2EXE $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
 	if($? != 0){
 		die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
 	}

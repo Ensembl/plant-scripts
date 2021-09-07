@@ -19,8 +19,9 @@ my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
 #my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
-our $SORTLIMITRAM = "500M"; # buffer size
-our $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
+my $SORTLIMITRAM = "500M"; # buffer size
+my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
+my $GZIPBIN      = "gzip";
 
 my $DUMMYSCORE = 9999;
 
@@ -61,12 +62,12 @@ GetOptions(
 sub help_message {
 	print "\nusage: $0 [options]\n\n"
 		. "-sp1 binomial/trinomial species name    (required, example: -sp1 oryza_sativa)\n"
-		. "-fa1 genome FASTA filename              (required, example: -fa1 oryza_sativa.fna)\n"
-		. "-gf1 GFF filename                       (required, example: -gf1 oryza_sativa.RAPDB.gff)\n"
+		. "-fa1 genome FASTA [.gz] filename        (required, example: -fa1 oryza_sativa.fna)\n"
+		. "-gf1 GFF [.gz] filename                 (required, example: -gf1 oryza_sativa.RAPDB.gff)\n"
 		. "-al1 annotation label                   (required, example: -al1 RAPDB)\n"
 		. "-sp2 binomial/trinomial species name    (required, example: -sp2 oryza_nivara)\n"
-		. "-fa2 genome FASTA filename              (required, example: -fa2 oryza_nivara.fna)\n"
-		. "-gf2 GFF filename                       (required, example: -gf2 oryza_nivara.OGE.gff)\n"
+		. "-fa2 genome FASTA [.gz] filename        (required, example: -fa2 oryza_nivara.fna)\n"
+		. "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
 		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
@@ -221,9 +222,22 @@ sub parse_genes_GFF {
 
 	my ($gff_file, $outBEDfile) = @_;
 	my $num_genes = 0;
-	my $geneid;
+	my ($geneid, $magic);
+	
+	# check input file format and open it accordingly
+	open(INFILE,$gff_file) || die "# ERROR(parse_genes_GFF): cannot read $gff_file, exit\n";
+	sysread(INFILE,$magic,2);
+	close(INFILE);
 
-	open(GFF,"<",$gff_file) || die "# ERROR(parse_genes_GFF): cannot read $gff_file\n";
+	if($gff_file =~ /\.gz$/ || $magic eq "\x1f\x8b"){ # GZIP compressed input{
+		if(!open(GFF, "$GZIPBIN -dc $gff_file |")){
+			die "# ERROR(parse_genes_GFF): cannot read GZIP compressed $gff_file $!\n"
+				."# please check gzip is installed\n";
+		}	
+	} else {
+		open(GFF,"<",$gff_file) || die "# ERROR(parse_genes_GFF): cannot read $gff_file\n";
+	}	
+	
 	open(BED,">",$outBEDfile) || die "# ERROR(parse_genes_GFF): cannot create $outBEDfile\n";
 
 	while(<GFF>){

@@ -13,7 +13,7 @@ use Getopt::Long qw(:config no_ignore_case);
 
 
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
-my $MINIMAPPARS = '--cs -x asm20';
+my $MINIMAPPARS = '--secondary=no --cs -x asm20';
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 

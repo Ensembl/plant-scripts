@@ -118,13 +118,17 @@ if($reuse && -s $PAFfile){
 	print "# re-using $PAFfile\n";
 } else {
 
-	system("$MINIMAP2EXE $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
-	if($? != 0){
-		die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+	if($reuse && -s $index_fasta1){
+		print "# re-using $index_fasta1\n";
+	} else {
+		system("$MINIMAP2EXE $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
+		if($? != 0){
+			die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+		}
+		elsif(!-s $index_fasta1){
+        	die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
+    	}
 	}
-	elsif(!-s $index_fasta1){
-        die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
-    }
 
 	system("$MINIMAP2EXE $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
 	if($? != 0){

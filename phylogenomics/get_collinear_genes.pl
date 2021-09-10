@@ -15,7 +15,7 @@ use Getopt::Long qw(:config no_ignore_case);
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
 my $MINIMAPTYPE = '-x asm20 --cap-kalloc=1g';
 my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE";
-my $WFMASHEXE   = '/soft/wfmash'; # v0.7.0
+my $WFMASHEXE   = 'wfmash'; # v0.7.0
 my $WFMASHPARS  = '-s 5000 -t 3';
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]

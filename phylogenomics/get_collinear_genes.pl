@@ -8,13 +8,15 @@ use Getopt::Long qw(:config no_ignore_case);
 # Uses external software:
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]
+# wfmash   [https://github.com/ekg/wfmash]
 
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
-
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
-my $MINIMAPTYPE = '-x asm20';
+my $MINIMAPTYPE = '-x asm20 --cap-kalloc=1g';
 my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE";
+my $WFMASHEXE   = '/homes/bcontreras/soft/wfmash/build/bin/wfmash'; # 261bb9a3c56d813f81b92d82183f7e2936c8a016
+my $WFMASHPARS  = '-s 5000 -t 3';
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
@@ -39,7 +41,7 @@ my $VERBOSE    = 0; # values > 1
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 1;
 
-my ( $help, $do_sequence_check, $reuse, $noheader ) = (0,0,0,0);
+my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
 my ( $minoverlap, $outfilename ) = $MINOVERLAP;
 
@@ -57,6 +59,7 @@ GetOptions(
 	"ovl|overlap=f"  => \$minoverlap,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
+	"wf|wfmash"      => \$dowfmash,
 	"a|add"          => \$noheader
 ) || help_message();
 
@@ -72,6 +75,7 @@ sub help_message {
 		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
+		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"  
 		#. "-c   check sequences of collinear genes (optional)\n"
 		. "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
 		. "-r   re-use previous minimap2 results   (optional)\n";
@@ -104,7 +108,7 @@ if(!$outfilename) {
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
-	"-ovl $minoverlap -c $do_sequence_check -r $reuse\n\n";
+	"-ovl $minoverlap -wf $dowfmash -c $do_sequence_check -r $reuse\n\n";
 
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: no masking required, see https://github.com/lh3/minimap2/issues/654

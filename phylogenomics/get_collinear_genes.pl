@@ -12,10 +12,10 @@ use Getopt::Long qw(:config no_ignore_case);
 
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
-my $MINIMAP2EXE = 'minimap2'; # 2.17-r941
-my $MINIMAPTYPE = '-x asm20 --cap-kalloc=1g';
-my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE";
-my $WFMASHEXE   = 'wfmash'; # v0.7.0
+my $MINIMAP2EXE = './minimap2'; # 2.22
+my $MINIMAPTYPE = '-x asm20';
+my $MINIMAPPARS = "--secondary=no --cs --cap-kalloc=1g $MINIMAPTYPE";
+my $WFMASHEXE   = './wfmash'; # v0.7.0
 my $WFMASHPARS  = '-s 5000 -t 3';
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
@@ -111,38 +111,58 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-ovl $minoverlap -wf $dowfmash -c $do_sequence_check -r $reuse\n\n";
 
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
-## Note: no masking required, see https://github.com/lh3/minimap2/issues/654
+## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
 my $index_fasta1 = "_$sp1.$label1.mmi";
 my $PAFfile = "_$sp2.$label2.$sp1.$label1.minimap.paf";
 
-print "# computing pairwise genome alignment with minimap2\n\n";
+if($dowfmash){
+	print "# computing pairwise genome alignment with wfmash\n\n";
+	$PAFfile = "_$sp2.$label2.$sp1.$label1.wfmash.paf";
+} else {
+	print "# computing pairwise genome alignment with minimap2\n\n";
+}
 
 if($reuse && -s $PAFfile){
 	print "# re-using $PAFfile\n";
 } else {
 
-	if($reuse && -s $index_fasta1){
-		print "# re-using $index_fasta1\n";
-	} else {
-		system("$MINIMAP2EXE $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
+	if($dowfmash) {
+
+		system("$WFMASHEXE $WFMASHPARS $fasta1 $fasta2 > $PAFfile");
+        if($? != 0){
+            die "# ERROR: failed running wfmash (probably ran out of memory)\n";
+        }
+        elsif(!-s $PAFfile){
+            die "# ERROR: failed generating $PAFfile file (wfmash)\n";
+        }
+        else{
+            print("# wfmash finished\n\n");
+        }
+
+	} else { # default minimap2 index & alignment
+		if($reuse && -s $index_fasta1){
+			print "# re-using $index_fasta1\n";
+		} else {
+			system("$MINIMAP2EXE $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
+			if($? != 0){
+				die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+			}
+			elsif(!-s $index_fasta1){
+        		die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
+    		}
+		}
+
+		system("$MINIMAP2EXE $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
 		if($? != 0){
 			die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
 		}
-		elsif(!-s $index_fasta1){
-        	die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
-    	}
-	}
-
-	system("$MINIMAP2EXE $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
-	if($? != 0){
-		die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
-	}
-	elsif(!-s $PAFfile){
-		die "# ERROR: failed generating $PAFfile file (minimap2)\n";
-	}
-	else{
-		print("# minimap2 finished\n\n");
+		elsif(!-s $PAFfile){
+			die "# ERROR: failed generating $PAFfile file (minimap2)\n";
+		}
+		else{
+			print("# minimap2 finished\n\n");
+		}
 	}
 }
 

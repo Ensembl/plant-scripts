@@ -43,7 +43,7 @@ my $TRANSCRIPT2GENE = 1;
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
-my ( $minoverlap, $alg, $outfilename ) = ($MINOVERLAP, 'minimap2');
+my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
 
 GetOptions(
 	"help|?"         => \$help,
@@ -57,6 +57,7 @@ GetOptions(
 	"al2|label2=s"   => \$label2,
 	"out|outfile=s"  => \$outfilename,
 	"ovl|overlap=f"  => \$minoverlap,
+	"q|quality=f"    => \$qual,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"wf|wfmash"      => \$dowfmash,
@@ -75,7 +76,8 @@ sub help_message {
 		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
-		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"  
+		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
+		. "-q   min mapping quality                (optional, default: -q $MINQUAL)\n"
 		#. "-c   check sequences of collinear genes (optional)\n"
 		. "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
 		. "-r   re-use previous minimap2 results   (optional)\n";
@@ -92,6 +94,11 @@ if($minoverlap && ($minoverlap < 0 || $minoverlap > 1)) {
 	print "# ERROR: option -ovl requires values [0,1]\n";
     exit(0);
 } 
+
+if($qual && ($qual < 0 || $qual > 255)) {
+    print "# ERROR: option -q requires values [0,255]\n";
+    exit(0);
+}
 
 # add actual value to dummy values in param string
 $BEDINTSCPAR =~ s/XXX/$minoverlap/g; 
@@ -113,7 +120,7 @@ if(!$outfilename) {
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
-	"-ovl $minoverlap -wf $dowfmash -c $do_sequence_check -r $reuse\n\n";
+	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse\n\n";
 
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
@@ -212,7 +219,7 @@ my $geneBEDfile2mapped = "_$sp2.$label2.$alg.gene.mapped.bed";
 
 my ($num_matched, @unmatched) = 
 	query2ref_coords($sp2wgaBEDfile, $geneBEDfile2mapped, 
-		$MINQUAL, $MINALNLEN, $SAMESTRAND, $VERBOSE);
+		$qual, $MINALNLEN, $SAMESTRAND, $VERBOSE);
 
 printf("# %d genes mapped in %s (%d unmapped)\n",
 	$num_matched,$geneBEDfile2mapped,scalar(@unmatched));

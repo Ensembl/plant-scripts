@@ -29,7 +29,7 @@ my $GZIPBIN      = "gzip";
 my $DUMMYSCORE = 9999;
 
 # while parsing PAF
-my $MINQUAL    = 60; 
+my $MINQUAL    = 50; # works well with both mapping algorithms 
 my $MINALNLEN  = 100;
 my $SAMESTRAND = 1;
 my $MINOVERLAP = 0.50;

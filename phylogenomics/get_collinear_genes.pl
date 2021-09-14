@@ -104,6 +104,10 @@ if($noheader && !$outfilename) {
 # set default outfile
 if(!$outfilename) {
 	$outfilename = "Minimap.homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
+
+	if($dowfmash){
+		$outfilename = "Wfmash.homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
+	}
 }
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
@@ -122,6 +126,7 @@ if($dowfmash){
 } else {
 	print "# computing pairwise genome alignment with minimap2\n\n";
 }
+
 
 if($reuse && -s $PAFfile){
 	print "# re-using $PAFfile\n";
@@ -171,6 +176,10 @@ if($reuse && -s $PAFfile){
 
 my $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.minimap.bed";
 
+if($dowfmash){
+    $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.wfmash.bed";
+}
+
 open(PAF,"<",$PAFfile) || die "# ERROR: cannot read $PAFfile\n";
 open(BED,">",$wgaBEDfile) || die "# ERROR: cannot create $wgaBEDfile\n";
 
@@ -183,7 +192,6 @@ close(BED);
 close(PAF);
 
 ## 3) Parse GFFs and produce BED files with gene coords
-## Note: add dummy match score=9999
 
 my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
 my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
@@ -198,6 +206,10 @@ printf("# %d genes parsed in %s\n",$num_genes2,$gff2);
 
 my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.minimap.intersect.overlap$minoverlap.bed";
 
+if($dowfmash){
+    $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.wfmash.intersect.overlap$minoverlap.bed"; 
+}
+
 system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
 if($? != 0){
@@ -207,7 +219,11 @@ elsif(!-s $sp2wgaBEDfile){
 	die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
 }
 
-my $geneBEDfile2mapped = "_$sp2.$label2.gene.mapped.bed";
+my $geneBEDfile2mapped = "_$sp2.$label2.minimap.gene.mapped.bed";
+
+if($dowfmash){
+    $geneBEDfile2mapped = "_$sp2.$label2.wfmash.gene.mapped.bed";
+}
 
 my ($num_matched, @unmatched) = 
 	query2ref_coords($sp2wgaBEDfile, $geneBEDfile2mapped, 
@@ -218,7 +234,11 @@ printf("# %d genes mapped in %s (%d unmapped)\n",
 
 ## 5) produce list of pairs of collinear genes
 
-my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.gene.intersect.overlap$minoverlap.bed";
+my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.minimap.gene.intersect.overlap$minoverlap.bed";
+
+if($dowfmash){
+	$gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.wfmash.gene.intersect.overlap$minoverlap.bed";
+}
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");

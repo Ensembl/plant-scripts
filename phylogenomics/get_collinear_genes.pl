@@ -204,11 +204,11 @@ my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
 my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
 
 my ($num_genes1, $mean_gene_len1) = parse_genes_GFF($gff1,$geneBEDfile1);
-printf("# %d genes parsed in %s mean length=%1.1f\n",
+printf("# %d genes parsed in %s mean length=%d\n",
 	$num_genes1,$gff1,$mean_gene_len1);
 
 my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
-printf("# %d genes parsed in %s mean length=%1.1f\n",
+printf("# %d genes parsed in %s mean length=%\n",
 	$num_genes2,$gff2,$mean_gene_len2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
@@ -317,7 +317,7 @@ sub parse_genes_GFF {
 	close(BED);
 	close(GFF);
 
-	return ($num_genes, sprintf("%1.1f",$genelength/$num_genes));
+	return ($num_genes, sprintf("%1.0f",$genelength/$num_genes));
 }
 
 

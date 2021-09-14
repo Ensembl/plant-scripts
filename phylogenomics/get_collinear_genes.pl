@@ -310,28 +310,30 @@ sub parse_genes_GFF {
 }
 
 
-# Takes i) input BED intersect filename ii) output BED filename and
-# returns i) number of matched genes and ii) list of unmatched genes
-# Parses sorted BED intersect -wo output and produces BED file with cDNA/transcripts mapped on ref
+# Takes i) input BED intersect filename ii) output BED filename.
+# Parses sorted BED intersect -wo output and writes to BED file 
+# features (cDNA/transcripts) mapped on reference genome.
+# Returns i) number of matched genes and ii) list of unmatched genes
+# Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA only
 # example input:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
-# 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:... 11405
-# Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 1000 10053455 + 1 1000 10053455 10052455 60 cs:Z::10052455         7914
-# <--             (c)DNA/gene       --> <- (q)uery genome -> <-- (r)eference genome                         --> ovlp
-#
+# 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:...              11405
+# Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 1000 10053455 + 1 1000 10053455 10052455 60 cs:Z::10052455          7914
+# Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 896 705000    + 1 949 705000 704051 41 cg:Z:51=53I704000=           7914
+# <--             (c)DNA/gene       --> <- (q)uery genome -> <-- (r)eference genome                         -->  ovlp
 sub query2ref_coords {
 
 	my ($infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose) = @_;
 
 	my ($cchr,$cstart,$cend,$cname,$cmatch,$cstrand);
-	my ($qchr,$qstart,$qend);
+	my ($qchr,$qstart,$qend,$cigartype);
 	my ($WGAstrand,$rchr,$rstart,$rend);
 	my ($rmatch,$rmapqual,$SAMPAFtag,$overlap,$done,$strand);
 	my ($SAMqcoord,$SAMrcoord,$feat,$coordr);
 	my ($deltaq,$deltar,$start_deltar,$end_deltar);
 	my $num_matched = 0;
-	my (%ref_coords,@unmatched);
+	my (%ref_coords,@unmatched,@segments);
 
 	open(BED,"<",$infile) || die "# ERROR(query2ref_coords): cannot read $infile\n";
 
@@ -385,11 +387,28 @@ sub query2ref_coords {
 
 		print "# $SAMqcoord $SAMrcoord $cname $num_matched\n" if($verbose > 1);
 
-		$SAMPAFtag =~ s/cs:Z:://;
-		$done = 0;
-		foreach $feat (split(/:/,$SAMPAFtag)){
+		# check CIGAR type
+		if($SAMPAFtag =~ m/(c\w):Z:{1,2}(\S+)/){
+			($cigartype,$SAMPAFtag) = ($1,$2);
+		} else {
+			print "# ERROR(query2ref_coords): unsupported CIGAR string $SAMPAFtag\n";
+			return ($num_matched, @unmatched);	
+		}
 
-            ($deltaq,$deltar,$coordr) = _parseCSfeature($feat,$SAMqcoord,$SAMrcoord);
+		# split CIGAR string into individual feature tags
+		if($cigartype eq 'cs'){
+			@segments = split(/:/,$SAMPAFtag);
+		} else {
+			while($SAMPAFtag =~ m/(\d+[MIDNSHP=X])/g){
+				push(@segments,$1);
+			}
+		}
+
+		# loop along features updating coords
+		$done = 0;
+		foreach $feat (@segments){
+
+            ($deltaq,$deltar,$coordr) = _parseCIGARfeature($feat,$SAMqcoord,$SAMrcoord);
 
 			## check if current position in alignment matches cDNA/gene coords  
 
@@ -398,7 +417,7 @@ sub query2ref_coords {
 				($SAMqcoord + $deltaq) >= $cstart){
 
 				# refine delta to match exactly the start (end for strand -)
-				($deltaq,$deltar,$coordr) = _parseCSfeature($feat,$SAMqcoord,$SAMrcoord,$cstart);
+				($deltaq,$deltar,$coordr) = _parseCIGARfeature($feat,$SAMqcoord,$SAMrcoord,$cstart);
 				$start_deltar = -1;
 				if($coordr > -1) {
 					$start_deltar = $coordr - $SAMrcoord;
@@ -420,7 +439,7 @@ sub query2ref_coords {
                 ($SAMqcoord + $deltaq) >= $cend){
 
 				# refine delta to match exactly the end (start for strand -)
-				($deltaq,$deltar,$coordr) = _parseCSfeature($feat,$SAMqcoord,$SAMrcoord,$cend);
+				($deltaq,$deltar,$coordr) = _parseCIGARfeature($feat,$SAMqcoord,$SAMrcoord,$cend);
 				$end_deltar = -1;
                 if($coordr > -1) {
                     $end_deltar = $coordr - $SAMrcoord;
@@ -490,88 +509,141 @@ sub query2ref_coords {
 }
 
 # Takes 3 scalars:
-# 1) CS tag feature
+# 1) CS/CG tag feature
 # 2) start query coordinate
 # 3) start reference coordinate
 # 4 optional) target query coordinate 
 # Returns 3 scalars:
 # 1) the increment (delta) in query (q) coords after adding the new CS feature 
 # 2) the increment in reference (r) coords
-# 3) the reference coor matching to the optional target query coord, -1 by default 
-# Note: CS tag string are CIGAR-like strings produced by minimap2 with flag --cs; 
-# CS tags start with preffix 'cs:Z::' and can be :-split into features. 
-sub _parseCSfeature {
+# 3) the reference coord matching to the optional target query coord, -1 by default 
+# Note: CS tags are CIGAR-like strings produced by minimap2 with flag --cs; 
+# CS tags start with preffix 'cs:Z::' and can be :-split into features.
+# Note: CG tags are CIGAR-like strings produced by wfmash, with preffix 'cg::Z:'
+sub _parseCIGARfeature {
 
 	my ($feat,$Qstart,$Rstart,$opt_query_coord) = @_;
 
 	my ($deltaq,$deltar,$totsnps,$rcoord) = (0,0,0,-1);
-	my ($delta,$offset,$res,$qcoord);
+	my ($delta,$offset,$res,$qcoord,$op);
 
-	# example CS tag (coords are 0-based):
+	# example CS string (coords are 0-based):
 	# cs:Z::303*ag:30*ga:32*ga:27+ctattcta*ag*ca:20*ag:3*ga:18*tc:39*ga:76-tc
-	# example features:
-	# 303*ag, 30*ga, .. , 27+ctattcta, .. , 76-tc
+	# first features: 303*ag 30*ga .. 27+ctattcta .. 76-tc
+	
+	# example CG string:
+	# cg:Z:25I235=1X57=1X33=1X20=1X47=
+	# first features: 25I 235= 1X ..
 
-	# identical segment
-	if($feat =~ m/(\d+)/) {
-		$delta = $1;	
-		$deltar += $delta;
-		$deltaq += $delta;
+	# CG type, see https://samtools.github.io/hts-specs/SAMv1.pdf
+	if($feat =~ m/(\d+)([MIDNSHP=X])/){
 
-        # look up query coord (optional)
-		if(defined($opt_query_coord)) {
-			$offset = $opt_query_coord - $Qstart;
-			if($offset <= $delta) {	
-				$rcoord = $Rstart + $offset;
-			}
-		}
-	}
+		($delta,$op) = ($1,$2);
 
-	# insertion (+) / deletion (-)
-	if($feat =~ m/([\+\-])([A-Za-z]+)/) {
-		$delta = length($2);
-                
-		if($1 eq '+') {
-                    
-			# look up query coord (optional)
-			if(defined($opt_query_coord) && $rcoord == -1) {
-				$offset = $opt_query_coord - $Qstart;
-				if($offset <= $delta + $deltaq) { 
-					$rcoord	= $Rstart + $deltar;
-				}
-			}
-					
-			$deltaq += $delta;
+		if($op eq 'M' || $op eq '=' || $op eq 'X') {
+			$deltar += $delta;
+            $deltaq += $delta;
 
-		} else {
-			
-			# look up query coord (optional)
-            if(defined($opt_query_coord) && $rcoord == -1) {
+            # look up query coord (optional)
+            if(defined($opt_query_coord)) {
                 $offset = $opt_query_coord - $Qstart;
-                if($offset <= $deltaq) {
-                    $rcoord = $Rstart + $deltar + $offset;
+                if($offset <= $delta) {
+                    $rcoord = $Rstart + $offset;
                 }
             }
 
+		} elsif($op eq 'I') {
+			
+			# look up query coord (optional)
+			if(defined($opt_query_coord) && $rcoord == -1) {
+				$offset = $opt_query_coord - $Qstart;
+				if($offset <= $delta + $deltaq) {
+					$rcoord = $Rstart + $deltar;
+				}
+			}
+
+			$deltaq += $delta;
+
+		} elsif($op eq 'D') {
+
+			# look up query coord (optional)
+			if(defined($opt_query_coord) && $rcoord == -1) {		
+				$offset = $opt_query_coord - $Qstart;
+				if($offset <= $deltaq) {	
+					$rcoord = $Rstart + $deltar + $offset;
+				}
+			}
+
 			$deltar += $delta;
+
+		} else {
+			print "# ERROR(_parseCIGARfeature): unsupported CIGAR operation $feat\n";
 		}
-	}
 
-	# SNPs
-	while($feat =~ m/\*\w{2}/g){
+	} else { # CS type
 
-		# look up query coord (optional)
-		if(defined($opt_query_coord) && $rcoord == -1) {
-			$qcoord = $Qstart + $totsnps + $deltaq;
-			if($qcoord == $opt_query_coord && $rcoord == -1) {
-				$rcoord = $Rstart + $totsnps + $deltar;
+		# identical segment
+		if($feat =~ m/^(\d+)/) {
+			$delta = $1;	
+			$deltar += $delta;
+			$deltaq += $delta;
+
+			# look up query coord (optional)
+			if(defined($opt_query_coord)) {
+				$offset = $opt_query_coord - $Qstart;
+				if($offset <= $delta) {	
+					$rcoord = $Rstart + $offset;
+				}
 			}
 		}
 
-		$totsnps++;
+		# insertion (+) / deletion (-)
+		if($feat =~ m/([\+\-])([A-Za-z]+)/) {
+			$delta = length($2);
+                
+			if($1 eq '+') {
+                    
+				# look up query coord (optional)
+				if(defined($opt_query_coord) && $rcoord == -1) {
+					$offset = $opt_query_coord - $Qstart;
+					if($offset <= $delta + $deltaq) { 
+						$rcoord	= $Rstart + $deltar;
+					}
+				}
+					
+				$deltaq += $delta;
+
+			} else {
+			
+				# look up query coord (optional)
+				if(defined($opt_query_coord) && $rcoord == -1) {	
+					$offset = $opt_query_coord - $Qstart;
+					if($offset <= $deltaq) {	
+						$rcoord = $Rstart + $deltar + $offset;
+					}	
+				}
+	
+				$deltar += $delta;
+			}
+		}
+
+		# SNPs
+		while($feat =~ m/\*\w{2}/g){
+
+			# look up query coord (optional)
+			if(defined($opt_query_coord) && $rcoord == -1) {
+				$qcoord = $Qstart + $totsnps + $deltaq;
+				if($qcoord == $opt_query_coord && $rcoord == -1) {
+					$rcoord = $Rstart + $totsnps + $deltar;
+				}
+			}
+
+			$totsnps++;
+		}
+		$deltar += $totsnps;
+		$deltaq += $totsnps;
 	}
-	$deltar += $totsnps;
-	$deltaq += $totsnps;
+
 
 	return ($deltaq, $deltar, $rcoord);
 }

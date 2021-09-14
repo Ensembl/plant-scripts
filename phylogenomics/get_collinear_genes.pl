@@ -12,10 +12,10 @@ use Getopt::Long qw(:config no_ignore_case);
 
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
-my $MINIMAP2EXE = './minimap2'; # 2.22
+my $MINIMAP2EXE = 'minimap2'; # 2.22
 my $MINIMAPTYPE = '-x asm20';
 my $MINIMAPPARS = "--secondary=no --cs --cap-kalloc=1g $MINIMAPTYPE";
-my $WFMASHEXE   = './wfmash'; # v0.7.0
+my $WFMASHEXE   = 'wfmash'; # v0.7.0
 my $WFMASHPARS  = '-s 3000 -t 3'; # works for small genomes such as rice
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
@@ -44,6 +44,7 @@ my $TRANSCRIPT2GENE = 1;
 my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
+my ( $minimap_path, $wfmash_path ) = ($MINIMAP2EXE, $WFMASHEXE);
 
 GetOptions(
 	"help|?"         => \$help,
@@ -61,6 +62,8 @@ GetOptions(
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"wf|wfmash"      => \$dowfmash,
+	"M|minipath=s"   => \$minimap_path,
+	"W|wfpath=s"     => \$wfmash_path,
 	"a|add"          => \$noheader
 ) || help_message();
 
@@ -78,6 +81,8 @@ sub help_message {
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
 		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
 		. "-q   min mapping quality                (optional, default: -q $MINQUAL)\n"
+		. "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
+		. "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
 		#. "-c   check sequences of collinear genes (optional)\n"
 		. "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
 		. "-r   re-use previous minimap2 results   (optional)\n";
@@ -120,7 +125,8 @@ if(!$outfilename) {
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
-	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse\n\n";
+	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
+	"-M $minimap_path -W $wfmash_path\n\n";
 
 print "# mapping parameters:\n";
 if($dowfmash){
@@ -142,7 +148,7 @@ if($reuse && -s $PAFfile){
 
 	if($dowfmash) {
 
-		system("$WFMASHEXE $WFMASHPARS $fasta1 $fasta2 > $PAFfile");
+		system("$wfmash_path $WFMASHPARS $fasta1 $fasta2 > $PAFfile");
         if($? != 0){
             die "# ERROR: failed running wfmash (probably ran out of memory)\n";
         }
@@ -160,7 +166,7 @@ if($reuse && -s $PAFfile){
 		if($reuse && -s $index_fasta1){
 			print "# re-using $index_fasta1\n";
 		} else {
-			system("$MINIMAP2EXE $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
+			system("$minimap_path $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
 			if($? != 0){
 				die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
 			}
@@ -169,7 +175,7 @@ if($reuse && -s $PAFfile){
     		}
 		}
 
-		system("$MINIMAP2EXE $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
+		system("$minimap_path $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
 		if($? != 0){
 			die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
 		}

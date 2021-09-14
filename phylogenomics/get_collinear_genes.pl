@@ -43,7 +43,7 @@ my $TRANSCRIPT2GENE = 1;
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
-my ( $minoverlap, $outfilename ) = $MINOVERLAP;
+my ( $minoverlap, $alg, $outfilename ) = ($MINOVERLAP, 'minimap2');
 
 GetOptions(
 	"help|?"         => \$help,
@@ -101,13 +101,14 @@ if($noheader && !$outfilename) {
 	exit(0);
 }
 
+# check algorithm
+if($dowfmash){
+	$alg = 'wfmash';
+}
+
 # set default outfile
 if(!$outfilename) {
-	$outfilename = "Minimap.homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
-
-	if($dowfmash){
-		$outfilename = "Wfmash.homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
-	}
+	$outfilename = ucfirst($alg).".homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
 }
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
@@ -117,16 +118,9 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
-my $index_fasta1 = "_$sp1.$label1.mmi";
-my $PAFfile = "_$sp2.$label2.$sp1.$label1.minimap.paf";
+my $PAFfile = "_$sp2.$label2.$sp1.$label1.$alg.paf";
 
-if($dowfmash){
-	print "# computing pairwise genome alignment with wfmash\n\n";
-	$PAFfile = "_$sp2.$label2.$sp1.$label1.wfmash.paf";
-} else {
-	print "# computing pairwise genome alignment with minimap2\n\n";
-}
-
+print "# computing pairwise genome alignment with $alg\n\n";
 
 if($reuse && -s $PAFfile){
 	print "# re-using $PAFfile\n";
@@ -146,6 +140,9 @@ if($reuse && -s $PAFfile){
         }
 
 	} else { # default minimap2 index & alignment
+
+		my $index_fasta1 = "_$sp1.$label1.mmi";
+
 		if($reuse && -s $index_fasta1){
 			print "# re-using $index_fasta1\n";
 		} else {
@@ -174,11 +171,7 @@ if($reuse && -s $PAFfile){
 ## 2) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
-my $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.minimap.bed";
-
-if($dowfmash){
-    $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.wfmash.bed";
-}
+my $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.$alg.bed";
 
 open(PAF,"<",$PAFfile) || die "# ERROR: cannot read $PAFfile\n";
 open(BED,">",$wgaBEDfile) || die "# ERROR: cannot create $wgaBEDfile\n";
@@ -204,11 +197,7 @@ printf("# %d genes parsed in %s\n",$num_genes2,$gff2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
-my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.minimap.intersect.overlap$minoverlap.bed";
-
-if($dowfmash){
-    $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.wfmash.intersect.overlap$minoverlap.bed"; 
-}
+my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
@@ -219,11 +208,7 @@ elsif(!-s $sp2wgaBEDfile){
 	die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
 }
 
-my $geneBEDfile2mapped = "_$sp2.$label2.minimap.gene.mapped.bed";
-
-if($dowfmash){
-    $geneBEDfile2mapped = "_$sp2.$label2.wfmash.gene.mapped.bed";
-}
+my $geneBEDfile2mapped = "_$sp2.$label2.$alg.gene.mapped.bed";
 
 my ($num_matched, @unmatched) = 
 	query2ref_coords($sp2wgaBEDfile, $geneBEDfile2mapped, 
@@ -234,11 +219,7 @@ printf("# %d genes mapped in %s (%d unmapped)\n",
 
 ## 5) produce list of pairs of collinear genes
 
-my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.minimap.gene.intersect.overlap$minoverlap.bed";
-
-if($dowfmash){
-	$gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.wfmash.gene.intersect.overlap$minoverlap.bed";
-}
+my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.$alg.gene.intersect.overlap$minoverlap.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");

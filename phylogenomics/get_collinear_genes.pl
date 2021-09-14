@@ -16,7 +16,7 @@ my $MINIMAP2EXE = './minimap2'; # 2.22
 my $MINIMAPTYPE = '-x asm20';
 my $MINIMAPPARS = "--secondary=no --cs --cap-kalloc=1g $MINIMAPTYPE";
 my $WFMASHEXE   = './wfmash'; # v0.7.0
-my $WFMASHPARS  = '-s 2000 -t 3'; # works for small genomes such as rice
+my $WFMASHPARS  = '-s 3000 -t 3'; # works for small genomes such as rice
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
@@ -208,7 +208,7 @@ printf("# %d genes parsed in %s mean length=%d\n",
 	$num_genes1,$gff1,$mean_gene_len1);
 
 my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
-printf("# %d genes parsed in %s mean length=%\n",
+printf("# %d genes parsed in %s mean length=%d\n",
 	$num_genes2,$gff2,$mean_gene_len2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches

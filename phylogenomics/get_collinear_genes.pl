@@ -57,7 +57,7 @@ GetOptions(
 	"al2|label2=s"   => \$label2,
 	"out|outfile=s"  => \$outfilename,
 	"ovl|overlap=f"  => \$minoverlap,
-	"q|quality=f"    => \$qual,
+	"q|quality=i"    => \$qual,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"wf|wfmash"      => \$dowfmash,

@@ -122,6 +122,13 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse\n\n";
 
+print "# mapping parameters:\n";
+if($dowfmash){
+	print "# \$WFMASHPARS: $WFMASHPARS\n\n"
+} else {
+	print "# \$MINIMAPPARS: $MINIMAPPARS\n\n";
+}
+
 ## 1) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
@@ -196,11 +203,13 @@ close(PAF);
 my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
 my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
 
-my $num_genes1 = parse_genes_GFF($gff1,$geneBEDfile1);
-printf("# %d genes parsed in %s\n",$num_genes1,$gff1);
+my ($num_genes1, $mean_gene_len1) = parse_genes_GFF($gff1,$geneBEDfile1);
+printf("# %d genes parsed in %s mean length=%1.1f\n",
+	$num_genes1,$gff1,$mean_gene_len1);
 
-my $num_genes2 = parse_genes_GFF($gff2,$geneBEDfile2);
-printf("# %d genes parsed in %s\n",$num_genes2,$gff2);
+my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
+printf("# %d genes parsed in %s mean length=%1.1f\n",
+	$num_genes2,$gff2,$mean_gene_len2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
@@ -262,13 +271,14 @@ print "# TSV file: $outfilename\n";
 #################################
 
 # Takes i) input GFF filename ii) output BED filename and 
-# returns number of genes parsed.
+# returns i) number and ii) mean length of genes parsed.
 # Uses global $DUMMYSCORE as dummy scores, as opposed to cases where
 # genes/transcript are actually mapped to genome
 sub parse_genes_GFF {
 
 	my ($gff_file, $outBEDfile) = @_;
 	my $num_genes = 0;
+	my $genelength = 0;
 	my ($geneid, $magic);
 	
 	# check input file format and open it accordingly
@@ -300,13 +310,14 @@ sub parse_genes_GFF {
 
 			print BED "$F[0]\t$F[3]\t$F[4]\t$geneid\t$DUMMYSCORE\t$F[6]\n"; 
 			$num_genes++;
+			$genelength += ($F[4] - $F[3]) + 1;
 		}
 	}
 
 	close(BED);
 	close(GFF);
 
-	return $num_genes;
+	return ($num_genes, sprintf("%1.1f",$genelength/$num_genes));
 }
 
 

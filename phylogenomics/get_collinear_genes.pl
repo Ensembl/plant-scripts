@@ -116,9 +116,11 @@ if($noheader && !$outfilename) {
 	exit(0);
 }
 
-# check algorithm
+# check algorithm, reset min mapping quality if wfmash
 if($dowfmash){
 	$alg = 'wfmash';
+
+	# https://github.com/ekg/wfmash/issues/96
 	$qual = 1;
 }
 

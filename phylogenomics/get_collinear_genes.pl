@@ -13,15 +13,16 @@ use Getopt::Long qw(:config no_ignore_case);
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
 my $MINIMAP2EXE = 'minimap2'; # 2.22
-my $MINIMAPTYPE = '-x asm20';
+my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
 my $MINIMAPPARS = "--secondary=no --cs --cap-kalloc=1g $MINIMAPTYPE";
 my $WFMASHEXE   = 'wfmash'; # v0.7.0
-my $WFMASHPARS  = '-s 3000 -t 3'; # works for small genomes such as rice
+my $WFMASHPARS  = '-p 95 -s 3000'; 
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
 #my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
+my $THREADS      = 3;
 my $SORTLIMITRAM = "500M"; # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 my $GZIPBIN      = "gzip";
@@ -44,7 +45,7 @@ my $TRANSCRIPT2GENE = 1;
 my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
-my ( $minimap_path, $wfmash_path ) = ($MINIMAP2EXE, $WFMASHEXE);
+my ( $minimap_path, $wfmash_path, $threads ) = ($MINIMAP2EXE, $WFMASHEXE, $THREADS);
 
 GetOptions(
 	"help|?"         => \$help,
@@ -64,6 +65,7 @@ GetOptions(
 	"wf|wfmash"      => \$dowfmash,
 	"M|minipath=s"   => \$minimap_path,
 	"W|wfpath=s"     => \$wfmash_path,
+	"t|threads=i"    => \$threads,	
 	"a|add"          => \$noheader
 ) || help_message();
 
@@ -80,9 +82,10 @@ sub help_message {
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
 		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
-		. "-q   min mapping quality                (optional, default: -q $MINQUAL)\n"
+		. "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
 		. "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
 		. "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
+		. "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"		
 		#. "-c   check sequences of collinear genes (optional)\n"
 		. "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
 		. "-r   re-use previous minimap2 results   (optional)\n";
@@ -116,6 +119,7 @@ if($noheader && !$outfilename) {
 # check algorithm
 if($dowfmash){
 	$alg = 'wfmash';
+	$qual = 1;
 }
 
 # set default outfile
@@ -126,7 +130,7 @@ if(!$outfilename) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
-	"-M $minimap_path -W $wfmash_path\n\n";
+	"-M $minimap_path -W $wfmash_path -t $threads\n\n";
 
 print "# mapping parameters:\n";
 if($dowfmash){
@@ -148,7 +152,7 @@ if($reuse && -s $PAFfile){
 
 	if($dowfmash) {
 
-		system("$wfmash_path $WFMASHPARS $fasta1 $fasta2 > $PAFfile");
+		system("$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
         if($? != 0){
             die "# ERROR: failed running wfmash (probably ran out of memory)\n";
         }
@@ -166,7 +170,7 @@ if($reuse && -s $PAFfile){
 		if($reuse && -s $index_fasta1){
 			print "# re-using $index_fasta1\n";
 		} else {
-			system("$minimap_path $MINIMAPTYPE -d $index_fasta1 $fasta1 2>&1");
+			system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $fasta1 2>&1");
 			if($? != 0){
 				die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
 			}
@@ -175,7 +179,7 @@ if($reuse && -s $PAFfile){
     		}
 		}
 
-		system("$minimap_path $MINIMAPPARS $index_fasta1 $fasta2 -o $PAFfile 2>&1");
+		system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $fasta2 -o $PAFfile 2>&1");
 		if($? != 0){
 			die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
 		}
@@ -238,6 +242,10 @@ my ($num_matched, @unmatched) =
 
 printf("# %d genes mapped in %s (%d unmapped)\n",
 	$num_matched,$geneBEDfile2mapped,scalar(@unmatched));
+
+if($num_matched == 0){
+	die "# ERROR: failed mapping $sp2.$label2 genes in WGA alignment";
+}
 
 ## 5) produce list of pairs of collinear genes
 

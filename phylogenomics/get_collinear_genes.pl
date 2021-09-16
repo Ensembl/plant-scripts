@@ -144,7 +144,7 @@ if(!$outfilename) {
 }
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 ".
-	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename ".
+	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
 	"-f $dofragments -M $minimap_path -W $wfmash_path -t $threads\n\n";
 

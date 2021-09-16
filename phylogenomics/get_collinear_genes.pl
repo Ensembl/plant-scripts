@@ -49,7 +49,7 @@ my $VERBOSE    = 0; # values > 1
 my $TRANSCRIPT2GENE = 1;
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
-my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
+my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
 my ( $minimap_path, $wfmash_path, $threads ) = ($MINIMAP2EXE, $WFMASHEXE, $THREADS);
 my ( $dofragments ) = ( 0 );
@@ -59,11 +59,9 @@ GetOptions(
 	"sp1|species1=s" => \$sp1,
 	"fa1|fasta1=s"   => \$fasta1,
 	"gf1|gff1=s"     => \$gff1,
-	"al1|label1=s"   => \$label1,
 	"sp2|species2=s" => \$sp2,
 	"fa2|fasta2=s"   => \$fasta2,
 	"gf2|gff2=s"     => \$gff2,
-	"al2|label2=s"   => \$label2,
 	"out|outfile=s"  => \$outfilename,
 	"ovl|overlap=f"  => \$minoverlap,
 	"q|quality=i"    => \$qual,
@@ -82,11 +80,9 @@ sub help_message {
 		. "-sp1 binomial/trinomial species name    (required, example: -sp1 oryza_sativa)\n"
 		. "-fa1 genome FASTA [.gz] filename        (required, example: -fa1 oryza_sativa.fna)\n"
 		. "-gf1 GFF [.gz] filename                 (required, example: -gf1 oryza_sativa.RAPDB.gff)\n"
-		. "-al1 annotation label                   (required, example: -al1 RAPDB)\n"
-		. "-sp2 binomial/trinomial species name    (required, example: -sp2 oryza_nivara)\n"
+		. "-sp2 binomial/trinomial species name    (required, example: -sp2 oryza_nivara_OGE)\n"
 		. "-fa2 genome FASTA [.gz] filename        (required, example: -fa2 oryza_nivara.fna)\n"
 		. "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
-		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
 		#. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
@@ -101,10 +97,12 @@ sub help_message {
 }
 
 if($help || 
-	(!$sp1 || !$fasta1 || !$gff1 || !$label1 ||
-		!$sp2 || !$fasta2 || !$gff2 || !$label2)){ 
+	(!$sp1 || !$fasta1 || !$gff1 || !$sp2 || !$fasta2 || !$gff2)){ 
 	help_message();
 	exit(0);
+} elsif($sp1 eq $sp2) {
+	print "# ERROR: please make sure -sp1 and sp2 are different\n";
+    exit(0);
 }
 
 if($minoverlap && ($minoverlap < 0 || $minoverlap > 1)) {
@@ -135,11 +133,11 @@ if($dowfmash){
 
 # set default outfile
 if(!$outfilename) {
-	$outfilename = ucfirst($alg).".homologies.$sp1.$label1.$sp2.$label2.overlap$minoverlap.tsv";
+	$outfilename = ucfirst($alg).".homologies.$sp1.$sp2.overlap$minoverlap.tsv";
 }
 
-print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
-	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
+print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 ".
+	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename ".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
 	"-f $dofragments -M $minimap_path -W $wfmash_path -t $threads\n\n";
 
@@ -152,8 +150,8 @@ if($dowfmash){
 
 ## 1) Parse GFFs and produce BED files with gene coords
 
-my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
-my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
+my $geneBEDfile1 = "_$sp1.gene.bed";
+my $geneBEDfile2 = "_$sp2.gene.bed";
 
 my ($num_genes1, $mean_gene_len1) = parse_genes_GFF($gff1,$geneBEDfile1);
 printf("# %d genes parsed in %s mean length=%d\n",
@@ -166,7 +164,7 @@ printf("# %d genes parsed in %s mean length=%d\n",
 # 1.1 if required cut $fasta2 in fragments containing neighbor genes
 if($dofragments){
 
-	my $frag_fasta2 = "_$sp2.$label2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
+	my $frag_fasta2 = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
 	my ($num_frags, $mean_size) = cut_gene_fragments( $geneBEDfile2, $fasta2, 
 		$frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE);
 
@@ -178,10 +176,10 @@ if($dofragments){
 ## 2) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
-my $PAFfile = "_$sp2.$label2.$sp1.$label1.$alg.paf";
+my $PAFfile = "_$sp2.$sp1.$alg.paf";
 
 if($dofragments){
-	$PAFfile = "_$sp2.$label2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$label1.$alg.paf";
+	$PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf";
 }
 
 print "# computing pairwise genome alignment with $alg\n\n";
@@ -205,7 +203,7 @@ if($reuse && -s $PAFfile){
 
 	} else { # default minimap2 index & alignment
 
-		my $index_fasta1 = "_$sp1.$label1.mmi";
+		my $index_fasta1 = "_$sp1.mmi";
 
 		if($reuse && -s $index_fasta1){
 			print "# re-using $index_fasta1\n";
@@ -235,7 +233,7 @@ if($reuse && -s $PAFfile){
 ## 3) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
-my $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.$alg.bed";
+my $wgaBEDfile = "_$sp2.$sp1.$alg.bed";
 
 open(PAF,"<",$PAFfile) || die "# ERROR: cannot read $PAFfile\n";
 open(BED,">",$wgaBEDfile) || die "# ERROR: cannot create $wgaBEDfile\n";
@@ -251,7 +249,7 @@ close(PAF);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
-my $sp2wgaBEDfile = "_$sp2.$label2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
+my $sp2wgaBEDfile = "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
@@ -262,7 +260,7 @@ elsif(!-s $sp2wgaBEDfile){
 	die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
 }
 
-my $geneBEDfile2mapped = "_$sp2.$label2.$alg.gene.mapped.bed";
+my $geneBEDfile2mapped = "_$sp2.$alg.gene.mapped.bed";
 
 my ($num_matched, @unmatched) = 
 	query2ref_coords($sp2wgaBEDfile, $geneBEDfile2mapped, 
@@ -272,12 +270,12 @@ printf("# %d genes mapped in %s (%d unmapped)\n",
 	$num_matched,$geneBEDfile2mapped,scalar(@unmatched));
 
 if($num_matched == 0){
-	die "# ERROR: failed mapping $sp2.$label2 genes in WGA alignment";
+	die "# ERROR: failed mapping $sp2 genes in WGA alignment";
 }
 
 ## 5) produce list of pairs of collinear genes
 
-my $gene_intersectBEDfile = "_$sp1.$label1.$sp2.$label2.$alg.gene.intersect.overlap$minoverlap.bed";
+my $gene_intersectBEDfile = "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
 
 system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");
@@ -294,21 +292,6 @@ my $num_pairs = bed2compara($gene_intersectBEDfile, $outfilename, $sp1, $sp2,
 printf("# %d collinear gene pairs\n",$num_pairs); 
 print "# TSV file: $outfilename\n";
 
-
-## sequence check (TODO)
-
-#bedtools getfasta -fi Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -bed test4.bed > test4.ref.fna
-#bedtools getfasta -fi Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa \
-#	-bed Oryza_nivara.gene.bed -nameOnly > test4.gene.fna
-
-#makeblastdb -dbtype nucl -in test4.ref.fna
-#blastn -query test4.gene.fna -db test4.ref.fna -outfmt 6 > test4.blastn
-
-#perl -lane 'print "$F[3]\t$F[0]:$F[1]-$F[2]"' test4.bed > test4.bed4blastn
-#grep -f test4.bed4blastn test4.blastn | cut -f 1 | sort -u | wc -l
-#31020
-
-#31020/31080 = 0.998 of transferred genomic segments confirmed by BLASTN
 
 #################################
 

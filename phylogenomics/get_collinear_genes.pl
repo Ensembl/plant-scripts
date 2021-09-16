@@ -18,8 +18,7 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive  across species than v2.22
 my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
-my $MINIMAPPARS = "--secondary=no --cs --cap-kalloc=1g $MINIMAPTYPE";
-$MINIMAPPARS = "-e0 --secondary=no --cs $MINIMAPTYPE";
+my $MINIMAPPARS = "-e0 --secondary=no --cs $MINIMAPTYPE"; #v2.17 does not take --cap-kalloc=1g
 my $WFMASHEXE   = 'wfmash'; # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000'; 
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0

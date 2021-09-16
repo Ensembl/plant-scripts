@@ -100,10 +100,17 @@ if($help ||
 	(!$sp1 || !$fasta1 || !$gff1 || !$sp2 || !$fasta2 || !$gff2)){ 
 	help_message();
 	exit(0);
-} elsif($sp1 eq $sp2) {
+}  
+
+if(!-s $fasta1 || !-s $gff1 || !-s $fasta2 || !-s $gff2){
+	print "# ERROR: please make sure all input files exist\n";
+    exit(0);
+} 
+
+if($sp1 eq $sp2) {
 	print "# ERROR: please make sure -sp1 and sp2 are different\n";
     exit(0);
-}
+} 
 
 if($minoverlap && ($minoverlap < 0 || $minoverlap > 1)) {
 	print "# ERROR: option -ovl requires values [0,1]\n";

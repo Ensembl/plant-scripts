@@ -12,9 +12,14 @@ use Getopt::Long qw(:config no_ignore_case);
 
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -al1 IRGSP -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -al2 OGE -r
 
-my $MINIMAP2EXE = 'minimap2'; # 2.22
+# collinear | Osativa vs Onivara | Athaliana vs Ahalleri 
+# 2.17      |     24502          |     10637
+# 2.22      |     18770          |      8231
+
+my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive  across species than v2.22
 my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
 my $MINIMAPPARS = "--secondary=no --cs --cap-kalloc=1g $MINIMAPTYPE";
+$MINIMAPPARS = "-e0 --secondary=no --cs $MINIMAPTYPE";
 my $WFMASHEXE   = 'wfmash'; # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000'; 
 my $BEDTOOLSEXE = 'bedtools'; # v2.30.0

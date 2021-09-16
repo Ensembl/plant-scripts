@@ -32,7 +32,9 @@ my $SORTLIMITRAM = "500M"; # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 my $GZIPBIN      = "gzip";
 
-my $DUMMYSCORE = 9999;
+my $MAXGENESFRAG = 3; # max genesin same fragment with -f
+my $MAXFRAGSIZE  = 50_000; # max frag length with -f 
+my $DUMMYSCORE   =   9999;
 
 # while parsing PAF
 my $MINQUAL    = 50; # works well with both mapping algorithms 
@@ -51,6 +53,7 @@ my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $label1, $label2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
 my ( $minimap_path, $wfmash_path, $threads ) = ($MINIMAP2EXE, $WFMASHEXE, $THREADS);
+my ( $dofragments ) = ( 0 );
 
 GetOptions(
 	"help|?"         => \$help,
@@ -65,6 +68,7 @@ GetOptions(
 	"out|outfile=s"  => \$outfilename,
 	"ovl|overlap=f"  => \$minoverlap,
 	"q|quality=i"    => \$qual,
+	"f|frag"         => \$dofragments,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"wf|wfmash"      => \$dowfmash,
@@ -85,7 +89,8 @@ sub help_message {
 		. "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
 		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
-		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n" 
+		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
+		. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
 		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
 		. "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
 		. "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
@@ -137,7 +142,7 @@ if(!$outfilename) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 -al1 $label1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -al2 $label2 -out $outfilename ".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
-	"-M $minimap_path -W $wfmash_path -t $threads\n\n";
+	"-f $dofragments -M $minimap_path -W $wfmash_path -t $threads\n\n";
 
 print "# mapping parameters:\n";
 if($dowfmash){
@@ -159,11 +164,26 @@ my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
 printf("# %d genes parsed in %s mean length=%d\n",
     $num_genes2,$gff2,$mean_gene_len2);
 
+# 1.1 if required cut $fasta2 in fragments containing neighbor genes
+if($dofragments){
+
+	my $frag_fasta2 = "_$sp2.$label2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
+	my ($num_frags, $mean_size) = cut_gene_fragments( $geneBEDfile2, $fasta2, 
+		$frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE);
+
+	$fasta2 = $frag_fasta2;
+	printf("# %s sequence cut in %d gene-containing fragments of mean length=%d\n",
+		$sp2,$num_frags,$mean_size); 
+}
 
 ## 2) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
 my $PAFfile = "_$sp2.$label2.$sp1.$label1.$alg.paf";
+
+if($dofragments){
+	$PAFfile = "_$sp2.$label2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$label1.$alg.paf";
+}
 
 print "# computing pairwise genome alignment with $alg\n\n";
 
@@ -331,7 +351,14 @@ sub parse_genes_GFF {
 			$geneid = $1;
 			$geneid =~ s/gene://; # remove redundant bits
 
-			print BED "$F[0]\t$F[3]\t$F[4]\t$geneid\t$DUMMYSCORE\t$F[6]\n"; 
+			printf( BED "%s\t%d\t%d\t%s\t%s\t%s\n",
+				$F[0],
+				$F[3]-1, # 0-based
+				$F[4],
+				$geneid,
+				$DUMMYSCORE,
+				$F[6]);
+
 			$num_genes++;
 			$genelength += ($F[4] - $F[3]) + 1;
 		}
@@ -341,6 +368,37 @@ sub parse_genes_GFF {
 	close(GFF);
 
 	return ($num_genes, sprintf("%1.0f",$genelength/$num_genes));
+}
+
+
+
+# Takes i) input BED filename produced by parses_genes_GFF, ii) input FASTA filename, 
+# iii) output FASTA filename, iv) max gene per fragment, v) max fragment lengh, and 
+# returns i) number and ii) mean length of fragments cut.
+sub cut_gene_fragments {
+	
+	my( $geneBED, $fasta, $out_fasta, $maxgenes, $maxsize) = @_;
+
+	my ($num_frags, $mean_size) = (0,0); 
+	my ($chr,$start,$end);
+
+	open(BED,"<",$geneBED) || die "# ERROR(cut_gene_fragments): cannot read $geneBED\n";
+	while(<BED>){
+
+		# each line is a new gene 
+		# 1       2983    10815   Os01g0100100    9999    +
+		if(/^(\S+)\t(\d+)\t(\d+)\t/){ ;
+			($chr,$start,$end) = ($1, $2, $3);
+
+			print "($chr,$start,$end)\n";
+		}
+
+
+	}
+	close(BED);
+
+
+	return ($num_frags, $mean_size);
 }
 
 

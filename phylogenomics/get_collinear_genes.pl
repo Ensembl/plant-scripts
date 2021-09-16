@@ -90,7 +90,7 @@ sub help_message {
 		. "-al2 annotation label                   (required, example: -al2 OGE)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
-		. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
+		#. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
 		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
 		. "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
 		. "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
@@ -381,6 +381,7 @@ sub cut_gene_fragments {
 
 	my ($num_frags, $mean_size) = (0,0); 
 	my ($chr,$start,$end);
+	my ($frag_start,$frag_end,$frag_chr,$dist) = (-1,-1,'',0);
 
 	open(BED,"<",$geneBED) || die "# ERROR(cut_gene_fragments): cannot read $geneBED\n";
 	while(<BED>){
@@ -390,12 +391,20 @@ sub cut_gene_fragments {
 		if(/^(\S+)\t(\d+)\t(\d+)\t/){ ;
 			($chr,$start,$end) = ($1, $2, $3);
 
-			print "($chr,$start,$end)\n";
+			# distance to previous fragment, else negative value 
+
+			# check size if this gene is added, max genes reached?
+
+			# should this be a new fragment? too large or diff chr
+
+			# grow previous fragment
+			
 		}
-
-
 	}
 	close(BED);
+
+	# take care of last fragment
+	
 
 
 	return ($num_frags, $mean_size);

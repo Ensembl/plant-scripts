@@ -146,7 +146,21 @@ if($dowfmash){
 	print "# \$MINIMAPPARS: $MINIMAPPARS\n\n";
 }
 
-## 1) align genome1 vs genome2 with minimap2 (WGA)
+## 1) Parse GFFs and produce BED files with gene coords
+
+my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
+my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
+
+my ($num_genes1, $mean_gene_len1) = parse_genes_GFF($gff1,$geneBEDfile1);
+printf("# %d genes parsed in %s mean length=%d\n",
+    $num_genes1,$gff1,$mean_gene_len1);
+
+my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
+printf("# %d genes parsed in %s mean length=%d\n",
+    $num_genes2,$gff2,$mean_gene_len2);
+
+
+## 2) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
 my $PAFfile = "_$sp2.$label2.$sp1.$label1.$alg.paf";
@@ -199,7 +213,7 @@ if($reuse && -s $PAFfile){
 	}
 }
 
-## 2) produce BED-like file of sp2-to-sp1 coords 10 columns
+## 3) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
 my $wgaBEDfile = "_$sp2.$label2.$sp1.$label1.$alg.bed";
@@ -215,18 +229,6 @@ while(<PAF>){
 close(BED);
 close(PAF);
 
-## 3) Parse GFFs and produce BED files with gene coords
-
-my $geneBEDfile1 = "_$sp1.$label1.gene.bed";
-my $geneBEDfile2 = "_$sp2.$label2.gene.bed";
-
-my ($num_genes1, $mean_gene_len1) = parse_genes_GFF($gff1,$geneBEDfile1);
-printf("# %d genes parsed in %s mean length=%d\n",
-	$num_genes1,$gff1,$mean_gene_len1);
-
-my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
-printf("# %d genes parsed in %s mean length=%d\n",
-	$num_genes2,$gff2,$mean_gene_len2);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 

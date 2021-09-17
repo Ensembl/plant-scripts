@@ -19,7 +19,6 @@ use PlantCompUtils qw(
 # Produces pan-gene analyses based on clusters of orthologous genes shared by
 # species in a plant clade by querying pre-computed Compara protein trees 
 # (orthology) and whole genome alignments (WGA, synteny, optional -W).
-# Optionally, pan-genes might be named consistently across aligned genomes.
 #
 # Note: most species have only LASTZ genome alignments to a reference genome;
 # some clades ie Oryza also have EPO multiple alignments, explained at
@@ -106,7 +105,8 @@ sub help_message {
 	  . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\';'
       . "\n                                            the example regular expression matches natural numbers,\n"
       . "                                            like the default chr names used in Ensembl Plants)\n"
-      . "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
+      #
+      #. "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     print "\nThe following options are only available for some clades:\n\n"

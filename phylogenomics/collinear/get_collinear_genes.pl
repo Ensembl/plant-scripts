@@ -4,7 +4,8 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 
 # Takes two FASTA files with genome sequences and 2 matching GFF files with annotated gene models.
-# Produces TSV file with pairs of collinear genes in a format compatible with Ensembl Compara.
+# Produces TSV file with pairs of collinear genes in a format compatible with Ensembl Compara
+
 # Uses external software:
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]

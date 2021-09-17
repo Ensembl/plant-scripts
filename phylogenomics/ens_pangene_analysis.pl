@@ -63,7 +63,7 @@ my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $GOC, $WGA, $LOWCONF, $NOSINGLES , $GROWTH ) = ( 0, 0, 0, 0, 0 );
 my ( $CHREGEX, $MAF ) = ( '', '' );
 my ( $verbose, $bedtoolsexe ) = ( 0, $BEDTOOLSEXE );
-my ( @ignore_species, @userTSVfiles, %ignore, %division_supported );
+my ( @ignore_species, %ignore, %division_supported );
 
 GetOptions(
     "help|?"        => \$help,
@@ -74,7 +74,6 @@ GetOptions(
     "reference|r=s" => \$ref_genome,
     "outgroup|o=s"  => \$out_genome,
     "ignore|i=s"    => \@ignore_species,
-    "user|u=s"      => \@userTSVfiles, 
     "type|t=s"      => \$seqtype,
     "GOC|G=i"       => \$GOC,
     "WGA|W=i"       => \$WGA,
@@ -94,7 +93,6 @@ sub help_message {
       . "-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n"
       . "-l list supported species_names            (optional, example: -l)\n"
       . "-d Ensembl division                        (optional, default: -d $division)\n"
-      . "-u parse species from user TSV files       (optional, as opposed E! species & Compara orthologues)\n"
       . "-o outgroup species_name                   (optional, example: -o brachypodium_distachyon)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
 
@@ -104,14 +102,15 @@ sub help_message {
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-L allow low-confidence orthologues        (optional, by default these are skipped)\n"
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\';'
+      # partially tested, probably still some bugs there
+	  . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\';'
       . "\n                                            the example regular expression matches natural numbers,\n"
       . "                                            like the default chr names used in Ensembl Plants)\n"
       . "-b path to bedtools, useful with -M        (optional, if not in \$PATH, example: -b /path/to/bedtools)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     print "\nThe following options are only available for some clades:\n\n"
-     #untested      
+     # untested      
      #. "-M parse multiple genome alignments        (optional, requires bedtools, example: -M 8_rice.epo)\n\n"
       . "-G min Gene Order Conservation [0:100]  (optional, example: -G 75)\n"
       . "   see modules/Bio/EnsEMBL/Compara/PipeConfig/EBI/Plants/ProteinTrees_conf.pm\n"
@@ -215,9 +214,6 @@ else {
         }
         printf( "\n# ignored species : %d\n\n", scalar( keys(%ignore) ) );
     }
-
-    
-
 
     if ( $seqtype ne 'protein' && $seqtype ne 'cdna' ) {
         die "# ERROR: accepted values for seqtype are: protein|cdna\n";

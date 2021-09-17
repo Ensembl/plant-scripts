@@ -47,7 +47,7 @@ my $VERBOSE    = 0; # values > 1
 # 1) remove suffix after . or -
 # 2) t's in transcript name to be replaced with g' in gene names
 # Example: 10t0100300.1 -> Os10g0100300
-my $TRANSCRIPT2GENE = 1;
+my $TRANSCRIPT2GENE = 0;
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2 );

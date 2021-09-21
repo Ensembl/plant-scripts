@@ -24,10 +24,10 @@ GetOptions(
 
 sub help_message {
 	print "\nusage: $0 [options]\n\n"
-		. "-sp binomial/trinomial species name    (required, example: -sp oryza_sativa, used to name outfiles)\n"
-		. "-fa genome FASTA [.gz] filename        (required, example: -fa oryza_sativa.fna)\n"
-		. "-gf GFF [.gz] filename                 (required, example: -gf oryza_sativa.RAPDB.gff)\n"
-		. "-p  path to gffread binary             (optional, default: $GFFREADEXE)\n\n"
+		. "-sp binomial/trinomial species name (required, example: -sp oryza_sativa, used to name outfiles)\n"
+		. "-fa genome FASTA filename           (required, example: -fa oryza_sativa.fna)\n"
+		. "-gf GFF filename                    (required, example: -gf oryza_sativa.RAPDB.gff)\n"
+		. "-p  path to gffread binary          (optional, default: $GFFREADEXE)\n\n"
 }
 
 if($help || 

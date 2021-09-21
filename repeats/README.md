@@ -1,9 +1,8 @@
 
 These scripts can be used to:
-+ i) mask repeated sequences in plant genomes
-+ ii) annotate repeats with the 
-[Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red) 
-and 
++ i) mask repeated sequences in plant genomes with the 
+[Repeat detector](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5) (Red)
++ ii) annotate repeats with https://github.com/lh3/minimap2 and  
 	* the curated library of repeats 
 [nrTEplants](https://github.com/Ensembl/plant-scripts/releases/download/v0.3/nrTEplantsJune2020.fna.bz2),
 described in full detail [here](https://github.com/Ensembl/plant_tools/tree/master/bench/repeat_libs)

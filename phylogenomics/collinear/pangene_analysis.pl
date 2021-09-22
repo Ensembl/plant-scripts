@@ -20,13 +20,13 @@ my $NOFSAMPLESREPORT = 10;
 
 my ( $ref_genome, $clusterdir) = ( '', '' );
 my ( $outfolder, $params) = ('', '');
-
 my ( $help, $sp, $sp2, $infile, $show_supported );
 my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $NOSINGLES , $GROWTH , $CHREGEX ) = ( 0, 0, '' );
-my ( $verbose ) = ( 0 );
-my ( @infiles, @ignore_species, %ignore );
+my ( $n_of_species, $verbose ) = ( 0, 0 );
+my ( @infiles, @supported_species, @ignore_species);
+my ( %species, %ignore, %supported );
 
 GetOptions(
     "help|?"        => \$help,
@@ -64,7 +64,7 @@ sub help_message {
 if ($help) { help_message() }
 
 if ($show_supported) {
-    print "# $0 -d $division -l \n\n";
+    print "# $0 -l \n\n";
 }
 else {
 
@@ -85,11 +85,8 @@ else {
         $params .= "_nosingles";
     }      	
 
-    if (@ignore_species) {
-        foreach my $sp (@ignore_species) {
-            $ignore{$sp} = 1;
-        }
-        printf( "\n# ignored species : %d\n\n", scalar( keys(%ignore) ) );
+    if(!$ref_genome) {
+        die "# ERROR: please set -r reference_genome\n";
     }
 
     #    if ( $seqtype eq 'protein' ) {
@@ -133,59 +130,49 @@ else {
         exit;
     }
 
-    print "# $0 -T $infile -r $ref_genome -f $outfolder "
-      . "-p '$CHREGEX' -g $GROWTH -S $NOSINGLES -v $verbose\n\n";
-}
+    print "# $0 -r $ref_genome -f $outfolder "
+      . "-p '$CHREGEX' -g $GROWTH -S $NOSINGLES -v $verbose\n";
+    print "# ";
+    foreach $infile (@infiles) {
+        print "-T $infile ";
+    } print "\n";
 
-## check (supported) species in TSV file
-
-# anyone to igndore?
-
-## 2) read sequences of supported species
-
-
-## 3) make clusters
-
-
-# list supported species and exit
-if ($show_supported) {
-
-    foreach $sp ( sort( keys(%division_supported) ) ) {
-        print "$sp\n";
+    if (@ignore_species) {
+        print "# ";
+        foreach $sp (@ignore_species) {
+            $ignore{$sp} = 1;
+            print "-i $sp ";
+        } print "\n";
     }
-    exit;
 }
 
-## 1) check species in clade 
+## 1) check (supported) species in TSV file(s)
 
-my ( $n_of_species, $cluster_id, $chr ) = ( 0, '' );
-my ( @supported_species, @cluster_ids, %sorted_cluster_ids );
-my ( %supported, %incluster, %cluster, %compara_isoform );
-my ( %sequence, %header, %bedfiles );
-my ( %totalgenes, %totalclusters, %POCP_matrix );
-my ( %MAFblocks, %isoform2block, %sorted_ids, %id2chr );
+foreach $infile (@infiles){
+    open(TSV,"<",$infile) || die "# ERROR: cannot read $infile\n";
+    while(<TSV>){
+        my @F = split(/\t/,$_);
+        ($sp, $sp2) = ($F[2], $F[7]);
+        $species{$sp} = 1;
+        $species{$sp2} = 1;
+    }
+    close(TSV);
+}
 
-$request = $TAXOPOINT . "$taxonid?";
+# add species but skip ignored ones and ref
+for $sp (keys(%species)) {
 
-$response = perform_rest_action( $http, $request, $global_headers );
-$infodump = decode_json($response);
+    next if( $ignore{$sp} || $sp eq 'species' || $sp eq 'homology_species');
 
-foreach $sp ( @{$infodump} ) {
-    if ( $sp->{'name'} && $division_supported{ $sp->{'name'} } ) {
-
-        next if ( $ignore{ $sp->{'name'} } );
-
-        # add sorted clade species except reference
-        $supported{ $sp->{'name'} } = 1;
-        if ( $sp->{'name'} ne $ref_genome ) {
-            push( @supported_species, $sp->{'name'} );
-        }
+    $supported{ $sp } = 1;
+    if ( !$ref_genome || $sp ne $ref_genome ) {
+        push( @supported_species, $sp );
     }
 }
 
 # check reference genome is supported
-if ( !$supported{$ref_genome} ) {
-    die "# ERROR: cannot find $ref_genome within NCBI taxon $taxonid\n";
+if ( $ref_genome && !$supported{$ref_genome} ) {
+    die "# ERROR: cannot find $ref_genome in input TSV file(s)\n";
 }
 else {
     # ref genome is first in array
@@ -198,48 +185,46 @@ else {
     }
 }
 
-printf( "# supported species in NCBI taxon %s : %d\n\n",
-    $taxonid, scalar(@supported_species) );
-
-# add outgroup if required
-if ($out_genome) {
-    push( @supported_species, $out_genome );
-    $supported{$out_genome} = 1;
-    print "# outgenome: $out_genome\n";
+if($show_supported) {
+    foreach $sp (@supported_species) {
+        print "$sp\n";
+    }
+	exit(0);
 }
 
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
-## 2) get orthologous (plant) genes shared by selected species
+## 2) infer pairs of collinear gens and make up clusters 
 
-# columns of TSV file
-# NOTE: high_conf are not be available for some divisions
+my ( $cluster_id, $chr ) = ( 0, '' );
+my ( @cluster_ids, %sorted_cluster_ids );
+my ( %incluster, %cluster, %compara_isoform );
+my ( %sequence, %header, %bedfiles );
+my ( %totalgenes, %totalclusters, %POCP_matrix );
+my ( %MAFblocks, %isoform2block, %sorted_ids, %id2chr );
+
+# columns of TSV file as produced by get_collinear_genes.pl
+# Os01g0100200 Os01g0100200 oryza_sativa 1050 ortholog_collinear ONIVA01G00100 ONIVA01G00100 oryza_nivara 1050 NULL NULL NULL 100.00 1 1:11217-12435;1:2929-12267
+# NOTE: identity is really alignment length
+# NOTE: dn,ds,goc are not computed and have dummy values
 my (
     $gene_stable_id,     $prot_stable_id, $species,
     $identity,           $homology_type,  $hom_gene_stable_id,
     $hom_prot_stable_id, $hom_species,    $hom_identity,
     $dn,                 $ds,             $goc_score,
-    $wga_coverage,       $high_confidence
+    $wga_coverage,       $high_confidence,
+	$coordinates
 );
 
-# Iteratively get and parse TSV files that define pairs of orthologues
-# sequences computed by Ensembl Compara. After parsing all pairwise
+# Iteratively get and parse TSV files that define pairs of collinear 
+# genes computed with get_collinear_genes. After parsing all pairwise
 # TSV files clusters emerge.
-# Note: each sequence is identified with a protein stable_id that
-# corresponds to the canonical isoform of that gene.
-# Read more at
-# http://plants.ensembl.org/info/genome/compara/peptide_compara.html
-# http://plants.ensembl.org/info/website/glossary.html
-foreach $sp (@supported_species) {
-
-    # get TSV file; these files are bulky and might take some time to download
-    my $stored_compara_file =
-      download_compara_TSV_file( $comparadir, $sp, $downloadir );
+foreach $infile (@infiles) {
 
     # uncompress on the fly and parse
-    open( TSV, "EXE -dc $stored_compara_file |" )
-      || die "# ERROR: cannot open $stored_compara_file\n";
+    open(TSV, "<", $infile)
+      || die "# ERROR: cannot open $infile\n";
     while ( my $line = <TSV> ) {
 
         #ATMG00030 ATMG00030.1 arabidopsis_thaliana 52.3364 ortholog_one2many \
@@ -249,25 +234,11 @@ foreach $sp (@supported_species) {
             $identity,           $homology_type,  $hom_gene_stable_id,
             $hom_prot_stable_id, $hom_species,    $hom_identity,
             $dn,                 $ds,             $goc_score,
-            $wga_coverage,       $high_confidence
+            $wga_coverage,       $high_confidence,
+            $coordinates		
         ) = split( /\t/, $line );
 
         next if ( !$supported{$species} || !$supported{$hom_species} );
-
-        if ( defined($high_confidence) ) {
-            if ( $LOWCONF == 0
-                && ( $high_confidence eq 'NULL' || $high_confidence == 0 ) )
-            {
-                #print 
-                #  "# skip $prot_stable_id,$hom_prot_stable_id due to low-confidence\n"
-                #  if ($verbose);
-                next;
-            }
-        }
-
-        next if ( $WGA && ( $wga_coverage eq 'NULL' || $wga_coverage < $WGA ) );
-
-        next if ( $GOC && ( $goc_score eq 'NULL' || $goc_score < $GOC ) );
 
         if ( $homology_type =~ m/ortholog/ ) {
 
@@ -317,6 +288,8 @@ foreach $sp (@supported_species) {
     close(TSV); 
 } 
 
+exit;
+
 # count how many clusters include each species
 foreach $cluster_id (@cluster_ids) {
     foreach $species (@supported_species) {
@@ -331,30 +304,27 @@ foreach $cluster_id (@cluster_ids) {
 # Note: uses %compara_isoform, created previously
 foreach $sp (@supported_species) {
 
-    my $stored_sequence_file =
-        download_FASTA_file( $fastadir, "$sp/$seqfolder", $downloadir );
+    #my ( $ref_sequence, $ref_header ) =
+    #   parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
 
-    my ( $ref_sequence, $ref_header ) =
-       parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
+    #my ($ref_bedfiles, $ref_sorted_ids, $ref_id2chr) =
+    #   sort_isoforms_chr($ref_header, $beddir, $sp, $CHREGEX);
 
-    my ($ref_bedfiles, $ref_sorted_ids, $ref_id2chr) =
-       sort_isoforms_chr($ref_header, $beddir, $sp, $CHREGEX);
+    #printf("# wrote sorted isoforms of $sp in %d BED files (1-based)\n\n",
+    #   scalar(keys(%$ref_bedfiles)));
 
-    printf("# wrote sorted isoforms of $sp in %d BED files (1-based)\n\n",
-       scalar(keys(%$ref_bedfiles)));
-
-    $bedfiles{$sp} = $ref_bedfiles;
-    $sorted_ids{$sp} = $ref_sorted_ids;
-    $id2chr{$sp} = $ref_id2chr;
+    #$bedfiles{$sp} = $ref_bedfiles;
+    #$sorted_ids{$sp} = $ref_sorted_ids;
+    #$id2chr{$sp} = $ref_id2chr;
 
     # count number of genes/selected isoforms in this species
-    $totalgenes{$sp} = scalar( keys(%$ref_sequence) );
+    #$totalgenes{$sp} = scalar( keys(%$ref_sequence) );
 
     # save these sequences
-    foreach $prot_stable_id ( keys(%$ref_sequence) ) {
-        $sequence{$sp}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
-        $header{$sp}{$prot_stable_id} = $ref_header->{$prot_stable_id};
-    } 
+    #foreach $prot_stable_id ( keys(%$ref_sequence) ) {
+    #    $sequence{$sp}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
+    #    $header{$sp}{$prot_stable_id} = $ref_header->{$prot_stable_id};
+    #} 
 }
 
 # Note: even using -W clusters might contain sequences from different chr

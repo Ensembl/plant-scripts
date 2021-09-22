@@ -18,22 +18,21 @@ my $TRANSPOSEXE =
 my $RNDSEED          = 12345;
 my $NOFSAMPLESREPORT = 10;
 
-my ( $ref_genome, $infile ) = ( '', '' );  
-my ( $clusterdir, $comparadir, $fastadir) = ( '', '', '' );
+my ( $ref_genome, $clusterdir) = ( '', '' );
 my ( $outfolder, $params) = ('', '');
 
-my ( $help, $sp, $sp2, $show_supported );
+my ( $help, $sp, $sp2, $infile, $show_supported );
 my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $NOSINGLES , $GROWTH , $CHREGEX ) = ( 0, 0, '' );
 my ( $verbose ) = ( 0 );
-my ( @ignore_species, %ignore );
+my ( @infiles, @ignore_species, %ignore );
 
 GetOptions(
     "help|?"        => \$help,
     "verbose|v"     => \$verbose,
     "supported|l"   => \$show_supported,
-    "TSV|T=s"       => \$infile,
+    "TSV|T=s"       => \@infiles,
     "reference|r=s" => \$ref_genome,
     "ignore|i=s"    => \@ignore_species,
     "S|S"           => \$NOSINGLES,
@@ -45,7 +44,7 @@ GetOptions(
 
 sub help_message {
     print "\nusage: $0 [options]\n\n"
-      . "-T input collinear TSV file                (required, example: -T Minimap2.homologies.rice.overlap0.5.tsv)\n"
+      . "-T input collinear TSV file(s)             (required, example: -T Minimap2.homologies.rice.overlap0.5.tsv -T ...)\n"
       . "-f output folder                           (required, example: -f myfolder)\n"
       . "-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n"
       . "-l list supported species in -T file       (optional, example: -l)\n"
@@ -69,16 +68,13 @@ if ($show_supported) {
 }
 else {
 
-    if ( $infile eq '' ) {
-        print "# ERROR: need a valid input TSV file\n\n";
+    if ( scalar(@infiles) < 1 ) {
+        print "# ERROR: need at least one valid input TSV file\n\n";
         exit;
     }
     else {
         $clusterdir = $ref_genome;
         $clusterdir =~ s/_//g;
-        if($infile =~ m/(\S+)\.homologies/){
-            $clusterdir .= "_alg$1";
-        }
     }
 
     if ($CHREGEX) {
@@ -115,6 +111,14 @@ else {
             }
         }
 
+		# save list of input file names for future reference
+		open(INLOG,">","$outfolder/input.log") ||
+			die "# ERROR: cannot create $outfolder/input.log\n";
+		foreach $infile (@infiles) {
+			print INLOG "$infile\n";
+		}
+		close(INLOG);
+
         # create $clusterdir with $params
         $clusterdir .= $params;
         if ( !-e "$outfolder/$clusterdir" ) {
@@ -133,7 +137,7 @@ else {
       . "-p '$CHREGEX' -g $GROWTH -S $NOSINGLES -v $verbose\n\n";
 }
 
-## 1) check species in TSV file
+## check (supported) species in TSV file
 
 # anyone to igndore?
 
@@ -234,7 +238,7 @@ foreach $sp (@supported_species) {
       download_compara_TSV_file( $comparadir, $sp, $downloadir );
 
     # uncompress on the fly and parse
-    open( TSV, "$GZIPEXE -dc $stored_compara_file |" )
+    open( TSV, "EXE -dc $stored_compara_file |" )
       || die "# ERROR: cannot open $stored_compara_file\n";
     while ( my $line = <TSV> ) {
 

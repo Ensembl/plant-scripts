@@ -199,10 +199,10 @@ print "# total selected species : $n_of_species\n\n";
 
 my ( $cluster_id, $chr ) = ( 0, '' );
 my ( @cluster_ids, %sorted_cluster_ids );
-my ( %incluster, %cluster, %compara_isoform );
-my ( %sequence, %header, %bedfiles );
+my ( %incluster, %cluster );
+my ( %sequence, %header );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
-my ( %MAFblocks, %isoform2block, %sorted_ids, %id2chr );
+my ( %sorted_ids, %id2chr );
 
 # columns of TSV file as produced by get_collinear_genes.pl
 # Os01g0100200 Os01g0100200 oryza_sativa 1050 ortholog_collinear ONIVA01G00100 ONIVA01G00100 oryza_nivara 1050 NULL NULL NULL 100.00 1 1:11217-12435;1:2929-12267
@@ -227,8 +227,6 @@ foreach $infile (@infiles) {
       || die "# ERROR: cannot open $infile\n";
     while ( my $line = <TSV> ) {
 
-        #ATMG00030 ATMG00030.1 arabidopsis_thaliana 52.3364 ortholog_one2many \
-        #Tp57577 Tp57577 trifolium_pratense 16.8675 NULL NULL NULL NULL 0
         (
             $gene_stable_id,     $prot_stable_id, $species,
             $identity,           $homology_type,  $hom_gene_stable_id,
@@ -243,52 +241,46 @@ foreach $infile (@infiles) {
         if ( $homology_type =~ m/ortholog/ ) {
 
             # add $species protein to cluster only if not clustered yet
-            if ( !$incluster{$prot_stable_id} ) {
+            if ( !$incluster{$gene_stable_id} ) {
 
-                if ( $incluster{$hom_prot_stable_id} ) {
+                if ( $incluster{$hom_gene_stable_id} ) {
 
                     # use existing cluster_id from other species ortholog
-                    $cluster_id = $incluster{$hom_prot_stable_id};
+                    $cluster_id = $incluster{$hom_gene_stable_id};
                 }
                 else {
 
                     # otherwise create a new one
-                    $cluster_id = $prot_stable_id;
+                    $cluster_id = $gene_stable_id;
                     push( @cluster_ids, $cluster_id );
                 }
 
-                # record to which cluster this protein belongs
-                $incluster{$prot_stable_id} = $cluster_id;
+                # record to which cluster this gene belongs
+                $incluster{$gene_stable_id} = $cluster_id;
 
-                push( @{ $cluster{$cluster_id}{$species} }, $prot_stable_id );
+                push( @{ $cluster{$cluster_id}{$species} }, $gene_stable_id );
 
             }
             else {
                 # set cluster for $hom_species anyway
-                $cluster_id = $incluster{$prot_stable_id};
+                $cluster_id = $incluster{$gene_stable_id};
             } 
 
             # now add $hom_species protein to previously defined cluster
-            if ( !$incluster{$hom_prot_stable_id} ) {
+            if ( !$incluster{$hom_gene_stable_id} ) {
 
                 # record to which cluster this protein belongs
-                $incluster{$hom_prot_stable_id} = $cluster_id;
+                $incluster{$hom_gene_stable_id} = $cluster_id;
 
                 push(
                     @{ $cluster{$cluster_id}{$hom_species} },
-                    $hom_prot_stable_id
+                    $hom_gene_stable_id
                 );
             }
-
-            # save isoforms used in compara
-            $compara_isoform{$prot_stable_id} = 1;
-            $compara_isoform{$hom_prot_stable_id} = 1;
         }
     }
     close(TSV); 
 } 
-
-exit;
 
 # count how many clusters include each species
 foreach $cluster_id (@cluster_ids) {
@@ -299,6 +291,7 @@ foreach $cluster_id (@cluster_ids) {
     }
 }
 
+exit;
 # Get and parse FASTA files to get sequences & headers 
 # of isoforms in the Compara clusters
 # Note: uses %compara_isoform, created previously

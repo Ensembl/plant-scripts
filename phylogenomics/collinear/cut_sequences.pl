@@ -52,11 +52,11 @@ my $pepfile  = "$sp1.cds.faa";
 
 print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -path $gffreadpath\n\n";
 
-my $ref_genes = parse_genenames($gff1);
+my ($ref_names, $ref_coords) = parse_genes($gff1);
 
-my $num_cdna = parse_gffread($gffreadpath,$fasta1,$gff1,$cdnafile,'cdna',$ref_genes);
-my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,'cds',$ref_genes);
-my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,'pep',$ref_genes);
+my $num_cdna = parse_gffread($gffreadpath,$fasta1,$gff1,$cdnafile,'cdna',$ref_names,$ref_coords);
+my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,'cds',$ref_names,$ref_coords);
+my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,'pep',$ref_names,$ref_coords);
 
 print "# $cdnafile n=$num_cdna\n";
 print "# $cdsfile n=$num_cds\n";
@@ -68,8 +68,9 @@ print "# $pepfile n=$num_pep\n";
 # Returns number of sequences printed out.
 sub parse_gffread {
 
-	my ($gffreadexe,$fasta_file,$gff_file,$outfile,$seqtype,$ref_tr2gene) = @_;
-	my ($params,$mrnaid,$geneid);
+	my ($gffreadexe,$fasta_file,$gff_file,$outfile,$seqtype,
+		$ref_tr2gene,$ref_tr2coords) = @_;
+	my ($params,$mrnaid,$geneid,$coords);
 
 	if($seqtype eq 'cds'){
 		$params = '-x - ';
@@ -87,8 +88,9 @@ sub parse_gffread {
     	if(/^>(\S+)/){
 			$mrnaid = $1;
 			$geneid = $ref_tr2gene->{$mrnaid} || '';
+			$coords = $ref_tr2coords->{$mrnaid} || '';
 
-        	print OUT ">$mrnaid $geneid [$sp1]\n";
+        	print OUT ">$mrnaid $geneid $coords [$sp1]\n";
 			$num_seqs++;
     	} else {
         	print OUT;
@@ -101,12 +103,14 @@ sub parse_gffread {
 }
 
 # Parses gene names as parent IDs of transcripts.
-# Return ref to hash mapping transcript ID -> gene ID
-sub parse_genenames {
+# Returns: 
+# i) ref to hash mapping transcript ID -> gene ID
+# ii) ref to hash mapping transcript ID -> gene coords
+sub parse_genes {
 
 	my ($gff_file) = @_;
 
-	my ($mrnaid,$geneid,%names);
+	my ($mrnaid,$geneid,$coord,%names,%coords);
 
 	open(GFF,"<",$gff_file) || die "# ERROR(parse_genenames): cannot read $gff_file\n";
 	while(<GFF>){
@@ -121,12 +125,16 @@ sub parse_genenames {
 			#$mrnaid =~ s/transcript://; # remove redundant bits
 			$geneid = $2;
 			#$geneid =~ s/gene://; # remove redundant bits
+			chomp $geneid;
+
+			$coord = "$F[0]:$F[3]-$F[4]";
 
 			$names{$mrnaid} = $geneid;
+			$coords{$mrnaid} = $coord;
 		}
 	}
 	close(GFF);
 
-	return \%names;
+	return (\%names,\%coords);
 }
 

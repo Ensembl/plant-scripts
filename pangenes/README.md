@@ -130,7 +130,7 @@ In this example, the clusters are stored in folder oryzasativa/ and a text file 
 
 Each clusters is a FASTA file, which looks like this:
 
-````
+```
 grep ">" oryzasativa/Os01g0100100.cdna.fna
 >Os01t0100100-01 Os01g0100100 1:2983-10815 [oryza_sativa]
 >Os01t0100200-01 Os01g0100200 1:11218-12435 [oryza_sativa]

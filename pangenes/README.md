@@ -115,6 +115,23 @@ perl pangene_analysis.pl -T Minimap2.homologies.oryza_sativa.overlap0.5.tsv \
   -f results -r oryza_sativa
 ```
 
+In this example, the clusters are stored in folder oryzasativa/ and a text file describing the clusters is also produced, named oryzasativa.cluster_list, which looks like this:
 
+    cluster gene-mag-r size=1 taxa=2 cdnafile: gene-mag-r.cdna.fna cdsfile: gene-mag-r.cds.fna pepfile: gene-mag-r.cds.faa
+    : oryza_nivara
+    cluster gene-orf165 size=3 taxa=3 cdnafile: gene-orf165.cdna.fna cdsfile: gene-orf165.cds.fna pepfile: gene-orf165.cds.faa
+    : oryza_nivara
+    : oryza_sativa_MSU
+    : oryza_sativa
+    cluster gene-rps1 size=3 taxa=3 cdnafile: gene-rps1.cdna.fna cdsfile: gene-rps1.cds.fna pepfile: gene-rps1.cds.faa
+    : oryza_nivara
+    : oryza_indica
+    : oryza_sativa
+
+The script also produces POCP and pangenomes matrices (described [here](../phylogenomics)). Note that currently clusters are not guaranteed to be sorted by chr position.
+
+
+
+In addition to clusters, This scripts will produce cl
 
 

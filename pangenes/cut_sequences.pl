@@ -12,13 +12,14 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $GFFREADEXE = 'gffread'; # v0.12.7
 
-my ( $help, $gffreadpath, $sp1, $fasta1, $gff1, $tname ) = (0);
+my ( $help, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $nored ) = (0);
 
 GetOptions(
 	"help|?"       => \$help,
 	"sp|species=s" => \$sp1,
 	"fa|fasta=s"   => \$fasta1,
 	"gf|gff=s"     => \$gff1,
+	"nr|n"         => \$nored,
 	"p|path=s"     => \$gffreadpath
 ) || help_message();
 
@@ -27,6 +28,7 @@ sub help_message {
 		. "-sp binomial/trinomial species name (required, example: -sp oryza_sativa, used to name outfiles)\n"
 		. "-fa genome FASTA filename           (required, example: -fa oryza_sativa.fna)\n"
 		. "-gf GFF filename                    (required, example: -gf oryza_sativa.RAPDB.gff)\n"
+		. "-nr remove redundancy in seq names  (optional, ie 'gene:ONIVA01G00100')\n"
 		. "-p  path to gffread binary          (optional, default: $GFFREADEXE)\n\n"
 }
 
@@ -50,13 +52,16 @@ my $cdnafile = "$sp1.cdna.fna";
 my $cdsfile  = "$sp1.cds.fna";
 my $pepfile  = "$sp1.cds.faa";
 
-print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -path $gffreadpath\n\n";
+print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -nr $nored -path $gffreadpath\n\n";
 
 my ($ref_names, $ref_coords) = parse_genes($gff1);
 
-my $num_cdna = parse_gffread($gffreadpath,$fasta1,$gff1,$cdnafile,'cdna',$ref_names,$ref_coords);
-my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,'cds',$ref_names,$ref_coords);
-my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,'pep',$ref_names,$ref_coords);
+my $num_cdna = parse_gffread($gffreadpath,$fasta1,$gff1,$cdnafile,
+	'cdna',$nored,$ref_names,$ref_coords);
+my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,
+	'cds',$nored,$ref_names,$ref_coords);
+my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,
+	'pep',$nored,$ref_names,$ref_coords);
 
 print "# $cdnafile n=$num_cdna\n";
 print "# $cdsfile n=$num_cds\n";
@@ -68,8 +73,9 @@ print "# $pepfile n=$num_pep\n";
 # Returns number of sequences printed out.
 sub parse_gffread {
 
-	my ($gffreadexe,$fasta_file,$gff_file,$outfile,$seqtype,
-		$ref_tr2gene,$ref_tr2coords) = @_;
+	my ($gffreadexe,$fasta_file,$gff_file,$outfile,
+		$seqtype,$remove_red,$ref_tr2gene,$ref_tr2coords) = @_;
+
 	my ($params,$mrnaid,$geneid,$coords);
 
 	if($seqtype eq 'cds'){
@@ -89,6 +95,12 @@ sub parse_gffread {
 			$mrnaid = $1;
 			$geneid = $ref_tr2gene->{$mrnaid} || '';
 			$coords = $ref_tr2coords->{$mrnaid} || '';
+
+			# remove redundant bits
+			if($remove_red){
+				$mrnaid =~ s/transcript://;
+            	$geneid =~ s/gene://;
+			}
 
         	print OUT ">$mrnaid $geneid $coords [$sp1]\n";
 			$num_seqs++;
@@ -122,9 +134,7 @@ sub parse_genes {
 		if($F[8] =~ /ID=([^;]+).*?Parent=([^;]+)/){ 
 
 			$mrnaid = $1;
-			#$mrnaid =~ s/transcript://; # remove redundant bits
 			$geneid = $2;
-			#$geneid =~ s/gene://; # remove redundant bits
 			chomp $geneid;
 
 			$coord = "$F[0]:$F[3]-$F[4]";

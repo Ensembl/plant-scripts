@@ -18,10 +18,10 @@ my $TRANSPOSEXE =
 my $RNDSEED          = 12345;
 my $NOFSAMPLESREPORT = 10;
 
-my ( $ref_genome, $clusterdir) = ( '', '' );
+my ( $ref_genome, $seqfolder, $clusterdir ) = ( '', '', '' );
 my ( $outfolder, $params) = ('', '');
 my ( $help, $sp, $sp2, $infile, $show_supported );
-my ( $filename, $cdnafile, $cdsfile, $pepfile, $seqfolder, $ext );
+my ( $filename, $cdnafile, $cdsfile, $pepfile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $NOSINGLES , $GROWTH ) = ( 0, 0 );
 my ( $n_of_species, $verbose ) = ( 0, 0 );
@@ -72,6 +72,10 @@ else {
         $clusterdir =~ s/_//g;
     }
 
+    if($seqfolder && $seqfolder !~ /\/$/){
+        $seqfolder .= '/';
+    }
+
     if ($NOSINGLES) {
         $params .= "_nosingles";
     }      	
@@ -79,15 +83,6 @@ else {
     if(!$ref_genome) {
         die "# ERROR: please set -r reference_genome\n";
     }
-
-    #    if ( $seqtype eq 'protein' ) {
-    #        $ext       = '.faa';
-    #        $seqfolder = 'pep';
-    #    }
-    #    else {
-    #        $ext       = '.fna';
-    #        $seqfolder = 'cdna';
-    #        die "# ERROR: currently cannot accept seqtype = cdna\n";
 
     if ($outfolder) {
         if ( -e $outfolder ) {
@@ -187,7 +182,7 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) infer pairs of collinear gens and make up clusters 
 
-my ( $cluster_id, $chr ) = ( 0, '' );
+my ( $cluster_id, $chr, $ext ) = ( 0, '' );
 my ( @cluster_ids, %sorted_cluster_ids );
 my ( %incluster, %cluster );
 my ( %sequence, %header );
@@ -285,6 +280,15 @@ foreach $cluster_id (@cluster_ids) {
 # of isoforms in the Compara clusters
 # Note: uses %compara_isoform, created previously
 foreach $sp (@supported_species) {
+
+    $cdnafile = "$seqfolder$sp.cdna.fna";
+    $cdsfile = "$seqfolder$sp.cds.fna";
+    $pepfile = "$seqfolder$sp.cds.faa";
+
+    if(!-s $cdnafile || !-s $cdsfile || !-s $pepfile){
+        die "# ERROR: cannot find sequence files for $sp (.cdna.fna .cds.fna .pep.faa)," .
+            " you might use arg -seq\n"; 
+    }
 
     #my ( $ref_sequence, $ref_header ) =
     #   parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );

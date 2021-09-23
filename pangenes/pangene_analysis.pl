@@ -21,9 +21,9 @@ my $NOFSAMPLESREPORT = 10;
 my ( $ref_genome, $clusterdir) = ( '', '' );
 my ( $outfolder, $params) = ('', '');
 my ( $help, $sp, $sp2, $infile, $show_supported );
-my ( $filename, $dnafile, $pepfile, $seqfolder, $ext );
+my ( $filename, $cdnafile, $cdsfile, $pepfile, $seqfolder, $ext );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
-my ( $NOSINGLES , $GROWTH , $CHREGEX ) = ( 0, 0, '' );
+my ( $NOSINGLES , $GROWTH ) = ( 0, 0 );
 my ( $n_of_species, $verbose ) = ( 0, 0 );
 my ( @infiles, @supported_species, @ignore_species);
 my ( %species, %ignore, %supported );
@@ -39,7 +39,6 @@ GetOptions(
 	"growth|g"      => \$GROWTH,
     "folder|f=s"    => \$outfolder,
 	"seq|s=s"       => \$seqfolder,
-    "position|p=s"  => \$CHREGEX
 ) || help_message();
 
 sub help_message {
@@ -51,10 +50,6 @@ sub help_message {
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
       . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      # partially tested, probably still some bugs there
-	  . '-p sort pangene clusters by chr position   (optional, requires regex to match chr names, example: -p \'^\d+$\';'
-      . "\n                                            the example regular expression matches natural numbers,\n"
-      . "                                            like the default chr names used in Ensembl Plants)\n" 
       . "-s folder with gene seqs of species in TSV (optional, default: \$PWD)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
@@ -75,10 +70,6 @@ else {
     else {
         $clusterdir = $ref_genome;
         $clusterdir =~ s/_//g;
-    }
-
-    if ($CHREGEX) {
-        $params .= "_chrpos";
     }
 
     if ($NOSINGLES) {
@@ -130,8 +121,7 @@ else {
         exit;
     }
 
-    print "# $0 -r $ref_genome -f $outfolder "
-      . "-p '$CHREGEX' -g $GROWTH -S $NOSINGLES -v $verbose\n";
+    print "# $0 -r $ref_genome -f $outfolder -g $GROWTH -S $NOSINGLES -v $verbose\n";
     print "# ";
     foreach $infile (@infiles) {
         print "-T $infile ";
@@ -291,7 +281,6 @@ foreach $cluster_id (@cluster_ids) {
     }
 }
 
-exit;
 # Get and parse FASTA files to get sequences & headers 
 # of isoforms in the Compara clusters
 # Note: uses %compara_isoform, created previously
@@ -320,6 +309,8 @@ foreach $sp (@supported_species) {
     #} 
 }
 
+exit;
+
 # Note: even using -W clusters might contain sequences from different chr
 # We might want to split or duplicate these clusters
 # Example: Os07t0248800-02,Os10t0102900-00 (oryza_sativa)	BGIOSGA024529-PA (oryza_indica)
@@ -345,20 +336,13 @@ foreach $sp (@supported_species) {
 
         # add this singleton to total clusters
         $totalclusters{$sp}++;
-
         $singletons++;
     }
 
     $total_seqs += $totalgenes{$sp};
 
-    if($CHREGEX) {
-        printf( "# %s : sequences = %d clusters = %d (singletons = %d, placed = %d)\n",
-            $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons,  
-            scalar(keys(%{ $id2chr{$sp} })));
-    } else {
-        printf( "# %s : sequences = %d clusters = %d (singletons = %d)\n",
-            $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons );
-    }
+    printf( "# %s : sequences = %d clusters = %d (singletons = %d)\n",
+        $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons );
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
@@ -386,8 +370,9 @@ foreach $cluster_id (@cluster_ids) {
     $filename = $cluster_id;
 
     # for summary, in case this was run twice (cdna & prot)
-    $dnafile = $filename . '.fna';
-    $pepfile = $filename . '.faa';
+    $cdnafile = $filename . '.cdna.fna';
+    $cdsfile = $filename . '.cds.fna';
+    $pepfile = $filename . '.cds.faa';
 
     # write sequences and count sequences
     my ( %cluster_stats, @cluster_species );
@@ -416,12 +401,12 @@ foreach $cluster_id (@cluster_ids) {
 
     # cluster summary
     @cluster_species = keys(%cluster_stats);
-    if ( !-s "$outfolder/$clusterdir/$dnafile" ) { $dnafile = 'void' }
+    if ( !-s "$outfolder/$clusterdir/$cdnafile" ) { $cdnafile = 'void' }
     if ( !-s "$outfolder/$clusterdir/$pepfile" ) { $pepfile = 'void' }
 
     print CLUSTER_LIST
          "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp ".
-          "file: $dnafile aminofile: $pepfile\n";
+          "file: $cdnafile aminofile: $pepfile\n";
 
     foreach $species (@cluster_species) {
         foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
@@ -518,19 +503,19 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 
 ## if required sort clusters following gene order of i) ref species 
 ## and ii) other supported species sorted by shared from close to distant
-if(!$CHREGEX){
-	push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
-}
-else {
-    %sorted_cluster_ids = sort_clusters_by_position( 
-        \@supported_species_POCP, \%sorted_ids, \%incluster, 
-        \%cluster, \%id2chr, $CHREGEX );
-
-    foreach $chr (sort keys(%sorted_cluster_ids)) {
-	    printf("# clusters sorted by position in chr %s = %d\n", 
-        $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
-    }
-}
+#if(!$CHREGEX){
+#	push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
+#}
+#else {
+#    %sorted_cluster_ids = sort_clusters_by_position( 
+#        \@supported_species_POCP, \%sorted_ids, \%incluster, 
+#        \%cluster, \%id2chr, $CHREGEX );
+#
+#    foreach $chr (sort keys(%sorted_cluster_ids)) {
+#	    printf("# clusters sorted by position in chr %s = %d\n", 
+#        $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
+#    }
+#}
 
 # set matrix filenames and write headers
 my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";

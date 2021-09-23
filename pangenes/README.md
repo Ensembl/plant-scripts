@@ -35,7 +35,7 @@ Note that the first are actually the same assembly with different annotated gene
 
 ### 1) Compute pairwise collinear genes with minimap2
 
-The first step involves comparing all vs all genomes. Note that in the example all the results for a species are added to the same TSV file, as well as the logs:
+The first step involves comparing all vs all genomes. Note that in the example all the results for a species are added to the same TSV file, as well as the logs. Also note that the call below assume a binary called minimap2 can be found in $PATH, but you can use -M to point to another location. In our benchmark we obtained best results with v2.17-r941:
 
 ```
 # Osativa
@@ -70,5 +70,51 @@ perl get_collinear_genes.pl \
   -sp1 oryza_indica -fa1 Oryza_indica.ASM465v1.dna.toplevel.fa.gz -gf1 Oryza_indica.ASM465v1.51.gff3.gz \
   -sp2 oryza_sativa_MSU -fa2 all.chrs.con -gf2 all.chr.gff3 \
   -out Minimap2.homologies.oryza_indica.overlap0.5.tsv &> log.Oindica
+```
+
+The TSV files produced contain data like this excerpt:
+
+    gene_stable_id  protein_stable_id       species overlap homology_type   homology_gene_stable_id homology_protein_stable_id      homology_species        overlap dn      ds      goc_score       wga_coverage    is_high_confidence      coordinates
+    gene-mag-r      gene-mat-r      oryza_sativa    525     ortholog_collinear      ONIVA02G03490   ONIVA02G03490   oryza_nivara    525     NULL    NULL    NULL    100.00  1       Mt:315811-317848;Mt:315625-316336
+    gene-orf165     gene-orf165     oryza_sativa    498     ortholog_collinear      ONIVA02G03510   ONIVA02G03510   oryza_nivara    498     NULL    NULL    NULL    100.00  1       Mt:337076-337574;Mt:323628-338167
+    gene-rps1       gene-rps1       oryza_sativa    519     ortholog_collinear      ONIVA02G03500   ONIVA02G03500   oryza_nivara    519     NULL    NULL    NULL    100.00  1       Mt:321367-321886;Mt:318304-322745
+    Os01g0100100    Os01g0100100    oryza_sativa    7833    ortholog_collinear      ONIVA01G00100   ONIVA01G00100   oryza_nivara    7833    NULL    NULL    NULL    100.00  1       1:2982-10815;1:2929-12267
+
+### 2) Extract cDNA, CDS and pep sequences
+
+This script cuts all available sequences found for each gene. Note that not all cDNA sequences encode CDS/peptides. In the example the path to gffread is explicitely passed as an argument:
 
 ```
+perl cut_sequences.pl \
+  -sp oryza_sativa  -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf Oryza_sativa.IRGSP-1.0.51.gff3 \
+  -nr -p ~/soft/gffread-0.12.7.Linux_x86_64/gffread
+
+perl cut_sequences.pl \
+  -sp oryza_sativa_MSU -fa all.chrs.con -gf all.chr.gff3 \
+  -nr -p ~/soft/gffread-0.12.7.Linux_x86_64/gffread
+
+perl cut_sequences.pl \
+  -sp oryza_indica -fa Oryza_indica.ASM465v1.dna.toplevel.fa -gf Oryza_indica.ASM465v1.51.gff3 \
+  -nr -p ~/soft/gffread-0.12.7.Linux_x86_64/gffread
+
+perl cut_sequences.pl \
+  -sp oryza_nivara -fa Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf Oryza_nivara.Oryza_nivara_v1.0.51.gff3 \
+  -nr -p ~/soft/gffread-0.12.7.Linux_x86_64/gffread
+```
+
+This step will produce three FASTA files per genome.
+
+### 3) Define pangenes, clusters of collinear genes
+
+Finally, this step uses the files computed in the previous steps to compile clusters of collinear genes. In this case the results are saved in folder results/ and oryza_sativa was selected as reference genome: 
+
+```
+perl pangene_analysis.pl -T Minimap2.homologies.oryza_sativa.overlap0.5.tsv \
+  -T Minimap2.homologies.oryza_indica.overlap0.5.tsv \
+  -T Minimap2.homologies.oryza_nivara.overlap0.5.tsv \
+  -f results -r oryza_sativa
+```
+
+
+
+

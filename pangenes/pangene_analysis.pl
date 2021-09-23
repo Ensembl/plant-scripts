@@ -14,8 +14,9 @@ my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
-# matches sequence type to extension
-my %seqtype = (
+# these globals match sequence type to extension
+my @SEQTYPE = qw( cds pep cdna ); # Note cdna goes last
+my %SEQEXT = (
     'cdna' => '.cdna.fna',
     'cds' => '.cds.fna',
     'pep' => '.cds.faa'
@@ -27,8 +28,8 @@ my $NOFSAMPLESREPORT = 10;
 
 my ( $ref_genome, $seqfolder, $clusterdir ) = ( '', '', '' );
 my ( $outfolder, $params) = ('', '');
-my ( $help, $sp, $sp2, $infile, $show_supported );
-my ( $filename, $cdnafile, $cdsfile, $pepfile );
+my ( $help, $sp, $sp2, $show_supported );
+my ( $infile, $filename, $cdsfile, $pepfile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $NOSINGLES , $GROWTH ) = ( 0, 0 );
 my ( $n_of_species, $verbose ) = ( 0, 0 );
@@ -189,10 +190,10 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) infer pairs of collinear gens and make up clusters 
 
-my ( $cluster_id, $chr, $ext ) = ( 0, '' );
+my ( $cluster_id, $chr, $seqtype ) = ( 0, '' );
 my ( @cluster_ids, %sorted_cluster_ids );
-my ( $ref_geneid, $ref_sequence, $ref_header );
-my ( %incluster, %cluster, %sequence, %header );
+my ( $ref_geneid, $ref_fasta );
+my ( %incluster, %cluster, %sequence );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
 my ( %sorted_ids, %id2chr );
 
@@ -288,15 +289,14 @@ foreach $cluster_id (@cluster_ids) {
 # Note: uses %compara_isoform, created previously
 foreach $sp (@supported_species) {
 
-    foreach $ext (keys(%seqtype)) {
+    foreach $seqtype (@SEQTYPE) {
 
-        $filename = "$seqfolder$sp$seqtype{$ext}";
+        $filename = "$seqfolder$sp$SEQEXT{$seqtype}";
         if(!-s $filename){
             die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
         }
 
-        ( $ref_geneid, $ref_sequence, $ref_header ) =
-            parse_sequence_FASTA_file( $filename );
+        ( $ref_geneid, $ref_fasta ) = parse_sequence_FASTA_file( $filename );
 
         $sorted_ids{$sp} = $ref_geneid;
 
@@ -305,9 +305,14 @@ foreach $sp (@supported_species) {
 
         # save these sequences
         foreach $gene_stable_id ( @$ref_geneid ) {
-            $sequence{$sp}{$gene_stable_id}{$ext} = $ref_sequence->{$gene_stable_id};
-            $header{$sp}{$gene_stable_id}{$ext} = $ref_header->{$gene_stable_id};
+            $sequence{$sp}{$gene_stable_id}{$seqtype} = $ref_fasta->{$gene_stable_id};
         }
+
+        # log
+        open(INLOG,">>","$outfolder/input.log") ||
+            die "# ERROR: cannot create $outfolder/input.log\n";
+        print INLOG "$filename\n";
+        close(INLOG);
     }
 }
 
@@ -359,76 +364,79 @@ foreach $cluster_id (@cluster_ids) {
         $n_core_clusters++;
     }
 
-    # sequence cluster
-    $n_cluster_sp = $n_cluster_seqs = 0;
-    $filename = $cluster_id;
+    # create all types of sequence clusters
+    foreach $seqtype (@SEQTYPE) {
 
-    # for summary, in case this was run twice (cdna & prot)
-    $cdnafile = $filename . '.cdna.fna';
-    $cdsfile = $filename . '.cds.fna';
-    $pepfile = $filename . '.cds.faa';
+        my ( %cluster_stats, @cluster_species );
+        $n_cluster_sp = $n_cluster_seqs = 0;
 
-    # write sequences and count sequences
-    my ( %cluster_stats, @cluster_species );
-    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$ext" )
-      || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$ext\n";
+        $filename = $cluster_id;
 
-	foreach $species (@supported_species) {
-        next if ( !$cluster{$cluster_id}{$species} );
-        $n_cluster_sp++;
-        foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
-            printf(CLUSTER ">%s [%s] %s\n", $prot_stable_id, $species, 
-                $header{$species}{$prot_stable_id} || "no_header");
-            if ( $sequence{$species}{$prot_stable_id} ) {
-                print CLUSTER "$sequence{$species}{$prot_stable_id}\n";
+        # write sequences and count sequences
+        open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
+          || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{$seqtype}\n";
+
+	    foreach $species (@supported_species) {
+            next if ( !$cluster{$cluster_id}{$species} );
+
+			$n_cluster_sp++;
+            foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
+                next if(!$sequence{$species}{$gene_stable_id}{$seqtype}); 
+
+                print CLUSTER $sequence{$species}{$gene_stable_id}{$seqtype};
+		
+                # use cDNA seq type to compute stats
+                if($seqtype eq 'cdna'){
+                    $n_cluster_seqs++;
+                    $cluster_stats{$species}++;
+                }
             }
-            else {
-                print "# cannot find peptide $prot_stable_id ($species)\n"
-                  if ($verbose);
+        }
+        close(CLUSTER);
+
+        # cluster summary and PCOP update
+		# done with cDNAs, after cds & pep have been processed
+        if($seqtype eq 'cdna'){
+            @cluster_species = keys(%cluster_stats);
+
+            $cdsfile = $filename.$SEQEXT{'cds'};
+            $pepfile = $filename.$SEQEXT{'pep'};
+
+            if ( !-s "$outfolder/$clusterdir/$cdsfile" ) { $cdsfile = 'void' }
+            if ( !-s "$outfolder/$clusterdir/$pepfile" ) { $pepfile = 'void' }
+
+            print CLUSTER_LIST
+              "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp ".
+              "cdnafile: $filename$SEQEXT{$seqtype} cdsfile: $cdsfile pepfile: $pepfile\n";
+
+            foreach $species (@cluster_species) {
+                foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
+                    print CLUSTER_LIST ": $species\n";
+                }
             }
 
-            $n_cluster_seqs++;
-            $cluster_stats{$species}++;
-        }
-    }
-    close(CLUSTER);
+            # add sequences in this cluster from a pair of species/taxa
+            foreach $sp ( 0 .. $#cluster_species - 1 ) {
+                foreach $sp2 ( $sp + 1 .. $#cluster_species ) {
 
-    # cluster summary
-    @cluster_species = keys(%cluster_stats);
-    if ( !-s "$outfolder/$clusterdir/$cdnafile" ) { $cdnafile = 'void' }
-    if ( !-s "$outfolder/$clusterdir/$pepfile" ) { $pepfile = 'void' }
+                    $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
+                      $cluster_stats{ $cluster_species[$sp] };
+                    $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
+                      $cluster_stats{ $cluster_species[$sp2] };
 
-    print CLUSTER_LIST
-         "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp ".
-          "file: $cdnafile aminofile: $pepfile\n";
-
-    foreach $species (@cluster_species) {
-        foreach $prot_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
-            print CLUSTER_LIST ": $species\n";
-        }
-    }
-
-    # update PCOP data
-    foreach $sp ( 0 .. $#cluster_species - 1 ) {
-        foreach $sp2 ( $sp + 1 .. $#cluster_species ) {
-
-            # add the number of sequences in this cluster from a pair of species/taxa
-            $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
-              $cluster_stats{ $cluster_species[$sp] };
-            $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
-              $cluster_stats{ $cluster_species[$sp2] };
-
-            # now in reverse order to make sure it all adds up
-            $POCP_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
-              $cluster_stats{ $cluster_species[$sp] };
-            $POCP_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
-              $cluster_stats{ $cluster_species[$sp2] };
+                    # now in reverse order to make sure it all adds up
+                    $POCP_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
+                      $cluster_stats{ $cluster_species[$sp] };
+                    $POCP_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
+                      $cluster_stats{ $cluster_species[$sp2] };
+                }				  
+            }
         }
     }
 }
 
 close(CLUSTER_LIST);
-
+exit;
 printf( "\n# number_of_clusters = %d (core = %d)\n\n",
     scalar(@cluster_ids), $n_core_clusters );
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
@@ -528,7 +536,7 @@ print PANGEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (keys(%sorted_cluster_ids)) {
     print PANGEMATRIX "\tchr$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
-        print PANGEMATRIX "\t$cluster_id$ext"; 
+        print PANGEMATRIX "\t$cluster_id"; 
     }
 }	
 print PANGEMATRIX "\n";
@@ -537,7 +545,7 @@ print PANGENEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (keys(%sorted_cluster_ids)) {
     print PANGENEMATRIX "\tchr$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
-        print PANGENEMATRIX "\t$cluster_id$ext"; 
+        print PANGENEMATRIX "\t$cluster_id"; 
     }
 }	
 print PANGENEMATRIX "\n";
@@ -710,12 +718,11 @@ print "# core-gene (number of clusters) = $core_file\n";
 # the same gene having several associated sequences.
 # Returns:
 # i) ref to list with coord-sorted gene ids
-# ii) ref to hash with sequences with genes as keys
-# iii) ref to hash with headers with genes as keys
+# ii) ref to hash with FASTA strings with genes as keys
 sub parse_sequence_FASTA_file {
 
     my ( $fname ) = @_;
-    my ( $geneid, @geneids, %sequence, %header );
+    my ( $geneid, @geneids, %fasta );
 
     open(FASTA,"<",$fname) || 
         die "# ERROR(parse_sequence_FASTA_file): cannot read $fname\n";
@@ -724,16 +731,16 @@ sub parse_sequence_FASTA_file {
             $geneid = $1;
 
             # conserved gene id order			
-            if(!$header{$geneid}){
+            if(!$fasta{$geneid}){
                 push(@geneids,$geneid);
             }
 
-            $header{$geneid} = $_;
+            $fasta{$geneid} .= $_;
         } else {
-            $sequence{$geneid} .= $_;
+            $fasta{$geneid} .= $_;
         }
     }
     close(FASTA);
 
-    return ( \@geneids, \%sequence, \%header );
+    return ( \@geneids, \%fasta );
 }

@@ -436,7 +436,7 @@ foreach $cluster_id (@cluster_ids) {
 }
 
 close(CLUSTER_LIST);
-exit;
+
 printf( "\n# number_of_clusters = %d (core = %d)\n\n",
     scalar(@cluster_ids), $n_core_clusters );
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
@@ -503,21 +503,8 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 
 ## 4)  write pangenome matrices in output folder
 
-## if required sort clusters following gene order of i) ref species 
-## and ii) other supported species sorted by shared from close to distant
-#if(!$CHREGEX){
-#	push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
-#}
-#else {
-#    %sorted_cluster_ids = sort_clusters_by_position( 
-#        \@supported_species_POCP, \%sorted_ids, \%incluster, 
-#        \%cluster, \%id2chr, $CHREGEX );
-#
-#    foreach $chr (sort keys(%sorted_cluster_ids)) {
-#	    printf("# clusters sorted by position in chr %s = %d\n", 
-#        $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
-#    }
-#}
+# Note: clusters are not necessarily ordered
+push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
 
 # set matrix filenames and write headers
 my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";

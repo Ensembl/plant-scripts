@@ -14,6 +14,13 @@ my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
+# matches sequence type to extension
+my %seqtype = (
+    'cdna' => '.cdna.fna',
+    'cds' => '.cds.fna',
+    'pep' => '.cds.faa'
+);
+
 # genome composition report
 my $RNDSEED          = 12345;
 my $NOFSAMPLESREPORT = 10;
@@ -184,8 +191,8 @@ print "# total selected species : $n_of_species\n\n";
 
 my ( $cluster_id, $chr, $ext ) = ( 0, '' );
 my ( @cluster_ids, %sorted_cluster_ids );
-my ( %incluster, %cluster );
-my ( %sequence, %header );
+my ( $ref_geneid, $ref_sequence, $ref_header );
+my ( %incluster, %cluster, %sequence, %header );
 my ( %totalgenes, %totalclusters, %POCP_matrix );
 my ( %sorted_ids, %id2chr );
 
@@ -281,61 +288,44 @@ foreach $cluster_id (@cluster_ids) {
 # Note: uses %compara_isoform, created previously
 foreach $sp (@supported_species) {
 
-    $cdnafile = "$seqfolder$sp.cdna.fna";
-    $cdsfile = "$seqfolder$sp.cds.fna";
-    $pepfile = "$seqfolder$sp.cds.faa";
+    foreach $ext (keys(%seqtype)) {
 
-    if(!-s $cdnafile || !-s $cdsfile || !-s $pepfile){
-        die "# ERROR: cannot find sequence files for $sp (.cdna.fna .cds.fna .pep.faa)," .
-            " you might use arg -seq\n"; 
+        $filename = "$seqfolder$sp$seqtype{$ext}";
+        if(!-s $filename){
+            die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
+        }
+
+        ( $ref_geneid, $ref_sequence, $ref_header ) =
+            parse_sequence_FASTA_file( $filename );
+
+        $sorted_ids{$sp} = $ref_geneid;
+
+        # count number of genes in this species
+        $totalgenes{$sp} = scalar(@$ref_geneid);
+
+        # save these sequences
+        foreach $gene_stable_id ( @$ref_geneid ) {
+            $sequence{$sp}{$gene_stable_id}{$ext} = $ref_sequence->{$gene_stable_id};
+            $header{$sp}{$gene_stable_id}{$ext} = $ref_header->{$gene_stable_id};
+        }
     }
-
-    #my ( $ref_sequence, $ref_header ) =
-    #   parse_isoform_FASTA_file( $stored_sequence_file, \%compara_isoform );
-
-    #my ($ref_bedfiles, $ref_sorted_ids, $ref_id2chr) =
-    #   sort_isoforms_chr($ref_header, $beddir, $sp, $CHREGEX);
-
-    #printf("# wrote sorted isoforms of $sp in %d BED files (1-based)\n\n",
-    #   scalar(keys(%$ref_bedfiles)));
-
-    #$bedfiles{$sp} = $ref_bedfiles;
-    #$sorted_ids{$sp} = $ref_sorted_ids;
-    #$id2chr{$sp} = $ref_id2chr;
-
-    # count number of genes/selected isoforms in this species
-    #$totalgenes{$sp} = scalar( keys(%$ref_sequence) );
-
-    # save these sequences
-    #foreach $prot_stable_id ( keys(%$ref_sequence) ) {
-    #    $sequence{$sp}{$prot_stable_id} = $ref_sequence->{$prot_stable_id};
-    #    $header{$sp}{$prot_stable_id} = $ref_header->{$prot_stable_id};
-    #} 
 }
 
-exit;
-
-# Note: even using -W clusters might contain sequences from different chr
-# We might want to split or duplicate these clusters
-# Example: Os07t0248800-02,Os10t0102900-00 (oryza_sativa)	BGIOSGA024529-PA (oryza_indica)
-# http://plants.ensembl.org/Oryza_sativa/Location/Multi?db=core;g=Os10g0102900;g1=BGIOSGA024529;r=10:227687-234770;s1=Oryza_indica;t=Os10t0102900-00;r1=7:8306227-8312670:1;time=1620306359
-# http://plants.ensembl.org/Oryza_sativa/Location/Multi?db=core;g=Os07g0248800;g1=BGIOSGA024529;r=7:8264635-8271779;s1=Oryza_indica;r1=7:8306227-8312670:1;time=1620306355
-
-# add unclustered sequences as singletons
+# add unaligned sequences as singletons 
 my $total_seqs = 0;
 foreach $sp (@supported_species) {
 
     my $singletons = 0;
 
-    foreach $prot_stable_id ( sort keys( %{ $sequence{$sp} } ) ) {
+    foreach $gene_stable_id ( @{ $sorted_ids{$sp} } ) {
 
-        next if ( $NOSINGLES || $incluster{$prot_stable_id} );    # skip
+        next if ( $NOSINGLES || $incluster{$gene_stable_id} );
 
         # create new cluster
-        $cluster_id = $prot_stable_id;
-        $incluster{$prot_stable_id} = $cluster_id;
+        $cluster_id = $gene_stable_id;
+        $incluster{$gene_stable_id} = $cluster_id;
 
-        push( @{ $cluster{$cluster_id}{$sp} }, $prot_stable_id );
+        push( @{ $cluster{$cluster_id}{$sp} }, $gene_stable_id );
         push( @cluster_ids,                    $cluster_id );
 
         # add this singleton to total clusters
@@ -711,3 +701,39 @@ write_boxplot_file( $core_file, $n_of_species, $NOFSAMPLESREPORT,
     \@coregenome );
 print "# core-gene (number of clusters) = $core_file\n";
 
+
+#######################################################
+
+# Takes the name string of a FASTA file created by cut_sequences.pl
+# and parses the sequences in there. Assumes the following header
+# format: ">mrnaid geneid coords [production_name]" and thus supports
+# the same gene having several associated sequences.
+# Returns:
+# i) ref to list with coord-sorted gene ids
+# ii) ref to hash with sequences with genes as keys
+# iii) ref to hash with headers with genes as keys
+sub parse_sequence_FASTA_file {
+
+    my ( $fname ) = @_;
+    my ( $geneid, @geneids, %sequence, %header );
+
+    open(FASTA,"<",$fname) || 
+        die "# ERROR(parse_sequence_FASTA_file): cannot read $fname\n";
+    while(<FASTA>){
+        if(/^>\S+\s+(\S+)\s+\S+\s+\[[^\]]+\]/){
+            $geneid = $1;
+
+            # conserved gene id order			
+            if(!$header{$geneid}){
+                push(@geneids,$geneid);
+            }
+
+            $header{$geneid} = $_;
+        } else {
+            $sequence{$geneid} .= $_;
+        }
+    }
+    close(FASTA);
+
+    return ( \@geneids, \%sequence, \%header );
+}

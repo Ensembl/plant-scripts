@@ -128,10 +128,25 @@ In this example, the clusters are stored in folder oryzasativa/ and a text file 
     : oryza_indica
     : oryza_sativa
 
+Each clusters is a FASTA file, which looks like this:
+
+````
+grep ">" oryzasativa/Os01g0100100.cdna.fna
+>Os01t0100100-01 Os01g0100100 1:2983-10815 [oryza_sativa]
+>Os01t0100200-01 Os01g0100200 1:11218-12435 [oryza_sativa]
+>ONIVA01G00100.2 ONIVA01G00100 1:104921-115645 [oryza_nivara]
+>ONIVA01G00100.3 ONIVA01G00100 1:104921-115645 [oryza_nivara]
+>ONIVA01G00100.4 ONIVA01G00100 1:104921-115645 [oryza_nivara]
+>ONIVA01G00100.1 ONIVA01G00100 1:104921-116326 [oryza_nivara]
+>LOC_Os01g01010.1 LOC_Os01g01010 Chr1:2903-10817 [oryza_sativa_MSU]
+>LOC_Os01g01010.2 LOC_Os01g01010 Chr1:2984-10562 [oryza_sativa_MSU]
+>LOC_Os01g01019.1 LOC_Os01g01019 Chr1:11218-12435 [oryza_sativa_MSU]
+>BGIOSGA002569-TA BGIOSGA002569 1:30220-36442 [oryza_indica]
+>BGIOSGA002570-TA BGIOSGA002570 1:38569-39088 [oryza_indica]
+```
+
+Multiple alignments can be computed for each FASTA file to determine which is the most conserved gene structure.
+
 The script also produces POCP and pangenomes matrices (described [here](../phylogenomics)). Note that currently clusters are not guaranteed to be sorted by chr position.
-
-
-
-In addition to clusters, This scripts will produce cl
 
 

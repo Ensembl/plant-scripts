@@ -554,7 +554,7 @@ def citation_string():
     """Return string with citation information."""
 
     citation = (
-        "Contreras-Moreira et al (2021) https://doi.org/10.5281/zenodo.4121769\n"
+        "Contreras-Moreira et al (2021) https://doi.org/10.1002/tpg2.20143\n"
         + "Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5\n"
     )
     return citation

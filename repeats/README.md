@@ -86,7 +86,7 @@ optional arguments:
                         Repeats:Red
 
 Citation:
-Contreras-Moreira et al (2021) https://doi.org/10.5281/zenodo.4121769
+Contreras-Moreira et al (2021) https://doi.org/10.1002/tpg2.20143
 Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5
 ```
 
@@ -139,7 +139,7 @@ optional arguments:
                         'Repeats:Red (annotated)'
 
 Citation:
-Contreras-Moreira et al (2021) https://doi.org/10.5281/zenodo.4121769
+Contreras-Moreira et al (2021) https://doi.org/10.1002/tpg2.20143
 Girgis HZ (2015) BMC Bioinformatics 16:227. doi: 10.1186/s12859-015-0654-5
 Li H (2018) Bioinformatics 34(18):3094–3100. doi: 10.1093/bioinformatics/bty191
 ```

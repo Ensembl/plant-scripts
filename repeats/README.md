@@ -17,7 +17,7 @@ The following dependencies can be installed in the parent folder with:
 
     make install install_repeats
 
-There are two required binaries, for which version 10 of the GNU C++ compiler (actually any g++ >= 8 should work, please edit the Makefile accordingly):
+There are two required binaries, for which version 10 of the GNU C++ compiler (actually any g++ >= 8 should work, please edit the [Makefile](../Makefile) accordingly):
 
 * A clone of Red from https://github.com/EnsemblGenomes/Red (the original repo is [here](https://github.com/BioinformaticsToolsmith/Red))
 * A clone of minimap2 from https://github.com/lh3/minimap2

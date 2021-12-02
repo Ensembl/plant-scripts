@@ -19,10 +19,10 @@ I'll demonstrate how to use them with a test dataset which includes the followin
     Oryza_indica.ASM465v1.dna.toplevel.fa
     Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa
 
-	Oryza_sativa.IRGSP-1.0.51.gff3
+    Oryza_sativa.IRGSP-1.0.51.gff3
     all.chr.gff3                   
-	Oryza_indica.ASM465v1.51.gff3
-	Oryza_nivara.Oryza_nivara_v1.0.51.gff3
+    Oryza_indica.ASM465v1.51.gff3
+    Oryza_nivara.Oryza_nivara_v1.0.51.gff3
 
 These files correspond to the following custom named genomes, which can be binary or ternary:
 

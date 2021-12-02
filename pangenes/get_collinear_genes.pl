@@ -9,7 +9,7 @@ use Getopt::Long qw(:config no_ignore_case);
 # Uses external software:
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]
-# wfmash   [https://github.com/ekg/wfmash]
+# wfmash   [https://github.com/ekg/wfmash]
 
 #perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
 
@@ -17,8 +17,8 @@ use Getopt::Long qw(:config no_ignore_case);
 # 2.17      |     24502          |     10637
 # 2.22      |     18770          |      8231
 
-my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive  across species than v2.22
-my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
+my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive across species than v2.22
+my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
 my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE"; #v2.17 does not take --cap-kalloc=1g
 my $WFMASHEXE   = 'wfmash'; # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000'; 
@@ -32,12 +32,12 @@ my $SORTLIMITRAM = "500M"; # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 my $GZIPBIN      = "gzip";
 
-my $MAXGENESFRAG = 3; # max genesin same fragment with -f
-my $MAXFRAGSIZE  = 50_000; # max frag length with -f 
-my $DUMMYSCORE   =   9999;
+my $MAXGENESFRAG = 3; # max genes in same fragment with -f
+my $MAXFRAGSIZE  = 50_000; # max frag length with -f 
+my $DUMMYSCORE   = 9999;
 
 # while parsing PAF
-my $MINQUAL    = 50; # works well with both mapping algorithms 
+my $MINQUAL    = 50; # works well with both mapping algorithms 
 my $MINALNLEN  = 100;
 my $SAMESTRAND = 1;
 my $MINOVERLAP = 0.50;
@@ -104,22 +104,22 @@ if($help ||
 }  
 
 if(!-s $fasta1 || !-s $gff1 || !-s $fasta2 || !-s $gff2){
-	print "# ERROR: please make sure all input files exist\n";
+	print "# ERROR: please make sure all input files exist\n";
     exit(0);
 } 
 
 if($sp1 eq $sp2) {
-	print "# ERROR: please make sure -sp1 and sp2 are different\n";
+	print "# ERROR: please make sure -sp1 and sp2 are different\n";
     exit(0);
 } 
 
 if($minoverlap && ($minoverlap < 0 || $minoverlap > 1)) {
-	print "# ERROR: option -ovl requires values [0,1]\n";
+	print "# ERROR: option -ovl requires values [0,1]\n";
     exit(0);
 } 
 
 if($qual && ($qual < 0 || $qual > 255)) {
-    print "# ERROR: option -q requires values [0,255]\n";
+    print "# ERROR: option -q requires values [0,255]\n";
     exit(0);
 }
 
@@ -127,7 +127,7 @@ if($qual && ($qual < 0 || $qual > 255)) {
 $BEDINTSCPAR =~ s/XXX/$minoverlap/g; 
 
 if($noheader && !$outfilename) {
-	print "# ERROR: option -add requires -out filename to concat results\n";
+	print "# ERROR: option -add requires -out filename to concat results\n";
 	exit(0);
 }
 
@@ -169,7 +169,7 @@ my ($num_genes2, $mean_gene_len2) = parse_genes_GFF($gff2,$geneBEDfile2);
 printf("# %d genes parsed in %s mean length=%d\n",
     $num_genes2,$gff2,$mean_gene_len2);
 
-# 1.1 if required cut $fasta2 in fragments containing neighbor genes
+# 1.1) if required cut $fasta2 in fragments containing neighbor genes
 if($dofragments){
 
 	my $frag_fasta2 = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
@@ -381,11 +381,11 @@ sub cut_gene_fragments {
 		if(/^(\S+)\t(\d+)\t(\d+)\t/){ ;
 			($chr,$start,$end) = ($1, $2, $3);
 
-			# distance to previous fragment, else negative value 
+			# distance to previous fragment, else negative value 
 
 			# check size if this gene is added, max genes reached?
 
-			# should this be a new fragment? too large or diff chr
+			# should this be a new fragment? too large or diff chr
 
 			# grow previous fragment
 			
@@ -405,7 +405,7 @@ sub cut_gene_fragments {
 # Parses sorted BED intersect -wo output and writes to BED file 
 # features (cDNA/transcripts) mapped on reference genome.
 # Returns i) number of matched genes and ii) list of unmatched genes
-# Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
+# Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA only
 # example input:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
@@ -432,9 +432,9 @@ sub query2ref_coords {
 
 	while(<BED>){
 
-    #cDNA format
+	#cDNA format
 	#1 98773 99875 ONIVA01G00080.1 258 + 1 98032 101175 - 6 27346427 27348975 2375 60 cs:Z::29-ggt.. 15904
-    #GFF/gene format
+	#GFF/gene format
 	#1  4848 20752 ONIVA01G00010 9999  + 1 3331 33993 + 6 26020714 26051403 29819 60 cs:Z::303*ag.. 15904
 	#1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:... 11405
 
@@ -458,12 +458,12 @@ sub query2ref_coords {
 		#next if($cname ne 'LOC_Os11g34300');
 
 		# make sure ref chr is taken
-    	$ref_coords{$cname}{'chr'} = $rchr;
+		$ref_coords{$cname}{'chr'} = $rchr;
 	
 		# correct offset for ref assembly
 		# Note: this requires parsing SAM/PAF tag
 		# https://github.com/lh3/minimap2#paftools
-    	# cs:Z::303*ag:32*ga:27+ctattcta*ag*ca:20*ag:3*ga:18*tc*ga:76-tc
+		# cs:Z::303*ag:32*ga:27+ctattcta*ag*ca:20*ag:3*ga:18*tc*ga:76-tc
 
 		# default start coords (end in - strand),
 		# in case 3'cDNA not included in WGA segment
@@ -499,7 +499,7 @@ sub query2ref_coords {
 		$done = 0;
 		foreach $feat (@segments){
 
-            ($deltaq,$deltar,$coordr) = _parseCIGARfeature($feat,$SAMqcoord,$SAMrcoord);
+			($deltaq,$deltar,$coordr) = _parseCIGARfeature($feat,$SAMqcoord,$SAMrcoord);
 
 			## check if current position in alignment matches cDNA/gene coords  
 
@@ -526,15 +526,14 @@ sub query2ref_coords {
 			} 
 
 			# end coords (start in -strand), actually copied out of loop
-			if($SAMqcoord < $cend &&
-                ($SAMqcoord + $deltaq) >= $cend){
+			if($SAMqcoord < $cend && ($SAMqcoord + $deltaq) >= $cend){
 
 				# refine delta to match exactly the end (start for strand -)
 				($deltaq,$deltar,$coordr) = _parseCIGARfeature($feat,$SAMqcoord,$SAMrcoord,$cend);
 				$end_deltar = -1;
-                if($coordr > -1) {
-                    $end_deltar = $coordr - $SAMrcoord;
-                }
+				if($coordr > -1) {
+					$end_deltar = $coordr - $SAMrcoord;
+				}
 
 				print "<$deltaq $deltar $end_deltar $cend\n" if($verbose > 1);
 
@@ -544,17 +543,17 @@ sub query2ref_coords {
 			}
 
 			# update coords with deltas
-	        $SAMqcoord += $deltaq;
+			$SAMqcoord += $deltaq;
 
 			if($done) {
 				$deltar = $end_deltar;
 			}
 
-	        if($WGAstrand eq '+') {
-	            $SAMrcoord += $deltar;
-	        } else {
-	            $SAMrcoord -= $deltar;
-	        }
+			if($WGAstrand eq '+') {
+				$SAMrcoord += $deltar;
+			} else {
+				$SAMrcoord -= $deltar;
+			}
 
 			print "$SAMqcoord $SAMrcoord $feat $deltaq $deltar\n" if($verbose > 1);
 
@@ -562,7 +561,7 @@ sub query2ref_coords {
 		}
 
 		if($WGAstrand eq '+') {
-		    $ref_coords{$cname}{'end'} = $SAMrcoord;
+			$ref_coords{$cname}{'end'} = $SAMrcoord;
 		} else {
 			$ref_coords{$cname}{'start'} = $SAMrcoord;
 		}
@@ -624,9 +623,9 @@ sub _parseCIGARfeature {
 	
 	# example CG string:
 	# cg:Z:25I235=1X57=1X33=1X20=1X47=
-	# first features: 25I 235= 1X ..
+	# first features: 25I 235= 1X ..
 
-	# CG type, see https://samtools.github.io/hts-specs/SAMv1.pdf
+	# CG type, see https://samtools.github.io/hts-specs/SAMv1.pdf
 	if($feat =~ m/(\d+)([MIDNSHP=X])/){
 
 		($delta,$op) = ($1,$2);
@@ -671,7 +670,7 @@ sub _parseCIGARfeature {
 			print "# ERROR(_parseCIGARfeature): unsupported CIGAR operation $feat\n";
 		}
 
-	} else { # CS type
+	} else { # CS type
 
 		# identical segment
 		if($feat =~ m/^(\d+)/) {

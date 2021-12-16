@@ -12,7 +12,7 @@ The scripts in this folder can be used to call collinear genes in genomes of you
 
 ##  Example with 4 rice genomes
 
-I'll demonstrate how to use them with a test dataset which includes the following assemblies & annotations for 4 rices. You should obtain similar files for your project:
+Here I demonstrate how to use them with a test dataset which includes the following assemblies & annotations for 4 rices. You should obtain similar files for your project:
 
     Oryza_sativa.IRGSP-1.0.dna.toplevel.fa
     all.chrs.con
@@ -35,7 +35,7 @@ Note that the first are actually the same assembly with different annotated gene
 
 ### 1) Compute pairwise collinear genes with minimap2
 
-The first step involves comparing all vs all genomes. Note that in the example all the results for a species are added to the same TSV file, as well as the logs. Also note that the call below assume a binary called minimap2 can be found in $PATH, but you can use -M to point to another location. In our benchmark we obtained best results with v2.17-r941:
+The first step involves comparing all vs all genomes. Note that in the example all the results for a species are added to the same TSV file, as well as the logs. Also note that the call below assumes a binary called minimap2 can be found in $PATH, but you can use -M to point to another location. In our benchmark we obtained best results with v2.17-r941:
 
 ```
 # Osativa

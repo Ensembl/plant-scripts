@@ -27,7 +27,7 @@ my $BEDINTSCPAR = '-wo -f XXX -F XXX -e'; # XXX to be replaced with [0-1]
 
 #my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
-my $THREADS      = 3;
+my $THREADS      = 4;
 my $SORTLIMITRAM = "500M"; # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 my $GZIPBIN      = "gzip";
@@ -49,11 +49,11 @@ my $VERBOSE    = 0; # values > 1
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 0;
 
-my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash ) = (0,0,0,0,0);
+my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash, $dofragments ) = (0,0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
-my ( $minimap_path, $wfmash_path, $threads ) = ($MINIMAP2EXE, $WFMASHEXE, $THREADS);
-my ( $dofragments ) = ( 0 );
+my ( $minimap_path, $wfmash_path, $bedtools_path, $threads ) = 
+	($MINIMAP2EXE, $WFMASHEXE, $BEDTOOLSEXE, $THREADS);
 
 GetOptions(
 	"help|?"         => \$help,
@@ -72,6 +72,7 @@ GetOptions(
 	"wf|wfmash"      => \$dowfmash,
 	"M|minipath=s"   => \$minimap_path,
 	"W|wfpath=s"     => \$wfmash_path,
+	"B|btpath=s"     => \$bedtools_path,
 	"t|threads=i"    => \$threads,	
 	"a|add"          => \$noheader
 ) || help_message();
@@ -91,6 +92,7 @@ sub help_message {
 		. "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
 		. "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
 		. "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
+		. "-B   path to bedtools binary            (optional, default: -W $BEDTOOLSEXE)\n"
 		. "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"		
 		#. "-c   check sequences of collinear genes (optional)\n"
 		. "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
@@ -147,7 +149,7 @@ if(!$outfilename) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader ".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
-	"-f $dofragments -M $minimap_path -W $wfmash_path -t $threads\n\n";
+	"-f $dofragments -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n";
 
 print "# mapping parameters:\n";
 if($dowfmash){
@@ -259,7 +261,7 @@ close(PAF);
 
 my $sp2wgaBEDfile = "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 
-system("$BEDTOOLSEXE intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
+system("$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | ".
 	"$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile");
 if($? != 0){
 	die "# ERROR: failed running bedtools (WGA)\n";
@@ -285,7 +287,7 @@ if($num_matched == 0){
 
 my $gene_intersectBEDfile = "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
 
-system("$BEDTOOLSEXE intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
+system("$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ".
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile");
 if($? != 0){
     die "# ERROR: failed running bedtools (genes)\n";

@@ -49,7 +49,8 @@ my $VERBOSE    = 0; # values > 1
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 0;
 
-my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash, $dofragments ) = (0,0,0,0,0,0);
+my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash, $dofragments, $dosplitchr ) = 
+	(0,0,0,0,0,0,0);
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) = ($MINOVERLAP, $MINQUAL, 'minimap2');
 my ( $minimap_path, $wfmash_path, $bedtools_path, $threads ) = 
@@ -67,6 +68,7 @@ GetOptions(
 	"ovl|overlap=f"  => \$minoverlap,
 	"q|quality=i"    => \$qual,
 	"f|frag"         => \$dofragments,
+	"S|split"        => \dosplitchr,
 	"c|check"        => \$do_sequence_check,
 	"r|reuse"        => \$reuse,
 	"wf|wfmash"      => \$dowfmash,
@@ -87,6 +89,7 @@ sub help_message {
 		. "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
 		. "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
 		. "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
+		. "-S   split genome in chrs               (optional, requires common chr names\n"
 		#. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
 		. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
 		. "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
@@ -149,7 +152,7 @@ if(!$outfilename) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 ".
 	"-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader ".
 	"-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse ".
-	"-f $dofragments -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n";
+	"-S $dosplitchr -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n"; # -f $dofragments
 
 print "# mapping parameters:\n";
 if($dowfmash){
@@ -186,6 +189,13 @@ if($dofragments){
 ## 2) align genome1 vs genome2 with minimap2 (WGA)
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
+# TODO
+if($dosplitchr) {
+	# define multiple references, one per chr
+} else {
+	# single reference by default
+}
+
 my $PAFfile = "_$sp2.$sp1.$alg.paf";
 
 if($dofragments){
@@ -201,15 +211,15 @@ if($reuse && -s $PAFfile){
 	if($dowfmash) {
 
 		system("$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
-        if($? != 0){
-            die "# ERROR: failed running wfmash (probably ran out of memory)\n";
-        }
-        elsif(!-s $PAFfile){
-            die "# ERROR: failed generating $PAFfile file (wfmash)\n";
-        }
-        else{
-            print("# wfmash finished\n\n");
-        }
+		if($? != 0){
+			die "# ERROR: failed running wfmash (probably ran out of memory)\n";
+		}
+		elsif(!-s $PAFfile){
+			die "# ERROR: failed generating $PAFfile file (wfmash)\n";
+		}
+		else{
+			print("# wfmash finished\n\n");
+		}
 
 	} else { # default minimap2 index & alignment
 

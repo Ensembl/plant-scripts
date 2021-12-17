@@ -12,8 +12,8 @@ use Getopt::Long qw(:config no_ignore_case);
 # wfmash   [https://github.com/ekg/wfmash]
 
 # perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
-#	-gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 \
-#	Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
+#    -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 \
+#    Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
 
 # collinear | Osativa vs Onivara | Athaliana vs Ahalleri
 # 2.17      |     24502          |     10637
@@ -203,6 +203,7 @@ if ($dofragments) {
 ## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
 # TODO
+# fill a hash with chr or 'all' as key and two FASTA files as value (sp1, sp2)
 if ($dosplitchr) {
 
     # define multiple references, one per chr
@@ -226,8 +227,7 @@ else {
 
     if ($dowfmash) {
 
-        system(
-            "$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
+        system("$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
         if ( $? != 0 ) {
             die "# ERROR: failed running wfmash (probably ran out of memory)\n";
         }
@@ -247,12 +247,9 @@ else {
             print "# re-using $index_fasta1\n";
         }
         else {
-            system(
-"$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $fasta1 2>&1"
-            );
+            system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $fasta1 2>&1");
             if ( $? != 0 ) {
-                die
-"# ERROR: failed running minimap2 (probably ran out of memory)\n";
+                die "# ERROR: failed running minimap2 (probably ran out of memory)\n";i
             }
             elsif ( !-s $index_fasta1 ) {
                 die
@@ -260,12 +257,9 @@ else {
             }
         }
 
-        system(
-"$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $fasta2 -o $PAFfile 2>&1"
-        );
+        system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $fasta2 -o $PAFfile 2>&1");
         if ( $? != 0 ) {
-            die
-              "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+            die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
         }
         elsif ( !-s $PAFfile ) {
             die "# ERROR: failed generating $PAFfile file (minimap2)\n";
@@ -325,9 +319,8 @@ if ( $num_matched == 0 ) {
 my $gene_intersectBEDfile =
   "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
 
-system(
-"$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | "
-      . "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile" );
+system("$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ". 
+    "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile" );
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (genes)\n";
 }
@@ -363,8 +356,7 @@ sub parse_genes_GFF {
     if ( $gff_file =~ /\.gz$/ || $magic eq "\x1f\x8b" )
     {    # GZIP compressed input{
         if ( !open( GFF, "$GZIPBIN -dc $gff_file |" ) ) {
-            die
-"# ERROR(parse_genes_GFF): cannot read GZIP compressed $gff_file $!\n"
+            die "# ERROR(parse_genes_GFF): cannot read GZIP compressed $gff_file $!\n"
               . "# please check gzip is installed\n";
         }
     }
@@ -410,6 +402,7 @@ sub parse_genes_GFF {
 # Takes i) input BED filename produced by parses_genes_GFF, ii) input FASTA filename,
 # iii) output FASTA filename, iv) max gene per fragment, v) max fragment lengh, and
 # returns i) number and ii) mean length of fragments cut.
+# TO BE DONE if needed
 sub cut_gene_fragments {
 
     my ( $geneBED, $fasta, $out_fasta, $maxgenes, $maxsize ) = @_;
@@ -491,7 +484,7 @@ sub query2ref_coords {
             $SAMPAFtag, $overlap
         ) = split( /\t/, $_ );
 
-    # skip mappings where query and ref segment on different strands if required
+        # skip mappings where query and ref segment on different strands if required
         next if ( $WGAstrand eq '-' && $samestrand == 1 );
 
         # skip poor query-to-ref WGA scores
@@ -526,15 +519,14 @@ sub query2ref_coords {
         }
 
         print "# $SAMqcoord $SAMrcoord $cname $num_matched\n"
-          if ( $verbose > 1 );
+            if ( $verbose > 1 );
 
         # check CIGAR type
         if ( $SAMPAFtag =~ m/(c\w):Z:{1,2}(\S+)/ ) {
             ( $cigartype, $SAMPAFtag ) = ( $1, $2 );
         }
         else {
-            print
-"# ERROR(query2ref_coords): unsupported CIGAR string $SAMPAFtag\n";
+            print "# ERROR(query2ref_coords): unsupported CIGAR string $SAMPAFtag\n";
             return ( $num_matched, @unmatched );
         }
 
@@ -843,7 +835,7 @@ sub bed2compara {
           || die "# ERROR(bed2compara): cannot create $TSVfile\n";
 
         print TSV
-"gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t"
+          "gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t"
           . "homology_protein_stable_id\thomology_species\toverlap\tdn\tds\tgoc_score\twga_coverage\t"
           . "is_high_confidence\tcoordinates\n";
     }
@@ -867,7 +859,7 @@ sub bed2compara {
         }
 
         printf( TSV
-"%s\t%s\t%s\t%d\t%s\t%s\t%s\t%s\t%d\tNULL\tNULL\tNULL\t%1.2f\t%d\t%s\n",
+            "%s\t%s\t%s\t%d\t%s\t%s\t%s\t%s\t%d\tNULL\tNULL\tNULL\t%1.2f\t%d\t%s\n",
             $gene1,
             $data[3],
             $sp1,

@@ -2,9 +2,12 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
+use File::Basename qw(basename);
 
 # Takes two FASTA files with genome sequences and 2 matching GFF files with annotated gene models.
-# Produces TSV file with pairs of collinear genes in a format compatible with Ensembl Compara
+# Produces a TSV file with pairs of collinear genes in a format compatible with Ensembl Compara
+
+# Copyright [2021] EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # Uses external software:
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
@@ -19,11 +22,9 @@ use Getopt::Long qw(:config no_ignore_case);
 # 2.17      |     24502          |     10637
 # 2.22      |     18770          |      8231
 
-my $MINIMAP2EXE =
-  'minimap2';    # 2.17-r941 more senstive across species than v2.22
-my $MINIMAPTYPE = '-x asm20';    # https://github.com/lh3/minimap2/issues/225
-my $MINIMAPPARS =
-  "--secondary=no --cs $MINIMAPTYPE";    #v2.17 does not take --cap-kalloc=1g
+my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive across species than v2.22
+my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
+my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE"; #v2.17 cannot take --cap-kalloc=1g
 my $WFMASHEXE   = 'wfmash';                  # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000';
 my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
@@ -53,9 +54,8 @@ my $VERBOSE    = 0;           # values > 1
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 0;
 
-my ( $help, $do_sequence_check, $reuse, $noheader, $dowfmash, $dofragments,
-    $dosplitchr )
-  = ( 0, 0, 0, 0, 0, 0, 0 );
+my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0);
+my ($dowfmash, $dofragments, $split_chr_regex ) = ( 0, 0, '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2 );
 my ( $minoverlap, $qual, $alg, $outfilename ) =
   ( $MINOVERLAP, $MINQUAL, 'minimap2' );
@@ -74,7 +74,7 @@ GetOptions(
     "ovl|overlap=f"  => \$minoverlap,
     "q|quality=i"    => \$qual,
     "f|frag"         => \$dofragments,
-    "S|split"        => \$dosplitchr,
+    "S|split=s"      => \$split_chr_regex,
     "c|check"        => \$do_sequence_check,
     "r|reuse"        => \$reuse,
     "wf|wfmash"      => \$dowfmash,
@@ -95,7 +95,7 @@ sub help_message {
       . "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
       . "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
-      . "-S   split genome in chrs               (optional, requires common chr names\n"
+      . '-S   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
 
 #. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
       . "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
@@ -110,9 +110,8 @@ sub help_message {
       . "-r   re-use previous minimap2 results   (optional)\n";
 }
 
-if ( $help
-    || ( !$sp1 || !$fasta1 || !$gff1 || !$sp2 || !$fasta2 || !$gff2 ) )
-{
+if ( $help 
+    || ( !$sp1 || !$fasta1 || !$gff1 || !$sp2 || !$fasta2 || !$gff2 ) ) {
     help_message();
     exit(0);
 }
@@ -162,7 +161,7 @@ if ( !$outfilename ) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse "
-  . "-S $dosplitchr -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n"
+  . "-S '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n"
   ;    # -f $dofragments
 
 print "# mapping parameters:\n";
@@ -186,30 +185,32 @@ my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
 printf( "# %d genes parsed in %s mean length=%d\n",
     $num_genes2, $gff2, $mean_gene_len2 );
 
-# 1.1) if required cut $fasta2 in fragments containing neighbor genes
-if ($dofragments) {
+# 1.x) if required cut $fasta2 in fragments containing neighbor genes, TO BE DONE
+#if ($dofragments) {
+#
+#    my $frag_fasta2 = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
+#    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
+#        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE );
+#
+#    $fasta2 = $frag_fasta2;
+#    printf("# %s sequence cut in %d gene-containing fragments of mean length=%d\n",
+#        $sp2, $num_frags, $mean_size );
+#}
 
-    my $frag_fasta2 = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
-    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
-        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE );
+## 2) align genome1 vs genome2 (WGA)
+# Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
-    $fasta2 = $frag_fasta2;
-    printf(
-        "# %s sequence cut in %d gene-containing fragments of mean length=%d\n",
-        $sp2, $num_frags, $mean_size );
-}
 
-## 2) align genome1 vs genome2 with minimap2 (WGA)
-## Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
+# split genome assemblies if required, this reduces the complexity
+my $ref_chr_pairs;
 
-# TODO
-# fill a hash with chr or 'all' as key and two FASTA files as value (sp1, sp2)
-if ($dosplitchr) {
-
-    # define multiple references, one per chr
+if ($split_chr_regex ne '') {
+    # split sequence files, one per chr plus rest 
+    $ref_chr_pairs = split_genome_sequences_per_chr($fasta1, $fasta2, $split_chr_regex);
 }
 else {
     # single reference by default
+    $ref_chr_pairs->{'all'} = [ $fasta1, $fasta2 ]
 }
 
 my $PAFfile = "_$sp2.$sp1.$alg.paf";
@@ -227,16 +228,18 @@ else {
 
     if ($dowfmash) {
 
-        system("$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
-        if ( $? != 0 ) {
-            die "# ERROR: failed running wfmash (probably ran out of memory)\n";
-        }
-        elsif ( !-s $PAFfile ) {
-            die "# ERROR: failed generating $PAFfile file (wfmash)\n";
-        }
-        else {
-            print("# wfmash finished\n\n");
-        }
+        #foreach {
+            system("$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
+            if ( $? != 0 ) {
+                die "# ERROR: failed running wfmash (probably ran out of memory)\n";
+            }
+            elsif ( !-s $PAFfile ) {
+                die "# ERROR: failed generating $PAFfile file (wfmash)\n";
+            }
+            else {
+                print("# wfmash finished\n\n");
+            }
+        #}
 
     }
     else {    # default minimap2 index & alignment
@@ -249,7 +252,7 @@ else {
         else {
             system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $fasta1 2>&1");
             if ( $? != 0 ) {
-                die "# ERROR: failed running minimap2 (probably ran out of memory)\n";i
+                die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
             }
             elsif ( !-s $index_fasta1 ) {
                 die
@@ -291,8 +294,7 @@ close(PAF);
 
 my $sp2wgaBEDfile = "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 
-system(
-    "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | "
+system("$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | "
       . "$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile" );
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (WGA)\n";
@@ -399,10 +401,128 @@ sub parse_genes_GFF {
     return ( $num_genes, sprintf( "%1.0f", $genelength / $num_genes ) );
 }
 
+# Takes 2 strings:
+# 1) name of FASTA file
+# 2) regex to match chromosome names, applied to first non-blank token (\S+)
+# Returns ref to hash with chr or 'unplaced' as keys and sequences as value
+
+sub read_FASTA_regex2hash {
+    my ($fastafile,$regex) = @_;
+
+    my ($magic,$seqname,$seq);
+    my %fasta;
+
+    # check input file format and open it accordingly
+    open(INFILE,$fastafile) || die "# ERROR(read_FASTA_regex2hash): cannot read $fastafile, exit\n";
+    sysread(INFILE,$magic,2);
+    close(INFILE);
+
+    if($fastafile =~ /\.gz$/ || $magic eq "\x1f\x8b") { 
+        if(!open(FASTA,"gzip -dc $fastafile |")) {
+            die "# ERROR(read_FASTA_regex2hash): cannot read GZIP compressed $fastafile $!\n"
+                ."# please check gzip is installed\n";
+        }
+    } elsif($fastafile =~ /\.bz2$/ || $magic eq "BZ") {
+        if(!open(FASTA,"bzip2 -dc $fastafile |")){
+            die "# ERROR(read_FASTA_regex2hash): cannot read BZIP2 compressed $fastafile $!\n"
+                ."# please check bzip2 is installed\n";
+        }
+    } else{ open(FASTA,"<$fastafile") || die "# ERROR(read_FASTA_regex2hash): cannot read $fastafile $!\n"; }
+
+    while (<FASTA>) {
+        next if(/^\s*$/ || /^#/);
+        if(/^>/) { # header
+            if(/^>(\S+)/) { 
+                $seqname = $1;
+                if($seqname !~ m/^$regex$/) { $seqname = 'unplaced' }
+            } else {
+                $seqname = 'unplaced'
+            }
+        } else {
+            $fasta{$seqname} .= $_;
+        }
+    }
+
+    close(FASTA);
+
+    return \%fasta;
+}
+
+# Takes 3 strings:
+# 1) name of FASTA file (ref)
+# 2) name of FASTA file (query)
+# 3) regex to match chromosome names
+# Returns ref to hash with chr and/or 'unplaced' as keys and two FASTA files as value (ref, query)
+# Note: 'unplaced' might hold genuine unplaced sequences but also non-shared chr names
+sub split_genome_sequences_per_chr {
+
+    my ($fastafile1,$fastafile2,$regex) = @_;
+
+    my ($chr,$chrfasta1,$chrfasta2);
+    my (%shared_chrs,%chr_pairs);
+
+    my $ref_fasta1 = read_FASTA_regex2hash($fastafile1,$regex);
+    my $ref_fasta2 = read_FASTA_regex2hash($fastafile2,$regex);
+
+    # check chr names found in both files
+    foreach $chr (keys(%$ref_fasta1)){
+        if(defined($ref_fasta2->{$chr})){
+            $shared_chrs{$chr} = 1;
+        }
+    } #print join ',', keys(%$ref_fasta1);
+
+    # write chr-specific FASTA files
+    foreach $chr (keys(%shared_chrs)) { #print ">$chr\n";
+        $chrfasta1 = "_".basename($fastafile1).".$chr.fna";
+        $chrfasta2 = "_".basename($fastafile2).".$chr.fna";
+
+        open( CHRFASTA1, ">$chrfasta1") 
+            || die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
+        print CHRFASTA1 ">$chr\n";
+        print CHRFASTA1 $ref_fasta1->{$chr};
+        close(CHRFASTA1);
+
+        open( CHRFASTA2, ">$chrfasta2")
+            || die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
+        print CHRFASTA2 ">$chr\n";
+        print CHRFASTA2 $ref_fasta2->{$chr};
+        close(CHRFASTA2);
+
+        $chr_pairs{$chr} = [$chrfasta1,$chrfasta2];
+    }
+
+    # write unplaced and/or not-shared chr names
+    $chrfasta1 = "_".basename($fastafile1).".unplaced.fna";
+    $chrfasta2 = "_".basename($fastafile2).".unplaced.fna";
+
+    open( CHRFASTA1, ">$chrfasta1")
+        || die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
+    foreach $chr (keys(%$ref_fasta1)){
+        next if(defined($shared_chrs{$chr}));
+        print CHRFASTA1 ">$chr\n";
+        print CHRFASTA1 $ref_fasta1->{$chr};   
+    }
+    close(CHRFASTA1);
+
+    open( CHRFASTA2, ">$chrfasta2")
+        || die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
+    foreach $chr (keys(%$ref_fasta2)){
+        next if(defined($shared_chrs{$chr}));
+        print CHRFASTA2 ">$chr\n";
+        print CHRFASTA2 $ref_fasta2->{$chr};
+    }
+    close(CHRFASTA2);
+
+    $chr_pairs{'unplaced'} = [$chrfasta1,$chrfasta2];
+	
+    return \%chr_pairs;
+}
+
+
 # Takes i) input BED filename produced by parses_genes_GFF, ii) input FASTA filename,
 # iii) output FASTA filename, iv) max gene per fragment, v) max fragment lengh, and
 # returns i) number and ii) mean length of fragments cut.
-# TO BE DONE if needed
+# TO BE completed if needed, dummy prototype 
 sub cut_gene_fragments {
 
     my ( $geneBED, $fasta, $out_fasta, $maxgenes, $maxsize ) = @_;
@@ -734,8 +854,7 @@ sub _parseCIGARfeature {
 
         }
         else {
-            print
-"# ERROR(_parseCIGARfeature): unsupported CIGAR operation $feat\n";
+            print "# ERROR(_parseCIGARfeature): unsupported CIGAR operation $feat\n";
         }
 
     }

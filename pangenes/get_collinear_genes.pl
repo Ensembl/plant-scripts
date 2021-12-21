@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
-use File::Basename qw(basename);
+use File::Basename qw(basename dirname);
 
 # Takes two FASTA files with genome sequences and 2 matching GFF files with annotated gene models.
 # Produces a TSV file with pairs of collinear genes in a format compatible with Ensembl Compara
@@ -12,11 +12,13 @@ use File::Basename qw(basename);
 # Uses external software:
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]
+# samtools [https://academic.oup.com/bioinformatics/article/25/16/2078/204688]
 # wfmash   [https://github.com/ekg/wfmash]
 
 # perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
 #    -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 \
-#    Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
+#    Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa \
+#    -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
 
 # collinear | Osativa vs Onivara | Athaliana vs Ahalleri
 # 2.17      |     24502          |     10637
@@ -91,7 +93,7 @@ GetOptions(
 sub help_message {
     print "\nusage: $0 [options]\n\n"
       . "-sp1 binomial/trinomial species name    (required, example: -sp1 oryza_sativa)\n"
-      . "-fa1 genome FASTA [.gz] filename        (required, example: -fa1 oryza_sativa.fna)\n"
+      . "-fa1 genome FASTA [.gz] filename        (required, example: -fa1 oryza_sativa.fna, use bgzip with -wf)\n"
       . "-gf1 GFF [.gz] filename                 (required, example: -gf1 oryza_sativa.RAPDB.gff)\n"
       . "-sp2 binomial/trinomial species name    (required, example: -sp2 oryza_nivara_OGE)\n"
       . "-fa2 genome FASTA [.gz] filename        (required, example: -fa2 oryza_nivara.fna)\n"
@@ -101,7 +103,7 @@ sub help_message {
       . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
 
 #. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
-      . "-wf  use wfmash aligner                 (optional, requires samtools; by default minimap2 is used)\n"
+      . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
       . "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
       . "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
@@ -231,7 +233,7 @@ printf( "# %d genes parsed in %s mean length=%d\n",
 # Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
 # split genome assemblies if required
-# Note: this reduces the complexity (good for large/polyploid genomes) but misses translocations
+# Note: reduces complexity (good for large/polyploid genomes) but misses translocations
 if ($split_chr_regex ne '') {
     # split sequence files, one per chr plus rest 
     $ref_chr_pairs = split_genome_sequences_per_chr($fasta1, $fasta2, $split_chr_regex);
@@ -242,7 +244,6 @@ else {
 }
 
 my $PAFfile = "_$sp2.$sp1.$alg.paf";
-
 if ($split_chr_regex ne '') {
     $PAFfile = "_$sp2.$sp1.$alg.split.paf";
 }
@@ -277,7 +278,7 @@ else {
         $chrfasta1 = $ref_chr_pairs->{$chr}[0];
         $chrfasta2 = $ref_chr_pairs->{$chr}[1];
         $splitPAF =  "_$sp2.$sp1.$alg.split.$chr.paf";
-        #print ">$chr $chrfasta1, $chrfasta2 $splitPAF\n"; 
+        #print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
 
         if ( $reuse && -s $splitPAF ) {
             print "# re-using $splitPAF\n";
@@ -295,22 +296,23 @@ else {
 
         if ($dowfmash) {
 
-            $index_fasta1 = "$chrfasta1.fai";
+            $index_fasta1 = dirname($chrfasta1)."/".basename($chrfasta1).".fai";
 
             if ( $reuse && -s $index_fasta1 ) {
                 print "# re-using $index_fasta1\n";
             }
             else {
-                system("$samtools_path faidx $chrfasta1 2>&1");
+                system("$samtools_path faidx $chrfasta1 -o $index_fasta1 2>&1");
                 if ( $? != 0 ) {
                     die "# ERROR: failed running samtools (probably ran out of memory)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
                     die "# ERROR: failed generating $index_fasta1 file (samtools)\n";
                 }
-            }
+            } 
 
             system("$wfmash_path $WFMASHPARS -t $threads $chrfasta1 $chrfasta2 > $splitPAF");
+            sleep(2);
             if ( $? != 0 ) {
                 die "# ERROR: failed running wfmash (probably ran out of memory)\n";
             }
@@ -545,6 +547,7 @@ sub read_FASTA_regex2hash {
 # 3) regex to match chromosome names
 # Returns ref to hash with chr and/or 'unplaced' as keys and two FASTA files as value (ref, query)
 # Note: 'unplaced' might hold genuine unplaced sequences but also non-shared chr names
+# Note: creates FASTA files with preffix _ 
 sub split_genome_sequences_per_chr {
 
     my ($fastafile1,$fastafile2,$regex) = @_;

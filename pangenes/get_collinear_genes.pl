@@ -29,6 +29,7 @@ my $WFMASHEXE   = 'wfmash';                  # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000';
 my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]
+my $SAMTOOLSEXE = 'samtools';
 
 #my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
@@ -54,14 +55,14 @@ my $VERBOSE    = 0;           # values > 1
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 0;
 
-my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0);
+my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0 );
 my ($dowfmash, $dofragments, $split_chr_regex ) = ( 0, 0, '' );
-my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2);
+my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 );
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs );
 my ( $minoverlap, $qual, $alg, $outfilename ) =
   ( $MINOVERLAP, $MINQUAL, 'minimap2' );
-my ( $minimap_path, $wfmash_path, $bedtools_path, $threads ) =
-  ( $MINIMAP2EXE, $WFMASHEXE, $BEDTOOLSEXE, $THREADS );
+my ( $minimap_path, $wfmash_path, $bedtools_path, $samtools_path, $threads ) =
+  ( $MINIMAP2EXE, $WFMASHEXE, $BEDTOOLSEXE, $SAMTOOLSEXE, $THREADS );
 
 GetOptions(
     "help|?"         => \$help,
@@ -75,13 +76,14 @@ GetOptions(
     "ovl|overlap=f"  => \$minoverlap,
     "q|quality=i"    => \$qual,
     "f|frag"         => \$dofragments,
-    "S|split=s"      => \$split_chr_regex,
+    "s|split=s"      => \$split_chr_regex,
     "c|check"        => \$do_sequence_check,
     "r|reuse"        => \$reuse,
     "wf|wfmash"      => \$dowfmash,
     "M|minipath=s"   => \$minimap_path,
     "W|wfpath=s"     => \$wfmash_path,
     "B|btpath=s"     => \$bedtools_path,
+    "S|stpath=s"     => \$samtools_path,
     "t|threads=i"    => \$threads,
     "a|add"          => \$noheader
 ) || help_message();
@@ -96,14 +98,15 @@ sub help_message {
       . "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
       . "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
-      . '-S   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
+      . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
 
 #. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
-#. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
+      . "-wf  use wfmash aligner                 (optional, requires samtools; by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
       . "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
-#. "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
-      . "-B   path to bedtools binary            (optional, default: -W $BEDTOOLSEXE)\n"
+      . "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
+      . "-B   path to bedtools binary            (optional, default: -B $BEDTOOLSEXE)\n"
+      . "-S   path to samtools binary            (optional, default: -S $SAMTOOLSEXE)\n"
       . "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"
 
 #. "-c   check sequences of collinear genes (optional)\n"
@@ -146,10 +149,9 @@ if ( $noheader && !$outfilename ) {
 }
 
 # check algorithm, reset min mapping quality if wfmash
+# https://github.com/ekg/wfmash/issues/96
 if ($dowfmash) {
     $alg = 'wfmash';
-
-    # https://github.com/ekg/wfmash/issues/96
     $qual = 1;
 }
 
@@ -173,17 +175,23 @@ if(`$bedtools_path` !~ 'usage') {
 	print "# ERROR: cannot find binary file $bedtools_path , exit\n";	
 	exit(-1)
 } 
+
 if ($dowfmash) {
     if(`$wfmash_path` !~ 'OPTIONS') {
         print "# ERROR: cannot find binary file $wfmash_path , exit\n";
-        exit(-1)
+        exit(-2)
+    } elsif (`$samtools_path 2>&1` !~ 'Usage') {
+        print "# ERROR: cannot find binary file $samtools_path , exit\n";
+        exit(-3)
     }
 } else {
     if(`$minimap_path 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $minimap_path , exit\n";
-        exit(-1)
+        exit(-4)
     }
 }
+
+
 
 print "# mapping parameters:\n";
 if ($dowfmash) {
@@ -192,7 +200,6 @@ if ($dowfmash) {
 else {
     print "# \$MINIMAPPARS: $MINIMAPPARS\n\n";
 }
-
 
 
 ## 1) Parse GFFs and produce BED files with gene coords
@@ -288,6 +295,21 @@ else {
 
         if ($dowfmash) {
 
+            $index_fasta1 = "$chrfasta1.fai";
+
+            if ( $reuse && -s $index_fasta1 ) {
+                print "# re-using $index_fasta1\n";
+            }
+            else {
+                system("$samtools_path faidx $chrfasta1 2>&1");
+                if ( $? != 0 ) {
+                    die "# ERROR: failed running samtools (probably ran out of memory)\n";
+                }
+                elsif ( !-s $index_fasta1 ) {
+                    die "# ERROR: failed generating $index_fasta1 file (samtools)\n";
+                }
+            }
+
             system("$wfmash_path $WFMASHPARS -t $threads $chrfasta1 $chrfasta2 > $splitPAF");
             if ( $? != 0 ) {
                 die "# ERROR: failed running wfmash (probably ran out of memory)\n";
@@ -300,7 +322,7 @@ else {
         }
         else {    # default minimap2 index & alignment
 
-            my $index_fasta1 = "_$sp1.$chr.mmi";
+            $index_fasta1 = "_$sp1.$chr.mmi";
 
             if ( $reuse && -s $index_fasta1 ) {
                 print "# re-using $index_fasta1\n";

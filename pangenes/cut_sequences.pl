@@ -10,7 +10,7 @@ use Getopt::Long qw(:config no_ignore_case);
 
 #perl cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf Oryza_sativa.IRGSP-1.0.51.gff3
 
-my $GFFREADEXE = 'gffread'; # v0.12.7
+my $GFFREADEXE = 'gffread'; # v0.12.7
 
 my ( $help, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $nored ) = (0);
 
@@ -39,7 +39,7 @@ if($help ||
 }  
 
 if(!-s $fasta1 || !-s $gff1){
-	print "# ERROR: please make sure all input files exist\n";
+	print "# ERROR: please make sure all input files exist\n";
     exit(0);
 } 
 
@@ -69,7 +69,7 @@ print "# $pepfile n=$num_pep\n";
 
 ###############################
 
-# Runs gffread, parses its stdout and saves output in FASTA FILE.
+# Runs gffread, parses its stdout and saves output in FASTA FILE.
 # Returns number of sequences printed out.
 sub parse_gffread {
 
@@ -114,7 +114,7 @@ sub parse_gffread {
 	return $num_seqs
 }
 
-# Parses gene names as parent IDs of transcripts.
+# Parses gene names as parent IDs of transcripts.
 # Returns: 
 # i) ref to hash mapping transcript ID -> gene ID
 # ii) ref to hash mapping transcript ID -> gene coords

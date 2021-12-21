@@ -56,7 +56,8 @@ my $TRANSCRIPT2GENE = 0;
 
 my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0);
 my ($dowfmash, $dofragments, $split_chr_regex ) = ( 0, 0, '' );
-my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2 );
+my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2);
+my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs );
 my ( $minoverlap, $qual, $alg, $outfilename ) =
   ( $MINOVERLAP, $MINQUAL, 'minimap2' );
 my ( $minimap_path, $wfmash_path, $bedtools_path, $threads ) =
@@ -98,10 +99,10 @@ sub help_message {
       . '-S   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
 
 #. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
-      . "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
+#. "-wf  use wfmash aligner                 (optional, by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
       . "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
-      . "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
+#. "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
       . "-B   path to bedtools binary            (optional, default: -W $BEDTOOLSEXE)\n"
       . "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"
 
@@ -154,8 +155,11 @@ if ($dowfmash) {
 
 # set default outfile
 if ( !$outfilename ) {
-    $outfilename =
-      ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.tsv";
+    $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.tsv";
+
+    if ($split_chr_regex ne '') {
+        $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.split.tsv";
+    }
 }
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
@@ -164,6 +168,23 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-S '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n"
   ;    # -f $dofragments
 
+# check binaries
+if(`$bedtools_path` !~ 'usage') {
+	print "# ERROR: cannot find binary file $bedtools_path , exit\n";	
+	exit(-1)
+} 
+if ($dowfmash) {
+    if(`$wfmash_path` !~ 'OPTIONS') {
+        print "# ERROR: cannot find binary file $wfmash_path , exit\n";
+        exit(-1)
+    }
+} else {
+    if(`$minimap_path 2>&1` !~ 'Usage') {
+        print "# ERROR: cannot find binary file $minimap_path , exit\n";
+        exit(-1)
+    }
+}
+
 print "# mapping parameters:\n";
 if ($dowfmash) {
     print "# \$WFMASHPARS: $WFMASHPARS\n\n";
@@ -171,6 +192,8 @@ if ($dowfmash) {
 else {
     print "# \$MINIMAPPARS: $MINIMAPPARS\n\n";
 }
+
+
 
 ## 1) Parse GFFs and produce BED files with gene coords
 
@@ -200,10 +223,8 @@ printf( "# %d genes parsed in %s mean length=%d\n",
 ## 2) align genome1 vs genome2 (WGA)
 # Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
-
-# split genome assemblies if required, this reduces the complexity
-my $ref_chr_pairs;
-
+# split genome assemblies if required
+# Note: this reduces the complexity (good for large/polyploid genomes) but misses translocations
 if ($split_chr_regex ne '') {
     # split sequence files, one per chr plus rest 
     $ref_chr_pairs = split_genome_sequences_per_chr($fasta1, $fasta2, $split_chr_regex);
@@ -215,9 +236,13 @@ else {
 
 my $PAFfile = "_$sp2.$sp1.$alg.paf";
 
-if ($dofragments) {
-    $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf";
+if ($split_chr_regex ne '') {
+    $PAFfile = "_$sp2.$sp1.$alg.split.paf";
 }
+
+#if ($dofragments) {
+#    $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf";
+#}
 
 print "# computing pairwise genome alignment with $alg\n\n";
 
@@ -226,50 +251,94 @@ if ( $reuse && -s $PAFfile ) {
 }
 else {
 
-    if ($dowfmash) {
+    unlink($PAFfile);
 
-        #foreach {
-            system("$wfmash_path $WFMASHPARS -t $threads $fasta1 $fasta2 > $PAFfile");
+    my (@sorted_chrs,@WGAoutfiles);
+
+    # sort chromosomes
+    foreach $chr (keys(%$ref_chr_pairs)) {
+        if($chr ne 'unplaced' && $chr ne 'all') {
+            push(@sorted_chrs,$chr);
+        }
+    }
+    @sorted_chrs = sort {$a<=>$b} @sorted_chrs;
+    if($ref_chr_pairs->{'unplaced'}){ push(@sorted_chrs,'unplaced') }
+    elsif($ref_chr_pairs->{'all'}){ push(@sorted_chrs,'all') }
+
+    foreach $chr (@sorted_chrs) {
+
+        $chrfasta1 = $ref_chr_pairs->{$chr}[0];
+        $chrfasta2 = $ref_chr_pairs->{$chr}[1];
+        $splitPAF =  "_$sp2.$sp1.$alg.split.$chr.paf";
+        #print ">$chr $chrfasta1, $chrfasta2 $splitPAF\n"; 
+
+        if ( $reuse && -s $splitPAF ) {
+            print "# re-using $splitPAF\n";
+            push(@WGAoutfiles, $splitPAF);
+            next;
+        }
+
+        # make empty PAF file when chr files are empty
+        if(!-s $chrfasta1 || !-s $chrfasta2) {
+            open(EMPTYPAF, ">$splitPAF"); 
+            close(EMPTYPAF);
+            push(@WGAoutfiles, $splitPAF);
+            next;
+        }
+
+        if ($dowfmash) {
+
+            system("$wfmash_path $WFMASHPARS -t $threads $chrfasta1 $chrfasta2 > $splitPAF");
             if ( $? != 0 ) {
                 die "# ERROR: failed running wfmash (probably ran out of memory)\n";
             }
             elsif ( !-s $PAFfile ) {
-                die "# ERROR: failed generating $PAFfile file (wfmash)\n";
+                die "# ERROR: failed generating $splitPAF file (wfmash)\n";
+            } else {
+                push(@WGAoutfiles, $splitPAF);
+            }
+        }
+        else {    # default minimap2 index & alignment
+
+            my $index_fasta1 = "_$sp1.$chr.mmi";
+
+            if ( $reuse && -s $index_fasta1 ) {
+                print "# re-using $index_fasta1\n";
             }
             else {
-                print("# wfmash finished\n\n");
+                system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1 2>&1");
+                if ( $? != 0 ) {
+                    die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+                }
+                elsif ( !-s $index_fasta1 ) {
+                    die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
+                }
             }
-        #}
 
-    }
-    else {    # default minimap2 index & alignment
-
-        my $index_fasta1 = "_$sp1.mmi";
-
-        if ( $reuse && -s $index_fasta1 ) {
-            print "# re-using $index_fasta1\n";
-        }
-        else {
-            system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $fasta1 2>&1");
+            system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $chrfasta2 -o $splitPAF 2>&1");
             if ( $? != 0 ) {
                 die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
             }
-            elsif ( !-s $index_fasta1 ) {
-                die
-                  "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
+            elsif ( !-s $splitPAF ) {
+                die "# ERROR: failed generating $splitPAF file (minimap2)\n";
+            }
+            else {
+                push(@WGAoutfiles, $splitPAF);
             }
         }
+    }
 
-        system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $fasta2 -o $PAFfile 2>&1");
-        if ( $? != 0 ) {
-            die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
-        }
-        elsif ( !-s $PAFfile ) {
-            die "# ERROR: failed generating $PAFfile file (minimap2)\n";
-        }
-        else {
-            print("# minimap2 finished\n\n");
-        }
+    # merge (split) PAF files
+    my $merge_cmd = "cat "; # assume cat is available
+    foreach $splitPAF (@WGAoutfiles) {
+        $merge_cmd .= "$splitPAF ";
+    }
+    $merge_cmd .= " > $PAFfile";
+    system("$merge_cmd");
+    if ( $? != 0 ) {
+       die "# ERROR: failed merging split PAF files\n";
+    } else {
+        print("# WGA finished\n\n");
     }
 }
 

@@ -8,11 +8,11 @@ use Getopt::Long qw(:config no_ignore_case);
 # Uses external software:
 # gffread [https://f1000research.com/articles/9-304/v2]
 
-#perl cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf Oryza_sativa.IRGSP-1.0.51.gff3
+#perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf Oryza_sativa.IRGSP-1.0.51.gff3
 
 my $GFFREADEXE = 'gffread'; # v0.12.7
 
-my ( $help, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $nored ) = (0);
+my ( $help, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $nored, $outpath ) = (0);
 
 GetOptions(
 	"help|?"       => \$help,
@@ -20,7 +20,8 @@ GetOptions(
 	"fa|fasta=s"   => \$fasta1,
 	"gf|gff=s"     => \$gff1,
 	"nr|n"         => \$nored,
-	"p|path=s"     => \$gffreadpath
+	"p|path=s"     => \$gffreadpath,
+	"o|outpath=s"  => \$outpath
 ) || help_message();
 
 sub help_message {
@@ -29,7 +30,8 @@ sub help_message {
 		. "-fa genome FASTA filename           (required, example: -fa oryza_sativa.fna)\n"
 		. "-gf GFF filename                    (required, example: -gf oryza_sativa.RAPDB.gff)\n"
 		. "-nr remove redundancy in seq names  (optional, ie 'gene:ONIVA01G00100')\n"
-		. "-p  path to gffread binary          (optional, default: $GFFREADEXE)\n\n"
+		. "-p  path to gffread binary          (optional, default: $GFFREADEXE)\n"
+		. "-o  path to output folder           (optional, default current folder)\n\n"
 }
 
 if($help || 
@@ -51,6 +53,11 @@ if(!$gffreadpath){
 my $cdnafile = "$sp1.cdna.fna";
 my $cdsfile  = "$sp1.cds.fna";
 my $pepfile  = "$sp1.cds.faa";
+if($outpath) {
+	$cdnafile = "$outpath/$sp1.cdna.fna";
+	$cdsfile  = "$outpath/$sp1.cds.fna";
+	$pepfile  = "$outpath/$sp1.cds.faa";
+}
 
 print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -nr $nored -path $gffreadpath\n\n";
 

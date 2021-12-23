@@ -9,6 +9,7 @@ require Exporter;
   feature_is_installed 
   check_installed_features 
   constructDirectory
+  count_GFF_genes
 
   $lockfile
   $selected_genomes_file
@@ -156,6 +157,25 @@ sub constructDirectory
   
   return 1
 }
+
+# Takes string with name of GFF file and returns number of genes
+sub count_GFF_genes {
+
+  my ($gffile) = @_;
+
+  my $num_genes = 0;
+  
+  open(GFF, "<", $gffile) ||
+    die "# ERROR(count_GFF_genes): cannot read $gffile\n";
+  while(<GFF>) {
+    my @data = split(/\t/,$_);
+    if($data[0] !~ /^#/ && $data[2] eq 'gene'){ $num_genes++ }
+  }
+  close(GFF);
+
+  return $num_genes
+}
+
 
 
 1;

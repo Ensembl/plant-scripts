@@ -10,7 +10,9 @@ require Exporter;
   check_installed_features 
   constructDirectory
 
-  lockfile
+  $lockfile
+  $selected_genomes_file
+  $TMP_DIR
 );
 
 use strict;

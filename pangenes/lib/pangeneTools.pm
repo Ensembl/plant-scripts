@@ -65,10 +65,12 @@ sub set_pangeneTools_env {
   # should be pre-installed in most settings
   if( ! defined($ENV{"EXE_SAMTOOLS"}) ){ $ENV{"EXE_SAMTOOLS"} = 'samtools' }
   if( ! defined($ENV{'EXE_BEDTOOLS'}) ){ $ENV{'EXE_BEDTOOLS'} = 'bedtools' }
-  if( ! defined($ENV{'EXE_GZIP'}) ){ $ENV{'EXE_GZIP'} = 'gzip' }
+  if( ! defined($ENV{'EXE_ZCAT'}) ){ $ENV{'EXE_ZCAT'} = 'zcat' }
 
   # scripts from this repo
-  if( ! defined($ENV{"EXE_COLLINEAR"}) ){ $ENV{"EXE_COLLINEAR"} = $ENV{'PANGENE'}."_collinear_genes.pl"; }
+  if( ! defined($ENV{"EXE_COLLINEAR"}) ){ $ENV{"EXE_COLLINEAR"} = $ENV{'PANGENE'}."_collinear_genes.pl" }
+  if( ! defined($ENV{"EXE_CUTSEQUENCES"}) ){ $ENV{"EXE_CUTSEQUENCES"} = $ENV{'PANGENE'}."_cut_sequences.pl" }
+
 }
 
 ########################################################################################
@@ -126,8 +128,8 @@ sub feature_is_installed {
     if($env_missing =~ /COLLINEAR/){ return 0 }
   } elsif($feature eq 'CUTSEQUENCES') {
     if($env_missing =~ /CUTSEQUENCES/){ return 0 }
-  } elsif($feature eq 'GZIP') {
-    if($env_missing =~ /GZIP/){ return 0 }
+  } elsif($feature eq 'ZCAT') {
+    if($env_missing =~ /ZCAT/){ return 0 }
   }
 
   return 1;

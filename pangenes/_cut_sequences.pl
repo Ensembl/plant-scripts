@@ -12,7 +12,7 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $GFFREADEXE = 'gffread'; # v0.12.7
 
-my ( $help, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $nored, $outpath ) = (0);
+my ( $help, $nored, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $outpath ) = (0,0);
 
 GetOptions(
 	"help|?"       => \$help,

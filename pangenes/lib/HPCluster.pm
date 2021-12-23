@@ -1,13 +1,11 @@
 package HPCluster;
 
-# Package to manage cluster jobs from get_homologues.pl & get_homologues-est.pl
+# Package to manage cluster jobs from get_pangenes.pl
 
 # Currently supports SGE, SLURM and LSF clusters, 
 # but it should not be too dificult to add support for other systems (help welcome)
 
 # taken from https://github.com/eead-csic-compbio
-# Bruno Contreras-Moreira, Pablo Vinuesa
-# 2020 CCG/UNAM, Mexico, EEAD/CSIC, Zaragoza, Spain
 
 use strict;
 require Exporter;

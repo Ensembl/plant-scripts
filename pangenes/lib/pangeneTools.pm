@@ -27,6 +27,10 @@ my %feature_output = (
   'EXE_COLLINEAR'=>'usage'
 );
 
+my %ubuntu_packages = (
+  'EXE_SAMTOOLS' => 'samtools', 
+  'EXE_BEDTOOLS' => 'bedtools'
+);
 
 ################################################################
 
@@ -75,7 +79,10 @@ sub check_installed_features {
     else
     {
       $ENV{"PANGENE_MISSING_BINARIES"} .= "$bin,";
-      $output = " needs to be installed (wrong path:$ENV{$bin}) or correct path set";
+      $output = " wrong path:$ENV{$bin} or needs to be installed";
+      if($ubuntu_packages{$bin}){ 
+        $output .= ", ie 'sudo apt install $ubuntu_packages{$bin}'" 
+      } 
     }
     $check_summary .= $output."\n";
   }

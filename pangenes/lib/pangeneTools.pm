@@ -93,8 +93,8 @@ sub check_installed_features {
     if($output =~ /$feature_output{$bin}/) {
       $output = "OK (path:$ENV{$bin})"
     }
-    else
-    {
+    else {
+
       $ENV{"PANGENE_MISSING_BINARIES"} .= "$bin,";
       $output = " wrong path:$ENV{$bin} or needs to be installed";
       if($ubuntu_packages{$bin}){ 

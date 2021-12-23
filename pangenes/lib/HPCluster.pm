@@ -37,30 +37,23 @@ $CLUSTER_CONF{'CTIME'}  = 30;     # interval in seconds between stat commands
 # Checks whether cluster config file exists and parses it.
 # input: 
 # 1 (string) full path to optional config file
-sub read_cluster_config
-{
+sub read_cluster_config {
   my ($config_file) = @_;
-  if(open(CONF,"<",$config_file))
-  {
-    while(<CONF>)
-    {
+  if(open(CONF,"<",$config_file)) {
+    while(<CONF>) {
       next if(/^#/);
       chomp;
       if(/^(\S+)\s+([^\n]+)/){ $CLUSTER_CONF{$1} = $2 }
     }
     close(CONF);
-  }
-  else 
-  {
+  } else {
     print "# INFO: no cluster config file\n\n";
   }
 }
 
 # Prints to stdout current cluster configuration
-sub print_cluster_config
-{
-  foreach my $conf (sort keys(%CLUSTER_CONF))
-  {
+sub print_cluster_config {
+  foreach my $conf (sort keys(%CLUSTER_CONF)) {
     print "# $conf\t$CLUSTER_CONF{$conf}\n";
   }
   print "\n";
@@ -68,25 +61,20 @@ sub print_cluster_config
 
 # Checks whether cluster management binaries can be used, returns 0 otherwise
 # Uses system 'which'
-sub cluster_is_available
-{
+sub cluster_is_available {
   my ($path,$output);
-  for my $bin (@CLBINS)
-  {
+  for my $bin (@CLBINS) {
     # concat path and binary and do system call 
     $path = `which $CLUSTER_CONF{"PATH"}$CLUSTER_CONF{$bin}`;
     chomp($path);
-    if($path eq '' || $path =~ /no $CLUSTER_CONF{$bin} in/)
-    {
+    if($path eq '' || $path =~ /no $CLUSTER_CONF{$bin} in/) {
       print "# ERROR: cannot find cluster binary $bin\n\n";
       return 0;
-    } 
-	else 
-    {
+    } else {
+
       $output = `$CLUSTER_CONF{"PATH"}$CLUSTER_CONF{$bin} -help 2>&1`;
       if(!$output || 
-        ($output !~ /usage:/i && $output !~ /use/i && $output !~ /invalid option/))
-      { 
+        ($output !~ /usage:/i && $output !~ /use/i && $output !~ /invalid option/)) { 
         print "# ERROR: wrong cluster binary $bin\n";
         print "$CLUSTER_CONF{'PATH'}$CLUSTER_CONF{$bin} -help\n";
         return 0; 
@@ -104,25 +92,19 @@ sub cluster_is_available
 # 3 (string) name of output file
 # 4 (string) name of work directory
 # 5 reference to cluster job hash
-sub submit_cluster_job
-{
+sub submit_cluster_job {
   my ($jobname,$command,$outfile,$dir,$ref_cluster_PIDs) = @_;
 
   my ($qPID,$qsubcommand) = ('','');
 
-  if($CLUSTER_CONF{'TYPE'} eq 'lsf')
-  {
+  if($CLUSTER_CONF{'TYPE'} eq 'lsf') {
     $qsubcommand = " -J n$jobname -o $outfile ";
-  }
-  elsif($CLUSTER_CONF{'TYPE'} eq 'slurm')
-  {
+  } elsif($CLUSTER_CONF{'TYPE'} eq 'slurm') {
     $qsubcommand = " --job-name=n$jobname -o $outfile ";
   }
 
   # other cluster management types could be added here with elsif
-
-  else # default SGE
-  {
+  else { # default SGE 
     $qsubcommand = " -N n$jobname -j y -o $outfile -S /bin/bash";
   }
 
@@ -151,25 +133,21 @@ EOF`;
 # input:
 # 1 (string) name of work directory
 # 2 reference to cluster job hash
-sub check_cluster_jobs
-{
+sub check_cluster_jobs {
   my ($dir,$ref_PIDs) = @_;
 
   my ($waiting,$qPID,$newqPID,$qout) = (1);
 
-  while($waiting)
-  {
+  while($waiting) {
     $waiting=0;
-    foreach $qPID (sort {$a<=>$b} (keys(%$ref_PIDs)))
-    {
+    foreach $qPID (sort {$a<=>$b} (keys(%$ref_PIDs))) {
+
       next if($ref_PIDs->{$qPID}{'status'} eq 'deleted');
 
       # get status of this job
       $qout = `$CLUSTER_CONF{'PATH'}$CLUSTER_CONF{'CHKEXE'} | grep $qPID`; 
-      if($qout)
-      {
-        if($qout =~ /\s+$CLUSTER_CONF{'ERROR'}\s+/)
-        {
+      if($qout){
+        if($qout =~ /\s+$CLUSTER_CONF{'ERROR'}\s+/) {
           # resubmit failed jobs
           $newqPID = `$CLUSTER_CONF{'PATH'}$CLUSTER_CONF{'SUBEXE'} $CLUSTER_CONF{'QARGS'} $ref_PIDs->{$qPID}{'command'} <<EOF		  
           cd $dir

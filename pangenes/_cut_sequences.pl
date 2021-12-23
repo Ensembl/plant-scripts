@@ -70,6 +70,7 @@ my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,
 my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,
 	'pep',$nored,$ref_names,$ref_coords);
 
+printf("# genes n=%d\n",scalar(keys(%$ref_names)));
 print "# $cdnafile n=$num_cdna\n";
 print "# $cdsfile n=$num_cds\n";
 print "# $pepfile n=$num_pep\n";
@@ -122,8 +123,8 @@ sub parse_gffread {
 
 	close(OUT);
 
-	# clean index
-        unlink($fasta_file.'.fai');
+	# clean index (used later)
+        # unlink($fasta_file.'.fai'); 
 
 	return $num_seqs
 }

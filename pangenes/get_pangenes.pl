@@ -42,15 +42,12 @@ my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft) = (4,0);
 my ($do_ANIb_matrix,$do_POCP_matrix) = (0,0);
 my ($samtools_path,$bedtools_path) = ('','');
-
-my ($min_cluster_size,$runmode,$do_genome_composition,$saveRAM,$ANIb_matrix_file,$POCP_matrix_file);
-#my ($evalue_cutoff,$pi_cutoff,$pmatch_cutoff) = 
-#  ($BLAST_PVALUE_CUTOFF_DEFAULT,$PERCENT_IDENTITY_CUTOFF_EST_DEFAULT,$PERCENT_MATCH_CUTOFF_DEFAULT);
+my ($min_cluster_size,$runmode,$do_genome_composition,$ANIb_matrix_file,$POCP_matrix_file);
 
 my $random_number_generator_seed = 0;
 my $pwd = getcwd(); $pwd .= '/';
 
-getopts('hvcsPoAzWn:m:d:r:t:I:C:R:B:S:O:Q:', \%opts);
+getopts('hvcPoAzWn:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -99,11 +96,13 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(by default takes file with\n".
     "                                                            ".   
     " least annotated genes/features)\n";
+
   # this would require computing BLASTN all vs all
   #print   "-A calculate average identity of clustered sequences,          ".
   #  "(optional, creates tab-separated matrix,\n";
   #print   " uses blastn results                                           ".
   #  " [OMCL])\n";
+
   print   "-P calculate percentage of conserved sequences (POCS),      ".
     "(optional, creates tab-separated matrix)\n";
   print   "-z add soft-core to genome composition analysis\n";
@@ -117,29 +116,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "contained in a directory (-d), so that new .fna & .gff files can be added\n".
     "while conserving previous results.\n";
 
-
   exit;
-}
-
-# read version number from CHANGES.txt
-open(CHANGES,"$Bin/CHANGES.txt");
-while(<CHANGES>) {
-  if(eof && /^(\d+):/){ $VERSION = $1 } 
-}
-close(CHANGES);
-
-if(defined($opts{'v'})) {
-
-  print "\n$0 version $VERSION\n";
-  print "\nPrimary citation:\n\n";
-  # ...
-  print "\nThis software uses genome mappers, please cite them accordingly:\n";
-  print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
-  print " wfmash   https://github.com/ekg/wfmash\n";
-
-  # check all binaries and data needed by this program and print diagnostic info
-  print check_installed_features(@FEATURES2CHECK);
-  exit(0);
 }
 
 if(defined($opts{'d'})) {
@@ -204,7 +181,7 @@ check_installed_features(@FEATURES2CHECK);
 
 if(defined($opts{'P'})){ $do_POCP_matrix = 1 }
 
-if(defined($opts{'w'})) {
+if(defined($opts{'W'})) {
   if(feature_is_installed('WFMASH'))
   {
     $dowfmash = 1;
@@ -217,7 +194,18 @@ if(defined($opts{'w'})) {
   $output_mask .= "algMmap_";
   $pancore_mask .= "_algMmap";
 
-  if(defined($opts{'Q'})){ $min_map_qual = $opts{'Q'} }
+  if(defined($opts{'Q'})) { 
+    $min_map_qual = $opts{'Q'}; 
+    if($min_map_qual < 0){ $min_map_qual = 0 }
+    $output_mask .= "Q$min_map_qual\_"; 
+    $pancore_mask .= "_Q$min_map_qual";
+  }
+}
+
+if(defined($opts{'s'}) && $opts{'s'} ne '') {
+  $split_chr_regex = $opts{'s'};
+  $output_mask .= "split_";
+  $pancore_mask .= "_split"; 
 }
 
 if(defined($opts{'c'})) {
@@ -233,31 +221,48 @@ if(defined($opts{'c'})) {
 
 } else{ $do_genome_composition = 0 }
 
-#if(defined($opts{'E'}))
-#{
-#  $evalue_cutoff = $opts{'E'};
-#  #if($evalue_cutoff > $MAXEVALUEBLASTSEARCH){ $evalue_cutoff = $MAXEVALUEBLASTSEARCH }
-#  $output_mask .= "E$evalue_cutoff\_"; $pancore_mask .= "_E$evalue_cutoff";
-#}
-#if(defined($opts{'C'}))
-#{
-#  $pmatch_cutoff = $opts{'C'}; # BDBH|OMCL
-#  if($pmatch_cutoff < 1){ $pmatch_cutoff = 1 }
-#  elsif($pmatch_cutoff > 100){ $pmatch_cutoff = 100 }
-#  $output_mask .= "C$pmatch_cutoff\_"; $pancore_mask .= "_C$pmatch_cutoff";
-#}
+if(defined($opts{'O'})) {
+  $min_overlap = $opts{'O'};
+  if($min_overlap > 1 || $min_overlap < 0.01){ $min_overlap = $MINOVERLAP }
+  $output_mask .= "O$min_overlap\_"; 
+  $pancore_mask .= "_O$min_overlap";
+}
 
-#if(defined($opts{'S'}))
-#{
-#  $pi_cutoff = $opts{'S'};
-#  if($pi_cutoff < 1){ $pi_cutoff = 1 }
-#  elsif($pi_cutoff > 100){ $pi_cutoff = 100 }
-#  $output_mask .= "S$pi_cutoff\_"; $pancore_mask .= "_S$pi_cutoff";
-#}
+if(defined($opts{'B'})) {
+  $bedtools_path = $opts{'B'};
+  $ENV{"EXE_BEDTOOLS"} = $bedtools_path;
+}
+
+if(defined($opts{'S'})) {
+  $samtools_path = $opts{'S'};
+  $ENV{"EXE_SAMTOOLS"} = $samtools_path;
+}
+
+if(defined($opts{'v'})) {
+
+  # read version number from CHANGES.txt
+  open(CHANGES,"$Bin/CHANGES.txt");
+  while(<CHANGES>) {
+    if(eof && /^(\d+):/){ $VERSION = $1 }
+  }
+  close(CHANGES);
+
+  print "\n$0 version $VERSION\n";
+  print "\nPrimary citation:\n\n";
+  # ...
+  print "\nThis software uses genome mappers, please cite them accordingly:\n";
+  print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
+  print " wfmash   https://github.com/ekg/wfmash\n";
+
+  # check all binaries and data needed by this program and print diagnostic info
+  print check_installed_features(@FEATURES2CHECK);
+  exit(0);
+}
 
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
-  "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode -n $n_of_cpus -w $dowfmash ".
-  "-O $min_overlap -Q $min_map_qual ".
+  "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode ".
+  "-n $n_of_cpus -W $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
+  "-B '$bedtools_path' -S '$samtools_path' ".
   "-R $random_number_generator_seed -P $do_POCP_matrix\n\n";
 
 if($runmode eq 'cluster')

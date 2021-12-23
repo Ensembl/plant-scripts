@@ -17,7 +17,9 @@ use strict;
 use warnings;
 use Getopt::Std;
 use Fcntl qw(:flock);
+use File::Temp qw(tempfile);
 use File::Basename;
+use File::Copy "cp";
 use Cwd;
 use FindBin '$Bin';
 use lib "$Bin/lib";
@@ -32,8 +34,11 @@ my $MINQUAL    = 50;              # minimap2 mapping quality
 my $MINOVERLAP = 0.50;
 
 ## list of features/binaries required by this program (do not edit)
-my @FEATURES2CHECK = ('EXE_MINIMAP','EXE_SAMTOOLS','EXE_BEDTOOLS','EXE_WFMASH','EXE_GFFREAD',
-  'EXE_COLLINEAR');
+my @FEATURES2CHECK = (
+  'EXE_MINIMAP','EXE_SAMTOOLS','EXE_BEDTOOLS','EXE_WFMASH','EXE_GFFREAD',
+  'EXE_COLLINEAR','EXE_CUTSEQUENCES',
+  'EXE_ZCAT'
+);
 
 my ($newDIR,$output_mask,$pancore_mask,$include_file,%included_input_files,%opts) = ('','','',0);
 my ($dowfmash,$reference_string) = (0,0);
@@ -92,7 +97,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(default: t=numberOfTaxa,\n".
     "                                                             ".
     "t=0 reports all clusters)\n";
-  print   "-r reference transcriptome .fna file                        ".
+  print   "-r reference genome .fna file                               ".
     "(by default takes file with\n".
     "                                                            ".   
     " least annotated genes/features)\n";
@@ -238,21 +243,22 @@ if(defined($opts{'S'})) {
   $ENV{"EXE_SAMTOOLS"} = $samtools_path;
 }
 
-if(defined($opts{'v'})) {
+# read version number from CHANGES.txt
+open(CHANGES,"$Bin/CHANGES.txt");
+while(<CHANGES>) {
+  if(eof && /^(\d+):/){ $VERSION = $1 }
+}
+close(CHANGES);
 
-  # read version number from CHANGES.txt
-  open(CHANGES,"$Bin/CHANGES.txt");
-  while(<CHANGES>) {
-    if(eof && /^(\d+):/){ $VERSION = $1 }
-  }
-  close(CHANGES);
+if(defined($opts{'v'})) {
 
   print "\n$0 version $VERSION\n";
   print "\nPrimary citation:\n\n";
   # ...
-  print "\nThis software uses genome mappers, please cite them accordingly:\n";
+  print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
   print " wfmash   https://github.com/ekg/wfmash\n";
+  #print " gffread  https://f1000research.com/articles/9-304/v2\n";
 
   # check all binaries and data needed by this program and print diagnostic info
   print check_installed_features(@FEATURES2CHECK);
@@ -273,3 +279,227 @@ if($runmode eq 'cluster')
 
 ###############################################################
 
+## 0) declare most important variables 
+
+my ($total_dry, $refOK, $n_of_sequences, $n_of_taxa, $n_of_residues) = (0,0,0,0,0);
+my ($min_proteome_size, $reference_proteome, $infile,$command);
+my ($order, $taxon, $previous_files, $current_files);
+
+#my ($infile,$new_infile,$prot_new_infile,$p2oinfile,$seq,$seqL,$comma_input_files,@newfiles,%ressize,%orth_taxa);
+#my ($label,%orthologues,$gene,$orth,$orth2,$para,%inparalogues,%paralogues,$FASTAresultsDIR,$order,$minlog);
+#my ($n_of_similar_length_orthologues,$clusterfile,$prot_clusterfile,$previous_files,$current_files,$inpara);
+#my ($min_proteome_size,$reference_proteome,$smallest_proteome,$proteome_size,%seq_length,$cluster,$annot);
+#my ($smallest_proteome_name,$reference_proteome_name,%psize,$taxon,$taxon2,$n_of_clusters,$n_of_taxa,$n_of_residues);
+#my ($pname,$n_of_sequences,$refOK,$genbankOK,$cluster_size,$prot_cluster_size,$prot_cluster);
+#my (%orth_registry,%LSE_registry,$LSE_reference,$LSE_t,$redo_inp,$redo_orth,%idclusters,%names,$generef);
+#my ($reparse_all,$n_of_similar_length_paralogues,$pfam_annot,$protOK,$n_of_taxa_cluster) = (0);
+#my ($BDBHdone,$PARANOIDdone,$orthoMCLdone,$n_of_parsed_lines,$n_of_pfam_parsed_lines) = (0,0,0,0,0);
+#my ($diff_BDBH_params,$diff_INP_params,$diff_HOM_params,$diff_OMCL_params,$lockcapableFS,$total_dry) = (0,0,0,0,0,0);
+#my ($diff_ISO_params,$redo_iso,$partial_sequences,$isof,%full_length_file,%redundant_isoforms,%total_redundant) = (0);
+#my ($total_clustersOK,$clgene,$clorth,%ANIb_matrix,%POCP_matrix,%GIclusters,$clustersOK,%cluster_ids) = (0);
+
+constructDirectory($newDIR) || die "# EXIT : cannot create directory $newDIR , check permissions\n";
+
+# 0.1) make sure there is only 1 instance writing to $newDIR
+my $lockcapableFS = 0;
+my ($fhtest,$testlockfilename) = tempfile( DIR => $newDIR );
+if(flock($fhtest,LOCK_EX|LOCK_NB)) {
+  $lockcapableFS = 1;
+}
+else {
+  print "# WARNING : cannot lock files in $newDIR ,\n".
+    "# please ensure that no other instance of the program is running at this location\n\n";
+}
+unlink($testlockfilename);
+
+open(my $fhlock,">$pangeneTools::lockfile") ||
+  die "# EXIT : cannot create lockfile $pangeneTools::lockfile\n";
+if($lockcapableFS) {
+  flock($fhlock, LOCK_EX|LOCK_NB) ||
+    die "# EXIT : cannot run another instance of the program with same input data while previous is running\n";
+}
+
+# 0.2) open important files
+my $input_order_file = $newDIR."/input_order.txt";
+my $dryrun_file = $newDIR."/dryrun.txt";
+
+print "# version $VERSION\n";
+print "# results_directory=$newDIR\n";
+
+# 0.3) prepare dryrun file if required
+if($runmode eq 'dryrun')
+{
+    open(DRYRUNLOG,">",$dryrun_file);
+}
+
+## 1) read all input files, identify formats and generate required files in temporary directory
+
+print "\n# checking input files...\n";
+$min_proteome_size = -1;
+$reference_proteome = $refOK = $n_of_sequences = $n_of_taxa = $n_of_residues = 0;
+$previous_files = $current_files = '';
+
+# 1.1) open and read directory, a pair of 
+# FASTA (.fa .faa .fasta) + GFF (.gff .gff3) files per genome is expected
+
+opendir(DIR,$inputDIR) || die "# EXIT : cannot list $inputDIR\n";
+my @inputfiles = sort grep {
+  /\.fna$/i || /\.fna\.gz$/i || 
+  /\.fa$/i || /\.fa\.gz$/i || 
+  /\.fasta$/i || /\.fasta\.gz$/i  
+} readdir(DIR);
+closedir(DIR); 
+
+# 1.2) sort input files and put new files towards the end of @inputfiles: LILO
+if(-s $input_order_file) {
+  my (@new_order_input_files,%previous_input_file,$n_of_new_infiles);
+
+  open(ORDER,$input_order_file) || die "# EXIT : cannot read $input_order_file\n";
+  while(<ORDER>) {
+    chomp;
+    ($order,$infile) = split(/\t/);
+    if(!-s $inputDIR."/".$infile) { 
+      die "# EXIT : cannot find previous input file $infile, please re-run everything\n"; 
+    }
+
+    $previous_input_file{$infile} = 1;
+    $new_order_input_files[$order] = $infile;
+  }
+  close(ORDER);
+
+  $n_of_new_infiles=0;
+  foreach $infile (@inputfiles) {
+    next if($previous_input_file{$infile});
+
+    $new_order_input_files[++$order] = $infile;
+    print "# order of new input file $infile = $order\n";
+    $n_of_new_infiles++;
+  }
+
+  if($n_of_new_infiles){ 
+    print "# updating $input_order_file with $n_of_new_infiles new input files\n"; 
+  }
+  open(ORDER,">$input_order_file") || die "# EXIT : cannot write $input_order_file\n";
+  
+  $order=0;
+  foreach $infile (@new_order_input_files) {
+    print ORDER "$order\t$infile\n";
+    $order++;
+  }
+  close(ORDER);
+
+  @inputfiles = @new_order_input_files;
+} else {
+  $order=0;
+  open(ORDER,">$input_order_file") || die "# EXIT : cannot write $input_order_file\n";
+
+  foreach $infile (@inputfiles) {
+    print ORDER "$order\t$infile\n";
+    $order++;
+  }
+  close(ORDER);
+}
+
+# 1.3) iteratively parse input files
+my ($dnafile,$gffile,$plain_dnafile,$plain_gffile);
+my ($outcDNA,$outCDS,$outpep,$clusteroutfile);
+my (%cluster_PIDs,@gff_outfiles,@todelete);
+
+foreach $infile (@inputfiles) {
+
+  ++$n_of_taxa;
+
+  if($infile =~ m/(\S+?)\.f/){
+    $taxon = $1
+  }
+
+  # check whether matching GFF file exists (expects same taxon preffix)
+  $dnafile = $inputDIR."/$infile";
+  $gffile  = $inputDIR."/$taxon";
+  $outcDNA = $newDIR."/$taxon.cdna.fna";
+  $outCDS  = $newDIR."/$taxon.cds.fna";
+  $outpep  = $newDIR."/$taxon.cds.faa";
+  push(@gff_outfiles, $outcDNA, $outCDS, $outpep);
+
+  if(-s $gffile.'.gff'){
+    $gffile .= '.gff'
+  } elsif(-s $gffile.'.gff3'){
+    $gffile .= '.gff3'
+  } elsif(-s $gffile.'.gff.gz'){
+    $gffile .= '.gff.gz'
+  } elsif(-s $gffile.'.gff3.gz'){
+    $gffile .= '.gff3.gz'
+  } else {
+    die "ERROR: cannot find matching GFF file for $dnafile\n".
+      "A valid filename would be $inputDIR/$taxon.gff\n"
+  }
+
+  # make temporary copies of uncompressed FASTA & GFF files
+  $plain_dnafile  = $TMP_DIR."_$taxon.fna";
+  $plain_gffile   = $TMP_DIR."_$taxon.gff";
+  $clusteroutfile = $newDIR ."/_$infile.queue";
+
+  # skip job if already run
+  if(-s $outpep && -s $outCDS && $outcDNA) {
+    print "# reusing GFF files extracted from $dnafile\n";
+    next;
+  } else {
+    push(@todelete,$plain_dnafile,$plain_gffile);
+  }
+
+  if($dnafile =~ m/\.gz/) {
+    print "# uncompressing $dnafile\n";
+    system("$ENV{'EXE_ZCAT'} $dnafile > $plain_dnafile")     
+  } else {
+    cp($dnafile,$plain_dnafile)
+  }
+
+  if($gffile =~ m/\.gz/) {
+    print "# uncompressing $gffile\n";
+    system("$ENV{'EXE_ZCAT'} $gffile > $plain_gffile")     
+  } else {
+    cp($gffile,$plain_gffile)
+  }
+
+  # extract cDNA and CDS sequences
+  $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile -gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -o $newDIR";
+  
+  if($runmode eq 'cluster') {
+    submit_cluster_job($infile,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+  } elsif($runmode eq 'dryrun') {
+        $command =~ s/\\//g;
+        print DRYRUNLOG "$command\n";
+        $total_dry++;
+  } else { # 'local' runmode
+    $command = "$command > /dev/null"; 
+    system("$command");
+    if($? != 0) {
+      die "# EXIT: failed while extracting GFF features ($command)\n";
+    }
+  }
+
+  # updated seq stats
+
+}
+
+# wait until GFF jobs are done
+if($runmode eq 'cluster') {
+  check_cluster_jobs($newDIR,\%cluster_PIDs);
+} elsif($runmode eq 'dryrun' && $total_dry > 0) {
+  close(DRYRUNLOG);
+  print "# EXIT: check the list of pending commands at $dryrun_file\n";
+  exit;
+} 
+
+# delete tmp files
+unlink(@todelete);
+
+# confirm outfiles
+foreach $gffile (@gff_outfiles) {
+  if(!-e $gffile){
+    die "# EXIT, $gffile does not exist, GFF job search might failed ".
+      "or hard drive is still writing it (please re-run)\n";
+  }
+}
+
+print "# done\n\n";

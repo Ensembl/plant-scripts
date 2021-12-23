@@ -88,17 +88,20 @@ sub parse_gffread {
 	if($seqtype eq 'cds'){
 		$params = '-x - ';
 	} elsif($seqtype eq 'pep'){
-        $params = '-y - ';
+		$params = '-y - ';
 	} else {
 		$params = '-w - '; # cDNA, default
 	}
 
 	my $num_seqs = 0;
-	open(OUT,">",$outfile) || die "# ERROR(parse_gffread): cannot create $pepfile\n";
+	open(OUT,">",$outfile) || 
+		die "# ERROR(parse_gffread): cannot create $pepfile\n";
+
 	open(GFFREAD,"$gffreadexe $params -g $fasta_file $gff_file |") ||
 		die "# ERROR(parse_gffread): cannot run $gffreadexe\n";
+
 	while(<GFFREAD>){
-    	if(/^>(\S+)/){
+		if(/^>(\S+)/){
 			$mrnaid = $1;
 			$geneid = $ref_tr2gene->{$mrnaid} || '';
 			$coords = $ref_tr2coords->{$mrnaid} || '';
@@ -106,17 +109,21 @@ sub parse_gffread {
 			# remove redundant bits
 			if($remove_red){
 				$mrnaid =~ s/transcript://;
-            	$geneid =~ s/gene://;
+				$geneid =~ s/gene://;
 			}
 
-        	print OUT ">$mrnaid $geneid $coords [$sp1]\n";
+			print OUT ">$mrnaid $geneid $coords [$sp1]\n";
 			$num_seqs++;
-    	} else {
-        	print OUT;
-    	}
+		} else {
+			print OUT;
+		}
 	}
 	close(GFFREAD);
+
 	close(OUT);
+
+	# clean index
+        unlink($fasta_file.'.fai');
 
 	return $num_seqs
 }

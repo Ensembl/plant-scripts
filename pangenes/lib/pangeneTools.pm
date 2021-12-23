@@ -19,7 +19,7 @@ my %feature_output = (
 
   # default output of binaries when corrected installed, add as required for
   # check_installed_features
-  'EXE_BEDTOOLS'=>'Usage',
+  'EXE_BEDTOOLS'=>'sage',
   'EXE_SAMTOOLS'=>'Usage',
   'EXE_MINIMAP'=>'Usage',
   'EXE_WFMASH'=>'OPTIONS',
@@ -60,7 +60,7 @@ sub check_installed_features {
 
   my (@to_be_checked) = @_;
   my ($check_summary,$output) = 
-    ("\nChecking required binaries and data sources, all set in pangeneTools.pm :\n");
+    ("\nChecking required binaries and data sources, set in pangeneTools.pm or in command line:\n");
 
   foreach my $bin (@to_be_checked) {
     $check_summary .= sprintf("%18s : ",$bin);

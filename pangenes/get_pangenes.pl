@@ -447,8 +447,9 @@ foreach $infile (@inputfiles) {
     $num_genes = count_GFF_genes( $plain_gffile );
     $ngenes{$taxon} = $num_genes;
     print "# $dnafile ngenes=$num_genes\n";
-
+    $total_genes += $num_genes;
     next;
+
   } else {
     push(@todelete,$plain_dnafile,$plain_gffile);
   }
@@ -470,6 +471,7 @@ foreach $infile (@inputfiles) {
   # work out sequence stats
   $num_genes = count_GFF_genes( $plain_gffile );
   $ngenes{$taxon} = $num_genes;
+  $total_genes += $num_genes;
   print "# $dnafile ngenes=$num_genes\n";
 
   # extract cDNA and CDS sequences

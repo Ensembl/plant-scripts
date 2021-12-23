@@ -281,9 +281,10 @@ if($runmode eq 'cluster')
 
 ## 0) declare most important variables 
 
-my ($total_dry, $refOK, $n_of_sequences, $n_of_taxa, $n_of_residues) = (0,0,0,0,0);
+my ($total_dry, $refOK, $total_genes, $n_of_taxa) = (0,0,0,0);
 my ($min_proteome_size, $reference_proteome, $infile,$command);
 my ($order, $taxon, $previous_files, $current_files);
+my (@taxa);
 
 #my ($infile,$new_infile,$prot_new_infile,$p2oinfile,$seq,$seqL,$comma_input_files,@newfiles,%ressize,%orth_taxa);
 #my ($label,%orthologues,$gene,$orth,$orth2,$para,%inparalogues,%paralogues,$FASTAresultsDIR,$order,$minlog);
@@ -336,7 +337,7 @@ if($runmode eq 'dryrun')
 
 print "\n# checking input files...\n";
 $min_proteome_size = -1;
-$reference_proteome = $refOK = $n_of_sequences = $n_of_taxa = $n_of_residues = 0;
+$reference_proteome = $refOK = $total_genes = $n_of_taxa = 0;
 $previous_files = $current_files = '';
 
 # 1.1) open and read directory, a pair of 
@@ -401,16 +402,17 @@ if(-s $input_order_file) {
 }
 
 # 1.3) iteratively parse input files
-my ($dnafile,$gffile,$plain_dnafile,$plain_gffile);
+my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes);
 my ($outcDNA,$outCDS,$outpep,$clusteroutfile);
-my (%cluster_PIDs,@gff_outfiles,@todelete);
+my (%cluster_PIDs,%ngenes,@gff_outfiles,@todelete);
 
 foreach $infile (@inputfiles) {
 
   ++$n_of_taxa;
 
   if($infile =~ m/(\S+?)\.f/){
-    $taxon = $1
+    $taxon = $1;
+    push(@taxa,$taxon);
   }
 
   # check whether matching GFF file exists (expects same taxon preffix)
@@ -440,8 +442,12 @@ foreach $infile (@inputfiles) {
   $clusteroutfile = $newDIR ."/_$infile.queue";
 
   # skip job if already run
-  if(-s $outpep && -s $outCDS && $outcDNA) {
-    print "# reusing GFF files extracted from $dnafile\n";
+  if(-s $outpep && -s $outCDS && -s $outcDNA && -s $plain_gffile) {
+
+    $num_genes = count_GFF_genes( $plain_gffile );
+    $ngenes{$taxon} = $num_genes;
+    print "# $dnafile ngenes=$num_genes\n";
+
     next;
   } else {
     push(@todelete,$plain_dnafile,$plain_gffile);
@@ -461,9 +467,15 @@ foreach $infile (@inputfiles) {
     cp($gffile,$plain_gffile)
   }
 
+  # work out sequence stats
+  $num_genes = count_GFF_genes( $plain_gffile );
+  $ngenes{$taxon} = $num_genes;
+  print "# $dnafile ngenes=$num_genes\n";
+
   # extract cDNA and CDS sequences
-  $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile -gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -o $newDIR";
-  
+  $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
+    "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -o $newDIR";
+  #die $command; 
   if($runmode eq 'cluster') {
     submit_cluster_job($infile,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
   } elsif($runmode eq 'dryrun') {
@@ -478,7 +490,11 @@ foreach $infile (@inputfiles) {
     }
   }
 
-  # updated seq stats
+  
+  #my $refOK, $n_of_genes
+
+  # update included taxa, 
+
 
 }
 
@@ -492,7 +508,7 @@ if($runmode eq 'cluster') {
 } 
 
 # delete tmp files
-unlink(@todelete);
+#unlink(@todelete); # not yet, will be used by _get_collinear
 
 # confirm outfiles
 foreach $gffile (@gff_outfiles) {
@@ -503,3 +519,7 @@ foreach $gffile (@gff_outfiles) {
 }
 
 print "# done\n\n";
+
+## 2) compute whole-genome alignments (WGA) and call collinear genes
+
+

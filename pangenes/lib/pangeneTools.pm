@@ -5,10 +5,20 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw(
-  set_phyTools_env feature_is_installed check_installed_features warn_missing_soft
+  set_phyTools_env 
+  feature_is_installed 
+  check_installed_features 
+  constructDirectory
+
+  lockfile
 );
 
 use strict;
+
+our $WORKING_DIR   = '';
+our $TMP_DIR       = '';
+our $lockfile              = ".lock";
+our $selected_genomes_file = "selected.genomes"; # records which genomes were previously used 
 
 #################################################################
 
@@ -24,7 +34,9 @@ my %feature_output = (
   'EXE_MINIMAP'=>'Usage',
   'EXE_WFMASH'=>'OPTIONS',
   'EXE_GFFREAD'=>'Usage',
-  'EXE_COLLINEAR'=>'usage'
+  'EXE_COLLINEAR'=>'usage',
+  'EXE_CUTSEQUENCES'=>'usage',
+  'EXE_GZIP'=>'help'
 );
 
 my %ubuntu_packages = (
@@ -109,11 +121,36 @@ sub feature_is_installed {
     if($env_missing =~ /GFFREAD/){ return 0 }
   } elsif($feature eq 'COLLINEAR') {
     if($env_missing =~ /COLLINEAR/){ return 0 }
+  } elsif($feature eq 'CUTSEQUENCES') {
+    if($env_missing =~ /CUTSEQUENCES/){ return 0 }
+  } elsif($feature eq 'GZIP') {
+    if($env_missing =~ /GZIP/){ return 0 }
   }
 
   return 1;
 }
 
+# This subroutine is used to construct the directories to store
+# the intermediate files and the final files.
+# Arguments: 1 (string) name of desired directory
+# Returns:  boolean, 1 if successful, else 0
+sub constructDirectory
+{
+  my ($dirname) = @_;
+
+  $WORKING_DIR = $dirname . '/';
+  if(!-e $WORKING_DIR) { 
+    mkdir($WORKING_DIR) || return 0
+  }
+
+  $TMP_DIR = $WORKING_DIR."tmp/";
+  if(!-e $TMP_DIR){ mkdir($TMP_DIR); }
+
+  $lockfile                = $TMP_DIR.$lockfile;
+  $selected_genomes_file   = $TMP_DIR.$selected_genomes_file;
+  
+  return 1
+}
 
 
 1;

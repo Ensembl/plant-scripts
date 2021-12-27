@@ -6,9 +6,10 @@ use Getopt::Long qw(:config no_ignore_case);
 
 # Produces pan-gene analysis based on clusters of collinear genes shared by
 # species in a pre-computed Minimap2/Wfmash synteny TSV file, produced by 
-# get_collinear_genes.pl
-#
-# Copyright [2021] EMBL-European Bioinformatics Institute
+# _collinear_genes.pl
+
+# Copyright [2021-22]
+# EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
@@ -32,7 +33,7 @@ my ( $help, $sp, $sp2, $show_supported );
 my ( $infile, $filename, $cdsfile, $pepfile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $NOSINGLES , $GROWTH ) = ( 0, 0 );
-my ( $n_of_species, $verbose ) = ( 0, 0 );
+my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
 my ( @infiles, @supported_species, @ignore_species);
 my ( %species, %ignore, %supported );
 
@@ -44,9 +45,10 @@ GetOptions(
     "reference|r=s" => \$ref_genome,
     "ignore|i=s"    => \@ignore_species,
     "S|S"           => \$NOSINGLES,
-	"growth|g"      => \$GROWTH,
+    "growth|g=i"    => \$GROWTH,
     "folder|f=s"    => \$outfolder,
-	"seq|s=s"       => \$seqfolder,
+    "seq|s=s"       => \$seqfolder,
+    "mintaxa|t=i"   => \$min_taxa
 ) || help_message();
 
 sub help_message {
@@ -56,9 +58,10 @@ sub help_message {
       . "-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n"
       . "-l list supported species in -T file       (optional, example: -l)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
-      . "-g do pangene set growth simulation        (optional, produces [core|pan_gene]*.tab files)\n" 
+      . "-g do pangene set growth simulations       (optional, example: -g 10. produces [core|pan_gene]*.tab files)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-s folder with gene seqs of species in TSV (optional, default: \$PWD)\n"
+      . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     exit(0);
@@ -90,6 +93,10 @@ else {
 
     if(!$ref_genome) {
         die "# ERROR: please set -r reference_genome\n";
+    }
+
+    if ( $GROWTH && $GROWTH > 0) {
+        $NOFSAMPLESREPORT = $GROWTH;
     }
 
     if ($outfolder) {
@@ -124,7 +131,7 @@ else {
         exit;
     }
 
-    print "# $0 -r $ref_genome -f $outfolder -g $GROWTH -S $NOSINGLES -v $verbose\n";
+    print "# $0 -r $ref_genome -f $outfolder -g $GROWTH -S $NOSINGLES -v $verbose -t $min_taxa\n";
     print "# ";
     foreach $infile (@infiles) {
         print "-T $infile ";
@@ -731,3 +738,55 @@ sub parse_sequence_FASTA_file {
 
     return ( \@geneids, \%fasta );
 }
+
+
+sub factorial {
+  my $max = int($_[0]);
+  my $f = 1;
+  for (2..$max) { $f *= $_ }
+  return $f;
+}
+
+# based on http://www.unix.org.ua/orelly/perl/cookbook/ch04_18.htm
+# generates a random permutation of @array in place and returns 
+# string with concatenated elements
+sub fisher_yates_shuffle
+{
+  my ($array) = (@_);
+  my ($i,$j);
+
+  for ($i = @$array; --$i; )
+  {
+    $j = int(rand($i+1));
+    next if $i == $j;
+    @$array[$i,$j] = @$array[$j,$i];
+  }
+
+  return join('',@$array);
+}
+
+# write TSV file appropriate for R boxplot function
+sub write_boxplot_file {
+
+    my ( $outfile, $n_genomes, $n_samples, $ref_data ) = @_;
+
+    my ( $s, $sp );
+
+    open( BOXDATA, ">", $outfile )
+      || die "# ERROR(write_boxplot_file): cannot create $outfile\n";
+    for ( $sp = 0 ; $sp < $n_genomes ; $sp++ ) {
+        printf( BOXDATA "g%d\t", $sp + 1 );    #g = genome
+    }
+    print BOXDATA "\n";
+
+    for ( $s = 0 ; $s < $n_samples ; $s++ ) {
+        for ( $sp = 0 ; $sp < $n_genomes ; $sp++ ) {
+            print BOXDATA "$ref_data->[$s][$sp]\t";
+        }
+        print BOXDATA "\n";
+    }
+    close(BOXDATA);
+
+    return $outfile;
+}
+

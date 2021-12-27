@@ -367,8 +367,9 @@ else {
     }
     $merge_cmd .= " > $PAFfile";
     system("$merge_cmd");
-    if ( $? != 0 ) {
-       die "# ERROR: failed merging split PAF files\n";
+    sleep(2);
+    if(!-e $PAFfile) {
+       die "# ERROR: failed merging split PAF files ($merge_cmd)\n";
     } else {
         print("# WGA finished\n\n");
     }

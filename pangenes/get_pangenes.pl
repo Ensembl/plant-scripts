@@ -405,12 +405,12 @@ if(-s $input_order_file) {
 # 1.3) iteratively parse input files
 my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes);
 my ($outcDNA,$outCDS,$outpep,$clusteroutfile);
-my (%cluster_PIDs,%ngenes,@gff_outfiles,@todelete);
+my (%cluster_PIDs,%ngenes,@gff_outfiles);
 
 foreach $infile (@inputfiles) {
 
-  ++$n_of_taxa;
-
+  # save this taxon
+  ++$n_of_taxa;  
   if($infile =~ m/(\S+?)\.f/){
     $taxon = $1;
     push(@taxa,$taxon);
@@ -450,7 +450,7 @@ foreach $infile (@inputfiles) {
       cp($dnafile,$plain_dnafile)
     }
   } else {
-    print "# re-using $plain_dnafile\n"
+    #print "# re-using $plain_dnafile\n"
   }
 
   if(!-s $plain_gffile) {
@@ -461,19 +461,19 @@ foreach $infile (@inputfiles) {
       cp($gffile,$plain_gffile)
     }
   } else {
-    print "# re-using $plain_gffile\n"
+    #print "# re-using $plain_gffile\n"
   }
 
   # work out sequence stats
   $num_genes = count_GFF_genes( $plain_gffile );
   $ngenes{$taxon} = $num_genes;
   $total_genes += $num_genes;
-  print "# $dnafile ngenes=$num_genes\n";
+  print "# $dnafile $num_genes\n";
 
   # extract cDNA and CDS sequences
   if(-s $outpep && -s $outCDS && -s $outcDNA) {
-    #skip if already run
-    next;
+    print "# re-using $outCDS\n";
+    
   } else {
     $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
       "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR";
@@ -491,14 +491,11 @@ foreach $infile (@inputfiles) {
         die "# EXIT: failed while extracting GFF features ($command)\n";
       }
     }
-  }
-
-  #my $refOK, $n_of_genes
-
-  # update included taxa, 
-
-
+  } 
 }
+
+print "\n# $n_of_taxa genomes, $total_genes genes\n\n";
+
 
 # wait until GFF jobs are done
 if($runmode eq 'cluster') {

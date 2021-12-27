@@ -1,1 +1,2 @@
-21112021: parts/get_collinear_genes.pl tested with -s
+21122021: _collinear_genes.pl tested with -s
+27122021: get_pangenes.pl integrates _cut_sequences.pl & _collinear_genes.pl

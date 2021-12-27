@@ -45,7 +45,7 @@ my @FEATURES2CHECK = (
 my ($newDIR,$output_mask,$pancore_mask,$include_file,%included_input_files,%opts) = 
   ('','','',0);
 my ($dowfmash,$reference_string) = (0,0);
-my ($onlywga,$inputDIR,$cluster_list_file) = (0);
+my ($onlywga,$inputDIR,$alg) = (0);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft) = ($NUMCPUS,0);
 my ($do_POCP_matrix) = (0);
@@ -85,8 +85,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
  
   print   "\nAlgorithms instead of default minimap2 (Mmap):\n";
   print   "-W use wfmash aligner (Wmsh), requires samtools\n";
-  print   "-S path to samtools binary                                  ".
-    "(optional, default: -S samtools)\n";
+  #print   "-S path to samtools binary                                  ".
+  #  "(optional, default: -S samtools)\n";
   print   "\nOptions that control alignments:\n";
   print   "-O min overlap of genes                                     ".
     "(optional, range [0-1], default: -O $MINOVERLAP)\n";
@@ -181,17 +181,20 @@ check_installed_features(@FEATURES2CHECK);
 if(defined($opts{'P'})){ $do_POCP_matrix = 1 }
 
 if(defined($opts{'W'})) {
+
+  $alg = 'Wmsh';
   if(feature_is_installed('WFMASH'))
   {
     $dowfmash = 1;
-    $output_mask .= "algWmsh_";
-    $pancore_mask .= "_algWmsh";
+    $output_mask .= "alg$alg\_";
+    $pancore_mask .= "_alg$alg";
   }
   else{ warn_missing_soft('WFMASH') }
 
 } else {
-  $output_mask .= "algMmap_";
-  $pancore_mask .= "_algMmap";
+  $alg = 'Mmap';
+  $output_mask .= "alg$alg\_";
+  $pancore_mask .= "_alg$alg";
 
   if(defined($opts{'Q'})) { 
     $min_map_qual = $opts{'Q'}; 
@@ -232,10 +235,10 @@ if(defined($opts{'B'})) {
   $ENV{"EXE_BEDTOOLS"} = $bedtools_path;
 }
 
-if(defined($opts{'S'})) {
-  $samtools_path = $opts{'S'};
-  $ENV{"EXE_SAMTOOLS"} = $samtools_path;
-}
+#if(defined($opts{'S'})) {
+#  $samtools_path = $opts{'S'};
+#  $ENV{"EXE_SAMTOOLS"} = $samtools_path;
+#}
 
 # read version number from CHANGES.txt
 open(CHANGES,"$Bin/CHANGES.txt");
@@ -277,21 +280,8 @@ if($runmode eq 'cluster')
 
 my ($total_dry, $refOK, $total_genes, $n_of_taxa) = (0,0,0,0);
 my ($min_geneome_size, $reference_proteome, $infile,$command);
-my ($order, $taxon, $previous_files, $current_files);
+my ($order, $taxon, $taxon2, $previous_files, $current_files);
 my (@taxa);
-
-#my ($infile,$new_infile,$prot_new_infile,$p2oinfile,$seq,$seqL,$comma_input_files,@newfiles,%ressize,%orth_taxa);
-#my ($label,%orthologues,$gene,$orth,$orth2,$para,%inparalogues,%paralogues,$FASTAresultsDIR,$order,$minlog);
-#my ($n_of_similar_length_orthologues,$clusterfile,$prot_clusterfile,$previous_files,$current_files,$inpara);
-#my ($min_geneome_size,$reference_proteome,$smallest_proteome,$geneome_size,%seq_length,$cluster,$annot);
-#my ($smallest_proteome_name,$reference_proteome_name,%psize,$taxon,$taxon2,$n_of_clusters,$n_of_taxa,$n_of_residues);
-#my ($pname,$n_of_sequences,$refOK,$genbankOK,$cluster_size,$prot_cluster_size,$prot_cluster);
-#my (%orth_registry,%LSE_registry,$LSE_reference,$LSE_t,$redo_inp,$redo_orth,%idclusters,%names,$generef);
-#my ($reparse_all,$n_of_similar_length_paralogues,$pfam_annot,$protOK,$n_of_taxa_cluster) = (0);
-#my ($BDBHdone,$PARANOIDdone,$orthoMCLdone,$n_of_parsed_lines,$n_of_pfam_parsed_lines) = (0,0,0,0,0);
-#my ($diff_BDBH_params,$diff_INP_params,$diff_HOM_params,$diff_OMCL_params,$lockcapableFS,$total_dry) = (0,0,0,0,0,0);
-#my ($diff_ISO_params,$redo_iso,$partial_sequences,$isof,%full_length_file,%redundant_isoforms,%total_redundant) = (0);
-#my ($total_clustersOK,$clgene,$clorth,%ANIb_matrix,%POCP_matrix,%GIclusters,$clustersOK,%cluster_ids) = (0);
 
 constructDirectory($newDIR) || die "# EXIT : cannot create directory $newDIR , check permissions\n";
 
@@ -398,8 +388,8 @@ if(-s $input_order_file) {
 
 # 1.3) iteratively parse input files
 my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes);
-my ($outcDNA,$outCDS,$outpep,$clusteroutfile);
-my (%cluster_PIDs,%ngenes,@gff_outfiles);
+my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2);
+my (%cluster_PIDs,%ngenes,@gff_outfiles,@to_be_deleted);
 
 foreach $infile (@inputfiles) {
 
@@ -465,13 +455,14 @@ foreach $infile (@inputfiles) {
   print "# $dnafile $num_genes\n";
 
   # extract cDNA and CDS sequences
+  # Note: this creates a FASTA index file that might be used by wfmash
   if(-s $outpep && -s $outCDS && -s $outcDNA) {
     print "# re-using $outCDS\n";
     
   } else {
     $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
-      "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR";
-    #die $command; 
+      "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR"; #die $command; 
+
     if($runmode eq 'cluster') {
       submit_cluster_job($infile,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
@@ -495,7 +486,9 @@ print "\n# $n_of_taxa genomes, $total_genes genes\n\n";
 # wait until GFF jobs are done
 if($runmode eq 'cluster') {
   check_cluster_jobs($newDIR,\%cluster_PIDs);
+
 } elsif($runmode eq 'dryrun' && $total_dry > 0) {
+
   close(DRYRUNLOG);
   print "# EXIT: check the list of pending commands at $dryrun_file\n";
   exit;
@@ -601,8 +594,119 @@ $output_mask = $reference_name."\_" . $output_mask;
 
 print "# mask=$output_mask ($pancore_mask)\n" if(!$onlywga);
 
+# 1.6) check previously processed input files to decide whether new WGAs
+# are needed and update $pangeneTools::selected_genomes_file
+$current_files = join('',sort(@taxa));
+if(-s $selected_genomes_file)
+{
+  $previous_files = get_string_with_previous_genomes($selected_genomes_file);
+}
+
+open(SEL,">$selected_genomes_file") || die "# cannot create $selected_genomes_file\n";
+foreach $taxon (@taxa){ print SEL "$taxon\n"; }
+close(SEL);
 
 
-## 2) compute whole-genome alignments (WGA) and call collinear genes
+## 2) compute pairwise whole-genome alignments (WGA) and call collinear genes
 
+if(!-s $merged_tsv_file || $current_files ne $previous_files) {
 
+  my ($outTSVfile,@tmp_wga_output_files);
+
+  # remove previous results to avoid confusion if required (-I,new files)
+  if($current_files ne $previous_files){ unlink($merged_tsv_file) } 
+  
+  print "\n# running pairwise genome alignments ...\n";
+  foreach $tx1 (0 .. $#taxa-1) {
+
+    $taxon = $taxa[$tx1];
+    next if($include_file && !$included_input_files{$taxon});
+
+    foreach $tx2 ($tx1+1 .. $#taxa) {
+
+      $taxon2 = $taxa[$tx2];
+      next if($include_file && !$included_input_files{$taxon2});
+      #print $taxon.$taxon2."\n";
+
+      $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap";
+      if($split_chr_regex) {
+        $outTSVfile .= '.split'
+      }
+      $outTSVfile .= '.tsv';
+
+      # skip job if already computed 
+      if(-s $outTSVfile) {
+        push(@tmp_wga_output_files,$outTSVfile);
+        next;
+      }
+
+      $clusteroutfile = $outTSVfile.'.queue';
+
+      $command = "$ENV{'EXE_COLLINEAR'} -ovl $min_overlap -t $n_of_cpus ".
+        "-sp1 $taxon ".
+        "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
+        "-sp2 $taxon2 ".
+        "-fa2 $newDIR/_$taxon2.fna -gf2 $newDIR/_$taxon2.gff ".
+        "-B $ENV{'EXE_BEDTOOLS'} -T $TMP_DIR ".
+        "-add -out $outTSVfile ";
+
+      if($split_chr_regex) {
+        $command .= "-s '$split_chr_regex' ";
+      } 
+      if($dowfmash) {
+        $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
+      } else {
+        $command .= "-M $ENV{'EXE_MINIMAP'} ";
+      } #die $command;
+
+      if($runmode eq 'cluster') {
+        submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+      } elsif($runmode eq 'dryrun') {
+        $command =~ s/\\//g;
+        print DRYRUNLOG "$command\n";
+        $total_dry++;
+      } else { # 'local' runmode
+        $command = "$command > /dev/null";
+        system("$command");
+        if($? != 0) {
+          die "# EXIT: failed while doing genome alignment ($command)\n";
+        }
+      }
+
+      push(@tmp_wga_output_files,$outTSVfile);
+    }  
+  }  
+
+  # wait until cluster jobs are done
+  if($runmode eq 'cluster') {
+    check_cluster_jobs($newDIR,\%cluster_PIDs);
+
+  } elsif($runmode eq 'dryrun' && $total_dry > 0) {
+    close(DRYRUNLOG);
+    print "# EXIT: check the list of pending commands at $dryrun_file\n";
+    exit;
+  }
+
+  print "# done\n\n";
+
+  # concat alignment results to $merged_tsv_file (global var)
+  if(@tmp_wga_output_files) {
+    print "# concatenating WGA results...\n";
+    $command = 'cat ';
+    foreach $outTSVfile (@tmp_wga_output_files) {
+      if(!-e $outTSVfile) {
+        die "# EXIT, $outTSVfile does not exist, WGA might have failed ".
+          "or hard drive is still writing it (please re-run)\n";
+      } else {
+        $command .= "$outTSVfile ";
+      }
+    }
+
+    $command .= "> $merged_tsv_file";
+    system("$command"); print $command;
+    if($? != 0) {
+      die "# EXIT: failed while concatenating WGA results\n";
+    }
+
+  }
+}

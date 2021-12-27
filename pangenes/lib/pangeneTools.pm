@@ -12,6 +12,7 @@ require Exporter;
   count_GFF_genes
   get_string_with_previous_genomes
 
+  $merged_tsv_file
   $lockfile
   $selected_genomes_file
   $TMP_DIR
@@ -21,8 +22,9 @@ use strict;
 
 our $WORKING_DIR   = '';
 our $TMP_DIR       = '';
-our $lockfile              = ".lock";
-our $selected_genomes_file = "selected.genomes"; # names of genomes previously used 
+our $merged_tsv_file       = 'mergedpairs.tsv';
+our $lockfile              = '.lock';
+our $selected_genomes_file = 'selected.genomes'; # names of genomes previously used 
 
 #################################################################
 
@@ -162,8 +164,9 @@ sub constructDirectory
   $TMP_DIR = $WORKING_DIR."tmp/";
   if(!-e $TMP_DIR){ mkdir($TMP_DIR); }
 
-  $lockfile                = $TMP_DIR.$lockfile;
-  $selected_genomes_file   = $TMP_DIR.$selected_genomes_file;
+  $lockfile              = $TMP_DIR.$lockfile;
+  $selected_genomes_file = $TMP_DIR.$selected_genomes_file;
+  $merged_tsv_file       = $TMP_DIR.$merged_tsv_file;       
   
   return 1
 }

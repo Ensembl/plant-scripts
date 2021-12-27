@@ -10,6 +10,7 @@ require Exporter;
   check_installed_features 
   constructDirectory
   count_GFF_genes
+  get_string_with_previous_genomes
 
   $lockfile
   $selected_genomes_file
@@ -21,7 +22,7 @@ use strict;
 our $WORKING_DIR   = '';
 our $TMP_DIR       = '';
 our $lockfile              = ".lock";
-our $selected_genomes_file = "selected.genomes"; # records which genomes were previously used 
+our $selected_genomes_file = "selected.genomes"; # names of genomes previously used 
 
 #################################################################
 
@@ -59,9 +60,15 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{'PANGENES'}) ) { $ENV{'PANGENE'} =  $PANGENEPATH .'/' }
 
   # installed in this repo
-  if( ! defined($ENV{"EXE_MINIMAP"}) ){ $ENV{"EXE_MINIMAP"} = $ENV{'PANGENE'}.'bin/minimap2-2.17/minimap2' }
-  if( ! defined($ENV{"EXE_GFFREAD"}) ){ $ENV{"EXE_GFFREAD"} = $ENV{'PANGENE'}.'bin/gffread-0.12.7.Linux_x86_64/gffread' }
-  if( ! defined($ENV{"EXE_WFMASH"}) ){ $ENV{"EXE_WFMASH"} = $ENV{'PANGENE'}.'bin/wfmash/build/bin/wfmash' }
+  if( ! defined($ENV{"EXE_MINIMAP"}) ){ 
+    $ENV{"EXE_MINIMAP"} = $ENV{'PANGENE'}.'bin/minimap2-2.17/minimap2' 
+  }
+  if( ! defined($ENV{"EXE_GFFREAD"}) ){ 
+    $ENV{"EXE_GFFREAD"} = $ENV{'PANGENE'}.'bin/gffread-0.12.7.Linux_x86_64/gffread' 
+  }
+  if( ! defined($ENV{"EXE_WFMASH"}) ){ 
+    $ENV{"EXE_WFMASH"} = $ENV{'PANGENE'}.'bin/wfmash/build/bin/wfmash' 
+  }
 
   # should be pre-installed in most settings
   if( ! defined($ENV{"EXE_SAMTOOLS"}) ){ $ENV{"EXE_SAMTOOLS"} = 'samtools' }
@@ -69,9 +76,12 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{'EXE_ZCAT'}) ){ $ENV{'EXE_ZCAT'} = 'zcat' }
 
   # scripts from this repo
-  if( ! defined($ENV{"EXE_COLLINEAR"}) ){ $ENV{"EXE_COLLINEAR"} = $ENV{'PANGENE'}."_collinear_genes.pl" }
-  if( ! defined($ENV{"EXE_CUTSEQUENCES"}) ){ $ENV{"EXE_CUTSEQUENCES"} = $ENV{'PANGENE'}."_cut_sequences.pl" }
-
+  if( ! defined($ENV{"EXE_COLLINEAR"}) ){ 
+    $ENV{"EXE_COLLINEAR"} = $ENV{'PANGENE'}."_collinear_genes.pl" 
+  }
+  if( ! defined($ENV{"EXE_CUTSEQUENCES"}) ){ 
+    $ENV{"EXE_CUTSEQUENCES"} = $ENV{'PANGENE'}."_cut_sequences.pl" 
+  }
 }
 
 ########################################################################################
@@ -174,6 +184,27 @@ sub count_GFF_genes {
   close(GFF);
 
   return $num_genes
+}
+
+# Check genomes used in previous run stored in $selected_genomes_file
+sub get_string_with_previous_genomes {
+
+  my ($selected_genomes_file) = @_;
+
+  my ($previous_genomes,@genomes) = ('');
+
+  open(SEL,$selected_genomes_file) || 
+    die "# ERROR(get_string_with_previous_genomes): cannot read $selected_genomes_file\n";
+  while(<SEL>) {
+    chomp $_;
+    $_ =~ s/\s+//g;
+    push(@genomes,$_);
+  }
+  close(SEL);
+
+  $previous_genomes = join('',sort(@genomes));
+
+  return $previous_genomes;
 }
 
 

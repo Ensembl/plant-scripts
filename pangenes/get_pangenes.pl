@@ -29,6 +29,7 @@ use pangeneTools;
 my $VERSION = '1.x';
 
 ## global variables that control some algorithmic choices
+my $NUMCPUS    = 4;
 my $MINQUAL    = 50;       # minimap2 mapping quality
 my $MINOVERLAP = 0.50;     # used by bedtools to call overlapping features    
 my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
@@ -41,14 +42,15 @@ my @FEATURES2CHECK = (
   'EXE_ZCAT'
 );
 
-my ($newDIR,$output_mask,$pancore_mask,$include_file,%included_input_files,%opts) = ('','','',0);
+my ($newDIR,$output_mask,$pancore_mask,$include_file,%included_input_files,%opts) = 
+  ('','','',0);
 my ($dowfmash,$reference_string) = (0,0);
 my ($onlywga,$inputDIR,$cluster_list_file) = (0);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
-my ($n_of_cpus,$do_soft) = (4,0);
-my ($do_ANIb_matrix,$do_POCP_matrix) = (0,0);
+my ($n_of_cpus,$do_soft) = ($NUMCPUS,0);
+my ($do_POCP_matrix) = (0);
 my ($samtools_path,$bedtools_path) = ('','');
-my ($min_cluster_size,$runmode,$do_genome_composition,$ANIb_matrix_file,$POCP_matrix_file);
+my ($min_cluster_size,$runmode,$do_genome_composition,$POCP_matrix_file);
 
 my $random_number_generator_seed = 0;
 my $pwd = getcwd(); $pwd .= '/';
@@ -76,8 +78,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(default: -m local)\n";
   print   "-n nb of threads in 'local' runmode                         ".
     "(default=$n_of_cpus)\n";
-  print   "-I file with .fna files in -d to be included                ".
-    "(takes all by default, requires -d)\n";
+  print   "-I file with filenames in -d to be included                 ".
+    "(takes all by default)\n";
   print   "-B path to bedtools binary                                  ".
     "(optional, default: -B bedtools)\n";
  
@@ -102,13 +104,6 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(by default takes file with\n".
     "                                                            ".   
     " least annotated genes/features)\n";
-
-  # this would require computing BLASTN all vs all
-  #print   "-A calculate average identity of clustered sequences,          ".
-  #  "(optional, creates tab-separated matrix,\n";
-  #print   " uses blastn results                                           ".
-  #  " [OMCL])\n";
-
   print   "-P calculate percentage of conserved sequences (POCS),      ".
     "(optional, creates tab-separated matrix)\n";
   print   "-z add soft-core to genome composition analysis\n";
@@ -182,8 +177,6 @@ if($opts{'I'} && $inputDIR)
 }
 
 check_installed_features(@FEATURES2CHECK);
-
-#if(defined($opts{'A'})){ $do_ANIb_matrix = 1 }
 
 if(defined($opts{'P'})){ $do_POCP_matrix = 1 }
 
@@ -283,14 +276,14 @@ if($runmode eq 'cluster')
 ## 0) declare most important variables 
 
 my ($total_dry, $refOK, $total_genes, $n_of_taxa) = (0,0,0,0);
-my ($min_proteome_size, $reference_proteome, $infile,$command);
+my ($min_geneome_size, $reference_proteome, $infile,$command);
 my ($order, $taxon, $previous_files, $current_files);
 my (@taxa);
 
 #my ($infile,$new_infile,$prot_new_infile,$p2oinfile,$seq,$seqL,$comma_input_files,@newfiles,%ressize,%orth_taxa);
 #my ($label,%orthologues,$gene,$orth,$orth2,$para,%inparalogues,%paralogues,$FASTAresultsDIR,$order,$minlog);
 #my ($n_of_similar_length_orthologues,$clusterfile,$prot_clusterfile,$previous_files,$current_files,$inpara);
-#my ($min_proteome_size,$reference_proteome,$smallest_proteome,$proteome_size,%seq_length,$cluster,$annot);
+#my ($min_geneome_size,$reference_proteome,$smallest_proteome,$geneome_size,%seq_length,$cluster,$annot);
 #my ($smallest_proteome_name,$reference_proteome_name,%psize,$taxon,$taxon2,$n_of_clusters,$n_of_taxa,$n_of_residues);
 #my ($pname,$n_of_sequences,$refOK,$genbankOK,$cluster_size,$prot_cluster_size,$prot_cluster);
 #my (%orth_registry,%LSE_registry,$LSE_reference,$LSE_t,$redo_inp,$redo_orth,%idclusters,%names,$generef);
@@ -327,6 +320,7 @@ my $dryrun_file = $newDIR."/dryrun.txt";
 
 print "# version $VERSION\n";
 print "# results_directory=$newDIR\n";
+print "# parameters: MINGFFLEN=$MINGFFLEN\n";
 
 # 0.3) prepare dryrun file if required
 if($runmode eq 'dryrun')
@@ -337,7 +331,7 @@ if($runmode eq 'dryrun')
 ## 1) read all input files, identify formats and generate required files in temporary directory
 
 print "\n# checking input files...\n";
-$min_proteome_size = -1;
+$min_geneome_size = -1;
 $reference_proteome = $refOK = $total_genes = $n_of_taxa = 0;
 $previous_files = $current_files = '';
 
@@ -494,8 +488,9 @@ foreach $infile (@inputfiles) {
   } 
 }
 
-print "\n# $n_of_taxa genomes, $total_genes genes\n\n";
+if($min_cluster_size eq 'all'){ $min_cluster_size = $n_of_taxa; } # size of gene clusters
 
+print "\n# $n_of_taxa genomes, $total_genes genes\n\n";
 
 # wait until GFF jobs are done
 if($runmode eq 'cluster') {
@@ -515,6 +510,98 @@ foreach $gffile (@gff_outfiles) {
 }
 
 print "# done\n\n";
+
+# 1.4) correct list of included files
+if($include_file) {
+
+  my ($included,$includedfull,$n_of_matched_included,@Itaxa);
+
+  open(INCL,$include_file) || die "# EXIT : cannot read $include_file\n";
+  while(<INCL>) {
+    next if(/^#/ || /^$/);
+    $included_input_files{(split)[0]} = $.;
+  }
+  close(INCL);
+
+  print "# included input files (".scalar(keys(%included_input_files))."):\n";
+
+  $refOK = $total_genes = $n_of_matched_included = 0;
+  TAXON: foreach $included 
+    (sort {$included_input_files{$a}<=>$included_input_files{$b}}
+    keys(%included_input_files)) {
+    foreach $taxon (@taxa) {
+      if($taxon =~ /^$included$/) {
+        push(@Itaxa,$taxon);
+        $total_genes += $ngenes{$taxon};
+        print ": $taxon $ngenes{$taxon}\n";
+        $n_of_matched_included++;
+        next TAXON;
+      }
+    }
+  }
+  print "\n";
+
+  if($n_of_matched_included < scalar(keys(%included_input_files)))
+  {
+    die "# EXIT : failed to match taxa included in $include_file ($n_of_matched_included), ".
+      "please make sure their names match those of input files\n";
+  }
+
+  # update @taxa, $min_cluster_size
+  @taxa = @Itaxa;
+  $n_of_taxa = scalar(@Itaxa);
+  if($min_cluster_size eq 'all'){ $min_cluster_size = $n_of_taxa; }
+  elsif($min_cluster_size > $n_of_taxa){ $min_cluster_size = $n_of_taxa; }
+
+}
+
+printf("# taxa considered = %d genes = %d\n\n",$n_of_taxa,$total_genes);
+
+if($n_of_taxa<2){ die "# EXIT: need at least two taxa\n" }
+
+# 1.5) set reference proteome index and mask (by default 
+# takes genomes with least genes)
+
+my ($geneome_size,$smallest_geneome,$smallest_geneome_name);
+my ($reference_genome, $reference_name);
+
+for($taxon=0;$taxon<scalar(@taxa);$taxon++) {
+  $geneome_size = $ngenes{$taxa[$taxon]};
+
+  # update minimal proteome size
+  if((defined($min_geneome_size) && $min_geneome_size== -1) ||
+    (defined($min_geneome_size) && defined($geneome_size) 
+    && $geneome_size < $min_geneome_size)) {
+    $min_geneome_size = $geneome_size;
+    $smallest_geneome_name = $taxa[$taxon];
+    $smallest_geneome = $taxon;
+  }
+
+  # check user-defined reference proteome
+  if($reference_string ne '0' && 
+    !$refOK && $taxa[$taxon] =~ /$reference_string/) {
+    $reference_genome = $taxon;
+    $reference_name = $taxa[$taxon];
+    $refOK=1;
+  }
+}
+
+if(!$refOK && $reference_string ne '0') {
+  print "# WARNING: cannot find reference genome ($reference_string),".
+    " taking default\n";
+}
+
+if($reference_string eq '' || !$refOK) {
+  $reference_name = $smallest_geneome_name;
+  $reference_genome = $smallest_geneome;
+}
+
+$reference_name =~ s/[\W+]//g;
+$output_mask = $reference_name."\_" . $output_mask;
+
+print "# mask=$output_mask ($pancore_mask)\n" if(!$onlywga);
+
+
 
 ## 2) compute whole-genome alignments (WGA) and call collinear genes
 

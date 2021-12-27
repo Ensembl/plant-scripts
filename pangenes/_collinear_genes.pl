@@ -296,7 +296,7 @@ else {
 
         # make empty PAF file when chr files are empty
         if(!-s $chrfasta1 || !-s $chrfasta2) {
-            open(EMPTYPAF, ">$tmpdir$splitPAF"); 
+            open(EMPTYPAF, ">", $splitPAF); 
             close(EMPTYPAF);
             push(@WGAoutfiles, $splitPAF);
             next;
@@ -366,9 +366,8 @@ else {
         $merge_cmd .= "$splitPAF ";
     }
     $merge_cmd .= " > $PAFfile";
-    system("$merge_cmd");
-    sleep(2);
-    if(!-e $PAFfile) {
+    system("$merge_cmd"); #sleep(2); if(!-e $PAFfile) {
+    if( $? != 0 ) {
        die "# ERROR: failed merging split PAF files ($merge_cmd)\n";
     } else {
         print("# WGA finished\n\n");
@@ -507,7 +506,6 @@ sub parse_genes_GFF {
 # 1) name of FASTA file
 # 2) regex to match chromosome names, applied to first non-blank token (\S+)
 # Returns ref to hash with chr or 'unplaced' as keys and sequences as value
-
 sub read_FASTA_regex2hash {
     my ($fastafile,$regex) = @_;
 

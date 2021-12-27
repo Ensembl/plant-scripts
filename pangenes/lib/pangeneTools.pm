@@ -13,6 +13,7 @@ require Exporter;
 
   $lockfile
   $selected_genomes_file
+  $WORKING_DIR
   $TMP_DIR
 );
 

@@ -58,7 +58,7 @@ my $VERBOSE    = 0;           # values > 1
 my $TRANSCRIPT2GENE = 0;
 
 my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0 );
-my ($dowfmash, $dofragments, $split_chr_regex ) = ( 0, 0, '' );
+my ($dowfmash, $dofragments, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 );
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs );
 my ( $minoverlap, $qual, $alg, $outfilename ) =
@@ -86,6 +86,7 @@ GetOptions(
     "W|wfpath=s"     => \$wfmash_path,
     "B|btpath=s"     => \$bedtools_path,
     "S|stpath=s"     => \$samtools_path,
+    "T|tmpath=s"     => \$tmpdir,
     "t|threads=i"    => \$threads,
     "a|add"          => \$noheader
 ) || help_message();
@@ -109,6 +110,7 @@ sub help_message {
       . "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
       . "-B   path to bedtools binary            (optional, default: -B $BEDTOOLSEXE)\n"
       . "-S   path to samtools binary            (optional, default: -S $SAMTOOLSEXE)\n"
+      . "-T   path for temporary files           (optional, default current folder)\n"
       . "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"
 
 #. "-c   check sequences of collinear genes (optional)\n"
@@ -157,6 +159,10 @@ if ($dowfmash) {
     $qual = 1;
 }
 
+if($tmpdir ne '' && $tmpdir !~ /\/$/){
+    $tmpdir .= '/'
+}
+
 # set default outfile
 if ( !$outfilename ) {
     $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.tsv";
@@ -169,11 +175,12 @@ if ( !$outfilename ) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check -r $reuse "
-  . "-S '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path -t $threads\n\n"
+  . "-S '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path "
+  . "-T $tmpdir -t $threads\n\n"
   ;    # -f $dofragments
 
 # check binaries
-if(`$bedtools_path` !~ 'usage') {
+if(`$bedtools_path` !~ 'sage') {
 	print "# ERROR: cannot find binary file $bedtools_path , exit\n";	
 	exit(-1)
 } 
@@ -206,8 +213,8 @@ else {
 
 ## 1) Parse GFFs and produce BED files with gene coords
 
-my $geneBEDfile1 = "_$sp1.gene.bed";
-my $geneBEDfile2 = "_$sp2.gene.bed";
+my $geneBEDfile1 = $tmpdir . "_$sp1.gene.bed";
+my $geneBEDfile2 = $tmpdir . "_$sp2.gene.bed";
 
 my ( $num_genes1, $mean_gene_len1 ) = parse_genes_GFF( $gff1, $geneBEDfile1 );
 printf( "# %d genes parsed in %s mean length=%d\n",
@@ -220,7 +227,7 @@ printf( "# %d genes parsed in %s mean length=%d\n",
 # 1.x) if required cut $fasta2 in fragments containing neighbor genes, TO BE DONE
 #if ($dofragments) {
 #
-#    my $frag_fasta2 = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
+#    my $frag_fasta2 = $tmpdir . "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
 #    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
 #        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE );
 #
@@ -236,16 +243,17 @@ printf( "# %d genes parsed in %s mean length=%d\n",
 # Note: reduces complexity (good for large/polyploid genomes) but misses translocations
 if ($split_chr_regex ne '') {
     # split sequence files, one per chr plus rest 
-    $ref_chr_pairs = split_genome_sequences_per_chr($fasta1, $fasta2, $split_chr_regex);
+    $ref_chr_pairs = 
+        split_genome_sequences_per_chr($tmpdir,$fasta1, $fasta2, $split_chr_regex);
 }
 else {
     # single reference by default
     $ref_chr_pairs->{'all'} = [ $fasta1, $fasta2 ]
 }
 
-my $PAFfile = "_$sp2.$sp1.$alg.paf";
+my $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.paf";
 if ($split_chr_regex ne '') {
-    $PAFfile = "_$sp2.$sp1.$alg.split.paf";
+    $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.split.paf";
 }
 
 #if ($dofragments) {
@@ -277,7 +285,7 @@ else {
 
         $chrfasta1 = $ref_chr_pairs->{$chr}[0];
         $chrfasta2 = $ref_chr_pairs->{$chr}[1];
-        $splitPAF =  "_$sp2.$sp1.$alg.split.$chr.paf";
+        $splitPAF =  $tmpdir . "_$sp2.$sp1.$alg.split.$chr.paf";
         #print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
 
         if ( $reuse && -s $splitPAF ) {
@@ -288,7 +296,7 @@ else {
 
         # make empty PAF file when chr files are empty
         if(!-s $chrfasta1 || !-s $chrfasta2) {
-            open(EMPTYPAF, ">$splitPAF"); 
+            open(EMPTYPAF, ">$tmpdir$splitPAF"); 
             close(EMPTYPAF);
             push(@WGAoutfiles, $splitPAF);
             next;
@@ -324,7 +332,7 @@ else {
         }
         else {    # default minimap2 index & alignment
 
-            $index_fasta1 = "_$sp1.$chr.mmi";
+            $index_fasta1 = $tmpdir . "_$sp1.$chr.mmi";
 
             if ( $reuse && -s $index_fasta1 ) {
                 print "# re-using $index_fasta1\n";
@@ -353,7 +361,7 @@ else {
     }
 
     # merge (split) PAF files
-    my $merge_cmd = "cat "; # assume cat is available
+    my $merge_cmd = "cat "; # assumes cat is available
     foreach $splitPAF (@WGAoutfiles) {
         $merge_cmd .= "$splitPAF ";
     }
@@ -369,7 +377,7 @@ else {
 ## 3) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
-my $wgaBEDfile = "_$sp2.$sp1.$alg.bed";
+my $wgaBEDfile = $tmpdir . "_$sp2.$sp1.$alg.bed";
 
 open( PAF, "<", $PAFfile )    || die "# ERROR: cannot read $PAFfile\n";
 open( BED, ">", $wgaBEDfile ) || die "# ERROR: cannot create $wgaBEDfile\n";
@@ -385,7 +393,7 @@ close(PAF);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
-my $sp2wgaBEDfile = "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
+my $sp2wgaBEDfile = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 
 system("$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | "
       . "$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile" );
@@ -396,7 +404,7 @@ elsif ( !-s $sp2wgaBEDfile ) {
     die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
 }
 
-my $geneBEDfile2mapped = "_$sp2.$alg.gene.mapped.bed";
+my $geneBEDfile2mapped = $tmpdir . "_$sp2.$alg.gene.mapped.bed";
 
 my ( $num_matched, @unmatched ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
@@ -411,8 +419,8 @@ if ( $num_matched == 0 ) {
 
 ## 5) produce list of pairs of collinear genes
 
-my $gene_intersectBEDfile =
-  "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
+my $gene_intersectBEDfile = 
+  $tmpdir . "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
 
 system("$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ". 
     "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile" );
@@ -550,7 +558,7 @@ sub read_FASTA_regex2hash {
 # Note: creates FASTA files with preffix _ 
 sub split_genome_sequences_per_chr {
 
-    my ($fastafile1,$fastafile2,$regex) = @_;
+    my ($path,$fastafile1,$fastafile2,$regex) = @_;
 
     my ($chr,$chrfasta1,$chrfasta2);
     my (%shared_chrs,%chr_pairs);
@@ -567,8 +575,8 @@ sub split_genome_sequences_per_chr {
 
     # write chr-specific FASTA files
     foreach $chr (keys(%shared_chrs)) { #print ">$chr\n";
-        $chrfasta1 = "_".basename($fastafile1).".$chr.fna";
-        $chrfasta2 = "_".basename($fastafile2).".$chr.fna";
+        $chrfasta1 = $path . "_".basename($fastafile1).".$chr.fna";
+        $chrfasta2 = $path . "_".basename($fastafile2).".$chr.fna";
 
         open( CHRFASTA1, ">$chrfasta1") 
             || die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
@@ -586,8 +594,8 @@ sub split_genome_sequences_per_chr {
     }
 
     # write unplaced and/or not-shared chr names
-    $chrfasta1 = "_".basename($fastafile1).".unplaced.fna";
-    $chrfasta2 = "_".basename($fastafile2).".unplaced.fna";
+    $chrfasta1 = $path . "_".basename($fastafile1).".unplaced.fna";
+    $chrfasta2 = $path . "_".basename($fastafile2).".unplaced.fna";
 
     open( CHRFASTA1, ">$chrfasta1")
         || die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";

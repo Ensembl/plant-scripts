@@ -29,9 +29,10 @@ use pangeneTools;
 my $VERSION = '1.x';
 
 ## global variables that control some algorithmic choices
-my $NOFSAMPLESREPORT = 20;        # number of samples used for the generation of pan/core genomes
-my $MINQUAL    = 50;              # minimap2 mapping quality
-my $MINOVERLAP = 0.50;
+my $MINQUAL    = 50;       # minimap2 mapping quality
+my $MINOVERLAP = 0.50;     # used by bedtools to call overlapping features    
+my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
+my $NOFSAMPLESREPORT = 20; # number of samples used for the generation of pan/core genomes
 
 ## list of features/binaries required by this program (do not edit)
 my @FEATURES2CHECK = (
@@ -437,35 +438,30 @@ foreach $infile (@inputfiles) {
   }
 
   # make temporary copies of uncompressed FASTA & GFF files
-  $plain_dnafile  = $TMP_DIR."_$taxon.fna";
-  $plain_gffile   = $TMP_DIR."_$taxon.gff";
+  $plain_dnafile  = $newDIR ."/_$taxon.fna";
+  $plain_gffile   = $newDIR ."/_$taxon.gff";
   $clusteroutfile = $newDIR ."/_$infile.queue";
 
-  # skip job if already run
-  if(-s $outpep && -s $outCDS && -s $outcDNA && -s $plain_gffile) {
-
-    $num_genes = count_GFF_genes( $plain_gffile );
-    $ngenes{$taxon} = $num_genes;
-    print "# $dnafile ngenes=$num_genes\n";
-    $total_genes += $num_genes;
-    next;
-
+  if(!-s $plain_dnafile) {
+    if($dnafile =~ m/\.gz/) {
+      print "# uncompressing $dnafile\n";
+      system("$ENV{'EXE_ZCAT'} $dnafile > $plain_dnafile")     
+    } else {
+      cp($dnafile,$plain_dnafile)
+    }
   } else {
-    push(@todelete,$plain_dnafile,$plain_gffile);
+    print "# re-using $plain_dnafile\n"
   }
 
-  if($dnafile =~ m/\.gz/) {
-    print "# uncompressing $dnafile\n";
-    system("$ENV{'EXE_ZCAT'} $dnafile > $plain_dnafile")     
+  if(!-s $plain_gffile) {
+    if($gffile =~ m/\.gz/) {
+      print "# uncompressing $gffile\n";
+      system("$ENV{'EXE_ZCAT'} $gffile > $plain_gffile")     
+    } else {
+      cp($gffile,$plain_gffile)
+    }
   } else {
-    cp($dnafile,$plain_dnafile)
-  }
-
-  if($gffile =~ m/\.gz/) {
-    print "# uncompressing $gffile\n";
-    system("$ENV{'EXE_ZCAT'} $gffile > $plain_gffile")     
-  } else {
-    cp($gffile,$plain_gffile)
+    print "# re-using $plain_gffile\n"
   }
 
   # work out sequence stats
@@ -475,24 +471,28 @@ foreach $infile (@inputfiles) {
   print "# $dnafile ngenes=$num_genes\n";
 
   # extract cDNA and CDS sequences
-  $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
-    "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -o $newDIR";
-  #die $command; 
-  if($runmode eq 'cluster') {
-    submit_cluster_job($infile,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
-  } elsif($runmode eq 'dryrun') {
-        $command =~ s/\\//g;
-        print DRYRUNLOG "$command\n";
-        $total_dry++;
-  } else { # 'local' runmode
-    $command = "$command > /dev/null"; 
-    system("$command");
-    if($? != 0) {
-      die "# EXIT: failed while extracting GFF features ($command)\n";
+  if(-s $outpep && -s $outCDS && -s $outcDNA) {
+    #skip if already run
+    next;
+  } else {
+    $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
+      "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR";
+    #die $command; 
+    if($runmode eq 'cluster') {
+      submit_cluster_job($infile,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+    } elsif($runmode eq 'dryrun') {
+          $command =~ s/\\//g;
+          print DRYRUNLOG "$command\n";
+          $total_dry++;
+    } else { # 'local' runmode
+      $command = "$command > /dev/null"; 
+      system("$command");
+      if($? != 0) {
+        die "# EXIT: failed while extracting GFF features ($command)\n";
+      }
     }
   }
 
-  
   #my $refOK, $n_of_genes
 
   # update included taxa, 
@@ -508,9 +508,6 @@ if($runmode eq 'cluster') {
   print "# EXIT: check the list of pending commands at $dryrun_file\n";
   exit;
 } 
-
-# delete tmp files
-#unlink(@todelete); # not yet, will be used by _get_collinear
 
 # confirm outfiles
 foreach $gffile (@gff_outfiles) {

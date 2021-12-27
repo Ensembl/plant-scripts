@@ -703,7 +703,7 @@ if(!-s $merged_tsv_file || $current_files ne $previous_files) {
     }
 
     $command .= "> $merged_tsv_file";
-    system("$command"); print $command;
+    system("$command"); #print $command;
     if($? != 0) {
       die "# EXIT: failed while concatenating WGA results\n";
     }

@@ -100,7 +100,7 @@ sub parse_gffread {
 
 	my $num_seqs = 0;
 	open(OUT,">",$outfile) || 
-		die "# ERROR(parse_gffread): cannot create $pepfile\n";
+		die "# ERROR(parse_gffread): cannot create $outfile\n";
 
 	open(GFFREAD,"$gffreadexe $params -g $fasta_file $gff_file |") ||
 		die "# ERROR(parse_gffread): cannot run $gffreadexe\n";

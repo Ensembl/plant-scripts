@@ -3,12 +3,15 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 
-# Takes a GGF and a FASTA file and produces FASTA files with CDS nucl & pep sequences of the 1st transcript found
+# Takes a GFF & FASTA files and produces FASTA files with 
+# CDS nucl & pep sequences of the 1st transcript found
+#
+# Uses external software: gffread [https://f1000research.com/articles/9-304/v2]
 
-# Uses external software:
-# gffread [https://f1000research.com/articles/9-304/v2]
+# Copyright [2021] EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
-#perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa -gf Oryza_sativa.IRGSP-1.0.51.gff3
+# perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
+#   -gf Oryza_sativa.IRGSP-1.0.51.gff3
 
 my $GFFREADEXE = 'gffread'; # v0.12.7
 

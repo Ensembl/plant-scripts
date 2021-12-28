@@ -371,6 +371,7 @@ else {
        die "# ERROR: failed merging split PAF files ($merge_cmd)\n";
     } else {
         print("# WGA finished\n\n");
+        unlink(@WGAoutfiles);
     }
 }
 

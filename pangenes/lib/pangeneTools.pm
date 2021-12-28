@@ -42,6 +42,7 @@ my %feature_output = (
   'EXE_GFFREAD'=>'Usage',
   'EXE_COLLINEAR'=>'usage',
   'EXE_CUTSEQUENCES'=>'usage',
+  'EXE_CLUSTANALYSIS'=>'ERROR',
   'EXE_GZIP'=>'help'
 );
 
@@ -84,6 +85,10 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{"EXE_CUTSEQUENCES"}) ){ 
     $ENV{"EXE_CUTSEQUENCES"} = $ENV{'PANGENE'}."_cut_sequences.pl" 
   }
+  if( ! defined($ENV{"EXE_CLUSTANALYSIS"}) ){
+    $ENV{"EXE_CLUSTANALYSIS"} = $ENV{'PANGENE'}."_cluster_analysis.pl"
+  }
+
 }
 
 ########################################################################################

@@ -607,40 +607,41 @@ close(SEL);
 
 ## 2) compute pairwise whole-genome alignments (WGA) and call collinear genes
 
-if(!-s $merged_tsv_file || $current_files ne $previous_files) {
+# remove previous results to avoid confusion
+unlink($merged_tsv_file);
 
-  my ($outTSVfile,@tmp_wga_output_files);
+my ($outTSVfile,@tmp_wga_output_files);
 
-  # remove previous results to avoid confusion if required (-I,new files)
-  if($current_files ne $previous_files){ unlink($merged_tsv_file) } 
+# remove previous results to avoid confusion if required (-I,new files)
+if($current_files ne $previous_files){ unlink($merged_tsv_file) } 
   
-  print "\n# running pairwise genome alignments ...\n";
-  foreach $tx1 (0 .. $#taxa-1) {
+print "\n# running pairwise genome alignments ...\n";
+foreach $tx1 (0 .. $#taxa-1) {
 
-    $taxon = $taxa[$tx1];
-    next if($include_file && !$included_input_files{$taxon});
+  $taxon = $taxa[$tx1];
+  next if($include_file && !$included_input_files{$taxon});
 
-    foreach $tx2 ($tx1+1 .. $#taxa) {
+  foreach $tx2 ($tx1+1 .. $#taxa) {
 
-      $taxon2 = $taxa[$tx2];
-      next if($include_file && !$included_input_files{$taxon2});
-      #print $taxon.$taxon2."\n";
+    $taxon2 = $taxa[$tx2];
+    next if($include_file && !$included_input_files{$taxon2});
+    #print $taxon.$taxon2."\n";
 
-      $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap";
-      if($split_chr_regex) {
-        $outTSVfile .= '.split'
-      }
-      $outTSVfile .= '.tsv';
+    $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap";
+    if($split_chr_regex) {
+      $outTSVfile .= '.split'
+    }
+    $outTSVfile .= '.tsv';
 
-      # skip job if already computed 
-      if(-s $outTSVfile) {
-        push(@tmp_wga_output_files,$outTSVfile);
-        next;
-      }
+    # skip job if already computed 
+    if(-s $outTSVfile) {
+      push(@tmp_wga_output_files,$outTSVfile);
+      next;
+    }
 
-      $clusteroutfile = $outTSVfile.'.queue';
+    $clusteroutfile = $outTSVfile.'.queue';
 
-      $command = "$ENV{'EXE_COLLINEAR'} -ovl $min_overlap -t $n_of_cpus ".
+    $command = "$ENV{'EXE_COLLINEAR'} -ovl $min_overlap -t $n_of_cpus ".
         "-sp1 $taxon ".
         "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
         "-sp2 $taxon2 ".
@@ -648,64 +649,62 @@ if(!-s $merged_tsv_file || $current_files ne $previous_files) {
         "-B $ENV{'EXE_BEDTOOLS'} -T $TMP_DIR ".
         "-add -out $outTSVfile ";
 
-      if($split_chr_regex) {
-        $command .= "-s '$split_chr_regex' ";
-      } 
-      if($dowfmash) {
-        $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
-      } else {
-        $command .= "-M $ENV{'EXE_MINIMAP'} ";
-      } #die $command;
+    if($split_chr_regex) {
+      $command .= "-s '$split_chr_regex' ";
+    } 
+    if($dowfmash) {
+      $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
+    } else {
+      $command .= "-M $ENV{'EXE_MINIMAP'} ";
+    } #die $command;
 
-      if($runmode eq 'cluster') {
-        submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
-      } elsif($runmode eq 'dryrun') {
-        $command =~ s/\\//g;
-        print DRYRUNLOG "$command\n";
-        $total_dry++;
-      } else { # 'local' runmode
-        $command = "$command > /dev/null";
-        system("$command");
-        if($? != 0) {
-          die "# EXIT: failed while doing genome alignment ($command)\n";
-        }
+    if($runmode eq 'cluster') {
+      submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+    } elsif($runmode eq 'dryrun') {
+      $command =~ s/\\//g;
+      print DRYRUNLOG "$command\n";
+      $total_dry++;
+    } else { # 'local' runmode
+      $command = "$command > /dev/null";
+      system("$command");
+      if($? != 0) {
+        die "# EXIT: failed while doing genome alignment ($command)\n";
       }
+    }
 
-      push(@tmp_wga_output_files,$outTSVfile);
-    }  
+    push(@tmp_wga_output_files,$outTSVfile);
   }  
+}  
 
-  # wait until cluster jobs are done
-  if($runmode eq 'cluster') {
-    check_cluster_jobs($newDIR,\%cluster_PIDs);
+# wait until cluster jobs are done
+if($runmode eq 'cluster') {
+  check_cluster_jobs($newDIR,\%cluster_PIDs);
 
-  } elsif($runmode eq 'dryrun' && $total_dry > 0) {
-    close(DRYRUNLOG);
-    print "# EXIT: check the list of pending commands at $dryrun_file\n";
-    exit;
+} elsif($runmode eq 'dryrun' && $total_dry > 0) {
+  close(DRYRUNLOG);
+  print "# EXIT: check the list of pending commands at $dryrun_file\n";
+  exit;
+}
+
+print "# done\n\n";
+
+# concat alignment results to $merged_tsv_file (global var)
+if(@tmp_wga_output_files) {
+  print "# concatenating WGA results...\n";
+  $command = 'cat ';
+  foreach $outTSVfile (@tmp_wga_output_files) {
+    if(!-e $outTSVfile) {
+      die "# EXIT, $outTSVfile does not exist, WGA might have failed ".
+        "or hard drive is still writing it (please re-run)\n";
+    } else {
+      $command .= "$outTSVfile ";
+    }
   }
 
-  print "# done\n\n";
-
-  # concat alignment results to $merged_tsv_file (global var)
-  if(@tmp_wga_output_files) {
-    print "# concatenating WGA results...\n";
-    $command = 'cat ';
-    foreach $outTSVfile (@tmp_wga_output_files) {
-      if(!-e $outTSVfile) {
-        die "# EXIT, $outTSVfile does not exist, WGA might have failed ".
-          "or hard drive is still writing it (please re-run)\n";
-      } else {
-        $command .= "$outTSVfile ";
-      }
-    }
-
-    $command .= "> $merged_tsv_file";
-    system("$command"); #print $command;
-    if($? != 0) {
-      die "# EXIT: failed while concatenating WGA results\n";
-    }
-
+  $command .= "> $merged_tsv_file";
+  system("$command"); #print $command;
+  if($? != 0) {
+    die "# EXIT: failed while concatenating WGA results\n";
   }
 }
 

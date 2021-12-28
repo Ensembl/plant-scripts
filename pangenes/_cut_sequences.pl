@@ -8,7 +8,8 @@ use Getopt::Long qw(:config no_ignore_case);
 #
 # Uses external software: gffread [https://f1000research.com/articles/9-304/v2]
 
-# Copyright [2021] EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
+# Copyright [2021] 
+# EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
 #   -gf Oryza_sativa.IRGSP-1.0.51.gff3
@@ -80,7 +81,7 @@ print "# $pepfile n=$num_pep\n";
 
 ###############################
 
-# Runs gffread, parses its stdout and saves output in FASTA FILE.
+# Runs gffread, parses its stdout and saves output in FASTA file.
 # Returns number of sequences printed out.
 sub parse_gffread {
 

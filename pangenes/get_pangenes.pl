@@ -265,8 +265,7 @@ print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-n $n_of_cpus -W $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
   "-B '$bedtools_path' -S '$samtools_path' -R $random_number_generator_seed\n\n";
 
-if($runmode eq 'cluster')
-{
+if($runmode eq 'cluster') {
   print "# computer cluster settings\n";
   print_cluster_config();
 }
@@ -310,8 +309,7 @@ print "# results_directory=$newDIR\n";
 print "# parameters: MINGFFLEN=$MINGFFLEN\n";
 
 # 0.3) prepare dryrun file if required
-if($runmode eq 'dryrun')
-{
+if($runmode eq 'dryrun') {
     open(DRYRUNLOG,">",$dryrun_file);
 }
 
@@ -549,19 +547,21 @@ printf("# taxa considered = %d genes = %d\n\n",$n_of_taxa,$total_genes);
 
 if($n_of_taxa<2){ die "# EXIT: need at least two taxa\n" }
 
-# 1.5) set reference proteome index and mask (by default 
-# takes genomes with least genes)
+# 1.5) set reference proteome index and mask, 
+# by default takes genomes with least genes)
 
 my ($geneome_size,$smallest_geneome,$smallest_geneome_name);
-my ($reference_genome, $reference_name);
+my ($reference_genome, $reference_name, $reference_prefix);
 
 for($taxon=0;$taxon<scalar(@taxa);$taxon++) {
+
   $geneome_size = $ngenes{$taxa[$taxon]};
 
   # update minimal proteome size
   if((defined($min_geneome_size) && $min_geneome_size== -1) ||
     (defined($min_geneome_size) && defined($geneome_size) 
     && $geneome_size < $min_geneome_size)) {
+
     $min_geneome_size = $geneome_size;
     $smallest_geneome_name = $taxa[$taxon];
     $smallest_geneome = $taxon;
@@ -586,8 +586,9 @@ if($reference_string eq '' || !$refOK) {
   $reference_genome = $smallest_geneome;
 }
 
-$reference_name =~ s/[\W+]//g;
-$output_mask = $reference_name."\_" . $output_mask;
+$reference_prefix = $reference_name;
+$reference_prefix =~ s/[\W+]//g;
+$output_mask = $reference_prefix."\_" . $output_mask;
 
 print "# mask=$output_mask ($pancore_mask)\n\n" if(!$onlywga);
 
@@ -708,6 +709,12 @@ if(!-s $merged_tsv_file || $current_files ne $previous_files) {
   }
 }
 
+if($onlywga) {
+  print "\n# terminating after WGA (-o)\n";
+  exit(0);
+}
+
+
 
 ## 3) extract clusters of collinear sequences and produce pangene set matrices
 
@@ -718,7 +725,7 @@ $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
 
 if($do_genome_composition) {
   $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";
-}
+} #print $command;
 
 
 my $printOK = 0;

@@ -2,11 +2,17 @@
 
 # This program computes whole genome alignments (WGA) to define clusters 
 # of collinear, orthologous genes/features annotated in GFF files. Such 
-# clusters might help define pan-genes across a pangenome.
+# clusters define pan-genes across a pangenome.
 # Several WGA algorithms are available and some parameters are customizable. 
 # It is designed to process (in a multicore computer or HPC cluster) files 
 # contained in a directory (-d), so that new .fna & .gff files can be added 
 # while conserving previous results. 
+# This script calls _cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl
+# and produces different types of output:
+# 1) clusters of CDA (nucl & pep) and cDNA sequences of collinear genes 
+# 2) pangenome matrices that summarize the genome occupancy of clusters
+# 3) matrix of % conserved sequences that summarize shared clusters across genomes
+# 4) optionally (-c) matrices with core- and pan-genome growth simulations
 
 # Copyright [2021-22] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -48,14 +54,13 @@ my ($dowfmash,$reference_string) = (0,0);
 my ($onlywga,$inputDIR,$alg) = (0);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft) = ($NUMCPUS,0);
-my ($do_POCP_matrix) = (0);
 my ($samtools_path,$bedtools_path) = ('','');
-my ($min_cluster_size,$runmode,$do_genome_composition,$POCP_matrix_file);
+my ($min_cluster_size,$runmode,$do_genome_composition);
 
 my $random_number_generator_seed = 0;
 my $pwd = getcwd(); $pwd .= '/';
 
-getopts('hvcPoAzWn:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvcoAzWn:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -72,7 +77,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(follows order in -I file if enforced,\n".
     "                                                               ".
     "with -t N skips clusters occup<N)\n";
-  print   "-R set random seed for genome composition analysis          ".
+  print   "-R set random seed for genome growth analysis               ".
     "(optional, requires -c, example -R 1234)\n";
   print   "-m runmode [local|cluster|dryrun]                           ".
     "(default: -m local)\n";
@@ -104,9 +109,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(by default takes file with\n".
     "                                                            ".   
     " least annotated genes/features)\n";
-  print   "-P calculate percentage of conserved sequences (POCS),      ".
-    "(optional, creates tab-separated matrix)\n";
-  print   "-z add soft-core to genome composition analysis\n";
+  #print   "-z add soft-core to genome composition analysis\n";
     
   print "\n".
     "This program computes whole genome alignments (WGA) to define clusters\n".
@@ -178,8 +181,6 @@ if($opts{'I'} && $inputDIR)
 
 check_installed_features(@FEATURES2CHECK);
 
-if(defined($opts{'P'})){ $do_POCP_matrix = 1 }
-
 if(defined($opts{'W'})) {
 
   $alg = 'Wmsh';
@@ -218,9 +219,6 @@ if(defined($opts{'c'})) {
   if($opts{'R'}) {
     $random_number_generator_seed = $opts{'R'};
   }  
-  
-  srand($random_number_generator_seed);
-
 } else{ $do_genome_composition = 0 }
 
 if(defined($opts{'O'})) {
@@ -265,8 +263,7 @@ if(defined($opts{'v'})) {
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode ".
   "-n $n_of_cpus -W $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
-  "-B '$bedtools_path' -S '$samtools_path' ".
-  "-R $random_number_generator_seed -P $do_POCP_matrix\n\n";
+  "-B '$bedtools_path' -S '$samtools_path' -R $random_number_generator_seed\n\n";
 
 if($runmode eq 'cluster')
 {
@@ -457,7 +454,7 @@ foreach $infile (@inputfiles) {
   # extract cDNA and CDS sequences
   # Note: this creates a FASTA index file that might be used by wfmash
   if(-s $outpep && -s $outCDS && -s $outcDNA) {
-    print "# re-using $outCDS\n";
+    #print "# re-using $outCDS\n";
     
   } else {
     $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
@@ -592,7 +589,7 @@ if($reference_string eq '' || !$refOK) {
 $reference_name =~ s/[\W+]//g;
 $output_mask = $reference_name."\_" . $output_mask;
 
-print "# mask=$output_mask ($pancore_mask)\n" if(!$onlywga);
+print "# mask=$output_mask ($pancore_mask)\n\n" if(!$onlywga);
 
 # 1.6) check previously processed input files to decide whether new WGAs
 # are needed and update $pangeneTools::selected_genomes_file
@@ -710,3 +707,27 @@ if(!-s $merged_tsv_file || $current_files ne $previous_files) {
 
   }
 }
+
+
+## 3) extract clusters of collinear sequences and produce pangene set matrices
+
+$command = "$ENV{'EXE_CLUSTANALYSIS'} ".
+  "-T $merged_tsv_file -r $reference_name ".
+  "-f ".basename($inputDIR)."_pangenes/$output_mask ".
+  "-t $min_cluster_size -s $newDIR ";
+
+if($do_genome_composition) {
+  $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";
+}
+
+
+my $printOK = 0;
+open(CLUSTERS, "$command |") ||
+  die "# ERROR: cannot run $command\n";
+while(<CLUSTERS>) {
+
+  if(/^# number of clusters/){ $printOK = 1 }
+  print if($printOK);
+}
+close(CLUSTERS);
+

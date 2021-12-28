@@ -4,12 +4,15 @@ use warnings;
 
 use Getopt::Long qw(:config no_ignore_case);
 
-# Produces pan-gene analysis based on clusters of collinear genes shared by
+# Makes pan-gene analysis based on clusters of collinear genes shared by
 # species in a pre-computed Minimap2/Wfmash synteny TSV file, produced by 
 # _collinear_genes.pl
 
 # Copyright [2021-22]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
+
+# ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f kk \
+#   -s rices4_pangenes/ -r Oryza_sativa.IRGSP-1.0 -g 8 -t 3
 
 my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
@@ -29,10 +32,10 @@ my $NOFSAMPLESREPORT = 10;
 
 my ( $ref_genome, $seqfolder, $clusterdir ) = ( '', '', '' );
 my ( $outfolder, $params) = ('', '');
-my ( $help, $sp, $sp2, $show_supported );
+my ( $help, $sp, $sp2, $show_supported, $seed );
 my ( $infile, $filename, $cdsfile, $pepfile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
-my ( $NOSINGLES , $GROWTH ) = ( 0, 0 );
+my ( $NOSINGLES , $dogrowth ) = ( 0, 0 );
 my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
 my ( @infiles, @supported_species, @ignore_species);
 my ( %species, %ignore, %supported );
@@ -45,10 +48,12 @@ GetOptions(
     "reference|r=s" => \$ref_genome,
     "ignore|i=s"    => \@ignore_species,
     "S|S"           => \$NOSINGLES,
-    "growth|g=i"    => \$GROWTH,
+    "growth|g=i"    => \$dogrowth,
     "folder|f=s"    => \$outfolder,
     "seq|s=s"       => \$seqfolder,
-    "mintaxa|t=i"   => \$min_taxa
+    "mintaxa|t=i"   => \$min_taxa,
+    #"soft|z"        => \$dosoft,
+    "seed|R=i"      => \$seed
 ) || help_message();
 
 sub help_message {
@@ -58,10 +63,12 @@ sub help_message {
       . "-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n"
       . "-l list supported species in -T file       (optional, example: -l)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
-      . "-g do pangene set growth simulations       (optional, example: -g 10. produces [core|pan_gene]*.tab files)\n" 
+      . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-s folder with gene seqs of species in TSV (optional, default: \$PWD)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
+      . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
+      #. "-z add soft-core to genome growth analysis (optional)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
     exit(0);
@@ -95,27 +102,28 @@ else {
         die "# ERROR: please set -r reference_genome\n";
     }
 
-    if ( $GROWTH && $GROWTH > 0) {
-        $NOFSAMPLESREPORT = $GROWTH;
+    if ( $dogrowth && $dogrowth > 0) {
+        $NOFSAMPLESREPORT = $dogrowth;
+
+        if($seed) { $RNDSEED = $seed }
     }
 
     if ($outfolder) {
         if ( -e $outfolder ) {
             print "\n# WARNING : folder '$outfolder' exists, files might be overwritten\n\n";
-        }
-        else {
+        } else {
             if ( !mkdir($outfolder) ) {
                 die "# ERROR: cannot create $outfolder\n";
             }
         }
 
-		# save list of input file names for future reference
-		open(INLOG,">","$outfolder/input.log") ||
-			die "# ERROR: cannot create $outfolder/input.log\n";
-		foreach $infile (@infiles) {
-			print INLOG "$infile\n";
-		}
-		close(INLOG);
+        # save list of input file names for future reference
+        open(INLOG,">","$outfolder/input.log") ||
+        die "# ERROR: cannot create $outfolder/input.log\n";
+        foreach $infile (@infiles) {
+            print INLOG "$infile\n";
+        }
+        close(INLOG);
 
         # create $clusterdir with $params
         $clusterdir .= $params;
@@ -131,7 +139,8 @@ else {
         exit;
     }
 
-    print "# $0 -r $ref_genome -f $outfolder -g $GROWTH -S $NOSINGLES -v $verbose -t $min_taxa\n";
+    print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES ".
+      "-v $verbose -t $min_taxa -R $RNDSEED\n";
     print "# ";
     foreach $infile (@infiles) {
         print "-T $infile ";
@@ -201,7 +210,7 @@ my ( $cluster_id, $chr, $seqtype ) = ( 0, '' );
 my ( @cluster_ids, %sorted_cluster_ids );
 my ( $ref_geneid, $ref_fasta );
 my ( %incluster, %cluster, %sequence );
-my ( %totalgenes, %totalclusters, %POCP_matrix );
+my ( %totalgenes, %totalclusters, %POCS_matrix );
 my ( %sorted_ids, %id2chr );
 
 # columns of TSV file as produced by get_collinear_genes.pl
@@ -218,11 +227,10 @@ my (
 );
 
 # Iteratively get and parse TSV files that define pairs of collinear 
-# genes computed with get_collinear_genes. After parsing all pairwise
-# TSV files clusters emerge.
+# genes computed with get_collinear_genes. 
+# Clusters emerge after parsing all pairwise TSV files
 foreach $infile (@infiles) {
 
-    # uncompress on the fly and parse
     open(TSV, "<", $infile)
       || die "# ERROR: cannot open $infile\n";
     while ( my $line = <TSV> ) {
@@ -292,8 +300,7 @@ foreach $cluster_id (@cluster_ids) {
 }
 
 # Get and parse FASTA files to get sequences & headers 
-# of isoforms in the Compara clusters
-# Note: uses %compara_isoform, created previously
+# Note: there are often several sequences for the same gene
 foreach $sp (@supported_species) {
 
     foreach $seqtype (@SEQTYPE) {
@@ -353,10 +360,10 @@ foreach $sp (@supported_species) {
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
-## 3) write sequence clusters, summary text file and POCP matrix
+## 3) write sequence clusters, summary text file and POCS matrix
 
-# POCP=Percent Conserved Sequences (POCP) matrix
-my $POCP_matrix_file = "$outfolder/POCP.matrix$params\.tab";
+# POCS=Percent Conserved Sequences (POCS) matrix
+my $POCS_matrix_file = "$outfolder/POCS.matrix$params\.tab";
 
 my $cluster_summary_file = "$outfolder/$clusterdir.cluster_list";
 
@@ -366,6 +373,8 @@ open( CLUSTER_LIST, ">", $cluster_summary_file )
 $n_core_clusters = 0;
 
 foreach $cluster_id (@cluster_ids) {
+
+    next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
 
     if ( scalar( keys( %{ $cluster{$cluster_id} } ) ) == $n_of_species ) {
         $n_core_clusters++;
@@ -383,10 +392,10 @@ foreach $cluster_id (@cluster_ids) {
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
           || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{$seqtype}\n";
 
-	    foreach $species (@supported_species) {
+	foreach $species (@supported_species) {
             next if ( !$cluster{$cluster_id}{$species} );
 
-			$n_cluster_sp++;
+            $n_cluster_sp++;
             foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
                 next if(!$sequence{$species}{$gene_stable_id}{$seqtype}); 
 
@@ -402,7 +411,7 @@ foreach $cluster_id (@cluster_ids) {
         close(CLUSTER);
 
         # cluster summary and PCOP update
-		# done with cDNAs, after cds & pep have been processed
+	# done with cDNAs, after cds & pep have been processed
         if($seqtype eq 'cdna'){
             @cluster_species = keys(%cluster_stats);
 
@@ -426,15 +435,15 @@ foreach $cluster_id (@cluster_ids) {
             foreach $sp ( 0 .. $#cluster_species - 1 ) {
                 foreach $sp2 ( $sp + 1 .. $#cluster_species ) {
 
-                    $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
+                    $POCS_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
                       $cluster_stats{ $cluster_species[$sp] };
-                    $POCP_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
+                    $POCS_matrix{ $cluster_species[$sp] }{ $cluster_species[$sp2] } +=
                       $cluster_stats{ $cluster_species[$sp2] };
 
                     # now in reverse order to make sure it all adds up
-                    $POCP_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
+                    $POCS_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
                       $cluster_stats{ $cluster_species[$sp] };
-                    $POCP_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
+                    $POCS_matrix{ $cluster_species[$sp2] }{ $cluster_species[$sp] } +=
                       $cluster_stats{ $cluster_species[$sp2] };
                 }				  
             }
@@ -449,62 +458,62 @@ printf( "\n# number_of_clusters = %d (core = %d)\n\n",
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
 print "# cluster_directory = $outfolder/$clusterdir\n";
 
-# print POCP matrix
-open( POCPMATRIX, ">$POCP_matrix_file" )
-  || die "# EXIT: cannot create $POCP_matrix_file\n";
+# print POCS matrix
+open( POCSMATRIX, ">$POCS_matrix_file" )
+  || die "# EXIT: cannot create $POCS_matrix_file\n";
 
-print POCPMATRIX "genomes";
+print POCSMATRIX "genomes";
 foreach $sp ( 0 .. $#supported_species ) {
-    print POCPMATRIX "\t$supported_species[$sp]";
+    print POCSMATRIX "\t$supported_species[$sp]";
 }
-print POCPMATRIX "\n";
+print POCSMATRIX "\n";
 
-my (%POCP2ref,$perc);
+my (%POCS2ref,$perc);
 
 foreach $sp ( 0 .. $#supported_species ) {
-    print POCPMATRIX "$supported_species[$sp]";
+    print POCSMATRIX "$supported_species[$sp]";
     foreach $sp2 ( 0 .. $#supported_species ) {
 
         if ( $sp == $sp2 ) { 
-            print POCPMATRIX "\t100.00"
+            print POCSMATRIX "\t100.00"
         }
         else {
-            if ( $POCP_matrix{ $supported_species[$sp] }
+            if ( $POCS_matrix{ $supported_species[$sp] }
                 { $supported_species[$sp2] } )
             {
                 $perc = sprintf("\t%1.2f",
                     (
-                        100 * $POCP_matrix{ $supported_species[$sp] }
+                        100 * $POCS_matrix{ $supported_species[$sp] }
                           { $supported_species[$sp2] }
                     ) / (
                         $totalgenes{ $supported_species[$sp] } +
                           $totalgenes{ $supported_species[$sp2] }
                     )
                 );
-                print POCPMATRIX "\t$perc";
+                print POCSMATRIX "\t$perc";
 
-                # save %POCP for all species vs reference
-                if($sp == 0){ $POCP2ref{$supported_species[$sp2]} = $perc }
+                # save %POCS for all species vs reference
+                if($sp == 0){ $POCS2ref{$supported_species[$sp2]} = $perc }
             }
             else {
-                print POCPMATRIX "\tNA";
+                print POCSMATRIX "\tNA";
             }
         }
     }
-    print POCPMATRIX "\n";
+    print POCSMATRIX "\n";
 }
-close(POCPMATRIX);
+close(POCSMATRIX);
 
-print "\n# percent_conserved_proteins_file = $POCP_matrix_file\n\n";
+print "\n# percent_conserved_proteins_file = $POCS_matrix_file\n\n";
 
-# sort species from ref down by decreasing POCP
-my @supported_species_POCP;
+# sort species from ref down by decreasing POCS
+my @supported_species_POCS;
 
 # reference goes in 1st place
-push(@supported_species_POCP, $ref_genome);
+push(@supported_species_POCS, $ref_genome);
 
-foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
-    push(@supported_species_POCP, $sp2);
+foreach $sp2 (sort {$POCS2ref{$b}<=>$POCS2ref{$a}} keys(%POCS2ref)) {
+    push(@supported_species_POCS, $sp2);
 }
 
 
@@ -514,17 +523,17 @@ foreach $sp2 (sort {$POCP2ref{$b}<=>$POCP2ref{$a}} keys(%POCP2ref)) {
 push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
 
 # set matrix filenames and write headers
-my $pangenome_matrix_file = "$outfolder/pangenome_matrix$params\.tab";
-my $pangenome_gene_file   = "$outfolder/pangenome_matrix_genes$params\.tab";
-my $pangenome_matrix_tr   = "$outfolder/pangenome_matrix$params\.tr.tab";
-my $pangenome_gene_tr     = "$outfolder/pangenome_matrix_genes$params\.tr.tab";
-my $pangenome_fasta_file  = "$outfolder/pangenome_matrix$params\.fasta";
+my $pangene_matrix_file = "$outfolder/pangene_matrix$params\.tab";
+my $pangene_gene_file   = "$outfolder/pangene_matrix_genes$params\.tab";
+my $pangene_matrix_tr   = "$outfolder/pangene_matrix$params\.tr.tab";
+my $pangene_gene_tr     = "$outfolder/pangene_matrix_genes$params\.tr.tab";
+my $pangene_fasta_file  = "$outfolder/pangene_matrix$params\.fasta";
 
-open( PANGEMATRIX, ">$pangenome_matrix_file" )
-  || die "# EXIT: cannot create $pangenome_matrix_file\n";
+open( PANGEMATRIX, ">$pangene_matrix_file" )
+  || die "# EXIT: cannot create $pangene_matrix_file\n";
 
-open( PANGENEMATRIX, ">$pangenome_gene_file" )
-  || die "# EXIT: cannot create $pangenome_gene_file\n";
+open( PANGENEMATRIX, ">$pangene_gene_file" )
+  || die "# EXIT: cannot create $pangene_gene_file\n";
 
 print PANGEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (keys(%sorted_cluster_ids)) {
@@ -544,10 +553,10 @@ foreach $chr (keys(%sorted_cluster_ids)) {
 }	
 print PANGENEMATRIX "\n";
 
-open( PANGEMATRIF, ">$pangenome_fasta_file" )
-  || die "# EXIT: cannot create $pangenome_fasta_file\n";
+open( PANGEMATRIF, ">$pangene_fasta_file" )
+  || die "# EXIT: cannot create $pangene_fasta_file\n";
 
-foreach $species (@supported_species_POCP) {
+foreach $species (@supported_species_POCS) {
 
     print PANGEMATRIX "$species";
     print PANGENEMATRIX "$species";
@@ -587,20 +596,20 @@ close(PANGEMATRIX);
 close(PANGENEMATRIX);
 close(PANGEMATRIF);
 
-system("$TRANSPOSEXE $pangenome_matrix_file > $pangenome_matrix_tr");
-system("$TRANSPOSEXE $pangenome_gene_file > $pangenome_gene_tr");
+system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
+system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
 print
-"# pangenome_file = $pangenome_matrix_file tranposed = $pangenome_matrix_tr\n";
+  "# pangene_file (occup) = $pangene_matrix_file tranposed = $pangene_matrix_tr\n";
 print
-  "# pangenome_genes = $pangenome_gene_file transposed = $pangenome_gene_tr\n";
-print "# pangenome_FASTA_file = $pangenome_fasta_file\n";
+  "# pangene_file (names) = $pangene_gene_file transposed = $pangene_gene_tr\n";
+#print "# pangene_FASTA_file = $pangene_fasta_file\n";
+
+exit if(!$dogrowth);
 
 
-
-exit if(!$GROWTH);
-
-## 5) optionally make genome composition analysis to simulate pangene growth
+## 5) optionally make genome composition analysis to simulate pangene set growth
+##    as new annotated genomes are added to the pool
 ## NOTE: this is measured in clusters added/missed per genome
 
 my ( $core_occup, $mean, $sd, $data_file, $sort, $s ); #$s = sample
@@ -658,7 +667,7 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
         $core_occup          = $sp + 1;
 
         foreach $chr (keys(%sorted_cluster_ids)) {
-	        foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+            foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
 
                 # check reference species is in this cluster (1st iteration only)
                 if ( $sp == 1 && $cluster{$cluster_id}{ $tmptaxa[0] } ) {
@@ -672,8 +681,7 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
 
                 # check cluster occupancy
                 if (   $n_of_taxa_in_cluster{$cluster_id}
-                    && $cluster{$cluster_id}{ $tmptaxa[$sp] } )
-                {
+                    && $cluster{$cluster_id}{ $tmptaxa[$sp] } ) {
 
                     # core genes must contain all previously seen species
                     if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {

@@ -1,17 +1,17 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-
 use Getopt::Long qw(:config no_ignore_case);
 
 # Makes pan-gene analysis based on clusters of collinear genes shared by
 # species in a pre-computed Minimap2/Wfmash synteny TSV file, produced by 
 # _collinear_genes.pl
+# Adapted from https://github.com/eead-csic-compbio/get_homologues
 
 # Copyright [2021-22]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
-# ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f kk \
+# ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f folder \
 #   -s rices4_pangenes/ -r Oryza_sativa.IRGSP-1.0 -g 8 -t 3
 
 my $TRANSPOSEXE =
@@ -65,7 +65,7 @@ sub help_message {
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
       . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      . "-s folder with gene seqs of species in TSV (optional, default: \$PWD)\n"
+      . "-s folder with gene seqs of species in TSV (optional, default current folder)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       #. "-z add soft-core to genome growth analysis (optional)\n"
@@ -141,6 +141,7 @@ else {
 
     print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES ".
       "-v $verbose -t $min_taxa -R $RNDSEED\n";
+
     print "# ";
     foreach $infile (@infiles) {
         print "-T $infile ";
@@ -198,13 +199,13 @@ if($show_supported) {
     foreach $sp (@supported_species) {
         print "$sp\n";
     }
-	exit(0);
+    exit(0);
 }
 
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
-## 2) infer pairs of collinear gens and make up clusters 
+## 2) parse pairs of collinear genes and make up clusters 
 
 my ( $cluster_id, $chr, $seqtype ) = ( 0, '' );
 my ( @cluster_ids, %sorted_cluster_ids );
@@ -337,8 +338,9 @@ foreach $sp (@supported_species) {
     my $singletons = 0;
 
     foreach $gene_stable_id ( @{ $sorted_ids{$sp} } ) {
-
+        
         next if ( $NOSINGLES || $incluster{$gene_stable_id} );
+        # print $gene_stable_id; exit;
 
         # create new cluster
         $cluster_id = $gene_stable_id;
@@ -359,6 +361,7 @@ foreach $sp (@supported_species) {
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
+
 
 ## 3) write sequence clusters, summary text file and POCS matrix
 
@@ -453,7 +456,7 @@ foreach $cluster_id (@cluster_ids) {
 
 close(CLUSTER_LIST);
 
-printf( "\n# number_of_clusters = %d (core = %d)\n\n",
+printf( "\n# number of clusters = %d (core = %d)\n\n",
     scalar(@cluster_ids), $n_core_clusters );
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
 print "# cluster_directory = $outfolder/$clusterdir\n";
@@ -714,7 +717,7 @@ print "# core-gene (number of clusters) = $core_file\n";
 
 #######################################################
 
-# Takes the name string of a FASTA file created by cut_sequences.pl
+# Takes the name string of a FASTA file created by _cut_sequences.pl
 # and parses the sequences in there. Assumes the following header
 # format: ">mrnaid geneid coords [production_name]" and thus supports
 # the same gene having several associated sequences.
@@ -758,8 +761,7 @@ sub factorial {
 # based on http://www.unix.org.ua/orelly/perl/cookbook/ch04_18.htm
 # generates a random permutation of @array in place and returns 
 # string with concatenated elements
-sub fisher_yates_shuffle
-{
+sub fisher_yates_shuffle {
   my ($array) = (@_);
   my ($i,$j);
 

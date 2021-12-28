@@ -51,3 +51,9 @@ uninstall_repeats:
 
 clean_repeats:
 	cd repeats && rm -rf test_Atha_chr4 Atha.sm.fna test.nrTEplants.bed
+
+install_pangenes:
+	cd pangenes/bin && git clone https://github.com/ekg/wfmash && cd wfmash && cmake -H. -Bbuild && cmake --build build -- -j 3
+        cd pangenes/bin && wget https://github.com/lh3/minimap2/releases/download/v2.17/minimap2-2.17.tar.bz2 && tar xfj minimap2-2.17.tar.bz2 && make
+	cd pangenes/bin && wget https://github.com/gpertea/gffread/releases/download/v0.12.7/gffread-0.12.7.Linux_x86_64.tar.gz && tar xfz gffread-0.12.7.Linux_x86_64.tar.gz
+

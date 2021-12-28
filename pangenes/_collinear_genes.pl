@@ -480,7 +480,7 @@ sub parse_genes_GFF {
         if ( $F[8] =~ /ID=([^;]+)/ ) {
 
             $geneid = $1;
-            $geneid =~ s/gene://;    # remove redundant bits
+            #$geneid =~ s/gene://;    # remove redundant bits
 
             printf( BED "%s\t%d\t%d\t%s\t%s\t%s\n",
                 $F[0],

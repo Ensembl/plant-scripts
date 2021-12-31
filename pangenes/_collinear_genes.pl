@@ -179,7 +179,7 @@ if ( !$outfilename ) {
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check "
-  . "-S '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path "
+  . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path "
   . "-T $tmpdir -t $threads -i $indexonly -r $reuse\n\n"
   ;    # -f $dofragments
 
@@ -218,20 +218,20 @@ else {
 my $geneBEDfile1 = $tmpdir . "_$sp1.gene.bed";
 my $geneBEDfile2 = $tmpdir . "_$sp2.gene.bed";
 
-if($reuse && -s $geneBEDfile1 && -s $geneBEDfile2) {
+if($reuse && -s $geneBEDfile1) {
     print "# re-using $geneBEDfile1\n";
-    print "# re-using $geneBEDfile2\n";
 } else {
-
     my ( $num_genes1, $mean_gene_len1 ) = parse_genes_GFF( $gff1, $geneBEDfile1 );
     printf( "# %d genes parsed in %s mean length=%d\n",
         $num_genes1, $gff1, $mean_gene_len1 );
+}
 
-    if(!$indexonly) {
-        my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
-        printf( "# %d genes parsed in %s mean length=%d\n",
-            $num_genes2, $gff2, $mean_gene_len2 );
-    }
+if($reuse && -s $geneBEDfile2) {
+    print "# re-using $geneBEDfile2\n";
+} elsif(!$indexonly) {
+    my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
+    printf( "# %d genes parsed in %s mean length=%d\n",
+        $num_genes2, $gff2, $mean_gene_len2 );
 }
 
 # 1.x) if required cut $fasta2 in fragments containing neighbor genes, TO BE DONE
@@ -264,7 +264,7 @@ else {
 my $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.paf";
 if ($split_chr_regex ne '') {
     $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.split.paf";
-}
+} #die "$split_chr_regex $PAFfile\n";
 
 #if ($dofragments) {
 #    $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf";

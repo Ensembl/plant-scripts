@@ -60,7 +60,8 @@ my $TRANSCRIPT2GENE = 0;
 
 my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0 );
 my ($dowfmash, $dofragments, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
-my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 );
+my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
+  ( '', '', '', '', '', '', '');
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs );
 my ( $indexonly, $minoverlap, $qual, $alg, $outfilename ) =
   ( 0, $MINOVERLAP, $MINQUAL, 'minimap2' );
@@ -98,9 +99,9 @@ sub help_message {
       . "-sp1 binomial/trinomial species name    (required, example: -sp1 oryza_sativa)\n"
       . "-fa1 genome FASTA [.gz] filename        (required, example: -fa1 oryza_sativa.fna, use bgzip with -wf)\n"
       . "-gf1 GFF [.gz] filename                 (required, example: -gf1 oryza_sativa.RAPDB.gff)\n"
-      . "-sp2 binomial/trinomial species name    (optional, example: -sp2 oryza_nivara_OGE)\n"
-      . "-fa2 genome FASTA [.gz] filename        (optional, example: -fa2 oryza_nivara.fna)\n"
-      . "-gf2 GFF [.gz] filename                 (optional, example: -gf2 oryza_nivara.OGE.gff)\n"
+      . "-sp2 binomial/trinomial species name    (required, example: -sp2 oryza_nivara_OGE)\n"
+      . "-fa2 genome FASTA [.gz] filename        (required, example: -fa2 oryza_nivara.fna)\n"
+      . "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
       . "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
       . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
@@ -122,9 +123,7 @@ sub help_message {
 }
 
 if ( $help 
-    || ($indexonly && (!$sp1 || !$fasta1 || !$gff1) ) 
-    || (!$indexonly && 
-      (!$sp1 || !$fasta1 || !$gff1 || !$sp2 || !$fasta2 || !$gff2) ) ) {
+    || (!$sp1 || !$fasta1 || !$gff1 || !$sp2 || !$fasta2 || !$gff2) ) {
     help_message();
     exit(0);
 }
@@ -219,7 +218,7 @@ else {
 my $geneBEDfile1 = $tmpdir . "_$sp1.gene.bed";
 my $geneBEDfile2 = $tmpdir . "_$sp2.gene.bed";
 
-if($reuse && -s $geneBEDfile1 && $geneBEDfile2) {
+if($reuse && -s $geneBEDfile1 && -s $geneBEDfile2) {
     print "# re-using $geneBEDfile1\n";
     print "# re-using $geneBEDfile2\n";
 } else {
@@ -228,9 +227,11 @@ if($reuse && -s $geneBEDfile1 && $geneBEDfile2) {
     printf( "# %d genes parsed in %s mean length=%d\n",
         $num_genes1, $gff1, $mean_gene_len1 );
 
-    my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
-    printf( "# %d genes parsed in %s mean length=%d\n",
-        $num_genes2, $gff2, $mean_gene_len2 );
+    if(!$indexonly) {
+        my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
+        printf( "# %d genes parsed in %s mean length=%d\n",
+            $num_genes2, $gff2, $mean_gene_len2 );
+    }
 }
 
 # 1.x) if required cut $fasta2 in fragments containing neighbor genes, TO BE DONE
@@ -251,17 +252,9 @@ if($reuse && -s $geneBEDfile1 && $geneBEDfile2) {
 # Note: reduces complexity (good for large/polyploid genomes) but misses translocations
 if ($split_chr_regex ne '') {
 
-    my $summaryfile = $tmpdir .
-        "_".basename($fasta1).
-        ".".basename($fasta2).
-        ".summary";
-
-    if($reuse && -e $summaryfile) {
-        $ref_chr_pairs = read_split_summary($summaryfile)
-    } else {
-        $ref_chr_pairs = 
-            split_genome_sequences_per_chr($tmpdir, $fasta1, $fasta2, $split_chr_regex);
-    }
+    $ref_chr_pairs = 
+        split_genome_sequences_per_chr($tmpdir, $fasta1, $fasta2, 
+            $split_chr_regex, $indexonly);
 }
 else {
     # single reference by default
@@ -277,7 +270,11 @@ if ($split_chr_regex ne '') {
 #    $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf";
 #}
 
-print "# computing pairwise genome alignment with $alg\n\n";
+if($indexonly) {
+    print "# indexing genome with $alg\n\n";
+} else {
+    print "# computing pairwise genome alignment with $alg\n\n";
+}
 
 if ( $reuse && -s $PAFfile ) {
     print "# re-using $PAFfile\n";
@@ -312,7 +309,7 @@ else {
         }
 
         # make empty PAF file when chr files are empty
-        if(!-s $chrfasta1 || !-s $chrfasta2) {
+        if(!$indexonly && (!-s $chrfasta1 || !-s $chrfasta2)) {
             open(EMPTYPAF, ">", $splitPAF); 
             close(EMPTYPAF);
             push(@WGAoutfiles, $splitPAF);
@@ -579,18 +576,19 @@ sub read_FASTA_regex2hash {
     return \%fasta;
 }
 
-# Takes 4 strings:
+# Takes 5 params:
 # 1) path to write files to
 # 2) name of FASTA file (ref)
 # 3) name of FASTA file (query)
 # 4) regex to match chromosome names
+# 5) indexing job (boolean)
 # Returns ref to hash with chr and/or 'unplaced' as keys and two FASTA files as value (ref, query)
 # Note: 'unplaced' might hold genuine unplaced sequences but also non-shared chr names
 # Note: creates FASTA files with prefix _ 
-# Note: creates also summary file with list of split pairs of FASTA files
+# Note: if doindex is true only creates files for $fastafile1
 sub split_genome_sequences_per_chr {
 
-    my ($path,$fastafile1,$fastafile2,$regex) = @_;
+    my ($path,$fastafile1,$fastafile2,$regex,$doindex) = @_;
 
     my ($chr,$chrfasta1,$chrfasta2,$summaryfile);
     my (%shared_chrs,%chr_pairs);
@@ -605,14 +603,6 @@ sub split_genome_sequences_per_chr {
         }
     } #print join ',', keys(%$ref_fasta1);
 
-    # open summary file
-    $summaryfile = $path . 
-        "_".basename($fastafile1).
-        ".".basename($fastafile2).
-        ".summary";
-    open(SUM,">",$summaryfile) ||
-        die "# ERROR(split_genome_sequences_per_chr): cannot write $summaryfile\n";
-
     # write chr-specific FASTA files
     foreach $chr (keys(%shared_chrs)) { #print ">$chr\n";
         $chrfasta1 = $path . "_".basename($fastafile1).".$chr.fna";
@@ -624,14 +614,15 @@ sub split_genome_sequences_per_chr {
         print CHRFASTA1 $ref_fasta1->{$chr};
         close(CHRFASTA1);
 
-        open( CHRFASTA2, ">$chrfasta2") ||
-            die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
-        print CHRFASTA2 ">$chr\n";
-        print CHRFASTA2 $ref_fasta2->{$chr};
-        close(CHRFASTA2);
+        if(!$doindex) {
+            open( CHRFASTA2, ">$chrfasta2") ||
+                die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
+            print CHRFASTA2 ">$chr\n";
+            print CHRFASTA2 $ref_fasta2->{$chr};
+            close(CHRFASTA2);
+        }
 
         $chr_pairs{$chr} = [$chrfasta1,$chrfasta2];
-        print SUM "$chr\t$chrfasta1\t$chrfasta2\n";
     }
 
     # write unplaced and/or not-shared chr names
@@ -647,40 +638,18 @@ sub split_genome_sequences_per_chr {
     }
     close(CHRFASTA1);
 
-    open( CHRFASTA2, ">$chrfasta2") ||
-        die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
-    foreach $chr (keys(%$ref_fasta2)){
-        next if(defined($shared_chrs{$chr}));
-        print CHRFASTA2 ">$chr\n";
-        print CHRFASTA2 $ref_fasta2->{$chr};
+    if(!$doindex) {
+        open( CHRFASTA2, ">$chrfasta2") ||
+            die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
+        foreach $chr (keys(%$ref_fasta2)){
+            next if(defined($shared_chrs{$chr}));
+            print CHRFASTA2 ">$chr\n";
+            print CHRFASTA2 $ref_fasta2->{$chr};
+        }
+        close(CHRFASTA2);
     }
-    close(CHRFASTA2);
 
     $chr_pairs{'unplaced'} = [$chrfasta1,$chrfasta2];
-    print SUM "unplaced\t$chrfasta1\t$chrfasta2\n";
-	
-    close(SUM);
-
-    return \%chr_pairs;
-}
-
-# Takes 1 string:
-# 1) name of summary file created with split_genome_sequences_per_chr
-# Returns ref to hash with chr and/or 'unplaced' as keys and two FASTA files as value (ref, query)
-sub read_split_summary {
-
-    my ($summaryfile) = @_;
-
-    my ($chr,$chrfasta1,$chrfasta2);
-    my (%chr_pairs);
-
-    open(SUM,"<",$summaryfile) ||
-        die "# ERROR(read_split_summary): cannot read $summaryfile\n";
-    while(<SUM>) {
-        ($chr,$chrfasta1,$chrfasta2) = split(/\t/);
-        $chr_pairs{$chr} = [$chrfasta1,$chrfasta2];        
-    }
-    close(SUM);
 
     return \%chr_pairs;
 }

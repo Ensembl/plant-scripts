@@ -340,7 +340,7 @@ else {
             if ( $? != 0 ) {
                 die "# ERROR: failed running wfmash (probably ran out of memory)\n";
             }
-            elsif ( !-s $PAFfile ) {
+            elsif ( !-e $PAFfile ) {
                 die "# ERROR: failed generating $splitPAF file (wfmash)\n";
             } else {
                 push(@WGAoutfiles, $splitPAF);
@@ -369,7 +369,7 @@ else {
             if ( $? != 0 ) {
                 die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
             }
-            elsif ( !-s $splitPAF ) {
+            elsif ( !-e $splitPAF ) {
                 die "# ERROR: failed generating $splitPAF file (minimap2)\n";
             }
             else {

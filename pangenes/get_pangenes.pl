@@ -97,7 +97,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(optional, range [0-1], default: -O $MINOVERLAP)\n";
   print   "-Q min mapping quality, minimap2 only                       ".
     "(optional, default: -Q $MINQUAL)\n";
-  print   "-s split genome in chrs                                     ".
+  print   "-s split genome in chrs, align only homologous chrs         ".
     '(optional, requires regex to match chr names ie: -S \'^\d+$\')'."\n";  
 
   print   "\nOptions that control clustering:\n";
@@ -118,8 +118,11 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "Several WGA algorithms are available and some parameters are customizable.\n".
     "It is designed to process (in a multicore computer or HPC cluster) files\n".
     "contained in a directory (-d), so that new .fna & .gff files can be added\n".
-    "while conserving previous results.\n";
-
+    "while conserving previous results. Produces different types of output:\n".
+    " 1) clusters of CDA (nucl & pep) and cDNA sequences of collinear genes\n".
+    " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
+    " 3) matrix of % conserved sequences that summarize shared clusters across genomes\n".
+    " 4) optionally (-c) matrices with core- and pan-genome growth simulations\n";
   exit;
 }
 

@@ -133,7 +133,7 @@ if ( !-s $fasta1 || !-s $gff1 || !-s $fasta2 || !-s $gff2 ) {
     exit(0);
 }
 
-if ( $sp1 eq $sp2 ) {
+if ( !$indexonly && $sp1 eq $sp2 ) {
     print "# ERROR: please make sure -sp1 and sp2 are different\n";
     exit(0);
 }

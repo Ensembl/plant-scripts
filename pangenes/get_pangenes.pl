@@ -607,14 +607,68 @@ close(SEL);
 
 ## 2) compute pairwise whole-genome alignments (WGA) and call collinear genes
 
-# remove previous results to avoid confusion
-unlink($merged_tsv_file);
-
 my ($outTSVfile,@tmp_wga_output_files);
 
-# remove previous results to avoid confusion if required (-I,new files)
-if($current_files ne $previous_files){ unlink($merged_tsv_file) } 
-  
+# remove previous merged results to make sure they are updated if needed
+unlink($merged_tsv_file);
+
+print "\n# indexing genomes ...\n";
+foreach $tx1 (0 .. $#taxa-1) {
+
+  $taxon = $taxa[$tx1];
+  next if($include_file && !$included_input_files{$taxon});
+
+  foreach $tx2 ($tx1+1 .. $#taxa) {
+
+    $taxon2 = $taxa[$tx2];
+    next if($include_file && !$included_input_files{$taxon2});
+
+    $clusteroutfile = "$taxon.$taxon2.index.queue";
+
+    $command = "$ENV{'EXE_COLLINEAR'} ".
+        "-sp1 $taxon ".
+        "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
+        "-sp2 $taxon2 ".
+        "-fa2 $newDIR/_$taxon2.fna -gf2 $newDIR/_$taxon2.gff ".
+        "-T $TMP_DIR -i -r ";
+    
+    if($split_chr_regex) {
+      $command .= "-s '$split_chr_regex' ";
+    }
+    if($dowfmash) {
+      $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
+    } else {
+      $command .= "-M $ENV{'EXE_MINIMAP'} ";
+    }
+
+    if($runmode eq 'cluster') {
+      submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+    } elsif($runmode eq 'dryrun') {
+      $command =~ s/\\//g;
+      print DRYRUNLOG "$command\n";
+      $total_dry++;
+    } else { # 'local' runmode
+      $command = "$command > /dev/null";
+      system("$command");
+      if($? != 0) {
+        die "# EXIT: failed while indexing genomes ($command)\n";
+      }
+    }
+  }
+}
+
+# wait until cluster jobs are done
+if($runmode eq 'cluster') {
+  check_cluster_jobs($newDIR,\%cluster_PIDs);
+
+} elsif($runmode eq 'dryrun' && $total_dry > 0) {
+  close(DRYRUNLOG);
+  print "# EXIT: check the list of pending commands at $dryrun_file\n";
+  exit;
+}
+
+print "# done\n\n";
+
 print "\n# running pairwise genome alignments ...\n";
 foreach $tx1 (0 .. $#taxa-1) {
 
@@ -647,7 +701,7 @@ foreach $tx1 (0 .. $#taxa-1) {
         "-sp2 $taxon2 ".
         "-fa2 $newDIR/_$taxon2.fna -gf2 $newDIR/_$taxon2.gff ".
         "-B $ENV{'EXE_BEDTOOLS'} -T $TMP_DIR ".
-        "-add -out $outTSVfile ";
+        "-add -out $outTSVfile -r "; # reuse index & tmp files
 
     if($split_chr_regex) {
       $command .= "-s '$split_chr_regex' ";

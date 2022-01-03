@@ -180,8 +180,7 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path "
-  . "-T $tmpdir -t $threads -i $indexonly -r $reuse\n\n"
-  ;    # -f $dofragments
+  . "-T $tmpdir -t $threads -i $indexonly -r $reuse\n\n";
 
 # check binaries
 if(`$bedtools_path` !~ 'sage') {
@@ -354,7 +353,7 @@ else {
                 print "# re-using $index_fasta1\n";
             }
             else {
-                system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1 2>&1");
+                system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1");
                 if ( $? != 0 ) {
                     die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
                 }
@@ -365,7 +364,7 @@ else {
 
             next if($indexonly);
 
-            system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $chrfasta2 -o $splitPAF 2>&1");
+            system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $chrfasta2 -o $splitPAF");
             if ( $? != 0 ) {
                 die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
             }

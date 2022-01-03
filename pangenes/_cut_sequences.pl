@@ -8,7 +8,7 @@ use Getopt::Long qw(:config no_ignore_case);
 #
 # Uses external software: gffread [https://f1000research.com/articles/9-304/v2]
 
-# Copyright [2021] 
+# Copyright [2021-22] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
@@ -16,13 +16,15 @@ use Getopt::Long qw(:config no_ignore_case);
 
 my $GFFREADEXE = 'gffread'; # v0.12.7
 
-my ( $help, $nored, $gffreadpath, $sp1, $fasta1, $gff1, $tname, $outpath ) = (0,0);
+my ( $help, $nored, $gffreadpath, $sp1, $fasta1) = (0, 0);
+my ( $minlen, $gff1, $tname, $outpath ) = (0);
 
 GetOptions(
 	"help|?"       => \$help,
 	"sp|species=s" => \$sp1,
 	"fa|fasta=s"   => \$fasta1,
 	"gf|gff=s"     => \$gff1,
+	"l|minlen=i"   => \$minlen,
 	"nr|n"         => \$nored,
 	"p|path=s"     => \$gffreadpath,
 	"o|outpath=s"  => \$outpath
@@ -33,6 +35,7 @@ sub help_message {
 		. "-sp binomial/trinomial species name (required, example: -sp oryza_sativa, used to name outfiles)\n"
 		. "-fa genome FASTA filename           (required, example: -fa oryza_sativa.fna)\n"
 		. "-gf GFF filename                    (required, example: -gf oryza_sativa.RAPDB.gff)\n"
+		. "-l  min length (bp) of features     (optional, example: -l 100)\n"
 		. "-nr remove redundancy in seq names  (optional, ie 'gene:ONIVA01G00100')\n"
 		. "-p  path to gffread binary          (optional, default: $GFFREADEXE)\n"
 		. "-o  path to output folder           (optional, default current folder)\n\n"
@@ -53,6 +56,10 @@ if(!$gffreadpath){
 	$gffreadpath = $GFFREADEXE;
 }
 
+if($minlen < 1){ 
+	$minlen = 0 
+}
+
 # set output filenames
 my $cdnafile = "$sp1.cdna.fna";
 my $cdsfile  = "$sp1.cds.fna";
@@ -63,16 +70,16 @@ if($outpath) {
 	$pepfile  = "$outpath/$sp1.cds.faa";
 }
 
-print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -nr $nored -path $gffreadpath\n\n";
+print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -l $minlen -nr $nored -path $gffreadpath\n\n";
 
 my ($ref_names, $ref_coords) = parse_genes($gff1);
 
 my $num_cdna = parse_gffread($gffreadpath,$fasta1,$gff1,$cdnafile,
-	'cdna',$nored,$ref_names,$ref_coords);
+	'cdna',$minlen,$nored,$ref_names,$ref_coords);
 my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,
-	'cds',$nored,$ref_names,$ref_coords);
+	'cds',$minlen,$nored,$ref_names,$ref_coords);
 my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,
-	'pep',$nored,$ref_names,$ref_coords);
+	'pep',$minlen,$nored,$ref_names,$ref_coords);
 
 printf("# genes n=%d\n",scalar(keys(%$ref_names)));
 print "# $cdnafile n=$num_cdna\n";
@@ -86,7 +93,7 @@ print "# $pepfile n=$num_pep\n";
 sub parse_gffread {
 
 	my ($gffreadexe,$fasta_file,$gff_file,$outfile,
-		$seqtype,$remove_red,$ref_tr2gene,$ref_tr2coords) = @_;
+		$seqtype,$minlen,$remove_red,$ref_tr2gene,$ref_tr2coords) = @_;
 
 	my ($params,$mrnaid,$geneid,$coords);
 
@@ -96,6 +103,10 @@ sub parse_gffread {
 		$params = '-y - ';
 	} else {
 		$params = '-w - '; # cDNA, default
+	}
+
+	if($minlen > 0) {
+		$params .= " -l $minlen ";
 	}
 
 	my $num_seqs = 0;
@@ -127,7 +138,7 @@ sub parse_gffread {
 
 	close(OUT);
 
-	# clean index (used later)
+	# do not remove index (used later)
         # unlink($fasta_file.'.fai'); 
 
 	return $num_seqs

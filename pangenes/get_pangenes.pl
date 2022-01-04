@@ -508,7 +508,7 @@ if($runmode eq 'cluster') {
   exit;
 } 
 
-# confirm and QC outfiles
+# confirm outfiles
 foreach $gffile (@gff_outfiles) {
   if(!-e $gffile){
     die "# EXIT, $gffile does not exist, GFF job search might failed ".

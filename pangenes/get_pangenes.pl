@@ -10,7 +10,7 @@
 #
 # This script calls _cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl
 # and produces different types of output:
-# 1) clusters of CDA (nucl & pep) and cDNA sequences of collinear genes 
+# 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes 
 # 2) pangenome matrices that summarize the genome occupancy of clusters
 # 3) matrix of % conserved sequences that summarize shared clusters across genomes
 # 4) optionally (-c) matrices with core- and pan-genome growth simulations
@@ -45,7 +45,7 @@ my $NOFSAMPLESREPORT = 20; # number of samples used for the generation of pan/co
 ## list of features/binaries required by this program (do not edit)
 my @FEATURES2CHECK = (
   'EXE_MINIMAP','EXE_SAMTOOLS','EXE_BEDTOOLS','EXE_WFMASH','EXE_GFFREAD',
-  'EXE_COLLINEAR','EXE_CUTSEQUENCES',
+  'EXE_COLLINEAR','EXE_CUTSEQUENCES','EXE_CLUSTANALYSIS',
   'EXE_ZCAT'
 );
 
@@ -120,11 +120,33 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "It is designed to process (in a multicore computer or HPC cluster) files\n".
     "contained in a directory (-d), so that new .fna & .gff files can be added\n".
     "while conserving previous results. Produces different types of output:\n\n".
-    " 1) clusters of CDA (nucl & pep) and cDNA sequences of collinear genes\n".
+    " 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes\n".
     " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
     " 3) matrix of % conserved sequences that summarize shared clusters across genomes\n".
     " 4) optionally (-c) matrices with core- and pan-genome growth simulations\n";
   exit;
+}
+
+# read version number from CHANGES.txt
+open(CHANGES,"$Bin/CHANGES.txt");
+while(<CHANGES>) {
+  if(eof && /^(\d+):/){ $VERSION = $1 }
+}
+close(CHANGES);
+
+if(defined($opts{'v'})) {
+
+  print "\n$0 version $VERSION\n";
+  print "\nPrimary citation:\n\n";
+  # ...
+  print "\nThis software uses external algorithms, please cite them accordingly:\n";
+  print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
+  print " wfmash   https://github.com/ekg/wfmash\n";
+  #print " gffread  https://f1000research.com/articles/9-304/v2\n";
+
+  # check all binaries and data needed by this program and print diagnostic info
+  print check_installed_features(@FEATURES2CHECK);
+  exit(0);
 }
 
 if(defined($opts{'d'})) {
@@ -241,28 +263,6 @@ if(defined($opts{'B'})) {
 #  $samtools_path = $opts{'S'};
 #  $ENV{"EXE_SAMTOOLS"} = $samtools_path;
 #}
-
-# read version number from CHANGES.txt
-open(CHANGES,"$Bin/CHANGES.txt");
-while(<CHANGES>) {
-  if(eof && /^(\d+):/){ $VERSION = $1 }
-}
-close(CHANGES);
-
-if(defined($opts{'v'})) {
-
-  print "\n$0 version $VERSION\n";
-  print "\nPrimary citation:\n\n";
-  # ...
-  print "\nThis software uses external algorithms, please cite them accordingly:\n";
-  print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
-  print " wfmash   https://github.com/ekg/wfmash\n";
-  #print " gffread  https://f1000research.com/articles/9-304/v2\n";
-
-  # check all binaries and data needed by this program and print diagnostic info
-  print check_installed_features(@FEATURES2CHECK);
-  exit(0);
-}
 
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode ".
@@ -637,7 +637,7 @@ foreach $tx1 (0 .. $#taxa) {
   $taxon = $taxa[$tx1];
   next if($include_file && !$included_input_files{$taxon});
 
-  $clusteroutfile = "$taxon.index.queue";
+  $clusteroutfile = $newDIR . "$taxon.index.queue";
 
   $command = "$ENV{'EXE_COLLINEAR'} ".
     "-sp1 $taxon ".

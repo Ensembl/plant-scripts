@@ -10,6 +10,7 @@ require Exporter;
   check_installed_features 
   constructDirectory
   count_GFF_genes
+  parse_GFF_regex
   get_string_with_previous_genomes
 
   $merged_tsv_file
@@ -157,8 +158,7 @@ sub feature_is_installed {
 # the intermediate files and the final files.
 # Arguments: 1 (string) name of desired directory
 # Returns:  boolean, 1 if successful, else 0
-sub constructDirectory
-{
+sub constructDirectory {
   my ($dirname) = @_;
 
   $WORKING_DIR = $dirname . '/';
@@ -193,6 +193,29 @@ sub count_GFF_genes {
 
   return $num_genes
 }
+
+# Takes two params:
+# 1) string with name of GFF file 
+# 2) regular expression
+# 3) 0-based column of GFF to be parsed
+# Returns hash refeference with number of occurrences of unique matching strings 
+sub parse_GFF_regex {
+
+  my ($gffile, $regex, $column) = @_;
+
+  my %count;
+
+  open(GFF, "<", $gffile) ||
+    die "# ERROR(parse_GFF_regex): cannot read $gffile\n";
+  while(<GFF>) {
+    my @data = split(/\t/,$_);
+    if($data[$column] =~ m/^($regex)$/){ $count{$1}++ }
+  }
+  close(GFF);
+
+  return \%count
+}
+
 
 # Check genomes used in previous run stored in $selected_genomes_file
 sub get_string_with_previous_genomes {

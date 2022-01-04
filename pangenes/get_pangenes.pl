@@ -7,6 +7,7 @@
 # It is designed to process (in a multicore computer or HPC cluster) files 
 # contained in a directory (-d), so that new .fna & .gff files can be added 
 # while conserving previous results. 
+#
 # This script calls _cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl
 # and produces different types of output:
 # 1) clusters of CDA (nucl & pep) and cDNA sequences of collinear genes 
@@ -118,7 +119,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "Several WGA algorithms are available and some parameters are customizable.\n".
     "It is designed to process (in a multicore computer or HPC cluster) files\n".
     "contained in a directory (-d), so that new .fna & .gff files can be added\n".
-    "while conserving previous results. Produces different types of output:\n".
+    "while conserving previous results. Produces different types of output:\n\n".
     " 1) clusters of CDA (nucl & pep) and cDNA sequences of collinear genes\n".
     " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
     " 3) matrix of % conserved sequences that summarize shared clusters across genomes\n".
@@ -446,11 +447,23 @@ foreach $infile (@inputfiles) {
     #print "# re-using $plain_gffile\n"
   }
 
-  # work out sequence stats
+  # work out sequence stats and make sure split regex works
   $num_genes = count_GFF_genes( $plain_gffile );
   $ngenes{$taxon} = $num_genes;
   $total_genes += $num_genes;
-  print "# $dnafile $num_genes\n";
+
+  if($split_chr_regex) {
+    my $ref_parsed_chrs = parse_GFF_regex($plain_gffile, $split_chr_regex, 0);
+    printf("# %s %d chrs/contigs=%d\n",
+      $dnafile,
+      $num_genes,
+      scalar(keys(%$ref_parsed_chrs)));
+    if(scalar(keys(%$ref_parsed_chrs)) < 1) {
+      die "# ERROR: regex '$split_chr_regex' does not match chr names in $gffile, please edit\n"
+    }
+  } else {
+    print "# $dnafile $num_genes\n";
+  }
 
   # extract cDNA and CDS sequences
   # Note: this creates a FASTA index file that might be used by wfmash
@@ -477,7 +490,10 @@ foreach $infile (@inputfiles) {
   } 
 }
 
-if($min_cluster_size eq 'all'){ $min_cluster_size = $n_of_taxa; } # size of gene clusters
+# size of gene clusters
+if($min_cluster_size eq 'all'){ 
+  $min_cluster_size = $n_of_taxa 
+} 
 
 print "\n# $n_of_taxa genomes, $total_genes genes\n\n";
 
@@ -492,12 +508,12 @@ if($runmode eq 'cluster') {
   exit;
 } 
 
-# confirm outfiles
+# confirm and QC outfiles
 foreach $gffile (@gff_outfiles) {
   if(!-e $gffile){
     die "# EXIT, $gffile does not exist, GFF job search might failed ".
       "or hard drive is still writing it (please re-run)\n";
-  }
+  } 
 }
 
 print "# done\n\n";
@@ -616,46 +632,40 @@ my ($outTSVfile,@tmp_wga_output_files);
 unlink($merged_tsv_file);
 
 print "\n# indexing genomes ...\n";
-foreach $tx1 (0 .. $#taxa-1) {
+foreach $tx1 (0 .. $#taxa) {
 
   $taxon = $taxa[$tx1];
   next if($include_file && !$included_input_files{$taxon});
 
-  foreach $tx2 ($tx1+1 .. $#taxa) {
+  $clusteroutfile = "$taxon.index.queue";
 
-    $taxon2 = $taxa[$tx2];
-    next if($include_file && !$included_input_files{$taxon2});
-
-    $clusteroutfile = "$taxon.$taxon2.index.queue";
-
-    $command = "$ENV{'EXE_COLLINEAR'} ".
-        "-sp1 $taxon ".
-        "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
-        "-sp2 $taxon2 ".
-        "-fa2 $newDIR/_$taxon2.fna -gf2 $newDIR/_$taxon2.gff ".
-        "-T $TMP_DIR -i -r ";
+  $command = "$ENV{'EXE_COLLINEAR'} ".
+    "-sp1 $taxon ".
+    "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
+    "-sp2 $taxon ".
+    "-fa2 $newDIR/_$taxon.fna -gf2 $newDIR/_$taxon.gff ".
+    "-T $TMP_DIR -i -r ";
     
-    if($split_chr_regex) {
-      $command .= "-s '$split_chr_regex' ";
-    }
-    if($dowfmash) {
-      $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
-    } else {
-      $command .= "-M $ENV{'EXE_MINIMAP'} ";
-    }
+  if($split_chr_regex) {
+    $command .= "-s '$split_chr_regex' ";
+  }
+  if($dowfmash) {
+    $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
+  } else {
+    $command .= "-M $ENV{'EXE_MINIMAP'} ";
+  } #print "$taxon $command\n";
 
-    if($runmode eq 'cluster') {
-      submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
-    } elsif($runmode eq 'dryrun') {
-      $command =~ s/\\//g;
-      print DRYRUNLOG "$command\n";
-      $total_dry++;
-    } else { # 'local' runmode
-      $command = "$command > /dev/null";
-      system("$command");
-      if($? != 0) {
-        die "# EXIT: failed while indexing genomes ($command)\n";
-      }
+  if($runmode eq 'cluster') {
+    submit_cluster_job($taxon,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+  } elsif($runmode eq 'dryrun') {
+    $command =~ s/\\//g;
+    print DRYRUNLOG "$command\n";
+    $total_dry++;
+  } else { # 'local' runmode
+    $command = "$command > /dev/null";
+    system("$command");
+    if($? != 0) {
+      die "# EXIT: failed while indexing genomes ($command)\n";
     }
   }
 }
@@ -670,7 +680,7 @@ if($runmode eq 'cluster') {
   exit;
 }
 
-print "# done\n\n";
+print "# done\n\n"; 
 
 print "\n# running pairwise genome alignments ...\n";
 foreach $tx1 (0 .. $#taxa-1) {

@@ -26,7 +26,9 @@ to call collinear pairs.
 ![WGA and gene mapping flowchart](collinear_pangenes_minimap2.png)
 
 The example shows how gene ONIVA01G00150 is mapped from one genome to another 
-with minimap2 prior to overlap calculation.
+with minimap2 prior to overlap calculation:
+
+![Example](example_coords.png)
 
 The goal is to cluster collinear/orthologous genes across genomes so that pan-genes can
 be defined:

@@ -17,6 +17,12 @@ and produces different types of output:
  3) matrix of % conserved sequences that summarize shared clusters across genomes
  4) optionally (-c) matrices with core- and pan-genome growth simulations
 
+The main task of these scripts is to cluster collinear/orthologous genes 
+across a set of genomes (or pangenome) so that pan-genes can be defined:
+
+![Graphical summary of pangene set analysis](./pangene_set_nomenclature.png)
+
+
 ## How it works
 
 The flowchart summarizes how genome sequences (A & B) are aligned and how the resulting
@@ -30,10 +36,13 @@ with minimap2 prior to overlap calculation:
 
 ![Example](example_coords.png)
 
-The goal is to cluster collinear/orthologous genes across genomes so that pan-genes can
-be defined:
+Collinear pairs are internally stored in Compara-like TSV files, which like like this:
 
-![Graphical summary of pangene set analysis](./pangene_set_nomenclature.png)
+    gene_stable_id  protein_stable_id       species overlap homology_type   homology_gene_stable_id homology_protein_stable_id      homology_species        overlap dn      ds      goc_score       wga_coverage    is_high_confidence      coordinates
+    gene-mag-r      gene-mat-r      oryza_sativa    525     ortholog_collinear      ONIVA02G03490   ONIVA02G03490   oryza_nivara    525     NULL    NULL    NULL    100.00  1       Mt:315811-317848;Mt:315625-316336
+    gene-orf165     gene-orf165     oryza_sativa    498     ortholog_collinear      ONIVA02G03510   ONIVA02G03510   oryza_nivara    498     NULL    NULL    NULL    100.00  1       Mt:337076-337574;Mt:323628-338167
+    gene-rps1       gene-rps1       oryza_sativa    519     ortholog_collinear      ONIVA02G03500   ONIVA02G03500   oryza_nivara    519     NULL    NULL    NULL    100.00  1       Mt:321367-321886;Mt:318304-322745
+    Os01g0100100    Os01g0100100    oryza_sativa    7833    ortholog_collinear      ONIVA01G00100   ONIVA01G00100   oryza_nivara    7833    NULL    NULL    NULL    100.00  1       1:2982-10815;1:2929-12267
 
 ## Dependencies
 
@@ -155,15 +164,6 @@ pangenes$ perl get_pangenes.pl -d ../files/test_rice
 # pangene_file (names) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix_genes.tab 
 # transposed = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix_genes.tr.tab
 ```
-
-The TSV files produced contain data like this:
-
-    gene_stable_id  protein_stable_id       species overlap homology_type   homology_gene_stable_id homology_protein_stable_id      homology_species        overlap dn      ds      goc_score       wga_coverage    is_high_confidence      coordinates
-    gene-mag-r      gene-mat-r      oryza_sativa    525     ortholog_collinear      ONIVA02G03490   ONIVA02G03490   oryza_nivara    525     NULL    NULL    NULL    100.00  1       Mt:315811-317848;Mt:315625-316336
-    gene-orf165     gene-orf165     oryza_sativa    498     ortholog_collinear      ONIVA02G03510   ONIVA02G03510   oryza_nivara    498     NULL    NULL    NULL    100.00  1       Mt:337076-337574;Mt:323628-338167
-    gene-rps1       gene-rps1       oryza_sativa    519     ortholog_collinear      ONIVA02G03500   ONIVA02G03500   oryza_nivara    519     NULL    NULL    NULL    100.00  1       Mt:321367-321886;Mt:318304-322745
-    Os01g0100100    Os01g0100100    oryza_sativa    7833    ortholog_collinear      ONIVA01G00100   ONIVA01G00100   oryza_nivara    7833    NULL    NULL    NULL    100.00  1       1:2982-10815;1:2929-12267
-
 In this example, the clusters are stored in folder 
 
     test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1
@@ -202,9 +202,14 @@ grep ">" oryzasativa/Os01g0100100.cdna.fna
 >BGIOSGA002570-TA BGIOSGA002570 1:38569-39088 [oryza_indica]
 ```
 
-Multiple alignments can be computed for each FASTA file to determine which is the most conserved gene structure.
+The TSV files of collinear pairs supporting these clusters can be found in 
+ 
+    test_rice_pangenes/tmp/mergedpairs.tsv
 
-The script also produces POCP and pangenomes matrices. 
+Multiple alignments can be computed for each FASTA file to determine most 
+conserved gene structures.
+
+The script also produces POCP and pangenome matrices, see examples 
+[here](https://github.com/Ensembl/plant-scripts/tree/master/phylogenomics). 
+
 Note that currently clusters are not guaranteed to be sorted by chr position.
-
-

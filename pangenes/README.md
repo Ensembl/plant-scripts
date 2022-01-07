@@ -1,5 +1,5 @@
 
-# Pan-gene scripts
+# Pan-gene analysis
 
 The script *get_pangenes.pl* computes whole genome alignments (WGA) to define 
 clusters of collinear, orthologous genes/features annotated in GFF files. Such
@@ -16,6 +16,22 @@ and produces different types of output:
  2) pangenome matrices that summarize the genome occupancy of clusters
  3) matrix of % conserved sequences that summarize shared clusters across genomes
  4) optionally (-c) matrices with core- and pan-genome growth simulations
+
+## How it works
+
+The flowchart summarizes how genome sequences (A & B) are aligned and how the resulting
+alignment is used to transform gene coordinates. Finally the overlap of genes is computed
+to call collinear pairs.
+ 
+![WGA and gene mapping flowchart](collinear_pangenes_minimap2.png)
+
+The example shows how gene ONIVA01G00150 is mapped from one genome to another 
+with minimap2 prior to overlap calculation.
+
+The goal is to cluster collinear/orthologous genes across genomes so that pan-genes can
+be defined:
+
+![Graphical summary of pangene set analysis](./pangene_set_nomenclature.png)
 
 ## Dependencies
 
@@ -124,10 +140,13 @@ pangenes$ perl get_pangenes.pl -d ../files/test_rice
 # concatenating WGA results...
 # number of clusters = 7849 (core = 2964)
 
-# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1.cluster_list
-# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1
+# cluster_list = 
+# test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1.cluster_list
+# cluster_directory = 
+# test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1
 
-# percent_conserved_proteins_file = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/POCS.matrix.tab
+# percent_conserved_proteins_file = 
+# test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/POCS.matrix.tab
 
 # pangene_file (occup) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix.tab 
 # tranposed = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix.tr.tab

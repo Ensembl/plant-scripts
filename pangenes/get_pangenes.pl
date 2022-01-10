@@ -44,7 +44,7 @@ my $NOFSAMPLESREPORT = 20; # number of samples used for the generation of pan/co
 
 ## list of features/binaries required by this program (do not edit)
 my @FEATURES2CHECK = (
-  'EXE_MINIMAP','EXE_SAMTOOLS','EXE_BEDTOOLS','EXE_WFMASH','EXE_GFFREAD',
+  'EXE_MINIMAP','EXE_BEDTOOLS','EXE_GFFREAD',
   'EXE_COLLINEAR','EXE_CUTSEQUENCES','EXE_CLUSTANALYSIS',
   'EXE_ZCAT'
 );
@@ -210,13 +210,13 @@ check_installed_features(@FEATURES2CHECK);
 if(defined($opts{'W'})) {
 
   $alg = 'Wmsh';
-  if(feature_is_installed('WFMASH'))
+  if(feature_is_installed('EXE_WFMASH'))
   {
     $dowfmash = 1;
     $output_mask .= "alg$alg\_";
     $pancore_mask .= "_alg$alg";
   }
-  else{ warn_missing_soft('WFMASH') }
+  else{ warn_missing_soft('EXE_WFMASH') }
 
 } else {
   $alg = 'Mmap';
@@ -230,6 +230,8 @@ if(defined($opts{'W'})) {
     $pancore_mask .= "_Q$min_map_qual";
   }
 }
+
+exit;
 
 if(defined($opts{'s'}) && $opts{'s'} ne '') {
   $split_chr_regex = $opts{'s'};

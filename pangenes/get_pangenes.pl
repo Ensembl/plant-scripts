@@ -648,7 +648,7 @@ foreach $tx1 (0 .. $#taxa) {
   $taxon = $taxa[$tx1];
   next if($include_file && !$included_input_files{$taxon});
 
-  $clusteroutfile = $newDIR . "$taxon.index.queue";
+  $clusteroutfile = $newDIR . "/$taxon.index.queue"; 
 
   $command = "$ENV{'EXE_COLLINEAR'} ".
     "-sp1 $taxon ".

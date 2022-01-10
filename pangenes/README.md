@@ -20,7 +20,7 @@ and produces different types of output:
 The main task of these scripts is to cluster collinear/orthologous genes 
 across a set of genomes (or pangenome) so that pan-genes can be defined:
 
-![Graphical summary of pangene set analysis](./pangene_set_nomenclature.png)
+![Graphical summary of pangene set analysis](pics/pangene_set_nomenclature.png)
 
 
 ## How it works
@@ -29,12 +29,12 @@ The flowchart summarizes how genome sequences (A & B) are aligned and how the re
 alignment is used to transform gene coordinates. Finally the overlap of genes is computed
 to call collinear pairs.
  
-![WGA and gene mapping flowchart](collinear_pangenes_minimap2.png)
+![WGA and gene mapping flowchart](pics/collinear_pangenes_minimap2.png)
 
 The example shows how gene ONIVA01G00150 is mapped from one genome to another 
 with minimap2 prior to overlap calculation:
 
-![Example](example_coords.png)
+![Example](pics/example_coords.png)
 
 Collinear pairs are internally stored in Compara-like TSV files, which like like this:
 

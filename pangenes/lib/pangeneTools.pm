@@ -100,7 +100,8 @@ sub check_installed_features {
 
   my (@to_be_checked) = @_;
   my ($check_summary,$output) = 
-    ("\nChecking required binaries and data sources, set in pangeneTools.pm or in command line:\n");
+    ("\nChecking required binaries and data sources, ".
+      "set in pangeneTools.pm or in command line:\n");
 
   foreach my $bin (@to_be_checked) {
     $check_summary .= sprintf("%18s : ",$bin);

@@ -62,7 +62,7 @@ my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0 );
 my ($dowfmash, $dofragments, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
-my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs );
+my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
 my ( $indexonly, $minoverlap, $qual, $alg, $outfilename ) =
   ( 0, $MINOVERLAP, $MINQUAL, 'minimap2' );
 my ( $minimap_path, $wfmash_path, $bedtools_path, $samtools_path, $threads ) =
@@ -323,24 +323,26 @@ else {
                 print "# re-using $index_fasta1\n";
             }
             else {
-                system("$samtools_path faidx $chrfasta1 -o $index_fasta1 2>&1");
+                $cmd = "$samtools_path faidx $chrfasta1 -o $index_fasta1 2>&1";				
+                system($cmd);
                 if ( $? != 0 ) {
                     die "# ERROR: failed running samtools (probably ran out of memory)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
-                    die "# ERROR: failed generating $index_fasta1 file (samtools)\n";
+                    die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";
                 }
             } 
 
             next if($indexonly);
 
-            system("$wfmash_path $WFMASHPARS -t $threads $chrfasta1 $chrfasta2 > $splitPAF");
+            $cmd = "$wfmash_path $WFMASHPARS -t $threads $chrfasta1 $chrfasta2 > $splitPAF";
+            system($cmd);
             sleep(2);
             if ( $? != 0 ) {
                 die "# ERROR: failed running wfmash (probably ran out of memory)\n";
             }
             elsif ( !-e $PAFfile ) {
-                die "# ERROR: failed generating $splitPAF file (wfmash)\n";
+                die "# ERROR: failed generating $splitPAF file ($cmd)\n";
             } else {
                 push(@WGAoutfiles, $splitPAF);
             }
@@ -353,23 +355,25 @@ else {
                 print "# re-using $index_fasta1\n";
             }
             else {
-                system("$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1");
+                $cmd = "$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1";
+                system($cmd);
                 if ( $? != 0 ) {
                     die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
-                    die "# ERROR: failed generating $index_fasta1 file (minimap2)\n";
+                    die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";
                 }
             }
 
             next if($indexonly);
 
-            system("$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $chrfasta2 -o $splitPAF");
+            $cmd = "$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $chrfasta2 -o $splitPAF";
+            system($cmd);
             if ( $? != 0 ) {
                 die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
             }
             elsif ( !-e $splitPAF ) {
-                die "# ERROR: failed generating $splitPAF file (minimap2)\n";
+                die "# ERROR: failed generating $splitPAF file ($cmd)\n";
             }
             else {
                 push(@WGAoutfiles, $splitPAF);
@@ -379,15 +383,15 @@ else {
 
     if(!$indexonly) {
         # merge (split) PAF files
-        my $merge_cmd = "cat "; # assumes cat is available
+        $cmd = "cat "; # assumes cat is available
         foreach $splitPAF (@WGAoutfiles) {
-            $merge_cmd .= "$splitPAF ";
+            $cmd .= "$splitPAF ";
         }
-        $merge_cmd .= " > $PAFfile";
+        $cmd .= " > $PAFfile";
 
-        system("$merge_cmd");
+        system("$cmd");
         if( $? != 0 ) {
-            die "# ERROR: failed merging split PAF files ($merge_cmd)\n";
+            die "# ERROR: failed merging split PAF files ($cmd)\n";
         } else {
             print("# WGA finished\n\n");
             unlink(@WGAoutfiles);
@@ -421,13 +425,15 @@ close(PAF);
 
 my $sp2wgaBEDfile = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 
-system("$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | "
-      . "$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile" );
+$cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | "
+         . "$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile";
+
+system("$cmd");
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (WGA)\n";
 }
 elsif ( !-s $sp2wgaBEDfile ) {
-    die "# ERROR: failed generating $sp2wgaBEDfile file (bedtools)\n";
+    die "# ERROR: failed generating $sp2wgaBEDfile file ($cmd)\n";
 }
 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$alg.gene.mapped.bed";
@@ -448,13 +454,15 @@ if ( $num_matched == 0 ) {
 my $gene_intersectBEDfile = 
   $tmpdir . "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
 
-system("$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | ". 
-    "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile" );
+$cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | "
+         . "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile";
+
+system($cmd);
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (genes)\n";
 }
 elsif ( !-s $gene_intersectBEDfile ) {
-    die "# ERROR: failed generating $gene_intersectBEDfile file (bedtools)\n";
+    die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
 }
 
 my $num_pairs = bed2compara( $gene_intersectBEDfile, $outfilename, $sp1, $sp2,

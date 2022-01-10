@@ -101,8 +101,8 @@ Please read how to set up your HPC environment
 
 While computing WGA alignments you can tell the script to split each genome 
 in chromosomes and align only homologous chromosomes. Please use option *-s*
-for this. For instance, use *-s '\d+'* to split in chromosomes named with
-natural numbers. 
+for this, which requires a [regular expression](https://perlmaven.com/regex-cheat-sheet). 
+For instance, use *-s '\d+'* to split in chromosomes named with natural numbers. 
 
 See all options with:
 

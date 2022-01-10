@@ -55,16 +55,17 @@ my ($dowfmash,$reference_string) = (0,0);
 my ($onlywga,$inputDIR,$alg) = (0);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft) = ($NUMCPUS,0);
-my ($samtools_path,$bedtools_path) = ('','');
+my ($bedtools_path,$samtools_path,$wfmash_path) = ('','','');
 my ($min_cluster_size,$runmode,$do_genome_composition);
 
 my $random_number_generator_seed = 0;
-my $pwd = getcwd(); $pwd .= '/';
+my $pwd = getcwd(); 
+$pwd .= '/';
 
-getopts('hvcoAzWn:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvcoAzwW:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
-if(($opts{'h'})||(scalar(keys(%opts))==0))
-{
+if(($opts{'h'})||(scalar(keys(%opts))==0)) {
+
   print   "\nusage: $0 [options]\n\n";
   print   "-h this message\n";
   print   "-v print version, credits and checks installation\n";
@@ -90,7 +91,9 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
     "(optional, default: -B bedtools)\n";
  
   print   "\nAlgorithms instead of default minimap2 (Mmap):\n";
-  print   "-W use wfmash aligner (Wmsh), requires samtools\n";
+  print   "-w use wfmash aligner (Wmsh)\n";
+  print   "-W path to wfmash binary                                  ".
+    "(optional, default: -wf wfmash)\n";
   #print   "-S path to samtools binary                                  ".
   #  "(optional, default: -S samtools)\n";
   print   "\nOptions that control alignments:\n";
@@ -177,10 +180,9 @@ if($runmode eq 'cluster') {
   # check whether file 'cluster.conf' exists & parse it
   read_cluster_config( "$Bin/HPC.conf" );
 
-  if(!cluster_is_available())
-  {       
+  if(!cluster_is_available()) {       
     print "# EXIT : cluster is not available, please create/edit file cluster.conf\n";
-        print_cluster_config();
+    print_cluster_config();
     die "# EXIT : or choose runmode -m local\n";
   }
 }
@@ -207,16 +209,25 @@ if($opts{'I'} && $inputDIR)
 
 check_installed_features(@FEATURES2CHECK);
 
-if(defined($opts{'W'})) {
+if(defined($opts{'w'})) {
 
   $alg = 'Wmsh';
-  if(feature_is_installed('EXE_WFMASH'))
-  {
+
+  if(defined($opts{'W'})) {
+    $wfmash_path = $opts{'W'};
+    $ENV{"EXE_WFMASH"} = $wfmash_path;
+  }
+
+  check_installed_features('EXE_WFMASH');
+  if(feature_is_installed('WFMASH')) {
     $dowfmash = 1;
     $output_mask .= "alg$alg\_";
     $pancore_mask .= "_alg$alg";
   }
-  else{ warn_missing_soft('EXE_WFMASH') }
+  else{ 
+    print "# EXIT : cannot find wfmash binary, ".
+      "see dependency instructions or set path with -W\n";
+  }
 
 } else {
   $alg = 'Mmap';
@@ -230,8 +241,6 @@ if(defined($opts{'W'})) {
     $pancore_mask .= "_Q$min_map_qual";
   }
 }
-
-exit;
 
 if(defined($opts{'s'}) && $opts{'s'} ne '') {
   $split_chr_regex = $opts{'s'};

@@ -435,7 +435,7 @@ $cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile " .
 
 system("$cmd");
 if ( $? != 0 ) {
-    die "# ERROR: failed running bedtools (WGA)\n";
+    die "# ERROR: failed running bedtools (WGA, $cmd)\n";
 }
 elsif ( !-s $sp2wgaBEDfile ) {
     die "# ERROR: failed generating $sp2wgaBEDfile file ($cmd)\n";
@@ -444,7 +444,7 @@ elsif ( !-s $sp2wgaBEDfile ) {
 $cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp2wgaBEDfile > $sp2wgaBEDfile_sorted";
 system("$cmd");
 if ( $? != 0 ) {
-    die "# ERROR: failed sorting (WGA)\n";
+    die "# ERROR: failed sorting (WGA, $cmd)\n";
 }
 elsif ( !-s $sp2wgaBEDfile_sorted ) {
     die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
@@ -478,7 +478,7 @@ $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
 
 system($cmd);
 if ( $? != 0 ) {
-    die "# ERROR: failed running bedtools (genes)\n";
+    die "# ERROR: failed running bedtools (genes, $cmd)\n";
 }
 elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
@@ -487,7 +487,7 @@ elsif ( !-s $gene_intersectBEDfile ) {
 $cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile > $gene_intersectBEDfile_sorted";
 system($cmd);
 if ( $? != 0 ) {
-    die "# ERROR: failed sorting (genes)\n";
+    die "# ERROR: failed sorting (genes, $cmd)\n";
 }
 elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile_sorted file ($cmd)\n";

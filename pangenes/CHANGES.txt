@@ -1,4 +1,5 @@
 21122021: _collinear_genes.pl tested with -s
 27122021: get_pangenes.pl integrates _cut_sequences.pl & _collinear_genes.pl
 04012022: checks regex matches chr names
-04012022: tested with -s, made test_rice 
+04012022: tested with -s, made test_rice
+10012022: wfmash only needed with -W 

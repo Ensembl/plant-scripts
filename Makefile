@@ -53,13 +53,17 @@ clean_repeats:
 	cd repeats && rm -rf test_Atha_chr4 Atha.sm.fna test.nrTEplants.bed
 
 install_pangenes:
-	cd pangenes/bin && git clone https://github.com/ekg/wfmash && cd wfmash && cmake -H. -Bbuild && cmake --build build -- -j 3
-	cd pangenes/bin && wget https://github.com/lh3/minimap2/releases/download/v2.17/minimap2-2.17.tar.bz2 && tar xfj minimap2-2.17.tar.bz2 && cd minimap2-2.17 && make && rm -f minimap2-2.17.tar.bz2
+	cd pangenes/bin && wget https://github.com/lh3/minimap2/releases/download/v2.17/minimap2-2.17.tar.bz2 && tar xfj minimap2-2.17.tar.bz2 && cd minimap2-2.17 && make && cd .. && rm -f minimap2-2.17.tar.bz2
 	cd pangenes/bin && wget https://github.com/gpertea/gffread/releases/download/v0.12.7/gffread-0.12.7.Linux_x86_64.tar.gz && tar xfz gffread-0.12.7.Linux_x86_64.tar.gz && rm -f gffread-0.12.7.Linux_x86_64.tar.gz
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.4/test_rice.tgz && tar xfz test_rice.tgz && rm -f test_rice.tgz
 
+# see https://github.com/ekg/wfmash for other options
+install_wfmash:
+	-sudo apt install cmake libjemalloc-dev zlib1g-dev libgsl-dev libhts-dev
+	-cd pangenes/bin && git clone https://github.com/ekg/wfmash && cd wfmash && cmake -H. -Bbuild && cmake --build build -- -j 3
+
 uninstall_pangenes:
-	cd pangenes/bin && rm -rf gffread-0.12.7.Linux_x86_64 minimap2-2.17 wfmash
+	-cd pangenes/bin && rm -rf gffread-0.12.7.Linux_x86_64 minimap2-2.17 wfmash
 	cd files && rm -rf test_rice
 
 test_pangenes:

@@ -407,6 +407,8 @@ if($indexonly) {
 ## 3) produce BED-like file of sp2-to-sp1 coords 10 columns
 ## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
 
+my @tmpBEDfiles;
+
 my $wgaBEDfile = $tmpdir . "_$sp2.$sp1.$alg.bed";
 
 open( PAF, "<", $PAFfile )    || die "# ERROR: cannot read $PAFfile\n";
@@ -421,12 +423,15 @@ while (<PAF>) {
 close(BED);
 close(PAF);
 
+push(@tmpBEDfiles, $wgaBEDfile);
+
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
 my $sp2wgaBEDfile = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
+my $sp2wgaBEDfile_sorted = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.sort.bed";
 
-$cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile $BEDINTSCPAR | "
-         . "$SORTBIN -k4,4 -k5,5nr -k14,14nr > $sp2wgaBEDfile";
+$cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile " .
+         "$BEDINTSCPAR > $sp2wgaBEDfile";
 
 system("$cmd");
 if ( $? != 0 ) {
@@ -436,6 +441,18 @@ elsif ( !-s $sp2wgaBEDfile ) {
     die "# ERROR: failed generating $sp2wgaBEDfile file ($cmd)\n";
 }
 
+$cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp2wgaBEDfile > $sp2wgaBEDfile_sorted";
+system("$cmd");
+if ( $? != 0 ) {
+    die "# ERROR: failed sorting (WGA)\n";
+}
+elsif ( !-s $sp2wgaBEDfile_sorted ) {
+    die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
+}
+
+push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
+
+# compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$alg.gene.mapped.bed";
 
 my ( $num_matched, @unmatched ) =
@@ -453,9 +470,11 @@ if ( $num_matched == 0 ) {
 
 my $gene_intersectBEDfile = 
   $tmpdir . "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
+my $gene_intersectBEDfile_sorted =
+  $tmpdir . "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.sort.bed";
 
-$cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped $BEDINTSCPAR -s | "
-         . "$SORTBIN -k4,4 -k13,13nr > $gene_intersectBEDfile";
+$cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
+         "$BEDINTSCPAR -s > $gene_intersectBEDfile";
 
 system($cmd);
 if ( $? != 0 ) {
@@ -465,11 +484,29 @@ elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
 }
 
+$cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile > $gene_intersectBEDfile_sorted";
+system($cmd);
+if ( $? != 0 ) {
+    die "# ERROR: failed sorting (genes)\n";
+}
+elsif ( !-s $gene_intersectBEDfile ) {
+    die "# ERROR: failed generating $gene_intersectBEDfile_sorted file ($cmd)\n";
+}
+
+push(@tmpBEDfiles, $gene_intersectBEDfile, $gene_intersectBEDfile_sorted);
+
 my $num_pairs = bed2compara( $gene_intersectBEDfile, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );
 
 printf( "# %d collinear gene pairs\n", $num_pairs );
-print "# TSV file: $outfilename\n";
+
+if($num_pairs > 0 && -s $outfilename) {
+    print "# TSV file: $outfilename\n";
+
+    unlink(@tmpBEDfiles);
+} 
+
+
 
 #################################
 

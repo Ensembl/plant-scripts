@@ -49,13 +49,11 @@ Collinear pairs are internally stored in Compara-like TSV files, which like like
 In addition to Perl, these scripts require:
 
 * https://github.com/lh3/minimap2 
-* alternatively https://github.com/ekg/wfmash
 * https://github.com/gpertea/gffread
 * https://bedtools.readthedocs.io/en/latest/
-* https://github.com/samtools/samtools
 
-Assuming *samtools* and *bedtools* are installed in most settings,
-the remaining dependencies can be installed with:
+Assuming *bedtools* are installed in most settings,
+the remaining dependencies can be installed on Ubuntu/Debian in folder bin/ with:
 
     cd ../..
     make install_pangenes
@@ -68,13 +66,23 @@ This should print something like this:
 
     Checking required binaries and data sources, set in pangeneTools.pm or in command line:
       EXE_MINIMAP : OK (path:bin/minimap2-2.17/minimap2)
-      EXE_SAMTOOLS : OK (path:samtools)
       EXE_BEDTOOLS : OK (path:bedtools)
-      EXE_WFMASH : OK (path:/bin/wfmash/build/bin/wfmash)
       EXE_GFFREAD : OK (path:bin/gffread-0.12.7.Linux_x86_64/gffread)
       EXE_COLLINEAR : OK (path:_collinear_genes.pl)
       EXE_CUTSEQUENCES : OK (path:_cut_sequences.pl)
       EXE_CLUSTANALYSIS : OK (path:_cluster_analysis.pl)
+
+In addition to minimap2, the Wfmash aligner can also be used to produce WGAs.
+This requires more dependencies:
+
+* https://github.com/ekg/wfmash
+
+In most systems this can be installed with 
+
+    cd ../..
+    make install_wfmash
+
+See other installation options at https://github.com/ekg/wfmash#installation
 
 ## Example run
 

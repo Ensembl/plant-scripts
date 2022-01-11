@@ -437,13 +437,13 @@ $cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile " .
          "$BEDINTSCPAR > $sp2wgaBEDfile";
 
 system("$cmd");
+sleep(2); #latency issues
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (WGA, $cmd)\n";
 }
 elsif ( !-s $sp2wgaBEDfile ) {
     die "# ERROR: failed generating $sp2wgaBEDfile file ($cmd)\n";
 }
-sleep(3); #latency issues
 
 $cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp2wgaBEDfile > $sp2wgaBEDfile_sorted";
 system("$cmd");
@@ -481,13 +481,13 @@ $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
          "$BEDINTSCPAR -s > $gene_intersectBEDfile";
 
 system($cmd);
+sleep(2);
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (genes, $cmd)\n";
 }
 elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
 }
-sleep(3); #latency issues
 
 $cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile > $gene_intersectBEDfile_sorted";
 system($cmd);

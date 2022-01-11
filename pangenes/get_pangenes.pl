@@ -13,7 +13,7 @@
 # 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes 
 # 2) pangenome matrices that summarize the genome occupancy of clusters
 # 3) matrix of % conserved sequences that summarize shared clusters across genomes
-# 4) optionally (-c) matrices with core- and pan-genome growth simulations
+# 4) optionally (-c) matrices with core- and pangene set growth simulations
 
 # Copyright [2021-22] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -40,7 +40,7 @@ my $NUMCPUS    = 4;
 my $MINQUAL    = 50;       # minimap2 mapping quality
 my $MINOVERLAP = 0.50;     # used by bedtools to call overlapping features    
 my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
-my $NOFSAMPLESREPORT = 20; # number of samples used for the generation of pan/core genomes
+my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
 
 ## list of features/binaries required by this program (do not edit)
 my @FEATURES2CHECK = (
@@ -79,7 +79,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "(follows order in -I file if enforced,\n".
     "                                                               ".
     "with -t N skips clusters occup<N)\n";
-  print   "-R set random seed for genome growth analysis               ".
+  print   "-R set random seed for pangene set growth analysis          ".
     "(optional, requires -c, example -R 1234)\n";
   print   "-m runmode [local|cluster|dryrun]                           ".
     "(default: -m local)\n";
@@ -92,7 +92,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
  
   print   "\nAlgorithms instead of default minimap2 (Mmap):\n";
   print   "-w use wfmash aligner (Wmsh)\n";
-  print   "-W path to wfmash binary                                  ".
+  print   "-W path to wfmash binary                                    ".
     "(optional, default: -wf wfmash)\n";
   #print   "-S path to samtools binary                                  ".
   #  "(optional, default: -S samtools)\n";
@@ -126,7 +126,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     " 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes\n".
     " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
     " 3) matrix of % conserved sequences that summarize shared clusters across genomes\n".
-    " 4) optionally (-c) matrices with core- and pan-genome growth simulations\n";
+    " 4) optionally (-c) matrices with core- and pan-gene set growth simulations\n";
   exit;
 }
 
@@ -290,7 +290,7 @@ if($runmode eq 'cluster') {
 ## 0) declare most important variables 
 
 my ($total_dry, $refOK, $total_genes, $n_of_taxa) = (0,0,0,0);
-my ($min_geneome_size, $reference_proteome, $infile,$command);
+my ($min_geneome_size, $reference_proteome, $infile, $command);
 my ($order, $taxon, $taxon2, $previous_files, $current_files);
 my (@taxa);
 
@@ -639,7 +639,7 @@ close(SEL);
 
 my ($outTSVfile,@tmp_wga_output_files);
 
-# remove previous merged results to make sure they are updated if needed
+# remove previous merged results to make sure they are updated
 unlink($merged_tsv_file);
 
 print "\n# indexing genomes ...\n";
@@ -795,6 +795,14 @@ if($onlywga) {
 
 ## 3) extract clusters of collinear sequences and produce pangene set matrices
 
+print "\n# clustering sequences ";
+if($do_genome_composition) {
+  print "and simulating pangene set growth "
+}
+print "...\n";
+
+my $logfile = "$newDIR/$output_mask.log";
+
 $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
   "-T $merged_tsv_file -r $reference_name ".
   "-f ".basename($inputDIR)."_pangenes/$output_mask ".
@@ -802,16 +810,45 @@ $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
 
 if($do_genome_composition) {
   $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";
-} #print $command;
+} 
 
+$command .= " > $logfile";
+
+$clusteroutfile = $logfile.'.queue';
+
+if($runmode eq 'cluster') {
+  submit_cluster_job($reference_name,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+} elsif($runmode eq 'dryrun') {
+  $command =~ s/\\//g;
+  print DRYRUNLOG "$command\n";
+  $total_dry++;
+} else { # 'local' runmode
+  $command = "$command";
+  system("$command");
+  if($? != 0) {
+    die "# EXIT: failed while clustering sequences ($command)\n";
+  }
+}
+
+# wait until cluster jobs are done
+if($runmode eq 'cluster') {
+  check_cluster_jobs($newDIR,\%cluster_PIDs);
+
+} elsif($runmode eq 'dryrun' && $total_dry > 0) {
+  close(DRYRUNLOG);
+  print "# EXIT: check the list of pending commands at $dryrun_file\n";
+  exit;
+}
+
+print "# done\n\n";
 
 my $printOK = 0;
-open(CLUSTERS, "$command |") ||
-  die "# ERROR: cannot run $command\n";
-while(<CLUSTERS>) {
+open(CLUSTERSLOG,'<', $logfile) ||
+  die "# ERROR: cannot read $logfile\n";
+while(<CLUSTERSLOG>) {
 
   if(/^# number of clusters/){ $printOK = 1 }
   print if($printOK);
 }
-close(CLUSTERS);
+close(CLUSTERSLOG);
 

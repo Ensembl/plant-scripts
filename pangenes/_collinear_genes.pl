@@ -443,6 +443,7 @@ if ( $? != 0 ) {
 elsif ( !-s $sp2wgaBEDfile ) {
     die "# ERROR: failed generating $sp2wgaBEDfile file ($cmd)\n";
 }
+sleep(3); #latency issues
 
 $cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp2wgaBEDfile > $sp2wgaBEDfile_sorted";
 system("$cmd");
@@ -486,6 +487,7 @@ if ( $? != 0 ) {
 elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
 }
+sleep(3); #latency issues
 
 $cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile > $gene_intersectBEDfile_sorted";
 system($cmd);

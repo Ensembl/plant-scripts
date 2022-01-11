@@ -15,7 +15,7 @@ and produces different types of output:
  1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes (FASTA)
  2) pangenome matrices that summarize the genome occupancy of clusters
  3) matrix of % conserved sequences that summarize shared clusters across genomes
- 4) optionally (-c) matrices with core- and pan-genome growth simulations
+ 4) optionally (-c) matrices with core- and pangene set growth simulations
 
 The main task of these scripts is to cluster collinear/orthologous genes 
 across a set of genomes (or pangenome) so that pan-genes can be defined:

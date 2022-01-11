@@ -140,14 +140,12 @@ close(CHANGES);
 if(defined($opts{'v'})) {
 
   print "\n$0 version $VERSION\n";
-  print "\nPrimary citation:\n\n";
-  # ...
+  print "\nPrimary citation:\n(unpublished)\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
   print " wfmash   https://github.com/ekg/wfmash\n";
-  #print " gffread  https://f1000research.com/articles/9-304/v2\n";
 
-  # check all binaries and data needed by this program and print diagnostic info
+  # check all binaries needed by this program and print diagnostic info
   print check_installed_features(@FEATURES2CHECK);
   exit(0);
 }
@@ -156,8 +154,7 @@ if(defined($opts{'d'})) {
 
   $inputDIR = $opts{'d'};
   die "# EXIT : need a valid input directory\n" if(!-e $inputDIR);
-  if(basename($inputDIR) =~ /([\+])/)
-  {
+  if(basename($inputDIR) =~ /([\+])/) {
     die "# EXIT : need a valid input directory name, offending char: '$1'\n";
   }
   if(substr($inputDIR,length($inputDIR)-1,1) eq '/'){ chop $inputDIR }
@@ -170,7 +167,7 @@ if(defined($opts{'m'})) {
   if($runmode ne 'local' && $runmode ne 'cluster' && $runmode ne 'dryrun'){ 
     $runmode = 'cluster'
   }
-} else{ $runmode = 'local'; }
+} else{ $runmode = 'local' }
 
 if($runmode eq 'local' && defined($opts{'n'}) && $opts{'n'} > 0) {
   $n_of_cpus = $opts{'n'};
@@ -801,12 +798,15 @@ if($do_genome_composition) {
 }
 print "...\n";
 
-my $logfile = "$newDIR/$output_mask.log";
+  $newDIR = $pwd.basename($inputDIR)."_pangenes";
+
+my $outfolder = "$newDIR/$output_mask"; 
+my $logfile = $outfolder.".log";
+$clusteroutfile = $logfile.'.queue';
 
 $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
   "-T $merged_tsv_file -r $reference_name ".
-  "-f ".basename($inputDIR)."_pangenes/$output_mask ".
-  "-t $min_cluster_size -s $newDIR ";
+  "-f $outfolder -t $min_cluster_size -s $newDIR ";
 
 if($do_genome_composition) {
   $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";
@@ -814,7 +814,16 @@ if($do_genome_composition) {
 
 $command .= " > $logfile";
 
-$clusteroutfile = $logfile.'.queue';
+if( -e $outfolder ) {
+  printf("\n# WARNING : folder '%s' exists, clusters might be overwritten\n\n",
+    basename($outfolder));
+} else {
+  if ( !mkdir($outfolder) ) {
+    die "# ERROR: cannot create $outfolder\n";
+  }
+}  
+
+# WARNING : folder 'magic_pangenes/oryza_sativa_IRGSP_0taxa_algMmap_' exists, files might be overwritte
 
 if($runmode eq 'cluster') {
   submit_cluster_job($reference_name,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);

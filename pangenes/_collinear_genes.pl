@@ -41,6 +41,7 @@ my $SAMTOOLSEXE = 'samtools';
 my $THREADS      = 4;
 my $SORTLIMITRAM = "500M";                               # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
+$ENV{'LC_ALL'} = 'POSIX';
 my $GZIPBIN      = "gzip";
 
 my $MAXGENESFRAG = 3;         # max genes in same fragment with -f

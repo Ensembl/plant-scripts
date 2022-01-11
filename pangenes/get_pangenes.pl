@@ -72,13 +72,13 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "-d directory with input files (.fna & .gff pairs)        ";
   print   "   (new files can be added later, creates \n".
     "                                                           ".
-    "  output folder named 'directory_pangenes')\n";
+    "  output dir named 'directory_pangenes')\n";
   print   "\nOptional parameters:\n";
   print   "-o only run WGA jobs and exit\n";
   print   "-c report pangene set growth analysis                       ".
-    "(follows order in -I file if enforced,\n".
-    "                                                               ".
-    "with -t N skips clusters occup<N)\n";
+  #  "(follows order in -I file if enforced,\n".
+  #  "                                                               ".
+    "(with -t N skips clusters occup<N)\n";
   print   "-R set random seed for pangene set growth analysis          ".
     "(optional, requires -c, example -R 1234)\n";
   print   "-m runmode [local|cluster|dryrun]                           ".

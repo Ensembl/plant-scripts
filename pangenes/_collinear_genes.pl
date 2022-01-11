@@ -4,6 +4,8 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 use File::Basename qw(basename dirname);
 
+$|=1;
+
 # Takes two FASTA files with genome sequences and 2 matching GFF files with annotated gene models.
 # Produces a TSV file with pairs of collinear genes in a format compatible with Ensembl Compara
 
@@ -739,7 +741,8 @@ sub cut_gene_fragments {
 
 # Takes i) input BED intersect filename ii) output BED filename.
 # Parses sorted BED intersect -wo output and writes to BED file
-# features (cDNA/transcripts) mapped on reference genome.
+# features (cDNA/transcripts) mapped on reference genome. Note:
+# features might be unsorted.
 # Returns i) number of matched genes and ii) list of unmatched genes
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA only
@@ -759,15 +762,10 @@ sub query2ref_coords {
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
     my ( $deltaq,    $deltar,    $start_deltar, $end_deltar );
-    my $num_matched = 0;
-    my ( %ref_coords, @unmatched, @segments );
+    my ( %ref_coords, @matched, @unmatched, @segments );
 
     open( BED, "<", $infile )
       || die "# ERROR(query2ref_coords): cannot read $infile\n";
-
-    open( OUTBED, ">", $outfile )
-      || die "# ERROR(query2ref_coords): cannot create $outfile\n";
-
     while (<BED>) {
 
 #cDNA format
@@ -846,12 +844,11 @@ sub query2ref_coords {
             ( $deltaq, $deltar, $coordr ) =
               _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord );
 
-            ## check if current position in alignment matches cDNA/gene coords
+            # check if current position in alignment matches cDNA/gene coords
 
             # start coords (end in - strand)
             if ( $SAMqcoord < $cstart
-                && ( $SAMqcoord + $deltaq ) >= $cstart )
-            {
+                && ( $SAMqcoord + $deltaq ) >= $cstart ) {
 
                 # refine delta to match exactly the start (end for strand -)
                 ( $deltaq, $deltar, $coordr ) =
@@ -936,18 +933,16 @@ sub query2ref_coords {
         }
 
         # print coords in ref frame only if segment is long enough
-        if ( 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'} >=
-            $minalnlen )
-        {
-            printf( OUTBED "%s\t%d\t%d\t%s\t%d\t%s\n",
+        if ( 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'} >= $minalnlen ) {
+   			
+            push(@matched, 
+			  sprintf("%s\t%d\t%d\t%s\t%d\t%s\n",
                 $ref_coords{$cname}{'chr'},
                 $ref_coords{$cname}{'start'},
                 $ref_coords{$cname}{'end'},
                 $cname,
                 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'},
-                $strand
-            );
-            $num_matched++;
+                $strand) );
         }
         else {
             # shell genes cannot be matched in ref genome
@@ -955,10 +950,19 @@ sub query2ref_coords {
         }
     }
 
-    close(OUTBED);
     close(BED);
 
-    return ( $num_matched, @unmatched );
+    # printed sorted BED records
+    open( OUTBED, ">", $outfile )
+      || die "# ERROR(query2ref_coords): cannot create $outfile\n";
+
+    foreach $feat (@matched) {
+        print OUTBED $feat;
+	}
+
+    close(OUTBED);    
+
+    return ( scalar(@matched), @unmatched );
 }
 
 # Takes 3 scalars:

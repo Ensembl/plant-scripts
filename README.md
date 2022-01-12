@@ -14,7 +14,7 @@ and for masking & annotating [repeats](./repeats) in plant genomes.
     - [Perl](#perl)
     - [Python](#python)
 	- [R](#r)
-- [Pangenes](#panges)
+- [Pangenes](#pangenes)
 - [Phylogenomics](#phylogenomics)
 - [Species tree](#species-tree)
 - [Citation](#citation)

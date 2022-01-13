@@ -493,7 +493,7 @@ foreach $sp ( 0 .. $#supported_species ) {
                           $totalgenes{ $supported_species[$sp2] }
                     )
                 );
-                print POCSMATRIX "\t$perc";
+                print POCSMATRIX "$perc";
 
                 # save %POCS for all species vs reference
                 if($sp == 0){ $POCS2ref{$supported_species[$sp2]} = $perc }

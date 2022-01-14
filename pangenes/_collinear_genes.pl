@@ -6,8 +6,10 @@ use File::Basename qw(basename dirname);
 
 $|=1;
 
-# Takes two FASTA files with genome sequences and 2 matching GFF files with annotated gene models.
-# Produces a TSV file with pairs of collinear genes in a format compatible with Ensembl Compara
+# Takes two FASTA files with genome sequences and 2 matching GFF files with 
+# annotated gene models.
+# Produces a TSV file with pairs of collinear genes in a format compatible 
+# with Ensembl Compara
 
 # Copyright [2021-22] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
@@ -18,10 +20,11 @@ $|=1;
 # samtools [https://academic.oup.com/bioinformatics/article/25/16/2078/204688]
 # wfmash   [https://github.com/ekg/wfmash]
 
-# perl get_collinear_genes.pl -sp1 oryza_sativa -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
-#    -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 \
-#    Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa \
-#    -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
+# perl get_collinear_genes.pl -sp1 oryza_sativa \
+#  -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
+#  -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 \
+#  Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa \
+#  -gf2 Oryza_nivara.Oryza_nivara_v1.0.51.gff3 -r
 
 # collinear | Osativa vs Onivara | Athaliana vs Ahalleri
 # 2.17      |     24502          |     10637
@@ -329,7 +332,7 @@ else {
                 $cmd = "$samtools_path faidx $chrfasta1 -o $index_fasta1 2>&1";				
                 system($cmd);
                 if ( $? != 0 ) {
-                    die "# ERROR: failed running samtools (probably ran out of memory)\n";
+                    die "# ERROR: failed running samtools ($cmd)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
                     die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";
@@ -342,9 +345,8 @@ else {
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
-                die "# ERROR: failed running wfmash (probably ran out of memory)\n";
-            }
-            elsif ( !-e $PAFfile ) {
+                die "# ERROR: failed running wfmash (probably ran out of memory, $cmd)\n";
+            } elsif ( !-e $PAFfile ) {
                 die "# ERROR: failed generating $splitPAF file ($cmd)\n";
             } else {
                 push(@WGAoutfiles, $splitPAF);
@@ -361,7 +363,7 @@ else {
                 $cmd = "$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1";
                 system($cmd);
                 if ( $? != 0 ) {
-                    die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+                    die "# ERROR: failed running minimap2 (probably ran out of memory, $cmd)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
                     die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";

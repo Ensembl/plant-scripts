@@ -296,7 +296,8 @@ else {
             push(@sorted_chrs,$chr);
         }
     }
-    @sorted_chrs = sort {$a<=>$b} @sorted_chrs;
+
+    @sorted_chrs = sort @sorted_chrs; # {$a<=>$b} not always numeric
     if($ref_chr_pairs->{'unplaced'}){ push(@sorted_chrs,'unplaced') }
     elsif($ref_chr_pairs->{'all'}){ push(@sorted_chrs,'all') }
 

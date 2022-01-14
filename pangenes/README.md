@@ -33,10 +33,12 @@ It can be run on a cluster both with options -m cluster (see more more about thi
 and -m dryrun, if you prefer to paste your commands in batches directly.
 
 The second block of the flow aligns genome sequences (in pairs A & B) and uses 
-the resulting alignments to transform gene coordinates. The overlap of genes 
-is computed to call collinear pairs. The following figures summarize these key steps:
+the resulting alignments to transform gene coordinates:
  
 ![WGA and gene mapping](pics/collinear_pangenes_minimap2.png)
+
+This is how the overlap of genes is computed (with bedtools intersect) 
+to call collinear pairs:
 
 ![How gene overlaps are computed](pics/wgaoverlap.png)
 

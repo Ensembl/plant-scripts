@@ -25,16 +25,20 @@ across a set of genomes (or pangenome) so that pan-genes can be defined:
 
 ## How it works
 
-The flowchart summarizes how genome sequences (A & B) are aligned and how the resulting
-alignment is used to transform gene coordinates. Finally the overlap of genes is computed
-to call collinear pairs.
+The next flowchart shows the three main tasks of the pipeline:
+
+![Pipeline flowchart](pics/flow-get-pangenes.png)
+
+It can be run on a cluster both with options -m cluster (see more more about this below)
+and -m dryrun, if you prefer to paste your commands in batches directly.
+
+The second block of the flow aligns genome sequences (in pairs A & B) and uses 
+the resulting alignments to transform gene coordinates. The overlap of genes 
+is computed to call collinear pairs. The following figures summarize these key steps:
  
-![WGA and gene mapping flowchart](pics/collinear_pangenes_minimap2.png)
+![WGA and gene mapping](pics/collinear_pangenes_minimap2.png)
 
-The example shows how gene ONIVA01G00150 is mapped from one genome to another 
-with minimap2 prior to overlap calculation:
-
-![Example](pics/example_coords.png)
+![How gene overlaps are computed](pics/wgaoverlap.png)
 
 Collinear pairs are internally stored in Compara-like TSV files, which like like this:
 
@@ -105,7 +109,7 @@ In order to analyze these files and define a pan-gene set you can start with:
 Note that you can use *-m cluster* or *-m dryrun* to run tasks in parallel,
 this is recommended for large or multiple genomes. 
 Please read how to set up your HPC environment 
-[here](http://eead-csic-compbio.github.io/get_homologues/manual-est/manual-est.html#SECTION00033000000000000000).
+[here](http://eead-csic-compbio.github.io/get_homologues/manual-est/manual-est.html#SECTION00033000000000000000). A sample configuration file for a LSF cluster can be found is provided ([HPC.conf.sample](./HPC.conf.sample)), it should be renamed as +HPC.conf+ for it to work.
 
 While computing WGA alignments you can tell the script to split each genome 
 in chromosomes and align only homologous chromosomes. Please use option *-s*
@@ -217,7 +221,8 @@ The TSV files of collinear pairs supporting these clusters can be found in
 Multiple alignments can be computed for each FASTA file to determine most 
 conserved gene structures.
 
-The script also produces POCP and pangenome matrices, see examples 
+The script also produces % of Conserved Sequence (POCS) and pangenome matrices, 
+see examples 
 [here](https://github.com/Ensembl/plant-scripts/tree/master/phylogenomics). 
 
 Note that currently clusters are not guaranteed to be sorted by chr position.

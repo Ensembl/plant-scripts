@@ -110,7 +110,7 @@ sub help_message {
       . "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
       . "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
-      . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -S \'^\d+$\')'. "\n"
+      . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -s \'^\d+$\')'. "\n"
 
 #. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
       . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
@@ -584,7 +584,7 @@ sub parse_genes_GFF {
 # Takes 2 strings:
 # 1) name of FASTA file
 # 2) regex to match chromosome names, applied to first non-blank token (\S+)
-# Returns ref to hash with chr or 'unplaced' as keys and sequences as value
+# Returns ref to hash with chr and/or 'unplaced' as keys and sequences as value
 sub read_FASTA_regex2hash {
     my ($fastafile,$regex) = @_;
 
@@ -650,10 +650,10 @@ sub split_genome_sequences_per_chr {
 
     # check chr names found in both files
     foreach $chr (keys(%$ref_fasta1)){
-        if(defined($ref_fasta2->{$chr})){
-            $shared_chrs{$chr} = 1;
-        }
-    } #print join ',', keys(%$ref_fasta1);
+        if(defined($ref_fasta2->{$chr}) && $chr ne 'unplaced'){
+            $shared_chrs{$chr} = 1;  
+        } 
+    } #print join ',', keys(%$ref_fasta1); 
 
     # write chr-specific FASTA files
     foreach $chr (keys(%shared_chrs)) { #print ">$chr\n";
@@ -683,9 +683,9 @@ sub split_genome_sequences_per_chr {
 
     open( CHRFASTA1, ">$chrfasta1") ||
         die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
-    foreach $chr (keys(%$ref_fasta1)){
+    foreach $chr (keys(%$ref_fasta1)){ 
         next if(defined($shared_chrs{$chr}));
-        print CHRFASTA1 ">$chr\n";
+        print CHRFASTA1 ">$chr\n"; 
         print CHRFASTA1 $ref_fasta1->{$chr};   
     }
     close(CHRFASTA1);

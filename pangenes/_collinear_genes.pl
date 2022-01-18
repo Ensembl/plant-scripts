@@ -612,11 +612,9 @@ sub read_FASTA_regex2hash {
     while (<FASTA>) {
         next if(/^\s*$/ || /^#/);
         if(/^>/) { # header
-            if(/^>(\S+)/) { 
+            if(/^>\s*(\S+)/) { 
                 $seqname = $1;
-                if($seqname !~ m/^$regex$/) { $seqname = 'unplaced' }
-            } else {
-                $seqname = 'unplaced'
+                if($seqname !~ m/^$regex$/) { $seqname = 'unplaced_'.$seqname }
             }
         } else {
             $fasta{$seqname} .= $_;

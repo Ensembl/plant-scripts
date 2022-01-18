@@ -94,8 +94,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "-w use wfmash aligner (Wmsh)\n";
   print   "-W path to wfmash binary                                    ".
     "(optional, default: -wf wfmash)\n";
-  #print   "-S path to samtools binary                                  ".
-  #  "(optional, default: -S samtools)\n";
+  print   "-S path to samtools binary, required with -w -s             ".
+    "(optional, default: -S samtools)\n";
   print   "\nOptions that control alignments:\n";
   print   "-O min overlap of genes                                     ".
     "(optional, range [0-1], default: -O $MINOVERLAP)\n";
@@ -238,7 +238,21 @@ if(defined($opts{'w'})) {
   }
 }
 
+if(defined($opts{'S'})) {
+  $samtools_path = $opts{'S'};
+  $ENV{"EXE_SAMTOOLS"} = $samtools_path;
+}
+
 if(defined($opts{'s'}) && $opts{'s'} ne '') {
+
+  if($alg eq 'Wmsh') {
+    check_installed_features('EXE_SAMTOOLS');
+    if(!feature_is_installed('SAMTOOLS')) {
+      print "# EXIT : cannot find samtools binary, ".
+        "set path with -S\n";
+    } 
+  }
+
   $split_chr_regex = $opts{'s'};
   $output_mask .= "split_";
   $pancore_mask .= "_split"; 
@@ -265,11 +279,6 @@ if(defined($opts{'B'})) {
   $bedtools_path = $opts{'B'};
   $ENV{"EXE_BEDTOOLS"} = $bedtools_path;
 }
-
-#if(defined($opts{'S'})) {
-#  $samtools_path = $opts{'S'};
-#  $ENV{"EXE_SAMTOOLS"} = $samtools_path;
-#}
 
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode ".

@@ -375,6 +375,7 @@ else {
 
             $cmd = "$minimap_path $MINIMAPPARS -t $threads $index_fasta1 $chrfasta2 -o $splitPAF";
             system($cmd);
+            sleep(2);
             if ( $? != 0 ) {
                 die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
             }
@@ -648,7 +649,7 @@ sub split_genome_sequences_per_chr {
 
     # check chr names found in both files
     foreach $chr (keys(%$ref_fasta1)){
-        if(defined($ref_fasta2->{$chr}) && $chr ne 'unplaced'){
+        if(defined($ref_fasta2->{$chr}) && $chr !~ 'unplaced'){
             $shared_chrs{$chr} = 1;  
         } 
     } #print join ',', keys(%$ref_fasta1); 

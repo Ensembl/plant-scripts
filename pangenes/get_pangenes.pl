@@ -208,8 +208,6 @@ check_installed_features(@FEATURES2CHECK);
 
 if(defined($opts{'w'})) {
 
-  $alg = 'Wmsh';
-
   if(defined($opts{'W'})) {
     $wfmash_path = $opts{'W'};
     $ENV{"EXE_WFMASH"} = $wfmash_path;
@@ -217,6 +215,7 @@ if(defined($opts{'w'})) {
 
   check_installed_features('EXE_WFMASH');
   if(feature_is_installed('WFMASH')) {
+    $alg = 'Wmsh';
     $dowfmash = 1;
     $output_mask .= "alg$alg\_";
     $pancore_mask .= "_alg$alg";
@@ -274,8 +273,8 @@ if(defined($opts{'B'})) {
 
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode ".
-  "-n $n_of_cpus -W $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
-  "-B '$bedtools_path' -S '$samtools_path' -R $random_number_generator_seed\n\n";
+  "-n $n_of_cpus -w $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
+  "-W '$wfmash_path' -B '$bedtools_path' -S '$samtools_path' -R $random_number_generator_seed\n\n";
 
 if($runmode eq 'cluster') {
   print "# computer cluster settings\n";
@@ -483,7 +482,7 @@ foreach $infile (@inputfiles) {
       "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR"; #die $command; 
 
     if($runmode eq 'cluster') {
-      submit_cluster_job($infile,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+      submit_cluster_job("cut$infile",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
           $command =~ s/\\//g;
           print DRYRUNLOG "$command\n";
@@ -664,7 +663,7 @@ foreach $tx1 (0 .. $#taxa) {
   } #print "$taxon $command\n";
 
   if($runmode eq 'cluster') {
-    submit_cluster_job($taxon,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+    submit_cluster_job("idx$taxon",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
   } elsif($runmode eq 'dryrun') {
     $command =~ s/\\//g;
     print DRYRUNLOG "$command\n";
@@ -826,7 +825,7 @@ if( -e $outfolder ) {
 # WARNING : folder 'magic_pangenes/oryza_sativa_IRGSP_0taxa_algMmap_' exists, files might be overwritte
 
 if($runmode eq 'cluster') {
-  submit_cluster_job($reference_name,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
+  submit_cluster_job("clust$reference_name",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
 } elsif($runmode eq 'dryrun') {
   $command =~ s/\\//g;
   print DRYRUNLOG "$command\n";

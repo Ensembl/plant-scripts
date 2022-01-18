@@ -402,7 +402,7 @@ if(-s $input_order_file) {
 }
 
 # 1.3) iteratively parse input files
-my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes);
+my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes,$Mb);
 my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2);
 my (%cluster_PIDs,%ngenes,@gff_outfiles,@to_be_deleted);
 
@@ -449,7 +449,7 @@ foreach $infile (@inputfiles) {
       cp($dnafile,$plain_dnafile)
     }
   } else {
-    #print "# re-using $plain_dnafile\n"
+    print "# re-using $plain_dnafile\n"
   }
 
   if(!-s $plain_gffile) {
@@ -460,25 +460,30 @@ foreach $infile (@inputfiles) {
       cp($gffile,$plain_gffile)
     }
   } else {
-    #print "# re-using $plain_gffile\n"
+    print "# re-using $plain_gffile\n"
   }
 
   # work out sequence stats and make sure split regex works
+  $Mb = (-s $plain_dnafile) / (1024 * 1024);
   $num_genes = count_GFF_genes( $plain_gffile );
   $ngenes{$taxon} = $num_genes;
   $total_genes += $num_genes;
 
   if($split_chr_regex) {
     my $ref_parsed_chrs = parse_GFF_regex($plain_gffile, $split_chr_regex, 0);
-    printf("# %s %d chrs/contigs=%d\n",
+    printf("# %s %1.2fMB genes=%d chrs/contigs=%d\n",
       $dnafile,
+      $Mb,
       $num_genes,
       scalar(keys(%$ref_parsed_chrs)));
     if(scalar(keys(%$ref_parsed_chrs)) < 1) {
       die "# ERROR: regex '$split_chr_regex' does not match chr names in $gffile, please edit\n"
     }
   } else {
-    print "# $dnafile $num_genes\n";
+    printf("# %s %1.2fMB genes=%d\n",
+      $dnafile,
+      $Mb,
+      $num_genes);
   }
 
   # extract cDNA and CDS sequences

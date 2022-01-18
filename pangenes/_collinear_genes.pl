@@ -347,7 +347,7 @@ else {
             sleep(2);
             if ( $? != 0 ) {
                 die "# ERROR: failed running wfmash (probably ran out of memory, $cmd)\n";
-            } elsif ( !-e $PAFfile ) {
+            } elsif ( !-e $splitPAF ) {
                 die "# ERROR: failed generating $splitPAF file ($cmd)\n";
             } else {
                 push(@WGAoutfiles, $splitPAF);

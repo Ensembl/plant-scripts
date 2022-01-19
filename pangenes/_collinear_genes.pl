@@ -64,7 +64,7 @@ my $VERBOSE    = 0;           # values > 1
 # Example: 10t0100300.1 -> Os10g0100300
 my $TRANSCRIPT2GENE = 0;
 
-my ( $help, $do_sequence_check, $reuse, $noheader) = (0, 0, 0, 0 );
+my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
 my ($dowfmash, $dofragments, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
@@ -97,6 +97,7 @@ GetOptions(
     "S|stpath=s"     => \$samtools_path,
     "T|tmpath=s"     => \$tmpdir,
     "t|threads=i"    => \$threads,
+    "H|highrep"      => \$repetitive,
     "a|add"          => \$noheader
 ) || help_message();
 
@@ -121,6 +122,7 @@ sub help_message {
       . "-S   path to samtools binary            (optional, default: -S $SAMTOOLSEXE)\n"
       . "-T   path for temporary files           (optional, default current folder)\n"
       . "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"
+      . "-H   highly repetitive genome           (optional)\n"
 
 #. "-c   check sequences of collinear genes (optional)\n"
       . "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
@@ -167,6 +169,9 @@ if ( $noheader && !$outfilename ) {
 if ($dowfmash) {
     $alg = 'wfmash';
     $qual = 1;
+} elsif($repetitive) {
+    #see https://github.com/lh3/minimap2/issues/813
+    $MINIMAPPARS .= " -f100 ";
 }
 
 if($tmpdir ne '' && $tmpdir !~ /\/$/){
@@ -186,7 +191,7 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path "
-  . "-T $tmpdir -t $threads -i $indexonly -r $reuse\n\n";
+  . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive\n\n";
 
 # check binaries
 if(`$bedtools_path` !~ 'sage') {

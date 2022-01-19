@@ -221,7 +221,7 @@ if(defined($opts{'w'})) {
     $pancore_mask .= "_alg$alg";
   }
   else{ 
-    print "# EXIT : cannot find wfmash binary, ".
+    die "# EXIT : cannot find wfmash binary, ".
       "see dependency instructions or set path with -W\n";
   }
 

@@ -83,7 +83,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "(optional, requires -c, example -R 1234)\n";
   print   "-m runmode [local|cluster|dryrun]                           ".
     "(default: -m local)\n";
-  print   "-n nb of threads in 'local' runmode                         ".
+  print   "-n nb of threads                                            ".
     "(default=$n_of_cpus)\n";
   print   "-I file with filenames in -d to be included                 ".
     "(takes all by default)\n";
@@ -281,9 +281,10 @@ if(defined($opts{'B'})) {
 }
 
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
-  "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file -m $runmode ".
-  "-n $n_of_cpus -w $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
-  "-W '$wfmash_path' -B '$bedtools_path' -S '$samtools_path' -R $random_number_generator_seed\n\n";
+  "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
+  "-m $runmode -w $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
+  "-W '$wfmash_path' -B '$bedtools_path' -S '$samtools_path' ".
+  "-n $n_of_cpus -R $random_number_generator_seed\n\n";
 
 if($runmode eq 'cluster') {
   print "# computer cluster settings\n";
@@ -333,7 +334,8 @@ if($runmode eq 'dryrun') {
     open(DRYRUNLOG,">",$dryrun_file);
 }
 
-## 1) read all input files, identify formats and generate required files in temporary directory
+## 1) read all input files, identify formats and generate required files 
+##    in temporary directory
 
 print "\n# checking input files...\n";
 $min_geneome_size = -1;
@@ -660,7 +662,7 @@ foreach $tx1 (0 .. $#taxa) {
 
   $clusteroutfile = $newDIR . "/$taxon.index.queue"; 
 
-  $command = "$ENV{'EXE_COLLINEAR'} ".
+  $command = "$ENV{'EXE_COLLINEAR'} -t $n_of_cpus ".
     "-sp1 $taxon ".
     "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
     "-sp2 $taxon ".

@@ -171,7 +171,7 @@ If you want to run any of those scripts you must first run:
 
 Contreras-Moreira B, Naamati G, Rosello M, Allen JE, Hunt SE, Muffato M, Gall A, Flicek P (2022) 
 Scripting Analyses of Genomes in Ensembl Plants. In: Edwards D. (eds) Plant Bioinformatics. 
-Methods in Molecular Biology, vol 2443. Humana, New York, NY. [10.1007/978-1-0716-2067-0_2](https://link.springer.com/protocol/10.1007%2F978-1-0716-2067-0_2#Sec10)
+Methods in Molecular Biology, vol 2443. Humana, New York, NY. [10.1007/978-1-0716-2067-0_2](https://link.springer.com/protocol/10.1007%2F978-1-0716-2067-0_2)
 
 <!--[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)-->
 

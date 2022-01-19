@@ -54,7 +54,7 @@ my ($newDIR,$output_mask,$pancore_mask,$include_file,%included_input_files,%opts
 my ($dowfmash,$reference_string) = (0,0);
 my ($onlywga,$inputDIR,$alg) = (0);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
-my ($n_of_cpus,$do_soft) = ($NUMCPUS,0);
+my ($n_of_cpus,$do_soft, $highly_repetitive) = ($NUMCPUS,0,0);
 my ($bedtools_path,$samtools_path,$wfmash_path) = ('','','');
 my ($min_cluster_size,$runmode,$do_genome_composition);
 
@@ -62,7 +62,7 @@ my $random_number_generator_seed = 0;
 my $pwd = getcwd(); 
 $pwd .= '/';
 
-getopts('hvcoAzwW:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvcoAzwHW:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)) {
 
@@ -103,7 +103,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "(optional, default: -Q $MINQUAL)\n";
   print   "-s split genome in chrs, align only homologous chrs         ".
     '(optional, requires regex to match chr names ie: -S \'^\d+$\')'."\n";  
-
+  print   "-H genome is highly repetitive                              ".
+    "(optional, reduces minimap RAM use)\n"; 
   print   "\nOptions that control clustering:\n";
   print   "-t report sequence clusters including at least t taxa       ".
     "(default: t=numberOfTaxa,\n".
@@ -184,21 +185,27 @@ if($runmode eq 'cluster') {
   }
 }
 
-if(defined($opts{'o'})){ $onlywga = 1; }
+if(defined($opts{'H'})) { 
+  $highly_repetitive = 1;
+  $output_mask .= "highrep_";
+  $pancore_mask .= '_highrep';
+}
 
-if($opts{'r'}){ $reference_string = $opts{'r'}; }
-else{ $reference_string = 0; }
+if(defined($opts{'o'})){ $onlywga = 1 }
 
-if(defined($opts{'t'}) && $opts{'t'} >= 0)
-{
+if($opts{'r'}){ $reference_string = $opts{'r'} }
+else{ $reference_string = 0 }
+
+if(defined($opts{'t'}) && $opts{'t'} >= 0) {
   $min_cluster_size = $opts{'t'};
   $output_mask .= $min_cluster_size."taxa_";
   $pancore_mask .= '_'.$min_cluster_size."taxa";
+} else { 
+  $min_cluster_size = 'all'; 
+  $output_mask .= "alltaxa_"; 
 }
-else{ $min_cluster_size = 'all'; $output_mask .= "alltaxa_"; }
 
-if($opts{'I'} && $inputDIR)
-{
+if($opts{'I'} && $inputDIR) {
   $include_file = $opts{'I'};
   $output_mask .= basename($include_file)."_";
   $pancore_mask = "_".basename($include_file);
@@ -280,10 +287,13 @@ if(defined($opts{'B'})) {
   $ENV{"EXE_BEDTOOLS"} = $bedtools_path;
 }
 
+# to test other minimap versions
+#$ENV{"EXE_MINIMAP"} = '~/soft/minimap2-2.24_x64-linux/minimap2';
+
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
   "-m $runmode -w $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
-  "-W '$wfmash_path' -B '$bedtools_path' -S '$samtools_path' ".
+  "-H $highly_repetitive -W '$wfmash_path' -B '$bedtools_path' -S '$samtools_path' ".
   "-n $n_of_cpus -R $random_number_generator_seed\n\n";
 
 if($runmode eq 'cluster') {
@@ -676,6 +686,9 @@ foreach $tx1 (0 .. $#taxa) {
     $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
   } else {
     $command .= "-M $ENV{'EXE_MINIMAP'} ";
+    if($highly_repetitive) {
+      $command .= '-H '
+    }
   } #print "$taxon $command\n";
 
   if($runmode eq 'cluster') {
@@ -746,6 +759,9 @@ foreach $tx1 (0 .. $#taxa-1) {
       $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
     } else {
       $command .= "-M $ENV{'EXE_MINIMAP'} ";
+      if($highly_repetitive) {
+        $command .= '-H '
+      }
     } #die $command;
 
     if($runmode eq 'cluster') {

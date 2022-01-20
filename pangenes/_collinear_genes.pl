@@ -32,7 +32,7 @@ $|=1;
 
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive across species than v2.22
 my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
-my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE"; #v2.17 cannot take --cap-kalloc=1g
+my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE -r1k,5k"; # https://github.com/lh3/minimap2/issues/813
 my $WFMASHEXE   = 'wfmash';                  # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000';
 my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
@@ -243,6 +243,16 @@ if($reuse && -s $geneBEDfile2) {
     printf( "# %d genes parsed in %s mean length=%d\n",
         $num_genes2, $gff2, $mean_gene_len2 );
 }
+
+# 1.1) if requested (long, repetitive genomes) mask laong intergenic regions
+
+# compute chr lengths (whole or split) -> TSV
+# compute complement
+# add 5Kb either side, compile distrubution of sizes
+# mask remaining intervals
+#bedtools complement -i _Morex.gene.bed -g 1H.tsv | perl -lane 'print $F[2]-$F[1]' | sort -n | Rscript -e 'median(scan(file="stdin"))'
+#bedtools complement -i _Morex.gene.bed -g Morex.lengths.tsv | perl -lane '$start=$F[1]+5000; $end=$F[2]-5000; $len=$end-$start; if($len > 50000){ print "$F[0]\t$start\t$end" }' > _Morex.intergenes.bed
+#bedtools maskfasta -fi Morex.fna -bed _Morex.intergenes.bed -fo Morex.msk.fn
 
 # 1.x) if required cut $fasta2 in fragments containing neighbor genes, TO BE DONE
 #if ($dofragments) {

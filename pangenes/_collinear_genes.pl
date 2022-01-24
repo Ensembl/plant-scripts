@@ -287,9 +287,7 @@ if ($split_chr_regex ne '') {
     $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.split.paf";
 } #die "$split_chr_regex $PAFfile\n";
 
-#if ($dofragments) {
-#    $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf";
-#}
+#if ($dofragments) { $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf" }
 
 if($indexonly) {
     print "# indexing genome with $alg\n\n";
@@ -343,7 +341,11 @@ else {
             $index_fasta1 = dirname($chrfasta1)."/".basename($chrfasta1).".fai";
 
             if ( $reuse && -s $index_fasta1 ) {
-                print "# re-using $index_fasta1\n";
+                if ($split_chr_regex ne '') {
+                    printf("# re-using $index_fasta1, make sure same regex was used\n");
+                } else {
+                    print "# re-using $index_fasta1\n";
+                }
             }
             else {
                 $cmd = "$samtools_path faidx $chrfasta1 -o $index_fasta1 2>&1";				
@@ -374,7 +376,11 @@ else {
             $index_fasta1 = $tmpdir . "_$sp1.$chr.mmi";
 
             if ( $reuse && -s $index_fasta1 ) {
-                print "# re-using $index_fasta1\n";
+                if ($split_chr_regex ne '') {
+                    printf("# re-using $index_fasta1, make sure same regex was used\n");
+                } else {
+                    print "# re-using $index_fasta1\n";
+                }
             }
             else {
                 $cmd = "$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1";

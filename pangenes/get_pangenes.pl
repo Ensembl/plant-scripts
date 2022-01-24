@@ -102,7 +102,10 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "-Q min mapping quality, minimap2 only                       ".
     "(optional, default: -Q $MINQUAL)\n";
   print   "-s split genome in chrs, align only homologous chrs         ".
-    '(optional, requires regex to match chr names ie: -S \'^\d+$\')'."\n";  
+    "(optional, requires regex to match chr names\n".
+    "                                                            ".
+    ' ie: -S \'^\d+$\' , remove tmp/ if new regex used)'."\n";
+ 
   print   "-H genome is highly repetitive                              ".
     "(optional, reduces minimap RAM use)\n"; 
   print   "\nOptions that control clustering:\n";

@@ -321,7 +321,7 @@ else {
         $chrfasta1 = $ref_chr_pairs->{$chr}[0];
         $chrfasta2 = $ref_chr_pairs->{$chr}[1];
         $splitPAF =  $tmpdir . "_$sp2.$sp1.$alg.split.$chr.paf";
-        print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
+        #print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
 
         if ( $reuse && -s $splitPAF ) {
             print "# re-using $splitPAF\n";
@@ -809,7 +809,7 @@ sub query2ref_coords {
     my ( $infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose ) = @_;
 
     my ( $cchr, $cstart, $cend, $cname, $cmatch, $cstrand );
-    my ( $qchr, $qstart, $qend, $cigartype );
+    my ( $qchr, $qstart, $qend, $cigartype, $bedline );
     my ( $WGAstrand, $rchr,      $rstart,       $rend );
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
@@ -905,6 +905,7 @@ sub query2ref_coords {
                 # refine delta to match exactly the start (end for strand -)
                 ( $deltaq, $deltar, $coordr ) =
                   _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cstart );
+
                 $start_deltar = -1;
                 if ( $coordr > -1 ) {
                     $start_deltar = $coordr - $SAMrcoord;
@@ -931,6 +932,7 @@ sub query2ref_coords {
                 # refine delta to match exactly the end (start for strand -)
                 ( $deltaq, $deltar, $coordr ) =
                   _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cend );
+
                 $end_deltar = -1;
                 if ( $coordr > -1 ) {
                     $end_deltar = $coordr - $SAMrcoord;
@@ -985,32 +987,33 @@ sub query2ref_coords {
         }
 
         # print coords in ref frame only if segment is long enough
-        if ( 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'} >= $minalnlen ) {
-   			
-            push(@matched, 
-			  sprintf("%s\t%d\t%d\t%s\t%d\t%s\n",
-                $ref_coords{$cname}{'chr'},
-                $ref_coords{$cname}{'start'},
-                $ref_coords{$cname}{'end'},
-                $cname,
-                1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'},
-                $strand) );
+        $overlap = 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'};
+        $bedline = sprintf("%s\t%d\t%d\t%s\t%d\t%s\n",
+            $ref_coords{$cname}{'chr'},
+            $ref_coords{$cname}{'start'},
+            $ref_coords{$cname}{'end'},
+            $cname,
+            $overlap,
+            $strand);
+
+        if ( $overlap >= $minalnlen ) {
+            push(@matched, $bedline);
         }
         else {
-            # shell genes cannot be matched in ref genome
-            push( @unmatched, $cname );
+            # store also short segments, useful to call unmapped regions
+            push( @unmatched, $bedline );
         }
     }
 
     close(BED);
 
-    # printed sorted BED records
+    # printed unsorted BED records
     open( OUTBED, ">", $outfile )
       || die "# ERROR(query2ref_coords): cannot create $outfile\n";
 
     foreach $feat (@matched) {
         print OUTBED $feat;
-	}
+    }
 
     close(OUTBED);    
 

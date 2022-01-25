@@ -40,6 +40,7 @@ my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]
 my $SAMTOOLSEXE = 'samtools';
 
+# might be useful to compute sequence identity for ANI
 #my $BLASTNEXE   = 'blastn';   # 2.2.30+
 
 my $THREADS      = 4;
@@ -229,7 +230,7 @@ else {
 my $geneBEDfile1 = $tmpdir . "_$sp1.gene.bed";
 my $geneBEDfile2 = $tmpdir . "_$sp2.gene.bed";
 
-if($reuse && -s $geneBEDfile1) {
+if($reuse && -s $geneBEDfile1 && check_BED_format($geneBEDfile1)) {
     print "# re-using $geneBEDfile1\n";
 } else {
     my ( $num_genes1, $mean_gene_len1 ) = parse_genes_GFF( $gff1, $geneBEDfile1 );
@@ -237,7 +238,7 @@ if($reuse && -s $geneBEDfile1) {
         $num_genes1, $gff1, $mean_gene_len1 );
 }
 
-if($reuse && -s $geneBEDfile2) {
+if($reuse && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
     print "# re-using $geneBEDfile2\n";
 } elsif(!$indexonly) {
     my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
@@ -255,7 +256,7 @@ if($reuse && -s $geneBEDfile2) {
 #bedtools complement -i _Morex.gene.bed -g Morex.lengths.tsv | perl -lane '$start=$F[1]+5000; $end=$F[2]-5000; $len=$end-$start; if($len > 50000){ print "$F[0]\t$start\t$end" }' > _Morex.intergenes.bed
 #bedtools maskfasta -fi Morex.fna -bed _Morex.intergenes.bed -fo Morex.msk.fn
 
-# 1.x) if required cut $fasta2 in fragments containing neighbor genes, TO BE DONE
+# 1.x) if required cut $fasta2 in fragments containing neighbor genes, seemed like a good idea
 #if ($dofragments) {
 #    my $frag_fasta2 = $tmpdir . "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
 #    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
@@ -272,10 +273,10 @@ if($reuse && -s $geneBEDfile2) {
 # split genome assemblies if required, 1/chr plus 'unplaced'
 # Note: reduces complexity (good for large/polyploid genomes) but misses translocations
 if ($split_chr_regex ne '') {
-
+    print "\n# splitting sequences with regex\n";
     $ref_chr_pairs = 
         split_genome_sequences_per_chr($tmpdir, $fasta1, $fasta2, 
-            $split_chr_regex, $indexonly);
+            $split_chr_regex, $indexonly, $reuse);
 }
 else {
     # single reference by default
@@ -320,7 +321,7 @@ else {
         $chrfasta1 = $ref_chr_pairs->{$chr}[0];
         $chrfasta2 = $ref_chr_pairs->{$chr}[1];
         $splitPAF =  $tmpdir . "_$sp2.$sp1.$alg.split.$chr.paf";
-        #print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
+        print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
 
         if ( $reuse && -s $splitPAF ) {
             print "# re-using $splitPAF\n";
@@ -541,6 +542,26 @@ if($num_pairs > 0 && -s $outfilename) {
 
 #################################
 
+# Takes string with BED filename (produced with sub parse_genes_GFF)
+# and returns 1 if format is OK
+sub check_BED_format {
+
+    my ( $bedfile ) = @_;
+    my $formatOK = 1;    
+
+    open(BED, "<", $bedfile) || die "# ERROR(check_BED_format): cannot read $bedfile\n";
+    while(<BED>) {
+         if($_ !~ /^[^\t]+\t[^\t]+\t[^\t]+\t[^\t]+\t[^\t]+\t[^\t]+/) {
+             $formatOK = 0;
+             last;     
+         }
+    }
+    close(BED);
+
+    return $formatOK
+}
+
+
 # Takes i) input GFF filename ii) output BED filename and
 # returns i) number and ii) mean length of genes parsed.
 # Uses global $DUMMYSCORE as dummy scores, as opposed to cases where
@@ -558,14 +579,12 @@ sub parse_genes_GFF {
     sysread( INFILE, $magic, 2 );
     close(INFILE);
 
-    if ( $gff_file =~ /\.gz$/ || $magic eq "\x1f\x8b" )
-    {    # GZIP compressed input{
+    if ( $gff_file =~ /\.gz$/ || $magic eq "\x1f\x8b" ) {  # GZIP compressed input{
         if ( !open( GFF, "$GZIPBIN -dc $gff_file |" ) ) {
             die "# ERROR(parse_genes_GFF): cannot read GZIP compressed $gff_file $!\n"
               . "# please check gzip is installed\n";
         }
-    }
-    else {
+    } else {
         open( GFF, "<", $gff_file )
           || die "# ERROR(parse_genes_GFF): cannot read $gff_file\n";
     }
@@ -650,19 +669,20 @@ sub read_FASTA_regex2hash {
     return \%fasta;
 }
 
-# Takes 5 params:
+# Takes 6 params:
 # 1) path to write files to
 # 2) name of FASTA file (ref)
 # 3) name of FASTA file (query)
 # 4) regex to match chromosome names
 # 5) indexing job (boolean)
+# 6) reuse (boolean)
 # Returns ref to hash with chr and/or 'unplaced' as keys and two FASTA files as value (ref, query)
 # Note: 'unplaced' might hold genuine unplaced sequences but also non-shared chr names
 # Note: creates FASTA files with prefix _ 
 # Note: if doindex is true only creates files for $fastafile1
 sub split_genome_sequences_per_chr {
 
-    my ($path,$fastafile1,$fastafile2,$regex,$doindex) = @_;
+    my ($path,$fastafile1,$fastafile2,$regex,$doindex,$reuse) = @_;
 
     my ($chr,$chrfasta1,$chrfasta2,$summaryfile);
     my (%shared_chrs,%chr_pairs);
@@ -682,13 +702,15 @@ sub split_genome_sequences_per_chr {
         $chrfasta1 = $path . "_".basename($fastafile1).".$chr.fna";
         $chrfasta2 = $path . "_".basename($fastafile2).".$chr.fna";
 
-        open( CHRFASTA1, ">$chrfasta1") ||
-            die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
-        print CHRFASTA1 ">$chr\n";
-        print CHRFASTA1 $ref_fasta1->{$chr};
-        close(CHRFASTA1);
+        if(!$reuse || !-e $chrfasta1) {
+            open( CHRFASTA1, ">$chrfasta1") ||
+                die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
+            print CHRFASTA1 ">$chr\n";
+            print CHRFASTA1 $ref_fasta1->{$chr};
+            close(CHRFASTA1);
+        } 
 
-        if(!$doindex) {
+        if(!$doindex && (!$reuse || !-e $chrfasta2)) {
             open( CHRFASTA2, ">$chrfasta2") ||
                 die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
             print CHRFASTA2 ">$chr\n";
@@ -703,16 +725,18 @@ sub split_genome_sequences_per_chr {
     $chrfasta1 = $path . "_".basename($fastafile1).".unplaced.fna";
     $chrfasta2 = $path . "_".basename($fastafile2).".unplaced.fna";
 
-    open( CHRFASTA1, ">$chrfasta1") ||
-        die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
-    foreach $chr (keys(%$ref_fasta1)){ 
-        next if(defined($shared_chrs{$chr}));
-        print CHRFASTA1 ">$chr\n"; 
-        print CHRFASTA1 $ref_fasta1->{$chr};   
+    if(!$reuse || !-e $chrfasta1) {
+        open( CHRFASTA1, ">$chrfasta1") ||
+            die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta1\n";
+        foreach $chr (keys(%$ref_fasta1)){ 
+            next if(defined($shared_chrs{$chr}));
+            print CHRFASTA1 ">$chr\n"; 
+            print CHRFASTA1 $ref_fasta1->{$chr};   
+        }
+        close(CHRFASTA1);
     }
-    close(CHRFASTA1);
 
-    if(!$doindex) {
+    if(!$doindex && (!$reuse || !-e $chrfasta2)) {
         open( CHRFASTA2, ">$chrfasta2") ||
             die "# ERROR(split_genome_sequences_per_chr): cannot write $chrfasta2\n";
         foreach $chr (keys(%$ref_fasta2)){

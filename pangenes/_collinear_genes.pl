@@ -495,7 +495,7 @@ printf( "# %d genes mapped in %s (%d unmapped)\n",
 
 if ( $num_matched == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
-}
+} 
 
 ## 5) produce list of pairs of collinear genes
 

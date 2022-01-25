@@ -2,4 +2,5 @@
 27122021: get_pangenes.pl integrates _cut_sequences.pl & _collinear_genes.pl
 04012022: checks regex matches chr names
 04012022: tested with -s, made test_rice
-10012022: wfmash only needed with -W 
+10012022: wfmash only needed with -w
+25012022: gene BED files checked as they might be interrupted

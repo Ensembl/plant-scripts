@@ -49,8 +49,8 @@ my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 $ENV{'LC_ALL'} = 'POSIX';
 my $GZIPBIN      = "gzip";
 
-my $MAXGENESFRAG = 3;         # max genes in same fragment with -f
-my $MAXFRAGSIZE  = 50_000;    # max frag length with -f
+my $MINMASKLEN   = 50_000;    # mask longer (repetitive) fragments with -H
+my $GENEMARGIN   = 5000;      # do not mask gene margins 
 my $DUMMYSCORE   = 9999;
 
 # while parsing PAF
@@ -114,8 +114,6 @@ sub help_message {
       . "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
       . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -s \'^\d+$\')'. "\n"
-
-#. "-f   map $MAXGENESFRAG-gene fragments of sp2        (optional, by default complete chrs are mapped)\n"
       . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
       . "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
@@ -124,8 +122,7 @@ sub help_message {
       . "-S   path to samtools binary            (optional, default: -S $SAMTOOLSEXE)\n"
       . "-T   path for temporary files           (optional, default current folder)\n"
       . "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"
-      . "-H   highly repetitive genome           (optional)\n"
-
+      . "-H   highly repetitive genome           (optional, masks intergenes >= $MINMASKLEN & tweaks minimap2)\n"
 #. "-c   check sequences of collinear genes (optional)\n"
       . "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
       . "-r   re-use previous results & index    (optional)\n"
@@ -246,25 +243,30 @@ if($reuse && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
         $num_genes2, $gff2, $mean_gene_len2 );
 }
 
-# 1.1) if requested (long, repetitive genomes) mask laong intergenic regions
+# 1.1) if requested (long, repetitive genomes) mask long intergenes of $sp1
+if($repetitive) {
+    my $masked_fasta1 = $tmpdir . "_$sp1.mask.fna";
+    my $fasta_length1 = $tmpdir . "_$sp1.tsv";
+    my $maskBEDfile1  = $tmpdir . "_$sp1.mask.bed";
 
-# compute chr lengths (whole or split) -> TSV
-# compute complement
-# add 5Kb either side, compile distrubution of sizes
-# mask remaining intervals
-#bedtools complement -i _Morex.gene.bed -g 1H.tsv | perl -lane 'print $F[2]-$F[1]' | sort -n | Rscript -e 'median(scan(file="stdin"))'
-#bedtools complement -i _Morex.gene.bed -g Morex.lengths.tsv | perl -lane '$start=$F[1]+5000; $end=$F[2]-5000; $len=$end-$start; if($len > 50000){ print "$F[0]\t$start\t$end" }' > _Morex.intergenes.bed
-#bedtools maskfasta -fi Morex.fna -bed _Morex.intergenes.bed -fo Morex.msk.fn
+    my $total_masked1 = mask_intergenic_regions(
+        $fasta1,$geneBEDfile1,
+        $masked_fasta1, $fasta_length1, $maskBEDfile1,
+        $MINMASKLEN,$GENEMARGIN,$bedtools_path
+    );
 
-# 1.x) if required cut $fasta2 in fragments containing neighbor genes, seemed like a good idea
+    $fasta1 = $masked_fasta1;
+
+    printf( "# %d bases masked in %s\n",
+        $total_masked1, $sp1 );
+}
+
+# cut $fasta2 in fragments containing neighbor genes, never done 
 #if ($dofragments) {
 #    my $frag_fasta2 = $tmpdir . "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
 #    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
 #        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE );
-#
 #    $fasta2 = $frag_fasta2;
-#    printf("# %s sequence cut in %d gene-containing fragments of mean length=%d\n",
-#        $sp2, $num_frags, $mean_size );
 #}
 
 ## 2) align genome1 vs genome2 (WGA)
@@ -750,6 +752,75 @@ sub split_genome_sequences_per_chr {
     $chr_pairs{'unplaced'} = [$chrfasta1,$chrfasta2];
 
     return \%chr_pairs;
+}
+
+# Takes 7 params:
+# 1) name of FASTA file, must be uncompressed
+# 2) name of gene BED file 
+# 3) name of FASTA output file 
+# 4) name of TSV output file with chr length
+# 5) name of BED output file with long intergenic masked regions
+# 6) min length of regions to mask (integer)
+# 7) do not mask with this number of bases next to genes (integer)
+# Returns number of masked bases 
+sub mask_intergenic_regions {
+
+    my ( $fasta, $geneBED, $out_fasta, $out_len, $out_bed, 
+         $minlen, $margin, $bedtoolsEXE ) = @_;
+
+    my $total_masked = 0;
+    my ($chr,$seq,$cmd,$start,$end,$len);
+
+    # compute chr lengths and save to TSV file
+    my $ref_fasta = read_FASTA_regex2hash($fasta,'\S+');
+    
+    open(TSV,">$out_len") || 
+        die "# ERROR(mask_intergenic_regions): cannot write $out_len\n"; 
+
+    foreach $chr (keys(%$ref_fasta)) {
+        $seq = $ref_fasta->{$chr};
+        $seq =~ s/\n//g;
+        printf(TSV "%s\t%d\n",$chr,length($seq));
+    }
+
+    close(TSV);
+
+    # compute complement of gene space, adding $margin bases either side,
+    # and write output BED file
+
+    open(BED,">$out_bed") ||
+        die "# ERROR(mask_intergenic_regions): cannot write $out_bed\n";
+
+    $cmd = "$bedtoolsEXE complement -i $geneBED -g $out_len";
+    open(BEDTOOLS,"$cmd |") || 
+        die "# ERROR(mask_intergenic_regions): cannot run $cmd\n";
+
+    while(<BEDTOOLS>) {
+        my @bedata = split(/\t/);
+        $start = $bedata[1]; 
+        $end   = $bedata[2]-$margin; 
+        $len   = $end-$start; 
+        if($len > $minlen){ 
+            print BED "$bedata[0]\t$start\t$end\n";
+            $total_masked += $len;  
+        }
+    }
+
+    close(BEDTOOLS);
+    close(BED);
+   
+    # mask remaining intervals
+    $cmd = "$bedtoolsEXE maskfasta -fi $fasta -bed $out_bed -fo $out_fasta";
+    system($cmd);
+    sleep(2);
+    if ( $? != 0 ) {
+        die "# ERROR(mask_intergenic_regions): failed running bedtools (intergenes, $cmd)\n";
+    }
+    elsif ( !-s $out_fasta ) {    
+        die "# ERROR(mask_intergenic_regions): failed generating $out_fasta file ($cmd)\n";
+    }
+
+    return $total_masked;
 }
 
 # Takes i) input BED filename produced by parses_genes_GFF, ii) input FASTA filename,

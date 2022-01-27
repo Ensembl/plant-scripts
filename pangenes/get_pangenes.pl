@@ -517,7 +517,7 @@ foreach $infile (@inputfiles) {
           print DRYRUNLOG "$command\n";
           $total_dry++;
     } else { # 'local' runmode
-      $command = "$command > /dev/null"; 
+      $command = "$command > $clusteroutfile"; 
       system("$command");
       if($? != 0) {
         die "# EXIT: failed while extracting GFF features ($command)\n";
@@ -593,9 +593,12 @@ if($include_file) {
   # update @taxa, $min_cluster_size
   @taxa = @Itaxa;
   $n_of_taxa = scalar(@Itaxa);
-  if($min_cluster_size eq 'all'){ $min_cluster_size = $n_of_taxa; }
-  elsif($min_cluster_size > $n_of_taxa){ $min_cluster_size = $n_of_taxa; }
-
+  if($min_cluster_size eq 'all') { 
+    $min_cluster_size = $n_of_taxa 
+  }
+  elsif($min_cluster_size > $n_of_taxa) { 
+    $min_cluster_size = $n_of_taxa
+  }
 }
 
 printf("# taxa considered = %d genes = %d\n\n",$n_of_taxa,$total_genes);
@@ -650,13 +653,12 @@ print "# mask=$output_mask ($pancore_mask)\n\n" if(!$onlywga);
 # 1.6) check previously processed input files to decide whether new WGAs
 # are needed and update $pangeneTools::selected_genomes_file
 $current_files = join('',sort(@taxa));
-if(-s $selected_genomes_file)
-{
+if(-s $selected_genomes_file) {
   $previous_files = get_string_with_previous_genomes($selected_genomes_file);
 }
 
 open(SEL,">$selected_genomes_file") || die "# cannot create $selected_genomes_file\n";
-foreach $taxon (@taxa){ print SEL "$taxon\n"; }
+foreach $taxon (@taxa){ print SEL "$taxon\n" }
 close(SEL);
 
 
@@ -701,7 +703,7 @@ foreach $tx1 (0 .. $#taxa) {
     print DRYRUNLOG "$command\n";
     $total_dry++;
   } else { # 'local' runmode
-    $command = "$command > /dev/null";
+    $command = "$command > $clusteroutfile";
     system("$command");
     if($? != 0) {
       die "# EXIT: failed while indexing genomes ($command)\n";
@@ -774,7 +776,7 @@ foreach $tx1 (0 .. $#taxa-1) {
       print DRYRUNLOG "$command\n";
       $total_dry++;
     } else { # 'local' runmode
-      $command = "$command > /dev/null";
+      $command = "$command > $clusteroutfile";
       system("$command");
       if($? != 0) {
         die "# EXIT: failed while doing genome alignment ($command)\n";

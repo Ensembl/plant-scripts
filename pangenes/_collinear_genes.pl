@@ -249,24 +249,42 @@ if($repetitive) {
     my $fasta_length1 = $tmpdir . "_$sp1.tsv";
     my $maskBEDfile1  = $tmpdir . "_$sp1.mask.bed";
 
-    my $total_masked1 = mask_intergenic_regions(
-        $fasta1,$geneBEDfile1,
-        $masked_fasta1, $fasta_length1, $maskBEDfile1,
-        $MINMASKLEN,$GENEMARGIN,$bedtools_path
-    );
+    if($reuse && -s $maskBEDfile1) {
+        print "# re-using $maskBEDfile1\n";
+    } else {
+        my ($total_masked1, $median_length1) = mask_intergenic_regions(
+            $fasta1,$geneBEDfile1,
+            $masked_fasta1, $fasta_length1, $maskBEDfile1,
+            $MINMASKLEN,$GENEMARGIN,$bedtools_path);
 
+        printf("# %s bases masked=%d median intergene=%d\n",
+            $sp1, $total_masked1, $median_length1 );
+    }
     $fasta1 = $masked_fasta1;
 
-    printf( "# %d bases masked in %s\n",
-        $total_masked1, $sp1 );
+    my $masked_fasta2 = $tmpdir . "_$sp2.mask.fna";
+    my $fasta_length2 = $tmpdir . "_$sp2.tsv";
+    my $maskBEDfile2  = $tmpdir . "_$sp2.mask.bed";
+
+    if($reuse && -s $maskBEDfile2) {
+        print "# re-using $maskBEDfile2\n";
+    } elsif(!$indexonly) {
+        my ($total_masked2, $median_length2) = mask_intergenic_regions(
+            $fasta2,$geneBEDfile2,
+            $masked_fasta2, $fasta_length2, $maskBEDfile2,
+            $MINMASKLEN,$GENEMARGIN,$bedtools_path);
+
+        printf("# %s bases masked=%d median intergene=%d\n",
+            $sp1, $total_masked2, $median_length2 );
+    }
+    $fasta2 = $masked_fasta2;
 }
 
 # cut $fasta2 in fragments containing neighbor genes, never done 
 #if ($dofragments) {
 #    my $frag_fasta2 = $tmpdir . "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
 #    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
-#        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE );
-#    $fasta2 = $frag_fasta2;
+#        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE ); $fasta2 = $frag_fasta2;
 #}
 
 ## 2) align genome1 vs genome2 (WGA)
@@ -770,6 +788,7 @@ sub mask_intergenic_regions {
 
     my $total_masked = 0;
     my ($chr,$seq,$cmd,$start,$end,$len);
+    my @intergenes;
 
     # compute chr lengths and save to TSV file
     my $ref_fasta = read_FASTA_regex2hash($fasta,'\S+');
@@ -797,13 +816,14 @@ sub mask_intergenic_regions {
 
     while(<BEDTOOLS>) {
         my @bedata = split(/\t/);
-        $start = $bedata[1]; 
+        $start = $bedata[1]+$margin; 
         $end   = $bedata[2]-$margin; 
         $len   = $end-$start; 
         if($len > $minlen){ 
             print BED "$bedata[0]\t$start\t$end\n";
             $total_masked += $len;  
-        }
+        } 
+        push(@intergenes,$len) if($len > 0);
     }
 
     close(BEDTOOLS);
@@ -820,13 +840,13 @@ sub mask_intergenic_regions {
         die "# ERROR(mask_intergenic_regions): failed generating $out_fasta file ($cmd)\n";
     }
 
-    return $total_masked;
+    return ($total_masked, calc_median(\@intergenes));
 }
 
 # Takes i) input BED filename produced by parses_genes_GFF, ii) input FASTA filename,
 # iii) output FASTA filename, iv) max gene per fragment, v) max fragment lengh, and
 # returns i) number and ii) mean length of fragments cut.
-# TO BE completed if needed, dummy prototype 
+# Note: to be completed if needed, dummy prototype 
 sub cut_gene_fragments {
 
     my ( $geneBED, $fasta, $out_fasta, $maxgenes, $maxsize ) = @_;
@@ -1311,3 +1331,17 @@ sub bed2compara {
     return $num_pairs;
 }
 
+sub calc_median {
+    
+    my ($dataref) = @_;
+
+    my $mid = int(scalar(@$dataref)/2);
+    my @sorted = sort {$a<=>$b} (@$dataref);
+
+    if(scalar(@sorted) % 2) { 
+        return $sorted[ $mid ] 
+    }
+    else { 
+        return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2) 
+    }
+}

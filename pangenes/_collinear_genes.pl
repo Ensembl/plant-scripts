@@ -235,12 +235,14 @@ if($reuse && -s $geneBEDfile1 && check_BED_format($geneBEDfile1)) {
         $num_genes1, $gff1, $mean_gene_len1 );
 }
 
-if($reuse && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
-    print "# re-using $geneBEDfile2\n";
-} elsif(!$indexonly) {
-    my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
-    printf( "# %d genes parsed in %s mean length=%d\n",
-        $num_genes2, $gff2, $mean_gene_len2 );
+if(!$indexonly) {
+    if($reuse && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
+        print "# re-using $geneBEDfile2\n";
+    } else {
+        my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
+        printf( "# %d genes parsed in %s mean length=%d\n",
+            $num_genes2, $gff2, $mean_gene_len2 );
+    }
 }
 
 # 1.1) if requested (long, repetitive genomes) mask long intergenes of $sp1
@@ -257,7 +259,7 @@ if($repetitive) {
             $masked_fasta1, $fasta_length1, $maskBEDfile1,
             $MINMASKLEN,$GENEMARGIN,$bedtools_path);
 
-        printf("# %s bases masked=%d median intergene=%d\n",
+        printf("# %s bases masked=%d median intergene length=%d\n",
             $sp1, $total_masked1, $median_length1 );
     }
     $fasta1 = $masked_fasta1;
@@ -266,18 +268,20 @@ if($repetitive) {
     my $fasta_length2 = $tmpdir . "_$sp2.tsv";
     my $maskBEDfile2  = $tmpdir . "_$sp2.mask.bed";
 
-    if($reuse && -s $maskBEDfile2) {
-        print "# re-using $maskBEDfile2\n";
-    } elsif(!$indexonly) {
-        my ($total_masked2, $median_length2) = mask_intergenic_regions(
-            $fasta2,$geneBEDfile2,
-            $masked_fasta2, $fasta_length2, $maskBEDfile2,
-            $MINMASKLEN,$GENEMARGIN,$bedtools_path);
+    if(!$indexonly) {
+        if($reuse && -s $maskBEDfile2) {
+            print "# re-using $maskBEDfile2\n";
+        } else {
+            my ($total_masked2, $median_length2) = mask_intergenic_regions(
+                $fasta2,$geneBEDfile2,
+                $masked_fasta2, $fasta_length2, $maskBEDfile2,
+                $MINMASKLEN,$GENEMARGIN,$bedtools_path);
 
-        printf("# %s bases masked=%d median intergene=%d\n",
-            $sp1, $total_masked2, $median_length2 );
+            printf("# %s bases masked=%d median intergene=%d\n",
+                $sp1, $total_masked2, $median_length2 );
+        }
+        $fasta2 = $masked_fasta2;
     }
-    $fasta2 = $masked_fasta2;
 }
 
 # cut $fasta2 in fragments containing neighbor genes, never done 

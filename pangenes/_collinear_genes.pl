@@ -310,9 +310,10 @@ else {
 my $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.paf";
 if ($split_chr_regex ne '') {
     $PAFfile = $tmpdir . "_$sp2.$sp1.$alg.split.paf";
-} #die "$split_chr_regex $PAFfile\n";
-
-#if ($dofragments) { $PAFfile = "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.$sp1.$alg.paf" }
+} 
+if($repetitive) {
+    $PAFfile =~ s/\.paf$/.highrep.paf/; 
+}
 
 if($indexonly) {
     print "# indexing genome with $alg\n\n";
@@ -345,7 +346,9 @@ else {
         $chrfasta1 = $ref_chr_pairs->{$chr}[0];
         $chrfasta2 = $ref_chr_pairs->{$chr}[1];
         $splitPAF =  $tmpdir . "_$sp2.$sp1.$alg.split.$chr.paf";
-        #print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
+        if($repetitive) {
+            $splitPAF =~ s/\.paf$/.highrep.paf/;
+        }#print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
 
         if ( $reuse && -s $splitPAF ) {
             print "# re-using $splitPAF\n";
@@ -363,6 +366,7 @@ else {
 
         if ($dowfmash) {
 
+            # usually created in _cut_sequences.pl
             $index_fasta1 = dirname($chrfasta1)."/".basename($chrfasta1).".fai";
 
             if ( $reuse && -s $index_fasta1 ) {
@@ -371,8 +375,7 @@ else {
                 } else {
                     print "# re-using $index_fasta1\n";
                 }
-            }
-            else {
+            } else {
                 $cmd = "$samtools_path faidx $chrfasta1 -o $index_fasta1 2>&1";				
                 system($cmd);
                 if ( $? != 0 ) {
@@ -399,6 +402,9 @@ else {
         else {    # default minimap2 index & alignment
 
             $index_fasta1 = $tmpdir . "_$sp1.$chr.mmi";
+            if($repetitive) {
+                $index_fasta1 =~ s/\.mmi$/.highrep.mmi/;
+            }
 
             if ( $reuse && -s $index_fasta1 ) {
                 if ($split_chr_regex ne '') {
@@ -406,8 +412,7 @@ else {
                 } else {
                     print "# re-using $index_fasta1\n";
                 }
-            }
-            else {
+            } else {
                 $cmd = "$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1";
                 system($cmd);
                 if ( $? != 0 ) {

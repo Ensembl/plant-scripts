@@ -107,7 +107,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     ' ie: -S \'^\d+$\' , remove tmp/ if new regex used)'."\n";
  
   print   "-H genome is highly repetitive                              ".
-    "(optional, reduces minimap RAM use)\n"; 
+    "(optional, <minimap RAM, masks intergenes)\n"; 
   print   "\nOptions that control clustering:\n";
   print   "-t report sequence clusters including at least t taxa       ".
     "(default: t=numberOfTaxa,\n".
@@ -502,7 +502,7 @@ foreach $infile (@inputfiles) {
   }
 
   # extract cDNA and CDS sequences
-  # Note: this creates a FASTA index file that might be used by wfmash
+  # Note: this also creates a FASTA index file that might be used by wfmash later on
   if(-s $outpep && -s $outCDS && -s $outcDNA) {
     #print "# re-using $outCDS\n";
     
@@ -690,10 +690,11 @@ foreach $tx1 (0 .. $#taxa) {
   if($dowfmash) {
     $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
   } else {
-    $command .= "-M $ENV{'EXE_MINIMAP'} ";
-    if($highly_repetitive) {
+    $command .= "-M $ENV{'EXE_MINIMAP'} "
+  }
+  
+  if($highly_repetitive) {
       $command .= '-H '
-    }
   } #print "$taxon $command\n";
 
   if($runmode eq 'cluster') {
@@ -739,6 +740,9 @@ foreach $tx1 (0 .. $#taxa-1) {
     if($split_chr_regex) {
       $outTSVfile .= '.split'
     }
+    if($highly_repetitive) {
+      $outTSVfile .= '.highrep'
+    }
     $outTSVfile .= '.tsv';
 
     # skip job if already computed 
@@ -763,10 +767,10 @@ foreach $tx1 (0 .. $#taxa-1) {
     if($dowfmash) {
       $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
     } else {
-      $command .= "-M $ENV{'EXE_MINIMAP'} ";
-      if($highly_repetitive) {
+      $command .= "-M $ENV{'EXE_MINIMAP'} "
+    }
+    if($highly_repetitive) {
         $command .= '-H '
-      }
     } #die $command;
 
     if($runmode eq 'cluster') {

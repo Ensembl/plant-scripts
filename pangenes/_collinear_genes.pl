@@ -49,7 +49,7 @@ my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 $ENV{'LC_ALL'} = 'POSIX';
 my $GZIPBIN      = "gzip";
 
-my $MINMASKLEN   = 100_000;    # mask longer (repetitive) fragments with -H
+my $MINMASKLEN   = 100_000;   # mask longer (repetitive) fragments with -H
 my $GENEMARGIN   = 5000;      # do not mask gene margins 
 my $DUMMYSCORE   = 9999;
 
@@ -805,7 +805,8 @@ sub mask_intergenic_regions {
     open(TSV,">$out_len") || 
         die "# ERROR(mask_intergenic_regions): cannot write $out_len\n"; 
 
-    foreach $chr (keys(%$ref_fasta)) {
+    # note sort matches sort -k1,1 with LC_ALL=POSIX
+    foreach $chr (sort {$a cmp $b} keys(%$ref_fasta)) {
         $seq = $ref_fasta->{$chr};
         $seq =~ s/\n//g;
         printf(TSV "%s\t%d\n",$chr,length($seq));
@@ -836,7 +837,7 @@ sub mask_intergenic_regions {
     }
 
     close(BEDTOOLS);
-    close(BED);
+    close(BED); 
    
     # mask remaining intervals
     $cmd = "$bedtoolsEXE maskfasta -fi $fasta -bed $out_bed -fo $out_fasta";

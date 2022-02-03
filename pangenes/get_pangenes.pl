@@ -405,6 +405,7 @@ if(-s $input_order_file) {
   close(ORDER);
 
   @inputfiles = @new_order_input_files;
+
 } else {
   $order=0;
   open(ORDER,">$input_order_file") || die "# EXIT : cannot write $input_order_file\n";
@@ -419,7 +420,7 @@ if(-s $input_order_file) {
 # 1.3) iteratively parse input files
 my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes,$Mb);
 my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2);
-my (%cluster_PIDs,%ngenes,@gff_outfiles,@to_be_deleted);
+my (%cluster_PIDs,%ngenes,@gff_outfiles,@gff_logfiles,@to_be_deleted);
 
 foreach $infile (@inputfiles) {
 
@@ -514,7 +515,7 @@ foreach $infile (@inputfiles) {
       submit_cluster_job("cut$infile",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
           $command =~ s/\\//g;
-          print DRYRUNLOG "$command\n";
+          print DRYRUNLOG "$command > $clusteroutfile\n";
           $total_dry++;
     } else { # 'local' runmode
       $command = "$command > $clusteroutfile"; 
@@ -523,6 +524,8 @@ foreach $infile (@inputfiles) {
         die "# EXIT: failed while extracting GFF features ($command)\n";
       }
     }
+
+    push(@gff_logfiles, $clusteroutfile);
   } 
 }
 
@@ -550,6 +553,18 @@ foreach $gffile (@gff_outfiles) {
     die "# EXIT, $gffile does not exist, GFF job search might failed ".
       "or hard drive is still writing it (please re-run)\n";
   } 
+}
+
+# check errors in logfiles 
+foreach $gffile (@gff_logfiles) {
+  open(LOG,"<",$gffile) || die "# ERROR: cannot open $gffile\n";
+  while(<LOG>) {
+    if(/^# ERROR/) {
+      print;
+      exit;
+    }
+  }
+  close(LOG);
 }
 
 print "# done\n\n";
@@ -701,7 +716,7 @@ foreach $tx1 (0 .. $#taxa) {
     submit_cluster_job("idx$taxon",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
   } elsif($runmode eq 'dryrun') {
     $command =~ s/\\//g;
-    print DRYRUNLOG "$command\n";
+    print DRYRUNLOG "$command > $clusteroutfile\n";
     $total_dry++;
   } else { # 'local' runmode
     $command = "$command > $clusteroutfile";
@@ -777,7 +792,7 @@ foreach $tx1 (0 .. $#taxa-1) {
       submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
       $command =~ s/\\//g;
-      print DRYRUNLOG "$command\n";
+      print DRYRUNLOG "$command > $clusteroutfile\n";
       $total_dry++;
     } else { # 'local' runmode
       $command = "$command > $clusteroutfile";
@@ -869,10 +884,10 @@ if($runmode eq 'cluster') {
   submit_cluster_job("clust$reference_name",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
 } elsif($runmode eq 'dryrun') {
   $command =~ s/\\//g;
-  print DRYRUNLOG "$command\n";
+  print DRYRUNLOG "$command > $clusteroutfile\n";
   $total_dry++;
 } else { # 'local' runmode
-  $command = "$command";
+  $command = "$command > $clusteroutfile";
   system("$command");
   if($? != 0) {
     die "# EXIT: failed while clustering sequences ($command)\n";

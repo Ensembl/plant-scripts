@@ -4,3 +4,5 @@
 04012022: tested with -s, made test_rice
 10012022: wfmash only needed with -w
 25012022: gene BED files checked as they might be interrupted
+28012022: added -H, trying out diff MINMASKLEN values in barley
+03022022: while parsing GFF files, chr names and extracted sequences are checked 

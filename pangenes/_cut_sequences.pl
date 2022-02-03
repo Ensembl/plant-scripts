@@ -81,9 +81,24 @@ my $num_cds  = parse_gffread($gffreadpath,$fasta1,$gff1,$cdsfile,
 my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,
 	'pep',$minlen,$nored,$ref_names,$ref_coords);
 
-printf("# genes n=%d\n",scalar(keys(%$ref_names)));
-print "# $cdnafile n=$num_cdna\n";
-print "# $cdsfile n=$num_cds\n";
+if(scalar(keys(%$ref_names))) {
+	printf("# genes n=%d\n",scalar(keys(%$ref_names)));
+} else {
+	die "# ERROR: cannot parse Parent IDs of mRNA/transcripts, please check GFF format ($gff1)\n";	
+}
+
+if($num_cdna) {
+	print "# $cdnafile n=$num_cdna\n";
+} else {
+	die "# ERROR: cannot extract cDNA sequences, please check GFF format and/or chr names ($gff1)\n";
+}
+
+if($num_cds) {
+	print "# $cdsfile n=$num_cds\n"
+} else {
+	die "# ERROR: cannot extract CDS sequences, please check GFF format and/or chr names ($gff1)\n";
+}
+
 print "# $pepfile n=$num_pep\n";
 
 ###############################
@@ -114,7 +129,7 @@ sub parse_gffread {
 		die "# ERROR(parse_gffread): cannot create $outfile\n";
 
 	open(GFFREAD,"$gffreadexe $params -g $fasta_file $gff_file |") ||
-		die "# ERROR(parse_gffread): cannot run $gffreadexe\n";
+		die "# ERROR(parse_gffread): cannot run $gffreadexe\n"; 
 
 	while(<GFFREAD>){
 		if(/^>(\S+)/){

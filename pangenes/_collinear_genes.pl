@@ -513,7 +513,7 @@ elsif ( !-s $sp2wgaBEDfile_sorted ) {
 push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
 
 # compute coords of mapped genes 
-my $geneBEDfile2mapped = $tmpdir . "_$sp2.$alg.gene.mapped.bed";
+my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 
 my ( $num_matched, @unmatched ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,

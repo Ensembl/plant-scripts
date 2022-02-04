@@ -49,7 +49,7 @@ my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 $ENV{'LC_ALL'} = 'POSIX';
 my $GZIPBIN      = "gzip";
 
-my $MINMASKLEN   = 500_000;   # mask longer (repetitive) fragments with -H
+my $MINMASKLEN   = 100_000;   # mask longer (intergenic, repetitive) fragments with -H
 my $GENEMARGIN   = 5000;      # do not mask gene margins 
 my $DUMMYSCORE   = 9999;
 

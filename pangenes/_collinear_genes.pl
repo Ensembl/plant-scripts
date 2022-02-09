@@ -515,14 +515,14 @@ push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
 # compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 
-my ( $num_matched, @unmatched ) =
+my ( $ref_matched, $ref_unmatched ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
 printf( "# %d genes mapped in %s (%d unmapped)\n",
-    $num_matched, $geneBEDfile2mapped, scalar(@unmatched) );
+    scalar(@$ref_matched), $geneBEDfile2mapped, scalar(@$ref_unmatched) );
 
-if ( $num_matched == 0 ) {
+if ( scalar(@$ref_matched) == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
 } 
 
@@ -896,7 +896,7 @@ sub cut_gene_fragments {
 # Parses sorted BED intersect -wo output and writes to BED file
 # features (cDNA/transcripts) mapped on reference genome. Note:
 # features might be unsorted.
-# Returns i) number of matched genes and ii) list of unmatched genes
+# Returns i) ref to list of matched genes and ii) ref to list of unmatched genes
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA only
 # example input:
@@ -968,7 +968,7 @@ sub query2ref_coords {
             $ref_coords{$cname}{'end'} = $rend;
         }
 
-        print "# $SAMqcoord $SAMrcoord $cname $num_matched\n"
+        print "# $SAMqcoord $SAMrcoord $cname ".scalar(@matched)."\n"
             if ( $verbose > 1 );
 
         # check CIGAR type
@@ -977,7 +977,7 @@ sub query2ref_coords {
         }
         else {
             print "# ERROR(query2ref_coords): unsupported CIGAR string $SAMPAFtag\n";
-            return ( $num_matched, @unmatched );
+            return ( \@matched, \@unmatched );
         }
 
         # split CIGAR string into individual feature tags
@@ -1118,7 +1118,7 @@ sub query2ref_coords {
 
     close(OUTBED);    
 
-    return ( scalar(@matched), @unmatched );
+    return ( \@matched, \@unmatched );
 }
 
 # Takes 3 scalars:

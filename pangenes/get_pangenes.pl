@@ -856,8 +856,7 @@ print "...\n";
   $newDIR = $pwd.basename($inputDIR)."_pangenes";
 
 my $outfolder = "$newDIR/$output_mask"; 
-my $logfile = $outfolder.".log";
-$clusteroutfile = $logfile.'.queue';
+$clusteroutfile = $outfolder.'.queue';
 
 $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
   "-T $merged_tsv_file -r $reference_name ".
@@ -867,8 +866,6 @@ if($do_genome_composition) {
   $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";
 } 
 
-$command .= " > $logfile";
-
 if( -e $outfolder ) {
   printf("\n# WARNING : folder '%s' exists, clusters might be overwritten\n\n",
     basename($outfolder));
@@ -877,8 +874,6 @@ if( -e $outfolder ) {
     die "# ERROR: cannot create $outfolder\n";
   }
 }  
-
-# WARNING : folder 'magic_pangenes/oryza_sativa_IRGSP_0taxa_algMmap_' exists, files might be overwritte
 
 if($runmode eq 'cluster') {
   submit_cluster_job("clust$reference_name",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
@@ -907,8 +902,8 @@ if($runmode eq 'cluster') {
 print "# done\n\n";
 
 my $printOK = 0;
-open(CLUSTERSLOG,'<', $logfile) ||
-  die "# ERROR: cannot read $logfile\n";
+open(CLUSTERSLOG,'<', $clusteroutfile) ||
+  die "# ERROR: cannot read $clusteroutfile\n";
 while(<CLUSTERSLOG>) {
 
   if(/^# number of clusters/){ $printOK = 1 }

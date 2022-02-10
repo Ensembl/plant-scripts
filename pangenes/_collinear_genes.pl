@@ -32,8 +32,8 @@ $|=1;
 
 my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive across species than v2.22
 my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
-my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE ";
-$MINIMAPPARS .= "-r1k,5k"; # https://github.com/lh3/minimap2/issues/813, 2949 -> 2956
+my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE ".
+                  "-r1k,5k"; # https://github.com/lh3/minimap2/issues/813, 2949 -> 2956
 my $WFMASHEXE   = 'wfmash';                  # v0.7.0
 my $WFMASHPARS  = '-p 95 -s 3000';
 my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
@@ -67,7 +67,7 @@ my $VERBOSE    = 0;           # values > 1
 my $TRANSCRIPT2GENE = 0;
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
-my ($dowfmash, $dofragments, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
+my ($dowfmash, $split_chr_regex, $tmpdir ) = ( 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
@@ -87,7 +87,6 @@ GetOptions(
     "out|outfile=s"  => \$outfilename,
     "ovl|overlap=f"  => \$minoverlap,
     "q|quality=i"    => \$qual,
-    "f|frag"         => \$dofragments,
     "s|split=s"      => \$split_chr_regex,
     "c|check"        => \$do_sequence_check,
     "r|reuse"        => \$reuse,
@@ -283,13 +282,6 @@ if($repetitive) {
         $fasta2 = $masked_fasta2;
     }
 }
-
-# cut $fasta2 in fragments containing neighbor genes, never done 
-#if ($dofragments) {
-#    my $frag_fasta2 = $tmpdir . "_$sp2.$MAXGENESFRAG.$MAXFRAGSIZE.fna";
-#    my ( $num_frags, $mean_size ) = cut_gene_fragments( $geneBEDfile2, $fasta2,
-#        $frag_fasta2, $MAXGENESFRAG, $MAXFRAGSIZE ); $fasta2 = $frag_fasta2;
-#}
 
 ## 2) align genome1 vs genome2 (WGA)
 # Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
@@ -875,45 +867,6 @@ sub mask_intergenic_regions {
     }
 
     return ($total_masked, calc_median(\@intergenes));
-}
-
-# Takes i) input BED filename produced by parses_genes_GFF, ii) input FASTA filename,
-# iii) output FASTA filename, iv) max gene per fragment, v) max fragment lengh, and
-# returns i) number and ii) mean length of fragments cut.
-# Note: to be completed if needed, dummy prototype 
-sub cut_gene_fragments {
-
-    my ( $geneBED, $fasta, $out_fasta, $maxgenes, $maxsize ) = @_;
-
-    my ( $num_frags, $mean_size ) = ( 0, 0 );
-    my ( $chr, $start, $end );
-    my ( $frag_start, $frag_end, $frag_chr, $dist ) = ( -1, -1, '', 0 );
-
-    open( BED, "<", $geneBED )
-      || die "# ERROR(cut_gene_fragments): cannot read $geneBED\n";
-    while (<BED>) {
-
-        # each line is a new gene
-        # 1       2983    10815   Os01g0100100    9999    +
-        if (/^(\S+)\t(\d+)\t(\d+)\t/) {
-            ;
-            ( $chr, $start, $end ) = ( $1, $2, $3 );
-
-            # distance to previous fragment, else negative value
-
-            # check size if this gene is added, max genes reached?
-
-            # should this be a new fragment? too large or diff chr
-
-            # grow previous fragment
-
-        }
-    }
-    close(BED);
-
-    # take care of last fragment
-
-    return ( $num_frags, $mean_size );
 }
 
 # Takes i) input BED intersect filename ii) output BED filename.

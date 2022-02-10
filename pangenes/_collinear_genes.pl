@@ -588,6 +588,8 @@ my $segment_intersectBEDfile1 =
 my $intersectBEDfile_sorted =
   $tmpdir . "_$sp1.$sp2.$alg.intersect.overlap$minoverlap.sort.bed";
 
+unlink($intersectBEDfile_sorted) if(-e $intersectBEDfile_sorted);
+
 $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
          "$BEDINTSCPAR -s > $gene_intersectBEDfile";
 
@@ -601,14 +603,17 @@ elsif ( !-s $gene_intersectBEDfile ) {
 }
 
 # now add collinear gene-genomic segments pairs
-my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
-	$gene_intersectBEDfile, $segment_intersectBEDfile );
+#my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
+#	$gene_intersectBEDfile, $segment_intersectBEDfile );
 
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
         $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
 
-$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
-           "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
+#$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile1 > $intersectBEDfile_sorted";
+
+#$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
+#           "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
+
 system($cmd);
 if ( $? != 0 ) {
     die "# ERROR: failed sorting (genes, $cmd)\n";
@@ -618,7 +623,7 @@ elsif ( !-s $intersectBEDfile_sorted ) {
 }
 
 push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
-#push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
+push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my ($num_pairs, $num_segments) = 
     bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
@@ -1296,8 +1301,8 @@ sub _parseCIGARfeature {
 # ii)  BED filename with species1 genes mapped on species2 space (6 cols)
 # iii) BED filename with sp1,sp2 pairs of collinear genes (13 columns)
 # iv)  BED output filename (13 columns)
-# v)   boolean, columns from sp2 should be printed first
-# Returns number of collinear genomic segments found
+# v)   (optional) boolean, columns from sp2 should be printed first
+# Returns number of genomic segments in sp1 collinear to genes in sp2
 sub genes_mapped2segments {
 
     my ($geneBEDfile, $mappedBEDfile, $pairedBEDfile, $outBEDfile, $invert) = @_;
@@ -1313,6 +1318,7 @@ sub genes_mapped2segments {
     while(<PAIRBED>) {
         #1 30219   36442   gene:BGIOSGA002569 9999 + 1 29700 39038 gene:ONIVA01G00100  9339  +  6223
         my @data = split(/\t/,$_);
+        $paired{$data[3]} = 1; # sp1
         $paired{$data[9]} = 1; # sp2
     }
     close(PAIRBED);

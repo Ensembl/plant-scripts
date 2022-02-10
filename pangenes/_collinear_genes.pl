@@ -601,7 +601,7 @@ elsif ( !-s $gene_intersectBEDfile ) {
 }
 
 # now add collinear gene-genomic segments pairs
-my $num_segments = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
+my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
 	$gene_intersectBEDfile, $segment_intersectBEDfile );
 
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
@@ -620,10 +620,11 @@ elsif ( !-s $intersectBEDfile_sorted ) {
 push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
 #push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
-my $num_pairs = bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
+my ($num_pairs, $num_segments) = 
+    bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );
 
-printf( "# %d collinear gene/segment pairs\n", $num_pairs );
+printf( "# %d collinear gene pairs , %d collinear segments\n", $num_pairs, $num_segments );
 
 if($num_pairs > 0 && -s $outfilename) {
     print "# TSV file: $outfilename\n";
@@ -1380,7 +1381,7 @@ sub bed2compara {
     my ( $infile, $TSVfile, $sp1, $sp2, $noheader, $workout_gene_names ) = @_;
 
     my ( $gene1, $gene2, $coords1, $coords2, $coords, $homoltype );
-    my $num_pairs = 0;
+    my ($num_pairs, $num_segments) = (0, 0);
 
     # parse input and produce TSV output
     open( BEDINT, "<", $infile )
@@ -1423,11 +1424,14 @@ sub bed2compara {
         if($data[3] eq 'segment') {
             $homoltype = 'segment_collinear';
             $gene1 = $coords1;
+            $num_segments++;
         } elsif($data[9] eq 'segment') {
             $homoltype = 'segment_collinear';
             $gene2 = $coords2;
+            $num_segments++;
         } else {
-            $homoltype = 'ortholog_collinear'
+            $homoltype = 'ortholog_collinear';
+            $num_pairs++;
         }
 
         printf( TSV
@@ -1445,14 +1449,12 @@ sub bed2compara {
             1,      # high confidence
             $coords
         );
-
-        $num_pairs++;
     }
 
     close(TSV);
     close(BEDINT);
 
-    return $num_pairs;
+    return ($num_pairs, $num_segments);
 }
 
 sub calc_median {

@@ -526,12 +526,16 @@ if ( scalar(@$ref_matched) == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
 } 
 
-## 5) produce list of pairs of collinear genes
+## 5) produce list of pairs of collinear genes & genomic segments
 
 my $gene_intersectBEDfile = 
   $tmpdir . "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.bed";
-my $gene_intersectBEDfile_sorted =
-  $tmpdir . "_$sp1.$sp2.$alg.gene.intersect.overlap$minoverlap.sort.bed";
+
+my $segment_intersectBEDfile =
+  $tmpdir . "_$sp1.$sp2.$alg.segment.intersect.overlap$minoverlap.bed";
+
+my $intersectBEDfile_sorted =
+  $tmpdir . "_$sp1.$sp2.$alg.intersect.overlap$minoverlap.sort.bed";
 
 $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
          "$BEDINTSCPAR -s > $gene_intersectBEDfile";
@@ -545,21 +549,25 @@ elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
 }
 
-$cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile > $gene_intersectBEDfile_sorted";
+# now add collinear segments 
+my $num_segments = gene2segments( $geneBEDfile2, $geneBEDfile2mapped, 
+	$gene_intersectBEDfile, $segment_intersectBEDfile );
+
+$cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile $segment_intersectBEDfile > $intersectBEDfile_sorted";
 system($cmd);
 if ( $? != 0 ) {
     die "# ERROR: failed sorting (genes, $cmd)\n";
 }
-elsif ( !-s $gene_intersectBEDfile ) {
-    die "# ERROR: failed generating $gene_intersectBEDfile_sorted file ($cmd)\n";
+elsif ( !-s $intersectBEDfile_sorted ) {
+    die "# ERROR: failed generating $intersectBEDfile_sorted file ($cmd)\n";
 }
 
-push(@tmpBEDfiles, $gene_intersectBEDfile, $gene_intersectBEDfile_sorted);
+#push(@tmpBEDfiles, $gene_intersectBEDfile, $gene_intersectBEDfile_sorted);
 
-my $num_pairs = bed2compara( $gene_intersectBEDfile, $outfilename, $sp1, $sp2,
+my $num_pairs = bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );
 
-printf( "# %d collinear gene pairs\n", $num_pairs );
+printf( "# %d collinear gene/segment pairs\n", $num_pairs );
 
 if($num_pairs > 0 && -s $outfilename) {
     print "# TSV file: $outfilename\n";
@@ -1264,6 +1272,81 @@ sub _parseCIGARfeature {
 
     return ( $deltaq, $deltar, $rcoord );
 }
+
+# Takes four file paths:
+# i)   BED file with gene model coordinates of species1 (6 cols)
+# ii)  BED file with species1 genes mapped on species2 space (6 cols)
+# iii) BED file with sp2,sp1 pairs of collinear genes (13 columns)
+# iv)  output BED filename
+# Returns number of collinear genomic segments found
+sub gene2segments {
+
+    my ($geneBEDfile, $mappedBEDfile, $pairedBEDfile, $outBEDfile) = @_;
+
+    my $num_segments = 0;
+    my ($coords,$geneid,$len,$strand);
+    my (@genes,%orig_coords,%paired);
+    
+    # find out which genes are paired based on WGA
+    open(PAIRBED,"<",$pairedBEDfile)
+        || die "# ERROR(gene2segments): cannot read $pairedBEDfile\n";
+
+    while(<PAIRBED>) {
+        #1 30219   36442   gene:BGIOSGA002569 9999 + 1 29700 39038 gene:ONIVA01G00100  9339  +  6223
+        my @data = split(/\t/,$_);
+        $paired{$data[9]} = 1;
+    }
+    close(PAIRBED);
+
+    # read gene model coordinates
+    open(GENEBED,"<",$geneBEDfile)
+        || die "# ERROR(gene2segments): cannot read $mappedBEDfile\n";
+
+    while(<GENEBED>) {
+        #1    4847    20752   gene:ONIVA01G00010      9999    +
+        if(/^\S+\t\d+\t\d+\t(\S+)\t/) {
+            $geneid = $1;
+
+            next if($paired{$geneid});
+
+            chomp;
+            $orig_coords{$geneid} = $_;
+            push(@genes,$geneid); #if($. == 1) { print }
+        }
+    }
+    close(GENEBED); 
+
+    # find genes that have mapped coord on other species but are not paired,
+    # print to outfile
+    open(OUTBED,">",$outBEDfile) 
+        || die "# ERROR(gene2segments): cannot create $outBEDfile\n";
+
+    open(MAPBED,"<",$mappedBEDfile)
+        || die "# ERROR(gene2segments): cannot read $mappedBEDfile\n";
+
+    while(<MAPBED>) {
+        #1       29700   39038   gene:ONIVA01G00100      9339    +
+        if(/^(\S+\t\d+\t\d+)\t(\S+)\t(\d+)\t([+-])/) {
+            ($coords, $geneid, $len, $strand) = ($1, $2, $3, $4);
+            
+            next if($paired{$geneid});
+
+            # actually print to BED coordinates of genes mapped to (unannotated) genomic segments
+            #1 217360 222398 segment 5039 + 1 155040 165322 gene:ONIVA01G00180 9999 + 9999
+            print "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
+            print OUTBED "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
+
+           
+            $num_segments++;
+        }
+    }
+    close(MAPBED);
+
+    close(OUTBED);
+
+    return $num_segments;
+}
+
 
 # Takes i) input BED intersect filename ii) output TSV filename and
 # returns i) number of collinear gene pairs.

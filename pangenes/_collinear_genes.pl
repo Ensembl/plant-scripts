@@ -607,7 +607,7 @@ my $num_segments = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped,
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
         $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
 
-$cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile $segment_intersectBEDfile ".
+$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
            "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
 system($cmd);
 if ( $? != 0 ) {

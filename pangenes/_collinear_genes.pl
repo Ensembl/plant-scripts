@@ -618,7 +618,7 @@ elsif ( !-s $intersectBEDfile_sorted ) {
 }
 
 push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
-#push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
+push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my $num_pairs = bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );
@@ -1293,9 +1293,9 @@ sub _parseCIGARfeature {
 # Takes four file paths and optionally a boolean:
 # i)   BED filename with gene model coordinates of species2 (6 cols)
 # ii)  BED filename with species1 genes mapped on species2 space (6 cols)
-# iii) BED filename with sp2,sp1 pairs of collinear genes (13 columns)
+# iii) BED filename with sp1,sp2 pairs of collinear genes (13 columns)
 # iv)  BED output filename (13 columns)
-# v)   boolean, columns from sp1 should be printed first
+# v)   boolean, columns from sp2 should be printed first
 # Returns number of collinear genomic segments found
 sub genes_mapped2segments {
 
@@ -1312,7 +1312,6 @@ sub genes_mapped2segments {
     while(<PAIRBED>) {
         #1 30219   36442   gene:BGIOSGA002569 9999 + 1 29700 39038 gene:ONIVA01G00100  9339  +  6223
         my @data = split(/\t/,$_);
-        $paired{$data[3]} = 1; # sp1
         $paired{$data[9]} = 1; # sp2
     }
     close(PAIRBED);
@@ -1325,9 +1324,7 @@ sub genes_mapped2segments {
         #1    4847    20752   gene:ONIVA01G00010      9999    +
         if(/^\S+\t\d+\t\d+\t(\S+)\t/) {
             $geneid = $1;
-
             next if($paired{$geneid});
-
             chomp;
             $orig_coords{$geneid} = $_;
         }
@@ -1369,7 +1366,7 @@ sub genes_mapped2segments {
 
 
 # Takes i) input BED intersect filename ii) output TSV filename and
-# returns i) number of collinear gene pairs.
+# returns iii) number of collinear gene pairs & iv) number of collinear segments
 # Parse bedtools intersect file and produces Ensembl Compara-like TSV file.
 # Example input with explicit strand:
 # 1 2983 10815 Os01g0100100 9999 + 1 2890 12378 ONIVA01G00100 9489 + 7832
@@ -1380,7 +1377,7 @@ sub genes_mapped2segments {
 sub bed2compara {
 
     my ( $infile, $TSVfile, $sp1, $sp2, $noheader, $workout_gene_names ) = @_;
-    my ( $gene1, $gene2, $coords );
+    my ( $gene1, $gene2, $coords, $homoltype );
     my $num_pairs = 0;
 
     # parse input and produce TSV output
@@ -1419,13 +1416,20 @@ sub bed2compara {
             $gene2 =~ s/t/g/;
         }
 
+        # check homology type
+        if($gene1 eq 'segment' || $gene2 eq 'segment') {
+            $homoltype = 'segment_collinear'
+        } else {
+            $homoltype = 'ortholog_collinear'
+        }
+
         printf( TSV
             "%s\t%s\t%s\t%d\t%s\t%s\t%s\t%s\t%d\tNULL\tNULL\tNULL\t%1.2f\t%d\t%s\n",
             $gene1,
             $data[3],
             $sp1,
             $data[12],
-            'ortholog_collinear',
+            $homoltype,
             $gene2,
             $data[9],
             $sp2,

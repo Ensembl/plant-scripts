@@ -618,7 +618,7 @@ elsif ( !-s $intersectBEDfile_sorted ) {
 }
 
 push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
-push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
+#push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my $num_pairs = bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );
@@ -1367,17 +1367,19 @@ sub genes_mapped2segments {
 
 # Takes i) input BED intersect filename ii) output TSV filename and
 # returns iii) number of collinear gene pairs & iv) number of collinear segments
-# Parse bedtools intersect file and produces Ensembl Compara-like TSV file.
+# Parses bedtools intersect file and produces Ensembl Compara-like TSV file.
 # Example input with explicit strand:
 # 1 2983 10815 Os01g0100100 9999 + 1 2890 12378 ONIVA01G00100 9489 + 7832
 # Expected TSV output:
 # gene_stable_id protein_stable_id species overlap homology_type homology_gene_stable_id
 # homology_protein_stable_id homology_species overlap dn ds goc_score wga_coverage
 # is_high_confidence coordinates
+# Note: homology_type can be 'ortholog_collinear' or 'segment_collinear'
 sub bed2compara {
 
     my ( $infile, $TSVfile, $sp1, $sp2, $noheader, $workout_gene_names ) = @_;
-    my ( $gene1, $gene2, $coords, $homoltype );
+
+    my ( $gene1, $gene2, $coords1, $coords2, $coords, $homoltype );
     my $num_pairs = 0;
 
     # parse input and produce TSV output
@@ -1402,8 +1404,9 @@ sub bed2compara {
         my @data = split( /\t/, $_ );
 
         # concat genome/graph coords
-        $coords = "$data[0]:$data[1]-$data[2]";    # 1st genome
-        $coords .= ";$data[6]:$data[7]-$data[8]";  # 2nd genome
+        $coords1 = "$data[0]:$data[1]-$data[2]";
+        $coords2 = "$data[6]:$data[7]-$data[8]";
+        $coords = "$coords1;$coords2";
 
         # format gene names
         $gene1 = $data[3];
@@ -1417,8 +1420,12 @@ sub bed2compara {
         }
 
         # check homology type
-        if($gene1 eq 'segment' || $gene2 eq 'segment') {
-            $homoltype = 'segment_collinear'
+        if($data[3] eq 'segment') {
+            $homoltype = 'segment_collinear';
+            $gene1 = $coords1;
+        } elsif($data[9] eq 'segment') {
+            $homoltype = 'segment_collinear';
+            $gene2 = $coords2;
         } else {
             $homoltype = 'ortholog_collinear'
         }

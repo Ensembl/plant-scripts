@@ -464,25 +464,41 @@ if($indexonly) {
 }
 
 ## 3) produce BED-like file of sp2-to-sp1 coords 10 columns
-## Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
+my ($cigar,@tmpBEDfiles);
 
-my @tmpBEDfiles;
+my $wgaBEDfile    = $tmpdir . "_$sp2.$sp1.$alg.bed";
 
-my $wgaBEDfile = $tmpdir . "_$sp2.$sp1.$alg.bed";
+# used to find matching sp2 segments for unpaired sp1 genes
+my $wgaBEDfilerev = $tmpdir . "_$sp1.$sp2.$alg.bed";
 
 open( PAF, "<", $PAFfile )    || die "# ERROR: cannot read $PAFfile\n";
+
 open( BED, ">", $wgaBEDfile ) || die "# ERROR: cannot create $wgaBEDfile\n";
+open( BEDREV, ">", $wgaBEDfilerev ) || die "# ERROR: cannot create $wgaBEDfilerev\n";
 
 while (<PAF>) {
+    #Note: $F[4] in PAF conveys whether query & ref are on the same strand or not
+    #Pt	1345257 118 7420 - 1 42845077 35836986 35837288	300 302	60 ... cs:Z::216*tc:69*ga:15
     my @F = split( /\t/, $_ );
+    
     print BED
       "$F[0]\t$F[2]\t$F[3]\t$F[4]\t$F[5]\t$F[7]\t$F[8]\t$F[9]\t$F[11]\t$F[$#F]";
+
+    # reverse CIGAR after reversing the alignment
+    # Note: as we only care about coords, don't do anything with substitutions
+    $cigar = $F[$#F];
+    $cigar =~ tr/ID\+\-/DI\-\+/;
+
+    print BEDREV
+      "$F[5]\t$F[7]\t$F[8]\t$F[4]\t$F[0]\t$F[2]\t$F[3]\t$F[9]\t$F[11]\t$cigar"
 }
 
 close(BED);
+close(BEDREV);
+
 close(PAF);
 
-push(@tmpBEDfiles, $wgaBEDfile);
+push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
@@ -562,7 +578,7 @@ elsif ( !-s $intersectBEDfile_sorted ) {
     die "# ERROR: failed generating $intersectBEDfile_sorted file ($cmd)\n";
 }
 
-#push(@tmpBEDfiles, $gene_intersectBEDfile, $gene_intersectBEDfile_sorted);
+push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my $num_pairs = bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );

@@ -497,6 +497,9 @@ push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
 my $sp2wgaBEDfile = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 my $sp2wgaBEDfile_sorted = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.sort.bed";
 
+my $sp1wgaBEDfile = $tmpdir . "_$sp1.gene.$sp2.$alg.intersect.overlap$minoverlap.bed";
+my $sp1wgaBEDfile_sorted = $tmpdir . "_$sp1.gene.$sp2.$alg.intersect.overlap$minoverlap.sort.bed";
+
 $cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile " .
          "$BEDINTSCPAR > $sp2wgaBEDfile";
 
@@ -518,10 +521,34 @@ elsif ( !-s $sp2wgaBEDfile_sorted ) {
     die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
 }
 
+# now with reversed WGA alignment
+$cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $wgaBEDfilerev " .
+         "$BEDINTSCPAR > $sp1wgaBEDfile";
+
+system("$cmd");
+sleep(2); #latency issues
+if ( $? != 0 ) {
+    die "# ERROR: failed running bedtools (WGArev, $cmd)\n";
+}
+elsif ( !-s $sp1wgaBEDfile ) {
+    die "# ERROR: failed generating $sp1wgaBEDfile file ($cmd)\n";
+}
+
+$cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp1wgaBEDfile > $sp1wgaBEDfile_sorted";
+system("$cmd");
+if ( $? != 0 ) {
+    die "# ERROR: failed sorting (WGArev, $cmd)\n";
+}
+elsif ( !-s $sp1wgaBEDfile_sorted ) {
+    die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
+}
+
 push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
+push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
 
 # compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
+my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.bed";
 
 my ( $ref_matched, $ref_unmatched ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
@@ -534,6 +561,19 @@ if ( scalar(@$ref_matched) == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
 } 
 
+# now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
+
+my ( $ref_matched1, $ref_unmatched1 ) =
+  query2ref_coords( $sp1wgaBEDfile, $geneBEDfile1mapped,
+    $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
+
+printf( "# %d genes mapped in %s (reverse, %d unmapped)\n",
+    scalar(@$ref_matched1), $geneBEDfile1mapped, scalar(@$ref_unmatched1) );
+
+if ( scalar(@$ref_matched1) == 0 ) {
+    die "# ERROR: failed mapping $sp1 genes in WGA alignment";
+}
+
 ## 5) produce list of pairs of collinear genes & genomic segments
 
 my $gene_intersectBEDfile = 
@@ -541,6 +581,9 @@ my $gene_intersectBEDfile =
 
 my $segment_intersectBEDfile =
   $tmpdir . "_$sp1.$sp2.$alg.segment.intersect.overlap$minoverlap.bed";
+
+my $segment_intersectBEDfile1 =
+  $tmpdir . "_$sp2.$sp1.$alg.segment.intersect.overlap$minoverlap.bed";
 
 my $intersectBEDfile_sorted =
   $tmpdir . "_$sp1.$sp2.$alg.intersect.overlap$minoverlap.sort.bed";
@@ -559,9 +602,13 @@ elsif ( !-s $gene_intersectBEDfile ) {
 
 # now add collinear gene-genomic segments pairs
 my $num_segments = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
-	$gene_intersectBEDfile,$segment_intersectBEDfile );
+	$gene_intersectBEDfile, $segment_intersectBEDfile );
 
-$cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile $segment_intersectBEDfile > $intersectBEDfile_sorted";
+my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
+        $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
+
+$cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile $segment_intersectBEDfile ".
+           "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
 system($cmd);
 if ( $? != 0 ) {
     die "# ERROR: failed sorting (genes, $cmd)\n";
@@ -570,7 +617,8 @@ elsif ( !-s $intersectBEDfile_sorted ) {
     die "# ERROR: failed generating $intersectBEDfile_sorted file ($cmd)\n";
 }
 
-push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
+push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
+#push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my $num_pairs = bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
     $noheader, $TRANSCRIPT2GENE );
@@ -1242,15 +1290,16 @@ sub _parseCIGARfeature {
     return ( $deltaq, $deltar, $rcoord );
 }
 
-# Takes four file paths:
+# Takes four file paths and optionally a boolean:
 # i)   BED filename with gene model coordinates of species2 (6 cols)
 # ii)  BED filename with species1 genes mapped on species2 space (6 cols)
 # iii) BED filename with sp2,sp1 pairs of collinear genes (13 columns)
 # iv)  BED output filename (13 columns)
+# v)   boolean, columns from sp1 should be printed first
 # Returns number of collinear genomic segments found
 sub genes_mapped2segments {
 
-    my ($geneBEDfile, $mappedBEDfile, $pairedBEDfile, $outBEDfile) = @_;
+    my ($geneBEDfile, $mappedBEDfile, $pairedBEDfile, $outBEDfile, $invert) = @_;
 
     my $num_segments = 0;
     my ($coords,$geneid,$len,$strand);
@@ -1301,7 +1350,12 @@ sub genes_mapped2segments {
 
             # actually print to BED coordinates of genes mapped to (unannotated) genomic segments
             #1 217360 222398 segment 5039 + 1 155040 165322 gene:ONIVA01G00180 9999 + 9999
-            print OUTBED "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
+
+            if($invert) {
+                print OUTBED "$orig_coords{$geneid}\t$coords\tsegment\t$len\t$strand\t9999\n";
+            } else {
+                print OUTBED "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
+            }
            
             $num_segments++;
         }

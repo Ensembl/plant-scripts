@@ -549,9 +549,9 @@ elsif ( !-s $gene_intersectBEDfile ) {
     die "# ERROR: failed generating $gene_intersectBEDfile file ($cmd)\n";
 }
 
-# now add collinear segments 
-my $num_segments = gene2segments( $geneBEDfile2, $geneBEDfile2mapped, 
-	$gene_intersectBEDfile, $segment_intersectBEDfile );
+# now add collinear gene-genomic segments pairs
+my $num_segments = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
+	$gene_intersectBEDfile,$segment_intersectBEDfile );
 
 $cmd = "$SORTBIN -k4,4 -k13,13nr $gene_intersectBEDfile $segment_intersectBEDfile > $intersectBEDfile_sorted";
 system($cmd);
@@ -1274,12 +1274,12 @@ sub _parseCIGARfeature {
 }
 
 # Takes four file paths:
-# i)   BED file with gene model coordinates of species1 (6 cols)
-# ii)  BED file with species1 genes mapped on species2 space (6 cols)
-# iii) BED file with sp2,sp1 pairs of collinear genes (13 columns)
-# iv)  output BED filename
+# i)   BED filename with gene model coordinates of species2 (6 cols)
+# ii)  BED filename with species1 genes mapped on species2 space (6 cols)
+# iii) BED filename with sp2,sp1 pairs of collinear genes (13 columns)
+# iv)  BED output filename (13 columns)
 # Returns number of collinear genomic segments found
-sub gene2segments {
+sub genes_mapped2segments {
 
     my ($geneBEDfile, $mappedBEDfile, $pairedBEDfile, $outBEDfile) = @_;
 
@@ -1287,20 +1287,21 @@ sub gene2segments {
     my ($coords,$geneid,$len,$strand);
     my (@genes,%orig_coords,%paired);
     
-    # find out which genes are paired based on WGA
+    # find out which genes are paired based on WGA (sp2)
     open(PAIRBED,"<",$pairedBEDfile)
         || die "# ERROR(gene2segments): cannot read $pairedBEDfile\n";
 
     while(<PAIRBED>) {
         #1 30219   36442   gene:BGIOSGA002569 9999 + 1 29700 39038 gene:ONIVA01G00100  9339  +  6223
         my @data = split(/\t/,$_);
-        $paired{$data[9]} = 1;
+        $paired{$data[3]} = 1; # sp1
+        $paired{$data[9]} = 1; # sp2
     }
     close(PAIRBED);
 
-    # read gene model coordinates
+    # read gene model coordinates (sp2)
     open(GENEBED,"<",$geneBEDfile)
-        || die "# ERROR(gene2segments): cannot read $mappedBEDfile\n";
+        || die "# ERROR(gene2segments): cannot read $geneBEDfile\n";
 
     while(<GENEBED>) {
         #1    4847    20752   gene:ONIVA01G00010      9999    +
@@ -1311,13 +1312,11 @@ sub gene2segments {
 
             chomp;
             $orig_coords{$geneid} = $_;
-            push(@genes,$geneid); #if($. == 1) { print }
         }
     }
     close(GENEBED); 
 
-    # find genes that have mapped coord on other species but are not paired,
-    # print to outfile
+    # find sp2 genes that have mapped coords on sp1 but are not paired, print to outfile
     open(OUTBED,">",$outBEDfile) 
         || die "# ERROR(gene2segments): cannot create $outBEDfile\n";
 
@@ -1333,9 +1332,7 @@ sub gene2segments {
 
             # actually print to BED coordinates of genes mapped to (unannotated) genomic segments
             #1 217360 222398 segment 5039 + 1 155040 165322 gene:ONIVA01G00180 9999 + 9999
-            print "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
             print OUTBED "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
-
            
             $num_segments++;
         }

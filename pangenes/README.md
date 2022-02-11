@@ -42,13 +42,22 @@ to call collinear pairs:
 
 ![How gene overlaps are computed](pics/wgaoverlap.png)
 
-Collinear pairs are internally stored in Compara-like TSV files, which like like this:
+Collinear pairs are internally stored in Compara-like TSV files, which look like this:
 
-    gene_stable_id  protein_stable_id       species overlap homology_type   homology_gene_stable_id homology_protein_stable_id      homology_species        overlap dn      ds      goc_score       wga_coverage    is_high_confidence      coordinates
-    gene-mag-r      gene-mat-r      oryza_sativa    525     ortholog_collinear      ONIVA02G03490   ONIVA02G03490   oryza_nivara    525     NULL    NULL    NULL    100.00  1       Mt:315811-317848;Mt:315625-316336
-    gene-orf165     gene-orf165     oryza_sativa    498     ortholog_collinear      ONIVA02G03510   ONIVA02G03510   oryza_nivara    498     NULL    NULL    NULL    100.00  1       Mt:337076-337574;Mt:323628-338167
-    gene-rps1       gene-rps1       oryza_sativa    519     ortholog_collinear      ONIVA02G03500   ONIVA02G03500   oryza_nivara    519     NULL    NULL    NULL    100.00  1       Mt:321367-321886;Mt:318304-322745
-    Os01g0100100    Os01g0100100    oryza_sativa    7833    ortholog_collinear      ONIVA01G00100   ONIVA01G00100   oryza_nivara    7833    NULL    NULL    NULL    100.00  1       1:2982-10815;1:2929-12267
+    gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlap	dn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
+    gene:ONIVA01G00100	gene:ONIVA01G00100	Oryza_nivara_v1.chr1	7839	ortholog_collinear	gene:Os01g0100100	gene:Os01g0100100	Oryza_sativa.IRGSP-1.0.chr1	7839	NULL	NULL	NULL	100.00	1	1:104920-116326;1:2982-10815
+    gene:ONIVA01G00100	gene:ONIVA01G00100	Oryza_nivara_v1.chr1	3065	ortholog_collinear	gene:Os01g0100200	gene:Os01g0100200	Oryza_sativa.IRGSP-1.0.chr1	3065	NULL	NULL	NULL	100.00	1	1:104920-116326;1:11217-12435
+    gene:ONIVA01G00110	gene:ONIVA01G00110	Oryza_nivara_v1.chr1	1787	ortholog_collinear	gene:Os01g0100300	gene:Os01g0100300	Oryza_sativa.IRGSP-1.0.chr1	1787	NULL	NULL	NULL	100.00	1	1:113415-115202;1:11371-12284
+    gene:ONIVA01G00120	gene:ONIVA01G00120	Oryza_nivara_v1.chr1	2963	ortholog_collinear	gene:Os01g0100400	gene:Os01g0100400	Oryza_sativa.IRGSP-1.0.chr1	2963	NULL	NULL	NULL	100.00	1	1:116435-120177;1:12720-15685
+    Oryza_nivara_v1.chr1:1:116866-118035	segment	Oryza_nivara_v1.chr1	1169	segment_collinear	gene:Os01g0100466	gene:Os01g0100466	Oryza_sativa.IRGSP-1.0.chr1	1169	NULL	NULL	NULL	100.00	1	1:116866-118035;1:12807-13978
+    gene:ONIVA01G00130	gene:ONIVA01G00130	Oryza_nivara_v1.chr1	2428	ortholog_collinear	gene:Os01g0100500	gene:Os01g0100500	Oryza_sativa.IRGSP-1.0.chr1	2428	NULL	NULL	NULL	100.00	1	1:121778-124616;1:16398-20144
+    gene:ONIVA01G00140	gene:ONIVA01G00140	Oryza_nivara_v1.chr1	4063	ortholog_collinear	gene:Os01g0100600	gene:Os01g0100600	Oryza_sativa.IRGSP-1.0.chr1	4063	NULL	NULL	NULL	100.00	1	1:125929-131075;1:22840-26892
+    Oryza_nivara_v1.chr1:1:129916-130480	segment	Oryza_nivara_v1.chr1	564	segment_collinear	gene:Os01g0100650	gene:Os01g0100650	Oryza_sativa.IRGSP-1.0.chr1	564	NULL	NULL	NULL	100.00	1	1:129916-130480;1:25860-26424
+    gene:ONIVA01G00150	gene:ONIVA01G00150	Oryza_nivara_v1.chr1	1471	ortholog_collinear	gene:Os01g0100700	gene:Os01g0100700	Oryza_sativa.IRGSP-1.0.chr1	1471	NULL	NULL	NULL	100.00	1	1:131192-132981;1:27142-28644
+
+Note that the overlap value is computed from WGA alignments and that the gene coordinates from the source GFF file are used.
+Note also that these files also consider cases where a gene model annotated in one assembly matches a genomic segment from the other species, 
+even when the same model was not annotated in the latter.
 
 ## Dependencies
 

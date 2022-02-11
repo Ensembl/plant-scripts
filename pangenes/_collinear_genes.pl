@@ -278,7 +278,6 @@ if($repetitive) {
 }
 
 ## 2) align genome1 vs genome2 (WGA)
-# Note: masking not recommended, see https://github.com/lh3/minimap2/issues/654
 
 # split genome assemblies if required, 1/chr plus 'unplaced'
 # Note: reduces complexity (good for large/polyploid genomes) but misses translocations
@@ -604,10 +603,8 @@ my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped,
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
         $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
 
-$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile1 > $intersectBEDfile_sorted";
-
-#$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
-#           "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
+$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
+           "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
 
 system($cmd);
 if ( $? != 0 ) {
@@ -1405,7 +1402,7 @@ sub genes_mapped2segments {
 # is_high_confidence coordinates
 sub bed2compara {
 
-    my ( $infile, $geneBEDfile1, $geneBEDfile2, $TSVfile, $sp1, $sp2, $noheader, $workout_gene_names ) = @_;
+    my ( $infile, $geneBEDfile1, $geneBEDfile2, $TSVfile, $sp1, $sp2, $noheader ) = @_;
 
     my ( $gene1, $gene2, $coords1, $coords2, $coords, $homoltype );
     my ($num_pairs, $num_segments) = (0, 0);
@@ -1436,35 +1433,56 @@ sub bed2compara {
     while (<BEDINT>) {
         my @data = split( /\t/, $_ );
 
-        # concat genome/graph coords
-        $coords1 = "$data[0]:$data[1]-$data[2]";
-        $coords2 = "$data[6]:$data[7]-$data[8]";
-        $coords = "$coords1;$coords2";
+        if(scalar(@data) < 13) {
+            print "# WARN(bed2compara): skip short line ($. $infile)\n";
+            next;
+        }
 
         # format gene names
         $gene1 = $data[3];
         $gene2 = $data[9];
+  
+        # TODO: arbitrary regexes that should be taylored
+        #if ($workout_gene_names) {
+        #    # Work out gene names from transcripts':
+        #    # 1) remove suffix after . or -
+        #    # 2) t's in transcript name to be replaced with g' in gene names
+        #    # Example: 10t0100300.1 -> Os10g0100300
+        #    $gene1 =~ s/[\.-]\d+$//;
+        #    $gene2 =~ s/[\.-]\d+$//;
+        #    $gene1 =~ s/t/g/;
+        #    $gene2 =~ s/t/g/;
+        #}
 
-        if ($workout_gene_names) {
-            # Note: experimental, arbitrary regexes that should be taylored
-            # Work out gene names from transcripts':
-            # 1) remove suffix after . or -
-            # 2) t's in transcript name to be replaced with g' in gene names
-            # Example: 10t0100300.1 -> Os10g0100300
-            $gene1 =~ s/[\.-]\d+$//;
-            $gene2 =~ s/[\.-]\d+$//;
-            $gene1 =~ s/t/g/;
-            $gene2 =~ s/t/g/;
+        # workout genomic coordinates
+        if($data[3] ne 'segment') {
+            if( $ref_orig_coords1->{$gene1} &&
+                $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)/) {
+                $coords1 = "$1:$2-$3"
+            } else { $coords1 = 'NA' }
+        } else {
+            $coords1 = "$data[0]:$data[1]-$data[2]";
         }
 
-        # check homology type
+        if($data[9] ne 'segment') { 
+            if( $ref_orig_coords2->{$gene2} &&
+                $ref_orig_coords2->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)/) {
+                $coords2 = "$1:$2-$3"
+            } else { $coords2 = 'NA' }
+        } else {
+            $coords2 = "$data[6]:$data[7]-$data[8]";
+        }
+ 
+        $coords = "$coords1;$coords2";
+
+        # check homology type and work out genomic coordinates
         if($data[3] eq 'segment') {
             $homoltype = 'segment_collinear';
-            $gene1 = $coords1;
+            $gene1 = "$sp1:$coords1";
             $num_segments++;
         } elsif($data[9] eq 'segment') {
             $homoltype = 'segment_collinear';
-            $gene2 = $coords2;
+            $gene2 = "$sp2:$coords2";
             $num_segments++;
         } else {
             $homoltype = 'ortholog_collinear';

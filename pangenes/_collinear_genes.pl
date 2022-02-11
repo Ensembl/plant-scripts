@@ -40,9 +40,6 @@ my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]
 my $SAMTOOLSEXE = 'samtools';
 
-# might be useful to compute sequence identity for ANI
-#my $BLASTNEXE   = 'blastn';   # 2.2.30+
-
 my $THREADS      = 4;
 my $SORTLIMITRAM = "500M";                               # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";

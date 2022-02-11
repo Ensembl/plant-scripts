@@ -460,8 +460,9 @@ my ($cigar,@tmpBEDfiles);
 
 my $wgaBEDfile    = $tmpdir . "_$sp2.$sp1.$alg.bed";
 
+# make up also reverse alignment, 
 # used to find matching sp2 segments for unpaired sp1 genes
-my $wgaBEDfilerev = $tmpdir . "_$sp1.$sp2.$alg.bed";
+my $wgaBEDfilerev = $tmpdir . "_$sp1.$sp2.$alg.rev.bed";
 
 open( PAF, "<", $PAFfile )    || die "# ERROR: cannot read $PAFfile\n";
 
@@ -490,15 +491,15 @@ close(BEDREV);
 
 close(PAF);
 
-push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
+#push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
 my $sp2wgaBEDfile = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.bed";
 my $sp2wgaBEDfile_sorted = $tmpdir . "_$sp2.gene.$sp1.$alg.intersect.overlap$minoverlap.sort.bed";
 
-my $sp1wgaBEDfile = $tmpdir . "_$sp1.gene.$sp2.$alg.intersect.overlap$minoverlap.bed";
-my $sp1wgaBEDfile_sorted = $tmpdir . "_$sp1.gene.$sp2.$alg.intersect.overlap$minoverlap.sort.bed";
+my $sp1wgaBEDfile = $tmpdir . "_$sp1.gene.$sp2.$alg.intersect.overlap$minoverlap.rev.bed";
+my $sp1wgaBEDfile_sorted = $tmpdir . "_$sp1.gene.$sp2.$alg.intersect.overlap$minoverlap.sort.rev.bed";
 
 $cmd = "$bedtools_path intersect -a $geneBEDfile2 -b $wgaBEDfile " .
          "$BEDINTSCPAR > $sp2wgaBEDfile";
@@ -543,12 +544,12 @@ elsif ( !-s $sp1wgaBEDfile_sorted ) {
     die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
 }
 
-push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
-push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
+#push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
+#push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
 
 # compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
-my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.bed";
+my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
@@ -609,7 +610,7 @@ elsif ( !-s $gene_intersectBEDfile ) {
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
         $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
 
-#$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile1 > $intersectBEDfile_sorted";
+$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile1 > $intersectBEDfile_sorted";
 
 #$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
 #           "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
@@ -622,7 +623,7 @@ elsif ( !-s $intersectBEDfile_sorted ) {
     die "# ERROR: failed generating $intersectBEDfile_sorted file ($cmd)\n";
 }
 
-push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
+#push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
 push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my ($num_pairs, $num_segments) = 
@@ -929,7 +930,7 @@ sub mask_intergenic_regions {
 # features might be unsorted.
 # Returns i) ref to list of matched genes and ii) ref to list of unmatched genes
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
-# Note: takes first match of each cDNA only
+# Note: takes first match of each cDNA/gene only
 # example input:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
 # 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:...              11405
@@ -1308,7 +1309,7 @@ sub genes_mapped2segments {
     my ($geneBEDfile, $mappedBEDfile, $pairedBEDfile, $outBEDfile, $invert) = @_;
 
     my $num_segments = 0;
-    my ($coords,$geneid,$len,$strand);
+    my ($chr,$sta,$end,$geneid,$len,$strand,$overlap);
     my (@genes,%orig_coords,%paired);
     
     # find out which genes are paired based on WGA (sp2)
@@ -1347,18 +1348,20 @@ sub genes_mapped2segments {
 
     while(<MAPBED>) {
         #1       29700   39038   gene:ONIVA01G00100      9339    +
-        if(/^(\S+\t\d+\t\d+)\t(\S+)\t(\d+)\t([+-])/) {
-            ($coords, $geneid, $len, $strand) = ($1, $2, $3, $4);
+        if(/^(\S+)\t(\d+)\t(\d+)\t(\S+)\t(\d+)\t([+-])/) {
+            ($chr, $sta, $end, $geneid, $len, $strand) = ($1, $2, $3, $4, $5, $6);
             
             next if($paired{$geneid});
 
             # actually print to BED coordinates of genes mapped to (unannotated) genomic segments
             #1 217360 222398 segment 5039 + 1 155040 165322 gene:ONIVA01G00180 9999 + 9999
 
+            $overlap = $end-$sta;
+
             if($invert) {
-                print OUTBED "$orig_coords{$geneid}\t$coords\tsegment\t$len\t$strand\t9999\n";
+                print OUTBED "$orig_coords{$geneid}\t$chr\t$sta\t$end\tsegment\t$len\t$strand\t$overlap\n";
             } else {
-                print OUTBED "$coords\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t9999\n";
+                print OUTBED "$chr\t$sta\t$end\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t$overlap\n";
             }
            
             $num_segments++;

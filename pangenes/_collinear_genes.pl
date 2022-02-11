@@ -60,12 +60,6 @@ my $SAMESTRAND = 1;
 my $MINOVERLAP = 0.50;
 my $VERBOSE    = 0;           # values > 1
 
-# Work out gene names from transcripts':
-# 1) remove suffix after . or -
-# 2) t's in transcript name to be replaced with g' in gene names
-# Example: 10t0100300.1 -> Os10g0100300
-my $TRANSCRIPT2GENE = 0;
-
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
 my ($dowfmash, $split_chr_regex, $tmpdir ) = ( 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
@@ -491,7 +485,7 @@ close(BEDREV);
 
 close(PAF);
 
-#push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
+push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 
@@ -544,8 +538,8 @@ elsif ( !-s $sp1wgaBEDfile_sorted ) {
     die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
 }
 
-#push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
-#push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
+push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
+push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
 
 # compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
@@ -604,8 +598,8 @@ elsif ( !-s $gene_intersectBEDfile ) {
 }
 
 # now add collinear gene-genomic segments pairs
-#my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
-#	$gene_intersectBEDfile, $segment_intersectBEDfile );
+my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
+	$gene_intersectBEDfile, $segment_intersectBEDfile );
 
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
         $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
@@ -623,12 +617,12 @@ elsif ( !-s $intersectBEDfile_sorted ) {
     die "# ERROR: failed generating $intersectBEDfile_sorted file ($cmd)\n";
 }
 
-#push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
+push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
 push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
 my ($num_pairs, $num_segments) = 
-    bed2compara( $intersectBEDfile_sorted, $outfilename, $sp1, $sp2,
-    $noheader, $TRANSCRIPT2GENE );
+    bed2compara( $intersectBEDfile_sorted, $geneBEDfile1, $geneBEDfile2,
+        $outfilename, $sp1, $sp2, $noheader);
 
 printf( "# %d collinear gene pairs , %d collinear segments\n", $num_pairs, $num_segments );
 
@@ -1297,6 +1291,36 @@ sub _parseCIGARfeature {
     return ( $deltaq, $deltar, $rcoord );
 }
 
+# Takes 2 params:
+# i)  BED filaname 
+# ii) (optional) ref to hash with names (4th column) to skip
+# Returns a hash ref with names (keys) pointing to full BED lines (values)
+sub _BED2hash {
+
+    my ($BEDfile, $ref_skip_names) = @_;
+
+    my ($name,%coords);
+
+    open(BED,"<",$BEDfile)
+        || die "# ERROR(_BED2hash): cannot read $BEDfile\n";
+
+    while(<BED>) {
+        #1    4847    20752   gene:ONIVA01G00010      9999    +
+        if(/^\S+\t\d+\t\d+\t(\S+)\t/) {
+
+            $name = $1;
+            next if($ref_skip_names && $ref_skip_names->{$name});
+
+            chomp;
+            $coords{$name} = $_;
+        }
+    }
+    close(BED);
+
+    return \%coords;
+}
+
+
 # Takes four file paths and optionally a boolean:
 # i)   BED filename with gene model coordinates of species2 (6 cols)
 # ii)  BED filename with species1 genes mapped on species2 space (6 cols)
@@ -1310,7 +1334,7 @@ sub genes_mapped2segments {
 
     my $num_segments = 0;
     my ($chr,$sta,$end,$geneid,$len,$strand,$overlap);
-    my (@genes,%orig_coords,%paired);
+    my (@genes,$ref_orig_coords,%paired);
     
     # find out which genes are paired based on WGA (sp2)
     open(PAIRBED,"<",$pairedBEDfile)
@@ -1325,19 +1349,7 @@ sub genes_mapped2segments {
     close(PAIRBED);
 
     # read gene model coordinates (sp2)
-    open(GENEBED,"<",$geneBEDfile)
-        || die "# ERROR(gene2segments): cannot read $geneBEDfile\n";
-
-    while(<GENEBED>) {
-        #1    4847    20752   gene:ONIVA01G00010      9999    +
-        if(/^\S+\t\d+\t\d+\t(\S+)\t/) {
-            $geneid = $1;
-            next if($paired{$geneid});
-            chomp;
-            $orig_coords{$geneid} = $_;
-        }
-    }
-    close(GENEBED); 
+    $ref_orig_coords = _BED2hash($geneBEDfile,\%paired);
 
     # find sp2 genes that have mapped coords on sp1 but are not paired, print to outfile
     open(OUTBED,">",$outBEDfile) 
@@ -1359,9 +1371,9 @@ sub genes_mapped2segments {
             $overlap = $end-$sta;
 
             if($invert) {
-                print OUTBED "$orig_coords{$geneid}\t$chr\t$sta\t$end\tsegment\t$len\t$strand\t$overlap\n";
+                print OUTBED "$ref_orig_coords->{$geneid}\t$chr\t$sta\t$end\tsegment\t$len\t$strand\t$overlap\n";
             } else {
-                print OUTBED "$chr\t$sta\t$end\tsegment\t$len\t$strand\t$orig_coords{$geneid}\t$overlap\n";
+                print OUTBED "$chr\t$sta\t$end\tsegment\t$len\t$strand\t$ref_orig_coords->{$geneid}\t$overlap\n";
             }
            
             $num_segments++;
@@ -1375,24 +1387,35 @@ sub genes_mapped2segments {
 }
 
 
-# Takes i) input BED intersect filename ii) output TSV filename and
-# returns iii) number of collinear gene pairs & iv) number of collinear segments
-# Parses bedtools intersect file and produces Ensembl Compara-like TSV file.
-# Example input with explicit strand:
-# 1 2983 10815 Os01g0100100 9999 + 1 2890 12378 ONIVA01G00100 9489 + 7832
-# Expected TSV output:
+# Parses bedtools intersect file and BED files with original gene coords 
+# to produce Ensembl Compara-like TSV file.
+# Takes 7 parameters:
+# i)    BED intersect filename (1 2983 10815 Os01g0100100 9999 + 1 2890 12378 ONIVA01G00100 9489 + 7832)
+# ii)   BED file with sp1 gene coords
+# iii)  BED file with sp2 gene coords
+# iv)   TSV output filename (Compara-like format) 
+# v)    string with name of species1
+# vi)   string with name of species2
+# vii)  boolean to remove header from TSV
+# TODO) boolean to remove redundant parts from gene names (experimental, see below)
+# Returns i) number of collinear gene pairs & ii) number of collinear segments
+# Columns in TSV output format, homology_type = ['ortholog_collinear','segment_collinear']:
 # gene_stable_id protein_stable_id species overlap homology_type homology_gene_stable_id
 # homology_protein_stable_id homology_species overlap dn ds goc_score wga_coverage
 # is_high_confidence coordinates
-# Note: homology_type can be 'ortholog_collinear' or 'segment_collinear'
 sub bed2compara {
 
-    my ( $infile, $TSVfile, $sp1, $sp2, $noheader, $workout_gene_names ) = @_;
+    my ( $infile, $geneBEDfile1, $geneBEDfile2, $TSVfile, $sp1, $sp2, $noheader, $workout_gene_names ) = @_;
 
     my ( $gene1, $gene2, $coords1, $coords2, $coords, $homoltype );
     my ($num_pairs, $num_segments) = (0, 0);
+    my ($ref_orig_coords1,$ref_orig_coords2);
 
-    # parse input and produce TSV output
+    # read gene model coordinates 
+    $ref_orig_coords1 = _BED2hash($geneBEDfile1);
+    $ref_orig_coords2 = _BED2hash($geneBEDfile2);
+
+    # parse intersection BED and produce TSV output
     open( BEDINT, "<", $infile )
       || die "# ERROR(bed2compara): cannot read $infile\n";
 
@@ -1423,6 +1446,11 @@ sub bed2compara {
         $gene2 = $data[9];
 
         if ($workout_gene_names) {
+            # Note: experimental, arbitrary regexes that should be taylored
+            # Work out gene names from transcripts':
+            # 1) remove suffix after . or -
+            # 2) t's in transcript name to be replaced with g' in gene names
+            # Example: 10t0100300.1 -> Os10g0100300
             $gene1 =~ s/[\.-]\d+$//;
             $gene2 =~ s/[\.-]\d+$//;
             $gene1 =~ s/t/g/;

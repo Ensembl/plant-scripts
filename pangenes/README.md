@@ -193,32 +193,30 @@ and a text file describing the clusters is also produced
 
 which looks like this:
 
-    cluster gene-mag-r size=1 taxa=2 cdnafile: gene-mag-r.cdna.fna cdsfile: gene-mag-r.cds.fna pepfile: gene-mag-r.cds.faa
-    : oryza_nivara
-    cluster gene-orf165 size=3 taxa=3 cdnafile: gene-orf165.cdna.fna cdsfile: gene-orf165.cds.fna pepfile: gene-orf165.cds.faa
-    : oryza_nivara
-    : oryza_sativa_MSU
-    : oryza_sativa
-    cluster gene-rps1 size=3 taxa=3 cdnafile: gene-rps1.cdna.fna cdsfile: gene-rps1.cds.fna pepfile: gene-rps1.cds.faa
-    : oryza_nivara
-    : oryza_indica
-    : oryza_sativa
+    cluster gene:BGIOSGA002569 size=5 taxa=3 taxa(gdna)=NA cdnafile: gene:BGIOSGA002569.cdna.fna cdsfile: gene:BGIOSGA002569.cds.fna pepfile: gene:BGIOSGA002569.cds.faa gdnafile=void
+    : Oryza_sativa.IRGSP-1.0.chr1
+    : Oryza_sativa.IRGSP-1.0.chr1
+    : Oryza_nivara_v1.chr1
+    : Oryza_indica.ASM465v1.chr1
+    : Oryza_indica.ASM465v1.chr1
+    cluster gene:BGIOSGA002567 size=3 taxa=3 taxa(gdna)=NA cdnafile: gene:BGIOSGA002567.cdna.fna cdsfile: gene:BGIOSGA002567.cds.fna pepfile: gene:BGIOSGA002567.cds.faa gdnafile=void
+    : Oryza_indica.ASM465v1.chr1
+    : Oryza_nivara_v1.chr1
+    : Oryza_sativa.IRGSP-1.0.chr1
+    ...
+    cluster gene:BGIOSGA002617 size=3 taxa=3 taxa(gdna)=2 cdnafile: gene:BGIOSGA002617.cdna.fna cdsfile: gene:BGIOSGA002617.cds.fna pepfile: gene:BGIOSGA002617.cds.faa gdnafile=gene:BGIOSGA002617.gdna.fna
+    : Oryza_nivara_v1.chr1
+    : Oryza_sativa.IRGSP-1.0.chr1
+    : Oryza_indica.ASM465v1.chr1
+    ... 
 
-Each cluster is a FASTA file, which looks like this:
+Note that up to four types of clusters are generated (cdna, cds, pep & gdna), depending on the nature of the gene and also on the existence of WGA alignments supporting the alignment of annotated genes from one assembly to genomic segments on another. Clusters are FASTA files like this:
 
 ```
-grep ">" oryzasativa/Os01g0100100.cdna.fna
->Os01t0100100-01 Os01g0100100 1:2983-10815 [oryza_sativa]
->Os01t0100200-01 Os01g0100200 1:11218-12435 [oryza_sativa]
->ONIVA01G00100.2 ONIVA01G00100 1:104921-115645 [oryza_nivara]
->ONIVA01G00100.3 ONIVA01G00100 1:104921-115645 [oryza_nivara]
->ONIVA01G00100.4 ONIVA01G00100 1:104921-115645 [oryza_nivara]
->ONIVA01G00100.1 ONIVA01G00100 1:104921-116326 [oryza_nivara]
->LOC_Os01g01010.1 LOC_Os01g01010 Chr1:2903-10817 [oryza_sativa_MSU]
->LOC_Os01g01010.2 LOC_Os01g01010 Chr1:2984-10562 [oryza_sativa_MSU]
->LOC_Os01g01019.1 LOC_Os01g01019 Chr1:11218-12435 [oryza_sativa_MSU]
->BGIOSGA002569-TA BGIOSGA002569 1:30220-36442 [oryza_indica]
->BGIOSGA002570-TA BGIOSGA002570 1:38569-39088 [oryza_indica]
+grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA002617.cdna.fna
+>transcript:ONIVA01G00550.1 gene:ONIVA01G00550 1:424075-430047 [Oryza_nivara_v1.chr1]
+>transcript:BGIOSGA002617-TA gene:BGIOSGA002617 1:601386-602053 [Oryza_indica.ASM465v1.chr1]
+>transcript:Os01t0108400-00 gene:Os01g0108400 1:455707-457425 [Oryza_sativa.IRGSP-1.0.chr1]
 ```
 
 The TSV files of collinear pairs supporting these clusters can be found in 

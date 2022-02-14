@@ -35,7 +35,7 @@ my $NOFSAMPLESREPORT = 10;
 my ( $ref_genome, $seqfolder, $clusterdir ) = ( '', '', '' );
 my ( $outfolder, $params, $bedtools_path) = ('', '', '');
 my ( $help, $sp, $sp2, $show_supported, $seed );
-my ( $infile, $filename, $cdsfile, $pepfile );
+my ( $infile, $filename, $cdsfile, $pepfile, $gdnafile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $NOSINGLES , $dogrowth ) = ( 0, 0 );
 my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
@@ -223,7 +223,7 @@ print "# total selected species : $n_of_species\n\n";
 my ( $cluster_id, $chr, $seqtype, $BEDcoords, $coords_id ) = ( 0, '' );
 my ( $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
-my ( $ref_geneid, $ref_fasta, $num_segments );
+my ( $ref_geneid, $ref_fasta, $segment_cluster, $num_segments );
 my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %POCS_matrix );
 my ( %sorted_ids, %id2chr );
@@ -338,11 +338,11 @@ foreach $infile (@infiles) {
             }
             if(!$segment{$cluster_id}{$segment_species}) {
                 push( @{ $segment{$cluster_id}{$segment_species} }, $segment_coords );
-            } 
+            }
         }
     }
     close(TSV);
-} 
+}  
 
 # count how many clusters include each species
 foreach $cluster_id (@cluster_ids) {
@@ -351,13 +351,14 @@ foreach $cluster_id (@cluster_ids) {
             $totalclusters{$species}++;
         }
     }
-}
+} 
+
 
 # 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
-# and store them in hashes with species,coords as keys
+# and store them in a hash with (species,coords) keys
 foreach $species (@supported_species) {
 
-    my $num_segments = 0;
+    $num_segments = 0;
 
     # write BED
     $filename = "$seqfolder$species.gdna.bed";
@@ -365,6 +366,7 @@ foreach $species (@supported_species) {
         die "# ERROR: cannot create $filename\n";
 
     foreach $cluster_id (@cluster_ids) {
+        next if(!$segment{$cluster_id} || !$segment{$cluster_id}{$species});
         foreach $coords_id (@{ $segment{$cluster_id}{$species} }) {
             $BEDcoords = $coords_id; #1:125929-131075(+)
             $BEDcoords =~ s/[:]/\t/;
@@ -391,10 +393,10 @@ foreach $species (@supported_species) {
     }
 
     print "# $outFASTAfile : $num_segments genomic segments\n";
-} print "\n"; 
+} print "\n";
+
 
 # 2.2) print clusters of (supporting) genomic sequences
-
 foreach $sp (@supported_species) {
 
     $filename = "$seqfolder$sp$SEQEXT{'gdna'}";
@@ -417,22 +419,24 @@ foreach $sp (@supported_species) {
 
 foreach $cluster_id (@cluster_ids) {
 
-    next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
+    next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa || !$segment{$cluster_id});
 
     $filename = $cluster_id;
-
-    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
-        || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";
+    $segment_cluster = '';
 
     foreach $species (@supported_species) {
         next if ( !$segment{$cluster_id}{$species} );
 
         foreach $coords_id ( @{ $segment{$cluster_id}{$species} } ) {
-            print CLUSTER $segment_sequence{$species}{$coords_id};
+            $segment_cluster .= $segment_sequence{$species}{$coords_id};
         }
 
         $segment_species{$cluster_id}++;
     }
+
+    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
+        || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";
+    print CLUSTER $segment_cluster;
     close(CLUSTER);
 }
 
@@ -559,13 +563,17 @@ foreach $cluster_id (@cluster_ids) {
 
             $cdsfile = $filename.$SEQEXT{'cds'};
             $pepfile = $filename.$SEQEXT{'pep'};
+            $gdnafile = $filename.$SEQEXT{'gdna'};
 
             if ( !-s "$outfolder/$clusterdir/$cdsfile" ) { $cdsfile = 'void' }
             if ( !-s "$outfolder/$clusterdir/$pepfile" ) { $pepfile = 'void' }
+            if ( !-s "$outfolder/$clusterdir/$gdnafile" ) { $gdnafile = 'void' }
+
+            $num_segments = $segment_species{$cluster_id} || 'NA'; 
 
             print CLUSTER_LIST
-              "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp ".
-              "cdnafile: $filename$SEQEXT{$seqtype} cdsfile: $cdsfile pepfile: $pepfile\n";
+              "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp taxa(gdna)=$num_segments ".
+              "cdnafile: $filename$SEQEXT{$seqtype} cdsfile: $cdsfile pepfile: $pepfile gdnafile=$gdnafile\n"; 
 
             foreach $species (@cluster_species) {
                 foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {

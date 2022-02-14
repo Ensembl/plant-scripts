@@ -1459,19 +1459,19 @@ sub bed2compara {
         if($data[3] ne 'segment') {
             if( $ref_orig_coords1->{$gene1} &&
                 $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
-                $coords1 = "$1:$2-$3:$4"
+                $coords1 = "$1:$2-$3($4)"
             } else { $coords1 = 'NA' }
         } else {
-            $coords1 = "$data[0]:$data[1]-$data[2]:$data[5]";
+            $coords1 = "$data[0]:$data[1]-$data[2]($data[5])";
         }
 
         if($data[9] ne 'segment') { 
             if( $ref_orig_coords2->{$gene2} &&
                 $ref_orig_coords2->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
-                $coords2 = "$1:$2-$3:$4"
+                $coords2 = "$1:$2-$3($4)"
             } else { $coords2 = 'NA' }
         } else {
-            $coords2 = "$data[6]:$data[7]-$data[8]:$data[11]";
+            $coords2 = "$data[6]:$data[7]-$data[8]($data[11])";
         }
  
         $coords = "$coords1;$coords2";

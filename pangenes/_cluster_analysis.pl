@@ -31,7 +31,7 @@ my $RNDSEED          = 12345;
 my $NOFSAMPLESREPORT = 10;
 
 my ( $ref_genome, $seqfolder, $clusterdir ) = ( '', '', '' );
-my ( $outfolder, $params) = ('', '');
+my ( $outfolder, $params, $bedtools_path) = ('', '', '');
 my ( $help, $sp, $sp2, $show_supported, $seed );
 my ( $infile, $filename, $cdsfile, $pepfile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
@@ -53,7 +53,8 @@ GetOptions(
     "seq|s=s"       => \$seqfolder,
     "mintaxa|t=i"   => \$min_taxa,
     #"soft|z"        => \$dosoft,
-    "seed|R=i"      => \$seed
+    "seed|R=i"      => \$seed,
+    "bedtools|B=s"  => \$bedtools_path
 ) || help_message();
 
 sub help_message {
@@ -68,6 +69,7 @@ sub help_message {
       . "-s folder with gene seqs of species in TSV (optional, default current folder)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
+      . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
       #. "-z add soft-core to genome growth analysis (optional)\n"
       . "-v verbose                                 (optional, example: -v\n";
 
@@ -208,27 +210,33 @@ print "# total selected species : $n_of_species\n\n";
 ## 2) parse pairs of collinear genes and make up clusters 
 
 my ( $cluster_id, $chr, $seqtype ) = ( 0, '' );
+my ( $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids );
 my ( $ref_geneid, $ref_fasta );
-my ( %incluster, %cluster, %sequence );
+my ( %incluster, %cluster, %sequence, %segment );
 my ( %totalgenes, %totalclusters, %POCS_matrix );
 my ( %sorted_ids, %id2chr );
 
 # columns of TSV file as produced by get_collinear_genes.pl
-# Os01g0100200 Os01g0100200 oryza_sativa 1050 ortholog_collinear ONIVA01G00100 ONIVA01G00100 oryza_nivara 1050 NULL NULL NULL 100.00 1 1:11217-12435;1:2929-12267
-# NOTE: identity is really alignment length
-# NOTE: dn,ds,goc are not computed and have dummy values
+
+#gene:BGIOSGA002571 gene:BGIOSGA002571 Oryza_indica.ASM465v1.chr1 2418 ortholog_collinear
+# gene:ONIVA01G00120 gene:ONIVA01G00120 Oryza_nivara_v1.chr1 2418 NULL NULL NULL 100.00 1 1:39544-42130;1:116435-120177
+#Oryza_indica.ASM465v1.chr1:1:222338-228913 segment Oryza_indica.ASM465v1.chr1 6575 segment_collinear
+# gene:ONIVA01G00200 gene:ONIVA01G00200 Oryza_nivara_v1.chr1 6575 NULL NULL NULL 100.00 1 1:222338-228913;1:160018-166571
+
+# NOTE: wga_cov,dn,ds,goc are not computed and have dummy values
+
 my (
     $gene_stable_id,     $prot_stable_id, $species,
-    $identity,           $homology_type,  $hom_gene_stable_id,
+    $overlap,            $homology_type,  $hom_gene_stable_id,
     $hom_prot_stable_id, $hom_species,    $hom_identity,
     $dn,                 $ds,             $goc_score,
     $wga_coverage,       $high_confidence,
-	$coordinates
+    $coordinates
 );
 
 # Iteratively get and parse TSV files that define pairs of collinear 
-# genes computed with get_collinear_genes. 
+# genes computed with _collinear_genes. 
 # Clusters emerge after parsing all pairwise TSV files
 foreach $infile (@infiles) {
 
@@ -238,7 +246,7 @@ foreach $infile (@infiles) {
 
         (
             $gene_stable_id,     $prot_stable_id, $species,
-            $identity,           $homology_type,  $hom_gene_stable_id,
+            $overlap,            $homology_type,  $hom_gene_stable_id,
             $hom_prot_stable_id, $hom_species,    $hom_identity,
             $dn,                 $ds,             $goc_score,
             $wga_coverage,       $high_confidence,
@@ -249,7 +257,7 @@ foreach $infile (@infiles) {
 
         if ( $homology_type =~ m/ortholog/ ) {
 
-            # add $species protein to cluster only if not clustered yet
+            # add $species gene to cluster only if not clustered yet
             if ( !$incluster{$gene_stable_id} ) {
 
                 if ( $incluster{$hom_gene_stable_id} ) {
@@ -275,10 +283,10 @@ foreach $infile (@infiles) {
                 $cluster_id = $incluster{$gene_stable_id};
             } 
 
-            # now add $hom_species protein to previously defined cluster
+            # now add $hom_species gene to previously defined cluster
             if ( !$incluster{$hom_gene_stable_id} ) {
 
-                # record to which cluster this protein belongs
+                # record to which cluster this gene belongs
                 $incluster{$hom_gene_stable_id} = $cluster_id;
 
                 push(
@@ -286,6 +294,34 @@ foreach $infile (@infiles) {
                     $hom_gene_stable_id
                 );
             }
+        } elsif($homology_type =~ m/segment_collinear/) {
+
+            # find out to which cluster this gene-segment pair belongs
+            if($prot_stable_id eq 'segment') {
+                $stable_id = $hom_gene_stable_id;
+                $segment_species = $species;
+                $species = $hom_species;
+                ($segment_coords, $coords) = split(/;/,$coordinates);
+            } else {
+                $stable_id = $gene_stable_id;
+                $segment_species = $hom_species;
+                ($coords, $segment_coords) = split(/;/,$coordinates); 
+            }
+
+            if ( !$incluster{$stable_id} ) {
+                $cluster_id = $stable_id;
+                push( @cluster_ids, $cluster_id );
+                $incluster{$stable_id} = $cluster_id;
+                push( @{ $cluster{$cluster_id}{$species} }, $stable_id );
+            }
+            else {
+                $cluster_id = $incluster{$stable_id};
+            }
+
+            # save genomic coords for both sequences in %segment,
+            # each entry in %cluster maps to one entry in %segment
+            push( @{ $segment{$cluster_id}{$species} }, $coords );
+            push( @{ $segment{$cluster_id}{$segment_species} }, $segment_coords );
         }
     }
     close(TSV); 

@@ -20,7 +20,7 @@ my $TRANSPOSEXE =
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
 # these globals match sequence type to extension
-my @SEQTYPE = qw( cds pep cdna ); #gdna );
+my @SEQTYPE = qw( cds pep cdna );
 my %SEQEXT = (
     'gdna' => '.gdna.fna',
     'cdna' => '.cdna.fna',
@@ -231,9 +231,9 @@ my ( %sorted_ids, %id2chr );
 # columns of TSV file as produced by get_collinear_genes.pl
 
 #gene:BGIOSGA002571 gene:BGIOSGA002571 Oryza_indica.ASM465v1.chr1 2418 ortholog_collinear
-# gene:ONIVA01G00120 gene:ONIVA01G00120 Oryza_nivara_v1.chr1 2418 NULL NULL NULL 100.00 1 1:39544-42130;1:116435-120177
+# gene:ONIVA01G00120 gene:ONIVA01G00120 Oryza_nivara_v1.chr1 2418 NULL NULL NULL 100.00 1 1:39544-42130(+);1:116435-120177(+)
 #Oryza_indica.ASM465v1.chr1:1:222338-228913 segment Oryza_indica.ASM465v1.chr1 6575 segment_collinear
-# gene:ONIVA01G00200 gene:ONIVA01G00200 Oryza_nivara_v1.chr1 6575 NULL NULL NULL 100.00 1 1:222338-228913;1:160018-166571
+# gene:ONIVA01G00200 gene:ONIVA01G00200 Oryza_nivara_v1.chr1 6575 NULL NULL NULL 100.00 1 1:222338-228913(+);1:160018-166571(+)
 
 # NOTE: wga_cov,dn,ds,goc are not computed and have dummy values
 
@@ -307,6 +307,8 @@ foreach $infile (@infiles) {
             }
         } elsif($homology_type =~ m/segment_collinear/) {
 
+            chomp($coordinates);
+
             # find out to which cluster this gene-segment pair belongs
             if($prot_stable_id eq 'segment') {
                 $stable_id = $hom_gene_stable_id;
@@ -363,7 +365,11 @@ foreach $species (@supported_species) {
 
     foreach $cluster_id (@cluster_ids) {
         foreach $BEDcoords (@{ $segment{$cluster_id}{$species} }) {
-            $BEDcoords =~ s/[:-]/\t/g;
+            #1:125929-131075(+)
+            $BEDcoords =~ s/[:]/\t/;
+            $BEDcoords =~ s/-/\t/;
+            $BEDcoords =~ s/[\(\)]//g;
+            $BEDcoords =~ s/([+-])$/\tNA\t0\t$1/g;
             print GDNA "$BEDcoords\n";
             $num_segments++;
         }
@@ -373,7 +379,7 @@ foreach $species (@supported_species) {
     # extract segments with help from bedtools
     my $FASTAgenome_file = "$seqfolder\_$species.fna";
     my $outFASTAfile = "$seqfolder$species.gdna.fna";
-    my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -fo $outFASTAfile"; 
+    my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile"; 
     system("$cmd");
     sleep(2); #latency issues
     if ( $? != 0 ) {
@@ -416,6 +422,9 @@ foreach $sp (@supported_species) {
         print INLOG "$filename\n";
         close(INLOG);
     }
+
+    # parse also genomic segments (.gdna.fna)
+    
 }
 
 # add unaligned sequences as singletons 

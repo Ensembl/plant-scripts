@@ -861,7 +861,7 @@ $clusteroutfile = $outfolder.'.queue';
 $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
   "-T $merged_tsv_file -r $reference_name ".
   "-f $outfolder -t $min_cluster_size -s $newDIR ".
-  "-B $bedtools_path";
+  "-B $ENV{'EXE_BEDTOOLS'}";
 
 if($do_genome_composition) {
   $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";

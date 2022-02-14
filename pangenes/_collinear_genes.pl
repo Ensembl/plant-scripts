@@ -1384,7 +1384,7 @@ sub genes_mapped2segments {
 # Parses bedtools intersect file and BED files with original gene coords 
 # to produce Ensembl Compara-like TSV file.
 # Takes 7 parameters:
-# i)    BED intersect filename (1 2983 10815 Os01g0100100 9999 + 1 2890 12378 ONIVA01G00100 9489 + 7832)
+# i)    BED intersect filename (see format below)
 # ii)   BED file with sp1 gene coords
 # iii)  BED file with sp2 gene coords
 # iv)   TSV output filename (Compara-like format) 
@@ -1428,6 +1428,10 @@ sub bed2compara {
     }
 
     while (<BEDINT>) {
+        #1 116435  120177  ONIV..  9999 +  1 116779  119742  gene:Os01g0100400       2964    + 2963
+        #1 116866  118035  segment 1170 -  1 12807   13978   gene:Os01g0100466       9999    - 1169
+        #1 160018  166571  ..00200 9999 -  1 191201  197773  segment                 6573    - 6572
+
         my @data = split( /\t/, $_ );
 
         if(scalar(@data) < 13) {
@@ -1439,7 +1443,7 @@ sub bed2compara {
         $gene1 = $data[3];
         $gene2 = $data[9];
   
-        # TODO: arbitrary regexes that should be taylored
+        # arbitrary regexes that should be taylored
         #if ($workout_gene_names) {
         #    # Work out gene names from transcripts':
         #    # 1) remove suffix after . or -
@@ -1454,20 +1458,20 @@ sub bed2compara {
         # workout genomic coordinates
         if($data[3] ne 'segment') {
             if( $ref_orig_coords1->{$gene1} &&
-                $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)/) {
-                $coords1 = "$1:$2-$3"
+                $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
+                $coords1 = "$1:$2-$3:$4"
             } else { $coords1 = 'NA' }
         } else {
-            $coords1 = "$data[0]:$data[1]-$data[2]";
+            $coords1 = "$data[0]:$data[1]-$data[2]:$data[5]";
         }
 
         if($data[9] ne 'segment') { 
             if( $ref_orig_coords2->{$gene2} &&
-                $ref_orig_coords2->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)/) {
-                $coords2 = "$1:$2-$3"
+                $ref_orig_coords2->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
+                $coords2 = "$1:$2-$3:$4"
             } else { $coords2 = 'NA' }
         } else {
-            $coords2 = "$data[6]:$data[7]-$data[8]";
+            $coords2 = "$data[6]:$data[7]-$data[8]:$data[11]";
         }
  
         $coords = "$coords1;$coords2";

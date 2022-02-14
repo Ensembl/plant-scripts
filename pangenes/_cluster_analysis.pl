@@ -220,11 +220,11 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) parse pairs of collinear genes and make up clusters 
 
-my ( $cluster_id, $chr, $seqtype, $BEDcoords ) = ( 0, '' );
+my ( $cluster_id, $chr, $seqtype, $BEDcoords, $coords_id ) = ( 0, '' );
 my ( $stable_id, $segment_species, $coords, $segment_coords );
-my ( @cluster_ids, %sorted_cluster_ids );
-my ( $ref_geneid, $ref_fasta );
-my ( %incluster, %cluster, %sequence, %segment );
+my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
+my ( $ref_geneid, $ref_fasta, $num_segments );
+my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %POCS_matrix );
 my ( %sorted_ids, %id2chr );
 
@@ -338,10 +338,10 @@ foreach $infile (@infiles) {
             }
             if(!$segment{$cluster_id}{$segment_species}) {
                 push( @{ $segment{$cluster_id}{$segment_species} }, $segment_coords );
-            }
+            } 
         }
     }
-    close(TSV); 
+    close(TSV);
 } 
 
 # count how many clusters include each species
@@ -353,7 +353,7 @@ foreach $cluster_id (@cluster_ids) {
     }
 }
 
-# Write BED & FASTA files with genomic segments (gdna), one per species,
+# 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
 # and store them in hashes with species,coords as keys
 foreach $species (@supported_species) {
 
@@ -365,8 +365,8 @@ foreach $species (@supported_species) {
         die "# ERROR: cannot create $filename\n";
 
     foreach $cluster_id (@cluster_ids) {
-        foreach $BEDcoords (@{ $segment{$cluster_id}{$species} }) {
-            #1:125929-131075(+)
+        foreach $coords_id (@{ $segment{$cluster_id}{$species} }) {
+            $BEDcoords = $coords_id; #1:125929-131075(+)
             $BEDcoords =~ s/[:]/\t/;
             $BEDcoords =~ s/-/\t/;
             $BEDcoords =~ s/[\(\)]//g;
@@ -393,9 +393,53 @@ foreach $species (@supported_species) {
     print "# $outFASTAfile : $num_segments genomic segments\n";
 } print "\n"; 
 
+# 2.2) print clusters of (supporting) genomic sequences
 
-# Get and parse FASTA files to get sequences & headers 
-# Note: there are often several sequences for the same gene
+foreach $sp (@supported_species) {
+
+    $filename = "$seqfolder$sp$SEQEXT{'gdna'}";
+    if(!-s $filename){
+        die "# ERROR: cannot find sequence file $filename\n";
+    }
+
+    my $ref_fasta = parse_GETFASTA_file( $filename, $sp );
+
+    foreach $coords_id ( keys(%$ref_fasta) ) {
+        $segment_sequence{$sp}{$coords_id} = $ref_fasta->{$coords_id};
+    }
+
+    # log
+    open(INLOG,">>","$outfolder/input.log") ||
+        die "# ERROR: cannot create $outfolder/input.log\n";
+    print INLOG "$filename\n";
+    close(INLOG);
+}
+
+foreach $cluster_id (@cluster_ids) {
+
+    next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
+
+    $filename = $cluster_id;
+
+    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
+        || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";
+
+    foreach $species (@supported_species) {
+        next if ( !$segment{$cluster_id}{$species} );
+
+        foreach $coords_id ( @{ $segment{$cluster_id}{$species} } ) {
+            print CLUSTER $segment_sequence{$species}{$coords_id};
+        }
+
+        $segment_species{$cluster_id}++;
+    }
+    close(CLUSTER);
+}
+
+%segment_sequence = (); # not needed anymore, might be bulky
+
+# 2.3) Parse FASTA files to get main cluster sequences (@SEQTYPE)
+# Note: there might be 1+ sequences for the same gene, same species in GFF
 foreach $sp (@supported_species) {
 
     foreach $seqtype (@SEQTYPE) {
@@ -425,7 +469,7 @@ foreach $sp (@supported_species) {
     }
 }
 
-# add unaligned sequences as singletons 
+# 2.4) add unaligned sequences as singletons 
 my $total_seqs = 0;
 foreach $sp (@supported_species) {
 
@@ -458,7 +502,7 @@ printf( "\n# total sequences = %d\n\n", $total_seqs );
 
 
 
-## 3) write sequence clusters, summary text file and POCS matrix
+## 3) write main sequence clusters, summary text file and POCS matrix
 
 # POCS=Percent Conserved Sequences (POCS) matrix
 my $POCS_matrix_file = "$outfolder/POCS.matrix$params\.tab";
@@ -556,7 +600,9 @@ printf( "\n# number of clusters = %d (core = %d)\n\n",
 print "# cluster_list = $outfolder/$clusterdir.cluster_list\n";
 print "# cluster_directory = $outfolder/$clusterdir\n";
 
-# print POCS matrix
+
+# 3.1) print POCS matrix #########################################
+
 open( POCSMATRIX, ">$POCS_matrix_file" )
   || die "# EXIT: cannot create $POCS_matrix_file\n";
 
@@ -844,6 +890,33 @@ sub parse_sequence_FASTA_file {
 
     return ( \@geneids, \%fasta );
 }
+
+# Takes the name string of a FASTA file created by bedtools getfasta
+# and parses the sequences in there. Assumes the following header
+# format: ">chr:start-end(strand)"
+# Returns:
+# i) ref to hash with FASTA strings with coord as keys
+sub parse_GETFASTA_file {
+
+    my ( $fname, $species_name ) = @_;
+    my ( $geneid, %fasta );
+
+    open(FASTA,"<",$fname) ||
+        die "# ERROR(parse_GETFASTA_file): cannot read $fname\n";
+    while(<FASTA>){
+        if(/^>(\S+)/){
+            chomp;
+            $geneid = $1;
+            $fasta{$geneid} = "$_ [$species_name]\n";
+        } else {
+            $fasta{$geneid} .= $_;
+        }
+    }
+    close(FASTA);
+
+    return \%fasta;
+}
+
 
 
 sub factorial {

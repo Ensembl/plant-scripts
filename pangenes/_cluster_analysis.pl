@@ -353,7 +353,8 @@ foreach $cluster_id (@cluster_ids) {
     }
 }
 
-# Write BED & FASTA files with genomic segments (gdna), one per species
+# Write BED & FASTA files with genomic segments (gdna), one per species,
+# and store them in hashes with species,coords as keys
 foreach $species (@supported_species) {
 
     my $num_segments = 0;
@@ -422,9 +423,6 @@ foreach $sp (@supported_species) {
         print INLOG "$filename\n";
         close(INLOG);
     }
-
-    # parse also genomic segments (.gdna.fna)
-    
 }
 
 # add unaligned sequences as singletons 
@@ -457,6 +455,7 @@ foreach $sp (@supported_species) {
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
+
 
 
 ## 3) write sequence clusters, summary text file and POCS matrix

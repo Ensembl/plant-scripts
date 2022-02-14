@@ -14,16 +14,18 @@ use Getopt::Long qw(:config no_ignore_case);
 # ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f folder \
 #   -s rices4_pangenes/ -r Oryza_sativa.IRGSP-1.0 -g 8 -t 3
 
+my $BEDTOOLSEXE = 'bedtools';
 my $TRANSPOSEXE =
 'perl -F\'\t\' -ane \'$F[$#F]=~s/\n//g;$r++;for(1 .. @F){$m[$r][$_]=$F[$_-1]};'
   . '$mx=@F;END{for(1 .. $mx){for $t(1 .. $r){print"$m[$t][$_]\t"}print"\n"}}\'';
 
 # these globals match sequence type to extension
-my @SEQTYPE = qw( cds pep cdna ); # Note cdna goes last
+my @SEQTYPE = qw( cds pep cdna ); #gdna );
 my %SEQEXT = (
+    'gdna' => '.gdna.fna',
     'cdna' => '.cdna.fna',
-    'cds' => '.cds.fna',
-    'pep' => '.cds.faa'
+    'cds'  => '.cds.fna',
+    'pep'  => '.cds.faa'
 );
 
 # genome composition report
@@ -66,7 +68,7 @@ sub help_message {
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
       . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      . "-s folder with gene seqs of species in TSV (optional, default current folder)\n"
+      . "-s folder with gene seqs of species in TSV (optional, default current folder, files created by _cut_sequences.pl)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
@@ -158,6 +160,15 @@ else {
     }
 }
 
+# check binaries
+if(!$bedtools_path) { 
+    $bedtools_path = $BEDTOOLSEXE
+} 
+if(`$bedtools_path` !~ 'sage') {
+        print "# ERROR: cannot find binary file $bedtools_path , exit\n";
+        exit(-1)
+}
+
 ## 1) check (supported) species in TSV file(s)
 
 foreach $infile (@infiles){
@@ -209,7 +220,7 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) parse pairs of collinear genes and make up clusters 
 
-my ( $cluster_id, $chr, $seqtype ) = ( 0, '' );
+my ( $cluster_id, $chr, $seqtype, $BEDcoords ) = ( 0, '' );
 my ( $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids );
 my ( $ref_geneid, $ref_fasta );
@@ -319,9 +330,13 @@ foreach $infile (@infiles) {
             }
 
             # save genomic coords for both sequences in %segment,
-            # each entry in %cluster maps to one entry in %segment
-            push( @{ $segment{$cluster_id}{$species} }, $coords );
-            push( @{ $segment{$cluster_id}{$segment_species} }, $segment_coords );
+            # Note: each %cluster maps to one %segment
+            if(!$segment{$cluster_id}{$species}) {
+                push( @{ $segment{$cluster_id}{$species} }, $coords );
+            }
+            if(!$segment{$cluster_id}{$segment_species}) {
+                push( @{ $segment{$cluster_id}{$segment_species} }, $segment_coords );
+            }
         }
     }
     close(TSV); 
@@ -335,6 +350,42 @@ foreach $cluster_id (@cluster_ids) {
         }
     }
 }
+
+# Write BED & FASTA files with genomic segments (gdna), one per species
+foreach $species (@supported_species) {
+
+    my $num_segments = 0;
+
+    # write BED
+    $filename = "$seqfolder$species.gdna.bed";
+    open(GDNA,">",$filename) ||
+        die "# ERROR: cannot create $filename\n";
+
+    foreach $cluster_id (@cluster_ids) {
+        foreach $BEDcoords (@{ $segment{$cluster_id}{$species} }) {
+            $BEDcoords =~ s/[:-]/\t/g;
+            print GDNA "$BEDcoords\n";
+            $num_segments++;
+        }
+    }
+    close(GDNA);
+
+    # extract segments with help from bedtools
+    my $FASTAgenome_file = "$seqfolder\_$species.fna";
+    my $outFASTAfile = "$seqfolder$species.gdna.fna";
+    my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -fo $outFASTAfile"; 
+    system("$cmd");
+    sleep(2); #latency issues
+    if ( $? != 0 ) {
+        die "# ERROR: failed running bedtools ($cmd)\n";
+    }
+    elsif ( !-s $outFASTAfile ) {
+        die "# ERROR: failed generating $outFASTAfile file ($cmd)\n";
+    }
+
+    print "# $outFASTAfile : $num_segments genomic segments\n";
+} print "\n"; 
+
 
 # Get and parse FASTA files to get sequences & headers 
 # Note: there are often several sequences for the same gene

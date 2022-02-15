@@ -144,7 +144,7 @@ else {
     }
 
     print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES ".
-      "-v $verbose -t $min_taxa -R $RNDSEED\n";
+      "-v $verbose -t $min_taxa -R $RNDSEED -B $bedtools_path\n";
 
     print "# ";
     foreach $infile (@infiles) {

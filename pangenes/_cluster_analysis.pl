@@ -220,7 +220,7 @@ print "# total selected species : $n_of_species\n\n";
 
 ## 2) parse pairs of collinear genes and make up clusters 
 
-my ( $cluster_id, $chr, $seqtype, $BEDcoords, $coords_id ) = ( 0, '' );
+my ( $cluster_id, $chr, $seqtype, $coords_id ) = ( 0, '' );
 my ( $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
 my ( $ref_geneid, $ref_fasta, $segment_cluster, $num_segments );
@@ -368,13 +368,13 @@ foreach $species (@supported_species) {
     foreach $cluster_id (@cluster_ids) {
         next if(!$segment{$cluster_id} || !$segment{$cluster_id}{$species});
         foreach $coords_id (@{ $segment{$cluster_id}{$species} }) {
-            $BEDcoords = $coords_id; #1:125929-131075(+)
-            $BEDcoords =~ s/[:]/\t/;
-            $BEDcoords =~ s/-/\t/;
-            $BEDcoords =~ s/[\(\)]//g;
-            $BEDcoords =~ s/([+-])$/\tNA\t0\t$1/g;
-            print GDNA "$BEDcoords\n";
-            $num_segments++;
+
+            #1:125929-131075(+)
+            #UN-Ctg123:12-1234(-)
+            if($coords_id =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
+                print GDNA "$1\t$2\t$3\tNA\t0\t$4\n";
+                $num_segments++;
+            }
         }
     }
     close(GDNA);

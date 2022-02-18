@@ -66,7 +66,7 @@ sub help_message {
       . "-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n"
       . "-l list supported species in -T file       (optional, example: -l)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
-      . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files)\n" 
+      . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files, ignores -t)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-s folder with gene seqs of species in TSV (optional, default current folder, files created by _cut_sequences.pl)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
@@ -351,7 +351,7 @@ foreach $cluster_id (@cluster_ids) {
             $totalclusters{$species}++;
         }
     }
-} 
+}  
 
 
 # 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
@@ -382,14 +382,17 @@ foreach $species (@supported_species) {
     # extract segments with help from bedtools
     my $FASTAgenome_file = "$seqfolder\_$species.fna";
     my $outFASTAfile = "$seqfolder$species.gdna.fna";
-    my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile"; 
-    system("$cmd");
-    sleep(2); #latency issues
-    if ( $? != 0 ) {
-        die "# ERROR: failed running bedtools ($cmd)\n";
-    }
-    elsif ( !-s $outFASTAfile ) {
-        die "# ERROR: failed generating $outFASTAfile file ($cmd)\n";
+
+    if($num_segments) {
+        my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile"; 
+        system("$cmd");
+        sleep(2); #latency issues
+        if ( $? != 0 ) {
+            die "# ERROR: failed running bedtools ($cmd)\n";
+        }
+        elsif ( !-s $outFASTAfile ) {
+            die "# ERROR: failed generating $outFASTAfile file ($cmd)\n";
+        }
     }
 
     print "# $outFASTAfile : $num_segments genomic segments\n";
@@ -401,7 +404,8 @@ foreach $sp (@supported_species) {
 
     $filename = "$seqfolder$sp$SEQEXT{'gdna'}";
     if(!-s $filename){
-        die "# ERROR: cannot find sequence file $filename\n";
+        print "# WARN: cannot find sequence file $filename, skip it\n" if($verbose);
+        next;
     }
 
     my $ref_fasta = parse_GETFASTA_file( $filename, $sp );
@@ -759,10 +763,8 @@ close(PANGEMATRIF);
 system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
-print
-  "# pangene_file (occup) = $pangene_matrix_file tranposed = $pangene_matrix_tr\n";
-print
-  "# pangene_file (names) = $pangene_gene_file transposed = $pangene_gene_tr\n";
+print "# pangene_file (occup) = $pangene_matrix_file tranposed = $pangene_matrix_tr\n";
+print "# pangene_file (names) = $pangene_gene_file transposed = $pangene_gene_tr\n";
 #print "# pangene_FASTA_file = $pangene_fasta_file\n";
 
 exit if(!$dogrowth);

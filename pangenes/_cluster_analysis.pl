@@ -421,7 +421,7 @@ foreach $cluster_id (@cluster_ids) {
 
     next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa || !$segment{$cluster_id});
 
-    $filename = $cluster_id;
+    $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
     $segment_cluster = '';
 
     foreach $species (@supported_species) {
@@ -532,7 +532,7 @@ foreach $cluster_id (@cluster_ids) {
         my ( %cluster_stats, @cluster_species );
         $n_cluster_sp = $n_cluster_seqs = 0;
 
-        $filename = $cluster_id;
+        $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
 
         # write sequences and count sequences
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
@@ -572,7 +572,7 @@ foreach $cluster_id (@cluster_ids) {
             $num_segments = $segment_species{$cluster_id} || 'NA'; 
 
             print CLUSTER_LIST
-              "cluster $cluster_id size=$n_cluster_seqs taxa=$n_cluster_sp taxa(gdna)=$num_segments ".
+              "cluster $filename size=$n_cluster_seqs taxa=$n_cluster_sp taxa(gdna)=$num_segments ".
               "cdnafile: $filename$SEQEXT{$seqtype} cdsfile: $cdsfile pepfile: $pepfile gdnafile=$gdnafile\n"; 
 
             foreach $species (@cluster_species) {
@@ -691,7 +691,8 @@ print PANGEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (keys(%sorted_cluster_ids)) {
     print PANGEMATRIX "\tchr$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
-        print PANGEMATRIX "\t$cluster_id"; 
+        $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+        print PANGEMATRIX "\t$filename"; 
     }
 }	
 print PANGEMATRIX "\n";
@@ -700,7 +701,8 @@ print PANGENEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (keys(%sorted_cluster_ids)) {
     print PANGENEMATRIX "\tchr$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
-        print PANGENEMATRIX "\t$cluster_id"; 
+        $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+        print PANGENEMATRIX "\t$filename"; 
     }
 }	
 print PANGENEMATRIX "\n";

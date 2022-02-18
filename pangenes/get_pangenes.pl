@@ -512,6 +512,7 @@ foreach $infile (@inputfiles) {
       "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR"; #die $command; 
 
     if($runmode eq 'cluster') {
+      unlink($clusteroutfile);
       submit_cluster_job("cut$infile",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
           $command =~ s/\\//g;
@@ -713,6 +714,7 @@ foreach $tx1 (0 .. $#taxa) {
   } #print "$taxon $command\n";
 
   if($runmode eq 'cluster') {
+    unlink($clusteroutfile);
     submit_cluster_job("idx$taxon",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
   } elsif($runmode eq 'dryrun') {
     $command =~ s/\\//g;
@@ -789,6 +791,7 @@ foreach $tx1 (0 .. $#taxa-1) {
     } #die $command;
 
     if($runmode eq 'cluster') {
+      unlink($clusteroutfile);
       submit_cluster_job($taxon.$taxon2,$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
       $command =~ s/\\//g;
@@ -877,6 +880,7 @@ if( -e $outfolder ) {
 }  
 
 if($runmode eq 'cluster') {
+  unlink($clusteroutfile);
   submit_cluster_job("clust$reference_name",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
 } elsif($runmode eq 'dryrun') {
   $command =~ s/\\//g;

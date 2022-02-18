@@ -421,7 +421,10 @@ foreach $cluster_id (@cluster_ids) {
 
     next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa || !$segment{$cluster_id});
 
-    $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+    if($cluster{$cluster_id}{$ref_genome}) {
+        $filename = $cluster{$cluster_id}{$ref_genome}[0]
+    } else { $filename = $cluster_id }
+
     $segment_cluster = '';
 
     foreach $species (@supported_species) {
@@ -530,9 +533,11 @@ foreach $cluster_id (@cluster_ids) {
     foreach $seqtype (@SEQTYPE) {
 
         my ( %cluster_stats, @cluster_species );
-        $n_cluster_sp = $n_cluster_seqs = 0;
+        ($n_cluster_sp, $n_cluster_seqs) = (0, 0);
 
-        $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+        if($cluster{$cluster_id}{$ref_genome}) {
+            $filename = $cluster{$cluster_id}{$ref_genome}[0]
+        } else { $filename = $cluster_id }
 
         # write sequences and count sequences
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
@@ -557,7 +562,7 @@ foreach $cluster_id (@cluster_ids) {
         close(CLUSTER);
 
         # cluster summary and PCOP update
-	# done with cDNAs, after cds & pep have been processed
+	# done with cDNAs, after gdna, cds & pep files have been created
         if($seqtype eq 'cdna'){
             @cluster_species = keys(%cluster_stats);
 
@@ -570,6 +575,7 @@ foreach $cluster_id (@cluster_ids) {
             if ( !-s "$outfolder/$clusterdir/$gdnafile" ) { $gdnafile = 'void' }
 
             $num_segments = $segment_species{$cluster_id} || 'NA'; 
+            $n_cluster_sp = scalar(@cluster_species);
 
             print CLUSTER_LIST
               "cluster $filename size=$n_cluster_seqs taxa=$n_cluster_sp taxa(gdna)=$num_segments ".

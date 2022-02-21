@@ -469,7 +469,6 @@ printf( "\n# total sequences = %d\n\n", $total_seqs );
 
 
 # 2.4) create and print shadow clusters of genomic sequences
-my ($segment_seqs_OK);
 foreach $cluster_id (@cluster_ids) {
 
     next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
@@ -478,27 +477,45 @@ foreach $cluster_id (@cluster_ids) {
         $filename = $cluster{$cluster_id}{$ref_genome}[0]
     } else { $filename = $cluster_id }
 
+    my ($new,%seen) = (0);
     $segment_cluster = '';
 
     foreach $species (@supported_species) {
         next if ( !$cluster{$cluster_id}{$species} );
 
-        $segment_seqs_OK = 0;
+        my $segment_seqs_OK = 0;
         foreach $stable_id (@{ $cluster{$cluster_id}{$species} }) {
             next if(!$segment{$stable_id}{$species});
 
-            $coords_id = $segment{$stable_id}{$species};
-            $segment_cluster .= $segment_sequence{$species}{$coords_id};
-            $segment_seqs_OK++;
+            # sp1, found both in cluster and in segment pair
+            if(!$seen{$species}) {
+                $coords_id = $segment{$stable_id}{$species};
+                $segment_cluster .= $segment_sequence{$species}{$coords_id};
+                $segment_seqs_OK++;
+                $seen{$species}=1;
+            }
+
+            # sp2, which might be missing from cluster
+            foreach $sp (@supported_species) { 
+                next if(!$segment{$stable_id}{$sp} || $seen{$sp});
+                $coords_id = $segment{$stable_id}{$sp};
+                $segment_cluster .= $segment_sequence{$sp}{$coords_id};
+                $segment_seqs_OK++;
+                $seen{$sp}=1;
+                if(!$cluster{$cluster_id}{$sp}) {
+                    $new++  
+                }
+                last;
+            }
         }    
 
         if($segment_seqs_OK) {
-            $segment_species{$cluster_id}++;
+            $segment_species{$cluster_id} += $segment_seqs_OK;
         }
     } 
 
     # these are regular clusters; genuine segments have 2+ species 
-    if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2) {
+    if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2 || $new < 1) {
         $segment_species{$cluster_id} = 0;
         next;
     }  
@@ -541,10 +558,6 @@ foreach $cluster_id (@cluster_ids) {
         if($cluster{$cluster_id}{$ref_genome}) {
             $filename = $cluster{$cluster_id}{$ref_genome}[0]
         } else { $filename = $cluster_id }
-
-        #if ( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $n_of_species ) {
-        #    print "noncore $filename\n";
-        #}
 
         # write sequences and count sequences
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
@@ -640,8 +653,7 @@ foreach $sp ( 0 .. $#supported_species ) {
 
         if ( $sp == $sp2 ) { 
             print POCSMATRIX "\t100.00"
-        }
-        else {
+        } else {
             if ( $POCS_matrix{ $supported_species[$sp] }
                 { $supported_species[$sp2] } )
             {

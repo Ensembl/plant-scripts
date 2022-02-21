@@ -307,6 +307,7 @@ foreach $infile (@infiles) {
                 if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
                     print "# WARN: possibly conflicting clusters for $cluster_id & $incluster{$hom_gene_stable_id}\n";
                     # TODO: merge clusters? Would require a hash of merged cluster_ids
+                    # downside: will inflate core subset
                 }
             }
                 
@@ -496,6 +497,7 @@ foreach $cluster_id (@cluster_ids) {
         }
     } 
 
+    # these are regular clusters; genuine segments have 2+ species 
     if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2) {
         $segment_species{$cluster_id} = 0;
         next;
@@ -539,6 +541,10 @@ foreach $cluster_id (@cluster_ids) {
         if($cluster{$cluster_id}{$ref_genome}) {
             $filename = $cluster{$cluster_id}{$ref_genome}[0]
         } else { $filename = $cluster_id }
+
+        #if ( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $n_of_species ) {
+        #    print "noncore $filename\n";
+        #}
 
         # write sequences and count sequences
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
@@ -821,8 +827,8 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
     print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n"
         if ($verbose);
 
-    #for ( $sp = 1 ; $sp < $n_of_species ; $sp++ ) {
-    for ( $sp = 1 ; $sp < 2 ; $sp++ ) {
+    for ( $sp = 1 ; $sp < $n_of_species ; $sp++ ) {
+
         $coregenome[$s][$sp] = 0;
         $pangenome[$s][$sp]  = $pangenome[$s][ $sp - 1 ];
         $core_occup          = $sp + 1;
@@ -831,31 +837,25 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
             foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
 
                 # check reference species is in this cluster (1st iteration only)
-                if ( $sp == 1 && $cluster{$cluster_id}{ $tmptaxa[0] } ) {
-                     $n_of_taxa_in_cluster{$cluster_id}++;
+                if ( $sp == 1 && $cluster{$cluster_id}{ $tmptaxa[0] } && 
+                    scalar(@{ $cluster{$cluster_id}{ $tmptaxa[0] } }) > 0 ) {
+                    $n_of_taxa_in_cluster{$cluster_id}++
                 }
 
-                # check $sp is in this cluster
-                if ( $cluster{$cluster_id}{ $tmptaxa[$sp] } ) {
-                    $n_of_taxa_in_cluster{$cluster_id}++;
+                # check $sp is represented in this cluster
+                if ( $cluster{$cluster_id}{ $tmptaxa[$sp] } &&
+                    scalar(@{ $cluster{$cluster_id}{ $tmptaxa[$sp] } }) > 0 ) {
+                    $n_of_taxa_in_cluster{$cluster_id}++
                 }
 
-                # check cluster occupancy
-                if ( $n_of_taxa_in_cluster{$cluster_id}
-                    && $cluster{$cluster_id}{ $tmptaxa[$sp] } ) {
-
-		#	foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$tmptaxa[$sp]} } ) {
-                #    print "$cluster_id $tmptaxa[$sp] $gene_stable_id $n_of_taxa_in_cluster{$cluster_id}\n";
-                #}
-
+                # work out cluster occupancy
+                if ( $n_of_taxa_in_cluster{$cluster_id} &&
+                    $cluster{$cluster_id}{ $tmptaxa[$sp] } &&
+                    scalar(@{ $cluster{$cluster_id}{ $tmptaxa[$sp] } }) > 0 ) {
 
                     # core genes must contain all previously seen species
                     if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {
                         $coregenome[$s][$sp]++;
-                        #print "$chr $cluster_id $core_occup \n";
-
-                        #foreach $species (keys(%{ $cluster{$cluster_id} })){ print "$species, " } print " $core_occup $cluster_id\n";
-
 
                     }    # pan genes must be novel to this species
                     elsif ( $n_of_taxa_in_cluster{$cluster_id} == 1 ) {
@@ -866,8 +866,8 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
         }
 
         print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n"
-          if ($verbose); exit;
-    }
+          if ($verbose); 
+    } 
 }
 
 # write genome composition stats to boxplot files

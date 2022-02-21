@@ -246,9 +246,8 @@ my (
     $coordinates
 );
 
-# Iteratively get and parse TSV files that define pairs of collinear 
-# genes computed with _collinear_genes. 
-# Clusters emerge after parsing all pairwise TSV files
+# Iteratively get & parse TSV files that define pairs of collinear genes (made with _collinear_genes.pl) 
+# Note: Clusters emerge after parsing all pairwise TSV files, see heuristic below
 foreach $infile (@infiles) {
 
     open(TSV, "<", $infile)

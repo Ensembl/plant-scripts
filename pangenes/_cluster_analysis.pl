@@ -303,6 +303,9 @@ foreach $infile (@infiles) {
                 );
             } else {
                 # $hom_species gene already clustered (same or different cluster)
+                if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
+                    print "# WARN: $cluster_id & $incluster{$hom_gene_stable_id} might belong to same cluster\n";
+                }
             }
                 
         } elsif($homology_type =~ m/segment_collinear/) {
@@ -491,7 +494,10 @@ foreach $cluster_id (@cluster_ids) {
         }
     } 
 
-    next if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2); 
+    if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2) {
+        $segment_species{$cluster_id} = 0;
+        next;
+    } 
 
     open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
         || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";

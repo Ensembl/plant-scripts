@@ -306,6 +306,7 @@ foreach $infile (@infiles) {
                 # $hom_species gene already clustered (same or different cluster)
                 if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
                     print "# WARN: possibly conflicting clusters for $cluster_id & $incluster{$hom_gene_stable_id}\n";
+                    # TODO: merge clusters?
                 }
             }
                 
@@ -465,8 +466,8 @@ foreach $species (@supported_species) {
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
-# 2.4) create and print shadow clusters of genomic sequences
 
+# 2.4) create and print shadow clusters of genomic sequences
 my ($segment_seqs_OK);
 foreach $cluster_id (@cluster_ids) {
 
@@ -498,7 +499,7 @@ foreach $cluster_id (@cluster_ids) {
     if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2) {
         $segment_species{$cluster_id} = 0;
         next;
-    } 
+    }  
 
     open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
         || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";

@@ -248,6 +248,7 @@ my (
 
 # Iteratively get & parse TSV files that define pairs of collinear genes (made with _collinear_genes.pl) 
 # Note: Clusters emerge after parsing all pairwise TSV files, see heuristic below
+print "# parsing TSV files\n";
 foreach $infile (@infiles) {
 
     open(TSV, "<", $infile)
@@ -304,7 +305,7 @@ foreach $infile (@infiles) {
             } else {
                 # $hom_species gene already clustered (same or different cluster)
                 if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
-                    print "# WARN: $cluster_id & $incluster{$hom_gene_stable_id} might belong to same cluster\n";
+                    print "# WARN: possibly conflicting clusters for $cluster_id & $incluster{$hom_gene_stable_id}\n";
                 }
             }
                 
@@ -330,7 +331,7 @@ foreach $infile (@infiles) {
         }
     }
     close(TSV);
-}  
+} print "\n";  
 
 # count how many clusters include each species
 foreach $cluster_id (@cluster_ids) {

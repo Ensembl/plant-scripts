@@ -221,10 +221,10 @@ print "# total selected species : $n_of_species\n\n";
 ## 2) parse pairs of collinear genes and make up clusters 
 
 my ( $cluster_id, $chr, $seqtype, $coords_id ) = ( 0, '' );
-my ( $stable_id, $segment_species, $coords, $segment_coords );
+my ( $line, $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
 my ( $ref_geneid, $ref_fasta, $segment_cluster, $num_segments );
-my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
+my ( %incluster, %cluster, %coords, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %POCS_matrix );
 my ( %sorted_ids, %id2chr );
 
@@ -253,7 +253,7 @@ foreach $infile (@infiles) {
 
     open(TSV, "<", $infile)
       || die "# ERROR: cannot open $infile\n";
-    while ( my $line = <TSV> ) {
+    while ( $line = <TSV> ) {
 
         (
             $gene_stable_id,     $prot_stable_id, $species,
@@ -275,8 +275,7 @@ foreach $infile (@infiles) {
 
                     # use existing cluster_id from other species ortholog
                     $cluster_id = $incluster{$hom_gene_stable_id};
-                }
-                else {
+                } else {
 
                     # otherwise create a new one
                     $cluster_id = $gene_stable_id;
@@ -288,8 +287,7 @@ foreach $infile (@infiles) {
 
                 push( @{ $cluster{$cluster_id}{$species} }, $gene_stable_id );
 
-            }
-            else {
+            } else {
                 # set cluster for $hom_species anyway
                 $cluster_id = $incluster{$gene_stable_id};
             } 
@@ -300,8 +298,7 @@ foreach $infile (@infiles) {
                 # record to which cluster this gene belongs
                 $incluster{$hom_gene_stable_id} = $cluster_id;
 
-                push(
-                    @{ $cluster{$cluster_id}{$hom_species} },
+                push( @{ $cluster{$cluster_id}{$hom_species} },
                     $hom_gene_stable_id
                 );
             }
@@ -309,7 +306,7 @@ foreach $infile (@infiles) {
 
             chomp($coordinates);
 
-            # find out to which cluster this gene-segment pair belongs
+            # record coords of this gene-segment pair
             if($prot_stable_id eq 'segment') {
                 $stable_id = $hom_gene_stable_id;
                 $segment_species = $species;
@@ -321,24 +318,9 @@ foreach $infile (@infiles) {
                 ($coords, $segment_coords) = split(/;/,$coordinates); 
             }
 
-            if ( !$incluster{$stable_id} ) {
-                $cluster_id = $stable_id;
-                push( @cluster_ids, $cluster_id );
-                $incluster{$stable_id} = $cluster_id;
-                push( @{ $cluster{$cluster_id}{$species} }, $stable_id );
-            }
-            else {
-                $cluster_id = $incluster{$stable_id};
-            }
-
-            # save genomic coords for both sequences in %segment,
-            # Note: each %cluster maps to one %segment
-            if(!$segment{$cluster_id}{$species}) {
-                push( @{ $segment{$cluster_id}{$species} }, $coords );
-            }
-            if(!$segment{$cluster_id}{$segment_species}) {
-                push( @{ $segment{$cluster_id}{$segment_species} }, $segment_coords );
-            }
+            # assign coords to stable_id
+            $segment{$stable_id}{$species} = $coords;
+            $segment{$stable_id}{$segment_species} = $segment_coords;
         }
     }
     close(TSV);
@@ -365,19 +347,19 @@ foreach $species (@supported_species) {
     open(GDNA,">",$filename) ||
         die "# ERROR: cannot create $filename\n";
 
-    foreach $cluster_id (@cluster_ids) {
-        next if(!$segment{$cluster_id} || !$segment{$cluster_id}{$species});
-        foreach $coords_id (@{ $segment{$cluster_id}{$species} }) {
+    foreach $stable_id (keys(%segment)) {
 
-            #1:125929-131075(+)
-            #UN-Ctg123:12-1234(-)
-            if($coords_id =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
-                print GDNA "$1\t$2\t$3\tNA\t0\t$4\n";
-                $num_segments++;
-            }
+        next if(!defined($segment{$stable_id}{$species}));
+
+        #1:125929-131075(+)
+        #UN-Ctg123:12-1234(-)
+        $coords_id = $segment{$stable_id}{$species};
+        if($coords_id =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
+            print GDNA "$1\t$2\t$3\tNA\t0\t$4\n";
+            $num_segments++;
         }
     }
-    close(GDNA);
+    close(GDNA); 
 
     # extract segments with help from bedtools
     my $FASTAgenome_file = "$seqfolder\_$species.fna";
@@ -386,7 +368,6 @@ foreach $species (@supported_species) {
     if($num_segments) {
         my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile"; 
         system("$cmd");
-        sleep(2); #latency issues
         if ( $? != 0 ) {
             die "# ERROR: failed running bedtools ($cmd)\n";
         }
@@ -396,22 +377,17 @@ foreach $species (@supported_species) {
     }
 
     print "# $outFASTAfile : $num_segments genomic segments\n";
-} print "\n";
 
-
-# 2.2) print clusters of (supporting) genomic sequences
-foreach $sp (@supported_species) {
-
-    $filename = "$seqfolder$sp$SEQEXT{'gdna'}";
+    $filename = "$seqfolder$species$SEQEXT{'gdna'}";
     if(!-s $filename){
         print "# WARN: cannot find sequence file $filename, skip it\n" if($verbose);
         next;
     }
 
-    my $ref_fasta = parse_GETFASTA_file( $filename, $sp );
+    my $ref_fasta = parse_GETFASTA_file( $filename, $species );
 
     foreach $coords_id ( keys(%$ref_fasta) ) {
-        $segment_sequence{$sp}{$coords_id} = $ref_fasta->{$coords_id};
+        $segment_sequence{$species}{$coords_id} = $ref_fasta->{$coords_id};
     }
 
     # log
@@ -419,57 +395,30 @@ foreach $sp (@supported_species) {
         die "# ERROR: cannot create $outfolder/input.log\n";
     print INLOG "$filename\n";
     close(INLOG);
-}
+} print "\n";
 
-foreach $cluster_id (@cluster_ids) {
 
-    next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa || !$segment{$cluster_id});
-
-    if($cluster{$cluster_id}{$ref_genome}) {
-        $filename = $cluster{$cluster_id}{$ref_genome}[0]
-    } else { $filename = $cluster_id }
-
-    $segment_cluster = '';
-
-    foreach $species (@supported_species) {
-        next if ( !$segment{$cluster_id}{$species} );
-
-        foreach $coords_id ( @{ $segment{$cluster_id}{$species} } ) {
-            $segment_cluster .= $segment_sequence{$species}{$coords_id};
-        }
-
-        $segment_species{$cluster_id}++;
-    }
-
-    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
-        || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";
-    print CLUSTER $segment_cluster;
-    close(CLUSTER);
-}
-
-%segment_sequence = (); # not needed anymore, might be bulky
-
-# 2.3) Parse FASTA files to get main cluster sequences (@SEQTYPE)
+# 2.2) Parse FASTA files to get main cluster sequences (@SEQTYPE)
 # Note: there might be 1+ sequences for the same gene, same species in GFF
-foreach $sp (@supported_species) {
+foreach $species (@supported_species) {
 
     foreach $seqtype (@SEQTYPE) {
 
-        $filename = "$seqfolder$sp$SEQEXT{$seqtype}";
+        $filename = "$seqfolder$species$SEQEXT{$seqtype}";
         if(!-s $filename){
             die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
         }
 
         ( $ref_geneid, $ref_fasta ) = parse_sequence_FASTA_file( $filename );
 
-        $sorted_ids{$sp} = $ref_geneid;
+        $sorted_ids{$species} = $ref_geneid;
 
         # count number of genes in this species
-        $totalgenes{$sp} = scalar(@$ref_geneid);
+        $totalgenes{$species} = scalar(@$ref_geneid);
 
         # save these sequences
         foreach $gene_stable_id ( @$ref_geneid ) {
-            $sequence{$sp}{$gene_stable_id}{$seqtype} = $ref_fasta->{$gene_stable_id};
+            $sequence{$species}{$gene_stable_id}{$seqtype} = $ref_fasta->{$gene_stable_id};
         }
 
         # log
@@ -480,40 +429,78 @@ foreach $sp (@supported_species) {
     }
 }
 
-# 2.4) add unaligned sequences as singletons 
+# 2.3) add unaligned sequences as singletons 
 my $total_seqs = 0;
-foreach $sp (@supported_species) {
+foreach $species (@supported_species) {
 
     my $singletons = 0;
 
-    foreach $gene_stable_id ( @{ $sorted_ids{$sp} } ) {
+    foreach $gene_stable_id ( @{ $sorted_ids{$species} } ) {
         
         next if ( $NOSINGLES || $incluster{$gene_stable_id} );
-        # print $gene_stable_id; exit;
 
         # create new cluster
         $cluster_id = $gene_stable_id;
         $incluster{$gene_stable_id} = $cluster_id;
 
-        push( @{ $cluster{$cluster_id}{$sp} }, $gene_stable_id );
-        push( @cluster_ids,                    $cluster_id );
+        push( @{ $cluster{$cluster_id}{$species} }, $gene_stable_id );
+        push( @cluster_ids, $cluster_id );
 
         # add this singleton to total clusters
-        $totalclusters{$sp}++;
+        $totalclusters{$species}++;
         $singletons++;
     }
 
-    $total_seqs += $totalgenes{$sp};
+    $total_seqs += $totalgenes{$species};
 
     printf( "# %s : sequences = %d clusters = %d (singletons = %d)\n",
-        $sp, $totalgenes{$sp}, $totalclusters{$sp}, $singletons );
+        $species, $totalgenes{$species}, $totalclusters{$species}, $singletons );
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
+# 2.4) create and print shadow clusters of genomic sequences
+
+my ($segment_seqs_OK);
+foreach $cluster_id (@cluster_ids) {
+
+    next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
+
+    if($cluster{$cluster_id}{$ref_genome}) {
+        $filename = $cluster{$cluster_id}{$ref_genome}[0]
+    } else { $filename = $cluster_id }
+
+    $segment_cluster = '';
+
+    foreach $species (@supported_species) {
+        next if ( !$cluster{$cluster_id}{$species} );
+
+        $segment_seqs_OK = 0;
+        foreach $stable_id (@{ $cluster{$cluster_id}{$species} }) {
+            next if(!$segment{$stable_id}{$species});
+
+            $coords_id = $segment{$stable_id}{$species};
+            $segment_cluster .= $segment_sequence{$species}{$coords_id};
+            $segment_seqs_OK++;
+        }    
+
+        if($segment_seqs_OK) {
+            $segment_species{$cluster_id}++;
+        }
+    } 
+
+    next if(!$segment_species{$cluster_id} || $segment_species{$cluster_id} < 2); 
+
+    open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{'gdna'}" )
+        || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{'gdna'}\n";
+    print CLUSTER $segment_cluster;
+    close(CLUSTER);
+} 
+
+%segment_sequence = (); # not needed anymore
 
 
-## 3) write main sequence clusters, summary text file and POCS matrix
+# 3) write main sequence clusters, summary text file and POCS matrix
 
 # POCS=Percent Conserved Sequences (POCS) matrix
 my $POCS_matrix_file = "$outfolder/POCS.matrix$params\.tab";
@@ -579,7 +566,6 @@ foreach $cluster_id (@cluster_ids) {
             if ( !-s "$outfolder/$clusterdir/$gdnafile" ) { $gdnafile = 'void' }
 
             $num_segments = $segment_species{$cluster_id} || 'NA'; 
-            $n_cluster_sp = scalar(@cluster_species);
 
             print CLUSTER_LIST
               "cluster $filename size=$n_cluster_seqs taxa=$n_cluster_sp taxa(gdna)=$num_segments ".
@@ -800,7 +786,9 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
 
 # sample taxa in random order
 for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
+
     my ( %n_of_taxa_in_cluster, $sample );
+
     @tmptaxa = @{ $sample[$s] };
 
     $sample = "## sample $s ($tmptaxa[0] | ";
@@ -819,11 +807,12 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
     # calculate pan/core-gene size adding genomes one-by-one
     $coregenome[$s][0] = $totalclusters{ $tmptaxa[0] };
     $pangenome[$s][0]  = $coregenome[$s][0];
-    print
-      "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n"
-      if ($verbose);
 
-    for ( $sp = 1 ; $sp < $n_of_species ; $sp++ ) {
+    print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n"
+        if ($verbose);
+
+    #for ( $sp = 1 ; $sp < $n_of_species ; $sp++ ) {
+    for ( $sp = 1 ; $sp < 2 ; $sp++ ) {
         $coregenome[$s][$sp] = 0;
         $pangenome[$s][$sp]  = $pangenome[$s][ $sp - 1 ];
         $core_occup          = $sp + 1;
@@ -842,12 +831,21 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
                 }
 
                 # check cluster occupancy
-                if (   $n_of_taxa_in_cluster{$cluster_id}
+                if ( $n_of_taxa_in_cluster{$cluster_id}
                     && $cluster{$cluster_id}{ $tmptaxa[$sp] } ) {
+
+		#	foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$tmptaxa[$sp]} } ) {
+                #    print "$cluster_id $tmptaxa[$sp] $gene_stable_id $n_of_taxa_in_cluster{$cluster_id}\n";
+                #}
+
 
                     # core genes must contain all previously seen species
                     if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {
                         $coregenome[$s][$sp]++;
+                        #print "$chr $cluster_id $core_occup \n";
+
+                        #foreach $species (keys(%{ $cluster{$cluster_id} })){ print "$species, " } print " $core_occup $cluster_id\n";
+
 
                     }    # pan genes must be novel to this species
                     elsif ( $n_of_taxa_in_cluster{$cluster_id} == 1 ) {
@@ -858,7 +856,7 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
         }
 
         print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n"
-          if ($verbose);
+          if ($verbose); exit;
     }
 }
 

@@ -306,7 +306,7 @@ foreach $infile (@infiles) {
                 # $hom_species gene already clustered (same or different cluster)
                 if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
                     print "# WARN: possibly conflicting clusters for $cluster_id & $incluster{$hom_gene_stable_id}\n";
-                    # TODO: merge clusters?
+                    # TODO: merge clusters? Would require a hash of merged cluster_ids
                 }
             }
                 

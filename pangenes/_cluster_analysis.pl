@@ -292,16 +292,20 @@ foreach $infile (@infiles) {
                 $cluster_id = $incluster{$gene_stable_id};
             } 
 
-            # now add $hom_species gene to previously defined cluster
+            # now add $hom_species gene 
             if ( !$incluster{$hom_gene_stable_id} ) {
 
-                # record to which cluster this gene belongs
+                # record to which cluster this gene belongs, 
+                # currently 1st pair where $hom_gene_stable_id appears (heuristic)
                 $incluster{$hom_gene_stable_id} = $cluster_id;
 
                 push( @{ $cluster{$cluster_id}{$hom_species} },
                     $hom_gene_stable_id
                 );
+            } else {
+                # $hom_species gene already clustered (same or different cluster)
             }
+                
         } elsif($homology_type =~ m/segment_collinear/) {
 
             chomp($coordinates);
@@ -334,7 +338,6 @@ foreach $cluster_id (@cluster_ids) {
         }
     }
 }  
-
 
 # 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
 # and store them in a hash with (species,coords) keys
@@ -569,7 +572,7 @@ foreach $cluster_id (@cluster_ids) {
 
             print CLUSTER_LIST
               "cluster $filename size=$n_cluster_seqs taxa=$n_cluster_sp taxa(gdna)=$num_segments ".
-              "cdnafile: $filename$SEQEXT{$seqtype} cdsfile: $cdsfile pepfile: $pepfile gdnafile=$gdnafile\n"; 
+              "cdnafile: $filename$SEQEXT{$seqtype} cdsfile: $cdsfile pepfile: $pepfile gdnafile: $gdnafile\n"; 
 
             foreach $species (@cluster_species) {
                 foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {

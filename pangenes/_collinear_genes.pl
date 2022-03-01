@@ -36,6 +36,12 @@ my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE ".
                   "-r1k,5k"; # https://github.com/lh3/minimap2/issues/813, 2949 -> 2956
 my $WFMASHEXE   = 'wfmash';                  # v0.7.0
 my $WFMASHPARS  = '-p 90 -s 1000';           # median rice gene 2362, barley 1323
+
+my $GSALIGNPATH = './';
+my $GSAINDXEXE   = 'bwt_index';
+my $GSALIGNEXE  = 'GSAlign';
+my $GSALIGNPARS = '-idy 95 -one -no_vcf -fmt 1';
+
 my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]
 my $SAMTOOLSEXE = 'samtools';
@@ -58,14 +64,15 @@ my $MINOVERLAP = 0.50;
 my $VERBOSE    = 0;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
-my ($dowfmash, $split_chr_regex, $tmpdir ) = ( 0, '', '' );
+my ($dowfmash, $dogsalign, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
 my ( $indexonly, $minoverlap, $qual, $alg, $outfilename ) =
   ( 0, $MINOVERLAP, $MINQUAL, 'minimap2' );
-my ( $minimap_path, $wfmash_path, $bedtools_path, $samtools_path, $threads ) =
-  ( $MINIMAP2EXE, $WFMASHEXE, $BEDTOOLSEXE, $SAMTOOLSEXE, $THREADS );
+my ( $minimap_path, $wfmash_path, $gsalign_path, $bedtools_path, $samtools_path ) =
+  ( $MINIMAP2EXE, $WFMASHEXE, $GSALIGNPATH, $BEDTOOLSEXE, $SAMTOOLSEXE );
+my $threads = $THREADS;
 
 GetOptions(
     "help|?"         => \$help,
@@ -83,8 +90,10 @@ GetOptions(
     "r|reuse"        => \$reuse,
     "i|index"        => \$indexonly,
     "wf|wfmash"      => \$dowfmash,
+    "gs|gsalign"     => \$dogsalign,
     "M|minipath=s"   => \$minimap_path,
     "W|wfpath=s"     => \$wfmash_path,
+    "G|gspath=s"     => \$gsalign_path,
     "B|btpath=s"     => \$bedtools_path,
     "S|stpath=s"     => \$samtools_path,
     "T|tmpath=s"     => \$tmpdir,
@@ -105,9 +114,11 @@ sub help_message {
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
       . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -s \'^\d+$\')'. "\n"
       . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
+      . "-gs  use GSAlign aligner                (optional, by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
       . "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
       . "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
+      . "-G   path to GSAlign bin/               (optional, default: -G $GSALIGNPATH)\n"
       . "-B   path to bedtools binary            (optional, default: -B $BEDTOOLSEXE)\n"
       . "-S   path to samtools binary            (optional, default: -S $SAMTOOLSEXE)\n"
       . "-T   path for temporary files           (optional, default current folder)\n"
@@ -158,6 +169,8 @@ if ( $noheader && !$outfilename ) {
 if ($dowfmash) {
     $alg = 'wfmash';
     $qual = 1;
+} elsif($dogsalign) {
+    $alg = 'GSalig';
 } elsif($repetitive) {
     #see https://github.com/lh3/minimap2/issues/813
     $MINIMAPPARS .= " -f100 ";
@@ -178,8 +191,8 @@ if ( !$outfilename ) {
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
-  . "-ovl $minoverlap -q $qual -wf $dowfmash -c $do_sequence_check "
-  . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -B $bedtools_path "
+  . "-ovl $minoverlap -q $qual -wf $dowfmash -gs $dogsalign -c $do_sequence_check "
+  . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -G $gsalign_path -B $bedtools_path "
   . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive\n\n";
 
 # check binaries
@@ -196,18 +209,28 @@ if ($dowfmash) {
         print "# ERROR: cannot find binary file $samtools_path , exit\n";
         exit(-3)
     }
+} elsif($dogsalign) {
+
+     $GSAINDXEXE = "$gsalign_path/$GSAINDXEXE";
+     $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
+    
+    if(`$GSALIGNEXE 2>&1` !~ 'Usage') {
+        print "# ERROR: cannot find binary file $GSALIGNEXE , exit\n";
+        exit(-4)
+    }
 } else {
     if(`$minimap_path 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $minimap_path , exit\n";
-        exit(-4)
+        exit(-5)
     }
 }
 
 print "# mapping parameters:\n";
 if ($dowfmash) {
     print "# \$WFMASHPARS: $WFMASHPARS\n\n";
-}
-else {
+} elsif ($dogsalign) {
+    print "# \$GSALIGNPARS: $GSALIGNPARS\n\n";
+} else {
     print "# \$MINIMAPPARS: $MINIMAPPARS\n\n";
 }
 

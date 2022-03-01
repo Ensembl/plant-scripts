@@ -64,6 +64,9 @@ install_wfmash:
 	-sudo apt install cmake libjemalloc-dev zlib1g-dev libgsl-dev libhts-dev
 	-cd pangenes/bin && git clone https://github.com/ekg/wfmash && cd wfmash && cmake -H. -Bbuild && cmake --build build -- -j 3
 
+install_gsalign:
+	-cd pangenes/bin && git clone https://github.com/hsinnan75/GSAlign.git && cd GSAlign && make
+
 uninstall_pangenes:
 	-cd pangenes/bin && rm -rf gffread-0.12.7.Linux_x86_64 minimap2-2.17 wfmash
 	cd files && rm -rf test_rice

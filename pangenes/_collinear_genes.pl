@@ -171,7 +171,7 @@ if ($dowfmash) {
     $alg = 'wfmash';
     $qual = 1;
 } elsif($dogsalign) {
-    $alg = 'GSalig';
+    $alg = 'gsalign';
 } elsif($repetitive) {
     #see https://github.com/lh3/minimap2/issues/813
     $MINIMAPPARS .= " -f100 ";

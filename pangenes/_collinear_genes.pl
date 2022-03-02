@@ -430,7 +430,8 @@ else {
 
             next if($indexonly);
 
-            $cmd = "$GSALIGNEXE $GSALIGNPARS -t $threads -i $preffix -q $chrfasta2 -o $splitMAFpreffix";
+            $cmd = "$GSALIGNEXE $GSALIGNPARS -t $threads -i $preffix -q $chrfasta2 -o $splitMAFpreffix ".
+                " 2> $splitMAFpreffix.log";
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
@@ -439,6 +440,9 @@ else {
                 die "# ERROR: failed generating $splitMAF file ($cmd)\n";
             } else {
  
+                # note logfile contains ANI estimate
+
+                # convert MAF to PAF alignment format
                 my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);
                 if($num_align) { 
                     push(@WGAoutfiles, $splitPAF);

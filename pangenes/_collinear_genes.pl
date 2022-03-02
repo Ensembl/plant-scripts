@@ -41,7 +41,7 @@ my $WFMASHPARS  = '-p 90 -s 1000';           # median rice gene 2362, barley 132
 my $GSALIGNPATH = './';
 my $GSAINDXEXE   = 'bwt_index';
 my $GSALIGNEXE  = 'GSAlign';
-my $GSALIGNPARS = '-idy 95 -one -no_vcf -fmt 1';
+my $GSALIGNPARS = '-sen -no_vcf -fmt 1';
 
 my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]

@@ -239,6 +239,4 @@ sub get_string_with_previous_genomes {
   return $previous_genomes;
 }
 
-
-
 1;

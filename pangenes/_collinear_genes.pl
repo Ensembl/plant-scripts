@@ -58,11 +58,11 @@ my $GENEMARGIN   = 5000;      # do not mask gene margins
 my $DUMMYSCORE   = 9999;
 
 # while parsing PAF
-my $MINQUAL    = 50;          # works well with both mapping algorithms
-my $MINALNLEN  = 100;
+my $MINQUAL    = 50;          # works well with minimap2
+my $MINALNLEN  = 100;         # min alignment length when transforming gene coords on WGA
 my $SAMESTRAND = 1;
 my $MINOVERLAP = 0.50;
-my $VERBOSE    = 0;           # values > 1
+my $VERBOSE    = 1;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
 my ($dowfmash, $dogsalign, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
@@ -344,8 +344,12 @@ else {
     }
 
     @sorted_chrs = sort @sorted_chrs; # {$a<=>$b} not always numeric
-    if($ref_chr_pairs->{'unplaced'}){ push(@sorted_chrs,'unplaced') }
-    elsif($ref_chr_pairs->{'all'}){ push(@sorted_chrs,'all') }
+    if($ref_chr_pairs->{'unplaced'}) { 
+        push(@sorted_chrs,'unplaced') 
+
+    } elsif($ref_chr_pairs->{'all'}){ 
+        push(@sorted_chrs,'all') 
+    }
 
     foreach $chr (@sorted_chrs) {
 
@@ -1011,12 +1015,6 @@ sub query2ref_coords {
       || die "# ERROR(query2ref_coords): cannot read $infile\n";
     while (<BED>) {
 
-#cDNA format
-#1 98773 99875 ONIVA01G00080.1 258 + 1 98032 101175 - 6 27346427 27348975 2375 60 cs:Z::29-ggt.. 15904
-#GFF/gene format
-#1  4848 20752 ONIVA01G00010 9999  + 1 3331 33993 + 6 26020714 26051403 29819 60 cs:Z::303*ag.. 15904
-#1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:... 11405
-
         (
             $cchr,      $cstart, $cend,   $cname,  $cmatch,
             $cstrand,   $qchr,   $qstart, $qend,   $WGAstrand,
@@ -1034,14 +1032,12 @@ sub query2ref_coords {
         next if ( defined( $ref_coords{$cname} ) );
 
         #next if($cname ne 'ONIVA01G00100'); # debug
-        #next if($cname ne 'ONIVA01G00150');
-        #next if($cname ne 'LOC_Os01g01010');
-        #next if($cname ne 'LOC_Os11g34300');
 
         # make sure ref chr is taken
         $ref_coords{$cname}{'chr'} = $rchr;
 
-        # correct offset for ref assembly
+        ## correct offset for ref assembly
+
         # Note: this requires parsing SAM/PAF tag
         # https://github.com/lh3/minimap2#paftools
         # cs:Z::303*ag:32*ga:27+ctattcta*ag*ca:20*ag:3*ga:18*tc*ga:76-tc
@@ -1189,6 +1185,7 @@ sub query2ref_coords {
 
         if ( $overlap >= $minalnlen ) {
             push(@matched, $bedline);
+            print "$bedline\n" if($verbose > 1)
         }
         else {
             # store also short segments, useful to call unmapped regions
@@ -1663,11 +1660,11 @@ sub simpleMAF2PAF {
                     # rest are matched (M) segments
                     while($qseq =~ m/(\-+)/g) {
                         #     start    type  totalgaps 
-                        $gap{$-[0]} = ['I', length($1)]
+                        $gap{$-[0]} = ['I', length($1)] # insertion to reference
                     } 
 
                     while($seq =~ m/(\-+)/g) {
-                        $gap{$-[0]} = ['D', length($1)]
+                        $gap{$-[0]} = ['D', length($1)] # deletion in reference
                     }        
 
                     # sort 0-based positions and get bounds 

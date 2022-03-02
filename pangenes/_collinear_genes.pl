@@ -18,6 +18,7 @@ $|=1;
 # minimap2 [https://academic.oup.com/bioinformatics/article/34/18/3094/4994778]
 # bedtools [https://academic.oup.com/bioinformatics/article/26/6/841/244688]
 # samtools [https://academic.oup.com/bioinformatics/article/25/16/2078/204688]
+# GSAlign  [https://doi.org/10.1186/s12864-020-6569-1]
 # wfmash   [https://github.com/ekg/wfmash]
 
 # perl get_collinear_genes.pl -sp1 oryza_sativa \
@@ -219,7 +220,7 @@ if ($dowfmash) {
         exit(-4)
     }
 } else {
-    if(`$minimap_path 2>&1` !~ 'Usage') {
+    if(!`$minimap_path 2>&1` || `$minimap_path 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $minimap_path , exit\n";
         exit(-5)
     }
@@ -403,8 +404,50 @@ else {
             } else {
                 push(@WGAoutfiles, $splitPAF);
             }
-        }
-        else {    # default minimap2 index & alignment
+        } elsif ($dogsalign) {
+
+            my $preffix = $tmpdir . "_$sp1.$chr";
+            my $splitMAFpreffix = $tmpdir . "_$sp2.$sp1.$alg.split.$chr";
+            my $splitMAF = "$splitMAFpreffix.maf";
+            $index_fasta1 = "$preffix.sa";
+
+            if ( $reuse && -s $index_fasta1 ) {
+                if ($split_chr_regex ne '') {
+                    printf("# re-using $index_fasta1, make sure same regex was used\n");
+                } else {
+                    print "# re-using $index_fasta1\n";
+                }
+            } else {
+                $cmd = "$GSAINDXEXE $chrfasta1 $preffix 2>&1";
+                system($cmd);
+                if ( $? != 0 ) {
+                    die "# ERROR: failed running bwt_index ($cmd)\n";
+                }
+                elsif ( !-s $index_fasta1 ) {
+                    die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";
+                }
+            }
+
+            next if($indexonly);
+
+            $cmd = "$GSALIGNEXE $GSALIGNPARS -t $threads -i $preffix -q $chrfasta2 -o $splitMAFpreffix";
+            system($cmd);
+            sleep(2);
+            if ( $? != 0 ) {
+                die "# ERROR: failed running GSAlign (probably ran out of memory, $cmd)\n";
+            } elsif ( !-e $splitMAF ) {
+                die "# ERROR: failed generating $splitMAF file ($cmd)\n";
+            } else {
+ 
+                my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);
+                if($num_align) { 
+                    push(@WGAoutfiles, $splitPAF);
+                } else {
+                    die "# ERROR: failed converting $splitMAF file\n"; 
+                }
+            }
+
+        } else {    # default minimap2 index & alignment
 
             $index_fasta1 = $tmpdir . "_$sp1.$chr.mmi";
             if($repetitive) {
@@ -1550,3 +1593,164 @@ sub calc_median {
         return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2) 
     }
 }
+
+# Takes up to 3 parameters:
+# i)   filename of MAF alignment
+# ii)  filename of output PAF alignment
+# iii) boolean to request quality control (optional)
+# Converts MAF format (https://genome.ucsc.edu/FAQ/FAQformat.html#format5) 
+# to simplified 3-state PAF (M,D,I, http://samtools.github.io/hts-specs/SAMv1.pdf) 
+# PAF output includes 12 standard columns + cg:Z: CIGAR (13th column)
+# Returns number of alignments parsed
+sub simpleMAF2PAF {
+
+    my ($MAFfile, $outPAFfile, $QC) = @_;
+   
+    my ($isQuery,$cigar,$segment_len,$indels,$aligned);
+    my ($chr, $start, $len, $strand, $chrlen, $seq);
+    my ($qchr, $qstart, $qlen, $qstrand, $qchrlen, $qseq);   
+    my (@gaps,%gap,$last,$pos,$nextpos,$g,$score);
+    my $total_alignments = 0;
+
+    open(MAF,"<",$MAFfile) || 
+        die "# ERROR(convertMAF2PAF): cannot read $MAFfile\n";
+
+    open(PAF,">",$outPAFfile) || 
+        die "# ERROR(convertMAF2PAF): cannot create $MAFfile\n";
+
+    while(<MAF>) {
+
+        #a score=232989
+        #s ref.1H 195452546 233059 + 528447123 TCACAAAATCCTCAAGTTAGTCAAAATCTTCA
+        #s qry.1H 193510468 233050 + 516505932 TCACAAAATCCTCAAGTTAGTCAAAATCTTCA
+
+        if(/^a score=(\S+)/) {
+            $score = $1;
+            ($isQuery, $aligned, $indels) = (0,0,0);
+            $total_alignments++;
+
+        } elsif(/^s \w{3}\.(\S+) (\d+) (\d+) (\S) (\d+) (\S+)/) {
+            
+            if($isQuery) { # query
+                $isQuery++;
+                ($qchr, $qstart, $qlen, $qstrand, $qchrlen, $qseq) = ($1,$2,$3,$4,$5,$6);
+
+            } else { # reference, 1st in pair
+                $isQuery++;
+
+                ($chr, $start, $len, $strand, $chrlen, $seq) = ($1,$2,$3,$4,$5,$6);
+            } 
+
+            # actually parse aligned sequences
+            if($isQuery == 2) {
+
+                # gapless
+                if($qlen == $len && $qseq !~ '-' && $seq !~ '-') {
+                    $cigar = "cg:Z:$qlen".'M';
+                    $aligned = $qlen;   
+                    $indels = 0; 
+                } else { # gapped alignments
+
+                    @gaps = ();
+                    %gap = ();
+                    $cigar = 'cg:Z:';
+
+                    # find gap positions (D & I),
+                    # rest are matched (M) segments
+                    while($qseq =~ m/(\-+)/g) {
+                        #     start    type  totalgaps 
+                        $gap{$-[0]} = ['I', length($1)]
+                    } 
+
+                    while($seq =~ m/(\-+)/g) {
+                        $gap{$-[0]} = ['D', length($1)]
+                    }        
+
+                    # sort 0-based positions and get bounds 
+                    $last = length($seq) - 1;
+                    @gaps = sort {$a<=>$b} keys(%gap); #print join(',',@gaps)."\n";
+
+                    # add segment before first gap
+                    if($gaps[0] > 0) {
+                        $cigar .= $gaps[0] .'M';
+                        $aligned += $gaps[0];   
+                    }
+
+                    # add gaps and matched segment after
+                    foreach $g (0 .. $#gaps-1) {
+
+                        # gap
+                        $pos = $gaps[$g];
+                        $cigar .= "$gap{$pos}->[1]$gap{$pos}->[0]";
+                        $indels += $gap{$pos}->[1];
+                    
+                        # segment after
+                        $pos += $gap{$pos}->[1]; 
+                        $nextpos = $gaps[$g+1];
+                        $segment_len = $nextpos - $pos;
+                        $cigar .= $segment_len.'M';
+                        $aligned += $segment_len;
+                    }
+
+                    # last gap
+                    $pos = $gaps[$#gaps]; 
+                    $cigar .= "$gap{$pos}->[1]$gap{$pos}->[0]";
+                    $indels += $gap{$pos}->[1];
+
+                    # add segment after last gap
+                    $pos = $gaps[$#gaps] + $gap{$pos}->[1]; #print "$pos $last\n";
+                    if($pos <= $last) {
+                        $segment_len = ($last-$pos)+1;
+                        $cigar .= $segment_len.'M';
+                        $aligned += $segment_len;
+                    }
+
+                    # QC
+                    if($QC && $aligned + $indels != $last+1){
+                        print "# ERROR: alignment length does not match CIGAR segments\n$_\n";
+                    }
+                }
+
+                # print PAF
+                #https://lh3.github.io/minimap2/minimap2.html#10
+                #1	string	Query sequence name
+                #2	int	Query sequence length
+                #3	int	Query start coordinate (0-based)
+                #4 	int	Query end coordinate (0-based)
+                #5	char	+ if query/target on the same strand; - if opposite
+                #6	string	Target sequence name
+                #7	int	Target sequence length
+                #8	int	Target start coordinate on the original strand
+                #9	int	Target end coordinate on the original strand
+                #10	int	Number of matching bases in the mapping
+                #11	int	Number bases, including gaps, in the mapping
+                #12	int	Mapping quality (0-255 with 255 for missing)
+                # +
+                #13     string  CIGAR string
+
+                printf(PAF "%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
+                    $qchr, 
+                    $qchrlen,
+                    $qstart,
+                    $qstart+$qlen,
+                    ($qstrand eq $strand ? '+' : '-'),
+                    $chr,
+                    $chrlen,
+                    $start,
+                    $start+$len,
+                    $aligned,
+                    ($qlen > $len ? $qlen : $len),
+                    $score,
+                    $cigar
+                );
+            }
+        }
+    }
+
+    close(PAF);
+
+    close(MAF);
+
+    return $total_alignments;
+}
+

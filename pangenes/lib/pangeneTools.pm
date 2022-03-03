@@ -40,6 +40,7 @@ my %feature_output = (
   'EXE_SAMTOOLS'=>'Usage',
   'EXE_MINIMAP'=>'Usage',
   'EXE_WFMASH'=>'OPTIONS',
+  'EXE_GSALIGN'=> 'Usage',
   'EXE_GFFREAD'=>'Usage',
   'EXE_COLLINEAR'=>'usage',
   'EXE_CUTSEQUENCES'=>'usage',
@@ -72,6 +73,11 @@ sub set_pangeneTools_env {
   }
   if( ! defined($ENV{"EXE_WFMASH"}) ){ 
     $ENV{"EXE_WFMASH"} = $ENV{'PANGENE'}.'bin/wfmash/build/bin/wfmash' 
+  }
+  if( ! defined($ENV{"EXE_GSAPATH"}) ){
+    $ENV{"EXE_GSAPATH"} = $ENV{'PANGENE'}.'bin/GSAlign/bin/';
+    $ENV{"EXE_GSAINDX"} = $ENV{'GSA'}.'bwt_index';
+    $ENV{"EXE_GSALIGN"} = $ENV{'GSA'}.'GSAlign';
   }
 
   # should be pre-installed in most settings
@@ -142,6 +148,8 @@ sub feature_is_installed {
     if($env_missing =~ /BEDTOOLS/){ return 0 }
   } elsif($feature eq 'WFMASH') {
     if($env_missing =~ /WFMASH/){ return 0 }
+  } elsif($feature eq 'GSALIGN') {
+    if($env_missing =~ /GSALIGN/){ return 0 }
   } elsif($feature eq 'GFFREAD') {
     if($env_missing =~ /GFFREAD/){ return 0 }
   } elsif($feature eq 'COLLINEAR') {

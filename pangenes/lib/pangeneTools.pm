@@ -61,8 +61,8 @@ set_pangeneTools_env();
 
 sub set_pangeneTools_env {
 
-  if( ! defined($ENV{'MARFIL_MISSING_BINARIES'}) ) { $ENV{'MARFIL_MISSING_BINARIES'} = '' }
-  if( ! defined($ENV{'PANGENES'}) ) { $ENV{'PANGENE'} =  $PANGENEPATH .'/' }
+  if( ! defined($ENV{'PANGENE_MISSING_BINARIES'}) ) { $ENV{'PANGENE_MISSING_BINARIES'} = '' }
+  if( ! defined($ENV{'PANGENE'}) ) { $ENV{'PANGENE'} =  $PANGENEPATH .'/' }
 
   # installed in this repo
   if( ! defined($ENV{"EXE_MINIMAP"}) ){ 
@@ -76,8 +76,7 @@ sub set_pangeneTools_env {
   }
   if( ! defined($ENV{"EXE_GSAPATH"}) ){
     $ENV{"EXE_GSAPATH"} = $ENV{'PANGENE'}.'bin/GSAlign/bin/';
-    $ENV{"EXE_GSAINDX"} = $ENV{'GSA'}.'bwt_index';
-    $ENV{"EXE_GSALIGN"} = $ENV{'GSA'}.'GSAlign';
+    $ENV{"EXE_GSALIGN"} = $ENV{'EXE_GSAPATH'}.'GSAlign';
   }
 
   # should be pre-installed in most settings
@@ -101,7 +100,7 @@ sub set_pangeneTools_env {
 ########################################################################################
 
 # Check needed binaries and data sources required by functions here,
-# fills $ENV{"MISSING_BINARIES"} with missing binaries
+# fills $ENV{"PANGENE_MISSING_BINARIES"} with missing binaries
 sub check_installed_features {
 
   my (@to_be_checked) = @_;

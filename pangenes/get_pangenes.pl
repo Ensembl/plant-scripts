@@ -49,20 +49,20 @@ my @FEATURES2CHECK = (
   'EXE_ZCAT'
 );
 
-my ($newDIR,$output_mask,$pancore_mask,$include_file,%included_input_files,%opts) = 
-  ('','','',0);
-my ($dowfmash,$reference_string) = (0,0);
+my (%opts,%included_input_files);
+my ($newDIR,$output_mask,$pancore_mask,$include_file) = ('','','',0);
+my ($dowfmash,$dogsalign,$reference_string) = (0,0,0);
 my ($onlywga,$inputDIR,$alg) = (0);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft, $highly_repetitive) = ($NUMCPUS,0,0);
-my ($bedtools_path,$samtools_path,$wfmash_path) = ('','','');
+my ($bedtools_path,$samtools_path,$wfmash_path,$gsalign_path) = ('','','','');
 my ($min_cluster_size,$runmode,$do_genome_composition);
 
 my $random_number_generator_seed = 0;
 my $pwd = getcwd(); 
 $pwd .= '/';
 
-getopts('hvcoAzwHW:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvcoAHzgwG:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)) {
 
@@ -94,6 +94,9 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "-w use wfmash aligner (Wmsh)\n";
   print   "-W path to wfmash binary                                    ".
     "(optional, default: -wf wfmash)\n";
+  print   "-g use GSAlign aligner (GSal)\n";
+  print   "-G path to GSalign bin/ folder                              ".
+    "(optional)\n";
   print   "-S path to samtools binary, required with -w -s             ".
     "(optional, default: -S samtools)\n";
   print   "\nOptions that control alignments:\n";
@@ -127,7 +130,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "It is designed to process (in a multicore computer or HPC cluster) files\n".
     "contained in a directory (-d), so that new .fna & .gff files can be added\n".
     "while conserving previous results. Produces different types of output:\n\n".
-    " 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes\n".
+    " 1) clusters of CDS (nucl & pep), cDNA and gDNA sequences of collinear genes\n".
     " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
     " 3) matrix of % conserved sequences that summarize shared clusters across genomes\n".
     " 4) optionally (-c) matrices with core- and pan-gene set growth simulations\n";
@@ -144,10 +147,11 @@ close(CHANGES);
 if(defined($opts{'v'})) {
 
   print "\n$0 version $VERSION\n";
-  print "\nPrimary citation:\n(unpublished)\n";
+  print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
   print " wfmash   https://github.com/ekg/wfmash\n";
+  print " GSAlign  https://doi.org/10.1186/s12864-020-6569-1\n";
 
   # check all binaries needed by this program and print diagnostic info
   print check_installed_features(@FEATURES2CHECK);
@@ -234,6 +238,24 @@ if(defined($opts{'w'})) {
     die "# EXIT : cannot find wfmash binary, ".
       "see dependency instructions or set path with -W\n";
   }
+} elsif(defined($opts{'g'})) { 
+
+  if(defined($opts{'G'})) {
+    $gsalign_path = $opts{'W'};
+    $ENV{"EXE_GSAPATH"} = $gsalign_path;
+  }
+  
+  check_installed_features('EXE_GSALIGN');
+  if(feature_is_installed('GSALIGN')) {
+    $alg = 'GSal';
+    $dogsalign = 1;
+    $output_mask .= "alg$alg\_";
+    $pancore_mask .= "_alg$alg";
+  }
+  else{
+    die "# EXIT : cannot find GSAlign binary, ".
+      "see dependency instructions or set path to GSAlign/bin/ with -G\n";
+  }
 
 } else {
   $alg = 'Mmap';
@@ -295,8 +317,9 @@ if(defined($opts{'B'})) {
 
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
-  "-m $runmode -w $dowfmash -O $min_overlap -Q $min_map_qual -s '$split_chr_regex' ".
-  "-H $highly_repetitive -W '$wfmash_path' -B '$bedtools_path' -S '$samtools_path' ".
+  "-m $runmode -w $dowfmash -g $dogsalign -O $min_overlap -Q $min_map_qual ".
+  "-s '$split_chr_regex' -H $highly_repetitive ".
+  "-W '$wfmash_path' -G '$gsalign_path' -B '$bedtools_path' -S '$samtools_path' ".
   "-n $n_of_cpus -R $random_number_generator_seed\n\n";
 
 if($runmode eq 'cluster') {
@@ -705,6 +728,8 @@ foreach $tx1 (0 .. $#taxa) {
   }
   if($dowfmash) {
     $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
+  } elsif($dogsalign) {
+    $command .= "-gs -G $ENV{'EXE_GSAPATH'} ";
   } else {
     $command .= "-M $ENV{'EXE_MINIMAP'} "
   }
@@ -783,6 +808,8 @@ foreach $tx1 (0 .. $#taxa-1) {
     } 
     if($dowfmash) {
       $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
+    } elsif($dogsalign) {
+      $command .= "-gs -G $ENV{'EXE_GSAPATH'} "
     } else {
       $command .= "-M $ENV{'EXE_MINIMAP'} "
     }
@@ -846,6 +873,7 @@ if($onlywga) {
   exit(0);
 }
 
+# find GSAlign log files to parse ANI values
 
 
 ## 3) extract clusters of collinear sequences and produce pangene set matrices

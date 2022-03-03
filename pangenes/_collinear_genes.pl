@@ -69,7 +69,7 @@ my ($dowfmash, $dogsalign, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
-my ( $indexonly, $minoverlap, $qual, $alg, $outfilename ) =
+my ( $indexonly, $minoverlap, $qual, $alg, $outfilename, $outANIfile ) =
   ( 0, $MINOVERLAP, $MINQUAL, 'minimap2' );
 my ( $minimap_path, $wfmash_path, $gsalign_path, $bedtools_path, $samtools_path ) =
   ( $MINIMAP2EXE, $WFMASHEXE, $GSALIGNPATH, $BEDTOOLSEXE, $SAMTOOLSEXE );
@@ -100,6 +100,7 @@ GetOptions(
     "T|tmpath=s"     => \$tmpdir,
     "t|threads=i"    => \$threads,
     "H|highrep"      => \$repetitive,
+    "A|ANI=s"        => \$outANIfile,
     "a|add"          => \$noheader
 ) || help_message();
 
@@ -125,6 +126,7 @@ sub help_message {
       . "-T   path for temporary files           (optional, default current folder)\n"
       . "-t   CPU threads to use                 (optional, default: -t $THREADS)\n"
       . "-H   highly repetitive genome           (optional, masks intergenes >= $MINMASKLEN & tweaks minimap2)\n"
+      . "-A   output ANI filename                (optional, requires -gs, example: out.ani)\n"
 #. "-c   check sequences of collinear genes (optional)\n"
       . "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
       . "-r   re-use previous results & index    (optional)\n"
@@ -177,6 +179,10 @@ if ($dowfmash) {
     $MINIMAPPARS .= " -f100 ";
 }
 
+if(!$dogsalign){ 
+    $outANIfile = ''
+}
+
 if($tmpdir ne '' && $tmpdir !~ /\/$/){
     $tmpdir .= '/'
 }
@@ -192,7 +198,7 @@ if ( !$outfilename ) {
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
-  . "-ovl $minoverlap -q $qual -wf $dowfmash -gs $dogsalign -c $do_sequence_check "
+  . "-ovl $minoverlap -q $qual -wf $dowfmash -gs $dogsalign -A $outANIfile -c $do_sequence_check "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -G $gsalign_path -B $bedtools_path "
   . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive\n\n";
 
@@ -333,6 +339,7 @@ if ( $reuse && -s $PAFfile ) {
 else {
 
     unlink($PAFfile);
+    unlink($outANIfile) if($dogsalign);
 
     my (@sorted_chrs,@WGAoutfiles);
 
@@ -444,7 +451,21 @@ else {
                 die "# ERROR: failed generating $splitMAF file ($cmd)\n";
             } else {
  
-                # note logfile contains ANI estimate
+                # print ANI estimate
+                open(ANI,">>",$outANIfile) ||
+                    die "# ERROR: cannot create $outANIfile\n";
+
+                open(GSALOG,"<","$splitMAFpreffix.log") ||
+                    die "# ERROR: cannot find previous log $splitMAFpreffix.log\n";
+                while(<GSALOG>) {
+                    if(/alignment length=(\d+)\)\s+ANI=([^\%]+)/) {
+                        print ANI "$chr $2 $1\n";
+                        last;
+                    }
+                }
+                close(GSALOG);
+
+                close(ANI);
 
                 # convert MAF to PAF alignment format
                 my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);

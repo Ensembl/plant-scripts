@@ -10,9 +10,9 @@
 #
 # This script calls _cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl
 # and produces different types of output:
-# 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes 
+# 1) clusters of CDS (nucl & pep), cDNA and gDNA sequences of collinear genes 
 # 2) pangenome matrices that summarize the genome occupancy of clusters
-# 3) matrix of % conserved sequences that summarize shared clusters across genomes
+# 3) matrix of % conserved sequences summarizing cDNA shared clusters across genomes
 # 4) optionally (-c) matrices with core- and pangene set growth simulations
 
 # Copyright [2021-22] 
@@ -94,7 +94,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "-w use wfmash aligner (Wmsh)\n";
   print   "-W path to wfmash binary                                    ".
     "(optional, default: -wf wfmash)\n";
-  print   "-g use GSAlign aligner (GSal)\n";
+  print   "-g use GSAlign aligner (GSal)                               ".
+    "(optional, produces also ANI matrix)\n";
   print   "-G path to GSalign bin/ folder                              ".
     "(optional)\n";
   print   "-S path to samtools binary, required with -w -s             ".
@@ -132,7 +133,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "while conserving previous results. Produces different types of output:\n\n".
     " 1) clusters of CDS (nucl & pep), cDNA and gDNA sequences of collinear genes\n".
     " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
-    " 3) matrix of % conserved sequences that summarize shared clusters across genomes\n".
+    " 3) matrix of % conserved sequences summarizing shared cDNA clusters across genomes\n".
     " 4) optionally (-c) matrices with core- and pan-gene set growth simulations\n";
   exit;
 }
@@ -336,7 +337,8 @@ my ($min_geneome_size, $reference_proteome, $infile, $command);
 my ($order, $taxon, $taxon2, $previous_files, $current_files);
 my (@taxa);
 
-constructDirectory($newDIR) || die "# EXIT : cannot create directory $newDIR , check permissions\n";
+constructDirectory($newDIR) || 
+  die "# EXIT : cannot create directory $newDIR , check permissions\n";
 
 # 0.1) make sure there is only 1 instance writing to $newDIR
 my $lockcapableFS = 0;
@@ -354,7 +356,8 @@ open(my $fhlock,">$pangeneTools::lockfile") ||
   die "# EXIT : cannot create lockfile $pangeneTools::lockfile\n";
 if($lockcapableFS) {
   flock($fhlock, LOCK_EX|LOCK_NB) ||
-    die "# EXIT : cannot run another instance of the program with same input data while previous is running\n";
+    die "# EXIT : cannot run another instance of the program with " .
+      "same input data while previous is running\n";
 }
 
 # 0.2) open important files
@@ -703,7 +706,7 @@ close(SEL);
 
 ## 2) compute pairwise whole-genome alignments (WGA) and call collinear genes
 
-my ($outTSVfile,@tmp_wga_output_files);
+my ($outTSVfile,$outANIfile,@tmp_wga_output_files,%ANIfiles);
 
 # remove previous merged results to make sure they are updated
 unlink($merged_tsv_file);
@@ -779,17 +782,22 @@ foreach $tx1 (0 .. $#taxa-1) {
     #print $taxon.$taxon2."\n";
 
     $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap";
+    $outANIfile = $newDIR ."/_$taxon.$taxon2.alg$alg";
     if($split_chr_regex) {
-      $outTSVfile .= '.split'
+      $outTSVfile .= '.split';
+      $outANIfile .= '.split'
     }
     if($highly_repetitive) {
-      $outTSVfile .= '.highrep'
+      $outTSVfile .= '.highrep';
+      $outANIfile .= '.highrep'
     }
     $outTSVfile .= '.tsv';
+    $outANIfile .= '.ANI.tsv';
 
     # skip job if already computed 
     if(-s $outTSVfile) {
       push(@tmp_wga_output_files,$outTSVfile);
+      $ANIfiles{$taxon}{$taxon2} = $outANIfile;
       next;
     }
 
@@ -809,7 +817,7 @@ foreach $tx1 (0 .. $#taxa-1) {
     if($dowfmash) {
       $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
     } elsif($dogsalign) {
-      $command .= "-gs -G $ENV{'EXE_GSAPATH'} "
+      $command .= "-gs -G $ENV{'EXE_GSAPATH'} -ANI $outANIfile "
     } else {
       $command .= "-M $ENV{'EXE_MINIMAP'} "
     }
@@ -833,6 +841,7 @@ foreach $tx1 (0 .. $#taxa-1) {
     }
 
     push(@tmp_wga_output_files,$outTSVfile);
+    $ANIfiles{$taxon}{$taxon2} = $outANIfile;
   }  
 }  
 
@@ -873,8 +882,44 @@ if($onlywga) {
   exit(0);
 }
 
-# find GSAlign log files to parse ANI values
+# parse paired ANI files and produce ANI matrix (-g only)
+my %ANI;
+if($dogsalign && %ANIfiles) {
+  my ($totalsize,$value,$size,@sizes,@ANIs);
+  foreach $taxon (keys(%ANIfiles)) {
+    foreach $taxon2 (keys(%{ $ANIfiles{$taxon} })) {
+  
+      # parse ANI values, note with -s there will be 1 value per chr 
+      $outANIfile = $ANIfiles{$taxon}{$taxon2}; 
+      $totalsize = 0;
+      @ANIs = @sizes = ();
+      open(ANIPAIR,"<",$outANIfile) ||
+        warn "# WARN, $outANIfile does not exist, skip it\n";
+      while(<ANIPAIR>) { 
+        if(/^\S+\s(\S+)\s(\d+)/) {
+          ($value,$size) = ($1, $2);
+          push(@ANIs,$value);
+          push(@sizes,$size);
+          $totalsize += $size;
+        }
+      } 
+      close(ANIPAIR);
 
+      if(scalar(@sizes) > 1) {
+        $value = 0;
+        foreach my $v (0 .. $#ANIs) {
+          $value += ($ANIs[$v] * $sizes[$v]/$totalsize);
+        } 
+        $value = sprintf("%1.2f",$value/scalar(@sizes)); 
+      } else {
+        $value = $ANIs[0];
+      }
+ 
+      $ANI{$taxon}{$taxon2} = $value;
+      $ANI{$taxon2}{$taxon} = $value;
+    }
+  }
+} 
 
 ## 3) extract clusters of collinear sequences and produce pangene set matrices
 
@@ -939,8 +984,42 @@ open(CLUSTERSLOG,'<', $clusteroutfile) ||
   die "# ERROR: cannot read $clusteroutfile\n";
 while(<CLUSTERSLOG>) {
 
-  if(/^# number of clusters/){ $printOK = 1 }
+  if(/^# number of clusters/){ 
+    $printOK = 1 
+  }
   print if($printOK);
 }
 close(CLUSTERSLOG);
+
+# print ANI matrix in output folder, 
+# Note: order might be different in POCS matrix
+my $ANI_matrix_file = $outfolder . '/ANI.tsv';
+open(ANIMATRIX, ">", $ANI_matrix_file)
+  || die "# EXIT: cannot create $ANI_matrix_file\n";
+
+print ANIMATRIX "genomes";
+foreach $tx1 ( 0 .. $#taxa ) {
+    print ANIMATRIX "\t$taxa[$tx1]";
+}
+print ANIMATRIX "\n";
+
+foreach $tx1 ( 0 .. $#taxa ) {
+    print ANIMATRIX "$taxa[$tx1]";
+    foreach $tx2 ( 0 .. $#taxa ) {
+        if ( $tx1 == $tx2 ) {
+            print ANIMATRIX "\t100.00"
+        } else {
+            if(defined($ANI{$taxa[$tx1]}{$taxa[$tx2]})){
+                print ANIMATRIX "\t$ANI{ $taxa[$tx1] }{ $taxa[$tx2] }";
+            } else {
+                print ANIMATRIX "\tNA";
+            }
+        }
+    }
+    print ANIMATRIX "\n";
+}
+close(ANIMATRIX);
+
+print "\n# Average Nucleotide Identity file = $ANI_matrix_file\n\n";
+
 

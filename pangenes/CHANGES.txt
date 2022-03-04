@@ -9,3 +9,5 @@
 11022022: genomic segments are added as segment_collinear features in _collinear_genes.pl
 15022022: genomic segments are used to produce .gdna.fna clusters in get_pangenes.pl
 02032022: added & tested _collinear_genes.pl -sg
+04032022: added & tested get_pangenes.pl -s
+04032022: get_pangenes.pl -s prints ANI matrix from GSAlign estimates

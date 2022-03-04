@@ -69,8 +69,8 @@ my ($dowfmash, $dogsalign, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
-my ( $indexonly, $minoverlap, $qual, $alg, $outfilename, $outANIfile ) =
-  ( 0, $MINOVERLAP, $MINQUAL, 'minimap2' );
+my ( $indexonly, $minoverlap, $qual, $alg, $outANIfile, $outfilename ) =
+  ( 0, $MINOVERLAP, $MINQUAL, 'minimap2', '' );
 my ( $minimap_path, $wfmash_path, $gsalign_path, $bedtools_path, $samtools_path ) =
   ( $MINIMAP2EXE, $WFMASHEXE, $GSALIGNPATH, $BEDTOOLSEXE, $SAMTOOLSEXE );
 my $threads = $THREADS;
@@ -339,7 +339,7 @@ if ( $reuse && -s $PAFfile ) {
 else {
 
     unlink($PAFfile);
-    unlink($outANIfile) if($dogsalign);
+    unlink($outANIfile) if($dogsalign && $outANIfile);
 
     my (@sorted_chrs,@WGAoutfiles);
 
@@ -459,7 +459,7 @@ else {
                     die "# ERROR: cannot find previous log $splitMAFpreffix.log\n";
                 while(<GSALOG>) {
                     if(/alignment length=(\d+)\)\s+ANI=([^\%]+)/) {
-                        print ANI "$chr $2 $1\n";
+                        print ANI "$chr\t$2\t$1\n";
                         last;
                     }
                 }

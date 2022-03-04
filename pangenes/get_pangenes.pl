@@ -46,7 +46,7 @@ my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
 my @FEATURES2CHECK = (
   'EXE_MINIMAP','EXE_BEDTOOLS','EXE_GFFREAD',
   'EXE_COLLINEAR','EXE_CUTSEQUENCES','EXE_CLUSTANALYSIS',
-  'EXE_GZIP'
+  'EXE_GZIP', 'EXE_BZIP2'
 );
 
 my (%opts,%included_input_files);

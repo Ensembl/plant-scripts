@@ -51,7 +51,8 @@ my $THREADS      = 4;
 my $SORTLIMITRAM = "500M";                               # buffer size
 my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
 $ENV{'LC_ALL'} = 'POSIX';
-my $GZIPBIN      = "gzip";
+my $GZIPBIN      = $ENV{'EXE_GZIP'} || 'gzip';
+my $BZIP2BIN     = $ENV{'EXE_BZIP2'} ||'bzip2';
 
 my $MINMASKLEN   = 100_000;   # mask longer (intergenic, repetitive) fragments with -H
 my $GENEMARGIN   = 5000;      # do not mask gene margins 
@@ -441,8 +442,8 @@ else {
 
             next if($indexonly);
 
-            $cmd = "$GSALIGNEXE $GSALIGNPARS -t $threads -i $preffix -q $chrfasta2 -o $splitMAFpreffix ".
-                " 2> $splitMAFpreffix.log";
+            $cmd = "$GSALIGNEXE $GSALIGNPARS -t $threads -i $preffix -q $chrfasta2 ".
+                "-o $splitMAFpreffix 2> $splitMAFpreffix.log";
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
@@ -471,6 +472,7 @@ else {
                 my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);
                 if($num_align) { 
                     push(@WGAoutfiles, $splitPAF);
+                    system("$GZIPBIN $splitMAF");
                 } else {
                     die "# ERROR: failed converting $splitMAF file\n"; 
                 }
@@ -823,12 +825,12 @@ sub read_FASTA_regex2hash {
     close(INFILE);
 
     if($fastafile =~ /\.gz$/ || $magic eq "\x1f\x8b") { 
-        if(!open(FASTA,"gzip -dc $fastafile |")) {
+        if(!open(FASTA,"$GZIPBIN -dc $fastafile |")) {
             die "# ERROR(read_FASTA_regex2hash): cannot read GZIP compressed $fastafile $!\n"
                 ."# please check gzip is installed\n";
         }
     } elsif($fastafile =~ /\.bz2$/ || $magic eq "BZ") {
-        if(!open(FASTA,"bzip2 -dc $fastafile |")){
+        if(!open(FASTA,"$BZIP2BIN -dc $fastafile |")){
             die "# ERROR(read_FASTA_regex2hash): cannot read BZIP2 compressed $fastafile $!\n"
                 ."# please check bzip2 is installed\n";
         }

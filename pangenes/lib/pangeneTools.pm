@@ -45,7 +45,8 @@ my %feature_output = (
   'EXE_COLLINEAR'=>'usage',
   'EXE_CUTSEQUENCES'=>'usage',
   'EXE_CLUSTANALYSIS'=>'ERROR',
-  'EXE_GZIP'=>'help'
+  'EXE_GZIP'=>'help',
+  'EXE_BZIP2'=>'help'
 );
 
 my %ubuntu_packages = (
@@ -83,6 +84,7 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{"EXE_SAMTOOLS"}) ){ $ENV{"EXE_SAMTOOLS"} = 'samtools' }
   if( ! defined($ENV{'EXE_BEDTOOLS'}) ){ $ENV{'EXE_BEDTOOLS'} = 'bedtools' }
   if( ! defined($ENV{'EXE_GZIP'}) ){ $ENV{'EXE_GZIP'} = 'gzip' }
+  if( ! defined($ENV{'EXE_BZIP2'}) ){ $ENV{'EXE_BZIP2'} = 'bzip2' }
 
   # scripts from this repo
   if( ! defined($ENV{"EXE_COLLINEAR"}) ){ 
@@ -111,7 +113,7 @@ sub check_installed_features {
   foreach my $bin (@to_be_checked) {
     $check_summary .= sprintf("%18s : ",$bin);
     if($ENV{$bin}) {
-      if($bin eq 'EXE_GZIP'){ 
+      if($bin eq 'EXE_GZIP' || $bin eq 'EXE_BZIP2'){ 
         $output = `$ENV{$bin} -h 2>&1 ` 
       } else {
         $output = `$ENV{$bin} 2>&1`;
@@ -161,6 +163,8 @@ sub feature_is_installed {
     if($env_missing =~ /CUTSEQUENCES/){ return 0 }
   } elsif($feature eq 'GZIP') {
     if($env_missing =~ /GZIP/){ return 0 }
+  } elsif($feature eq 'BZIP2') {
+    if($env_missing =~ /BZIP2/){ return 0 }
   }
 
   return 1;

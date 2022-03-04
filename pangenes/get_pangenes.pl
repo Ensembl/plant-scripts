@@ -916,10 +916,10 @@ if($dogsalign && %ANIfiles) {
       }
  
       $ANI{$taxon}{$taxon2} = $value;
-      $ANI{$taxon2}{$taxon} = $value; print "$value\n";
+      $ANI{$taxon2}{$taxon} = $value;
     }
   }
-} exit;
+} 
 
 ## 3) extract clusters of collinear sequences and produce pangene set matrices
 

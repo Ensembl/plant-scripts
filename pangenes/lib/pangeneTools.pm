@@ -111,7 +111,11 @@ sub check_installed_features {
   foreach my $bin (@to_be_checked) {
     $check_summary .= sprintf("%18s : ",$bin);
     if($ENV{$bin}) {
-      $output = `$ENV{$bin} 2>&1`;
+      if($bin eq 'EXE_GZIP'){ 
+        $output = `$ENV{$bin} -h 2>&1 ` 
+      } else {
+        $output = `$ENV{$bin} 2>&1`;
+      }
       if(!$output){ $output = '' }
     }
 

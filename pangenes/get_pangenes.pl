@@ -486,7 +486,7 @@ foreach $infile (@inputfiles) {
   if(!-s $plain_dnafile) {
     if($dnafile =~ m/\.gz/) {
       print "# uncompressing $dnafile\n";
-      system("$ENV{'EXE_GZIP'} -dc /$dnafile > $plain_dnafile")     
+      system("$ENV{'EXE_GZIP'} -dc $dnafile > $plain_dnafile")     
     } else {
       cp($dnafile,$plain_dnafile)
     }

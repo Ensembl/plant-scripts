@@ -82,7 +82,7 @@ sub set_pangeneTools_env {
   # should be pre-installed in most settings
   if( ! defined($ENV{"EXE_SAMTOOLS"}) ){ $ENV{"EXE_SAMTOOLS"} = 'samtools' }
   if( ! defined($ENV{'EXE_BEDTOOLS'}) ){ $ENV{'EXE_BEDTOOLS'} = 'bedtools' }
-  if( ! defined($ENV{'EXE_ZCAT'}) ){ $ENV{'EXE_ZCAT'} = 'zcat' }
+  if( ! defined($ENV{'EXE_GZIP'}) ){ $ENV{'EXE_GZIP'} = 'gzip' }
 
   # scripts from this repo
   if( ! defined($ENV{"EXE_COLLINEAR"}) ){ 
@@ -155,8 +155,8 @@ sub feature_is_installed {
     if($env_missing =~ /COLLINEAR/){ return 0 }
   } elsif($feature eq 'CUTSEQUENCES') {
     if($env_missing =~ /CUTSEQUENCES/){ return 0 }
-  } elsif($feature eq 'ZCAT') {
-    if($env_missing =~ /ZCAT/){ return 0 }
+  } elsif($feature eq 'GZIP') {
+    if($env_missing =~ /GZIP/){ return 0 }
   }
 
   return 1;

@@ -46,7 +46,7 @@ my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
 my @FEATURES2CHECK = (
   'EXE_MINIMAP','EXE_BEDTOOLS','EXE_GFFREAD',
   'EXE_COLLINEAR','EXE_CUTSEQUENCES','EXE_CLUSTANALYSIS',
-  'EXE_ZCAT'
+  'EXE_GZIP'
 );
 
 my (%opts,%included_input_files);
@@ -486,7 +486,7 @@ foreach $infile (@inputfiles) {
   if(!-s $plain_dnafile) {
     if($dnafile =~ m/\.gz/) {
       print "# uncompressing $dnafile\n";
-      system("$ENV{'EXE_ZCAT'} $dnafile > $plain_dnafile")     
+      system("$ENV{'EXE_GZIP'} -dc /$dnafile > $plain_dnafile")     
     } else {
       cp($dnafile,$plain_dnafile)
     }
@@ -497,7 +497,7 @@ foreach $infile (@inputfiles) {
   if(!-s $plain_gffile) {
     if($gffile =~ m/\.gz/) {
       print "# uncompressing $gffile\n";
-      system("$ENV{'EXE_ZCAT'} $gffile > $plain_gffile")     
+      system("$ENV{'EXE_GZIP'} -dc $gffile > $plain_gffile")     
     } else {
       cp($gffile,$plain_gffile)
     }

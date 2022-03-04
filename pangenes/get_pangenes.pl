@@ -108,7 +108,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "-s split genome in chrs, align only homologous chrs         ".
     "(optional, requires regex to match chr names\n".
     "                                                            ".
-    ' ie: -S \'^\d+$\' , remove tmp/ if new regex used)'."\n";
+    ' ie: -s \'^\d+$\' , remove tmp/ if new regex used)'."\n";
  
   print   "-H genome is highly repetitive                              ".
     "(optional, <minimap RAM, masks intergenes)\n"; 
@@ -896,7 +896,7 @@ if($dogsalign && %ANIfiles) {
       open(ANIPAIR,"<",$outANIfile) ||
         warn "# WARN, $outANIfile does not exist, skip it\n";
       while(<ANIPAIR>) { 
-        if(/^\S+\s(\S+)\s(\d+)/) {
+        if(/^\S+\t(\S+)\t(\d+)/) {
           ($value,$size) = ($1, $2);
           push(@ANIs,$value);
           push(@sizes,$size);
@@ -910,16 +910,16 @@ if($dogsalign && %ANIfiles) {
         foreach my $v (0 .. $#ANIs) {
           $value += ($ANIs[$v] * $sizes[$v]/$totalsize);
         } 
-        $value = sprintf("%1.2f",$value/scalar(@sizes)); 
+        $value = sprintf("%1.2f",$value); 
       } else {
         $value = $ANIs[0];
       }
  
       $ANI{$taxon}{$taxon2} = $value;
-      $ANI{$taxon2}{$taxon} = $value;
+      $ANI{$taxon2}{$taxon} = $value; print "$value\n";
     }
   }
-} 
+} exit;
 
 ## 3) extract clusters of collinear sequences and produce pangene set matrices
 

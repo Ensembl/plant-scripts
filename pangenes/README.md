@@ -29,7 +29,8 @@ The next flowchart shows the three main tasks of the pipeline:
 
 ![Pipeline flowchart](pics/flow-get-pangenes.png)
 
-It can be run on a cluster both with options -m cluster (see more more about this below)
+By defaults it performs the required tasks serially, but it 
+can also run in parallel on a cluster both with options -m cluster (see more about this below)
 and -m dryrun, if you prefer to paste your commands in batches directly.
 
 The second block of the flow aligns genome sequences (in pairs A & B) and uses 
@@ -82,17 +83,12 @@ This should print something like this:
       EXE_CUTSEQUENCES : OK (path:_cut_sequences.pl)
       EXE_CLUSTANALYSIS : OK (path:_cluster_analysis.pl)
 
-In addition to minimap2, the Wfmash aligner can also be used to produce WGAs.
-This requires more dependencies:
+In addition to minimap2, two other genome aligners have been integrated:
 
-* https://github.com/ekg/wfmash
-
-In most systems this can be installed with 
-
-    cd ../..
-    make install_wfmash
-
-See other installation options at https://github.com/ekg/wfmash#installation
+|software|flag|source|installation instructions|
+|:-------|:---|:-----|:------------------------|
+|GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make install_gsalign |
+|Wfmash| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash |
 
 ## Example run
 

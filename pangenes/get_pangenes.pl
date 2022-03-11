@@ -991,6 +991,10 @@ while(<CLUSTERSLOG>) {
 }
 close(CLUSTERSLOG);
 
+if(!$dogsalign) {
+  exit(0);
+}
+
 # print ANI matrix in output folder, 
 # Note: order might be different in POCS matrix
 my $ANI_matrix_file = $outfolder . '/ANI.tsv';

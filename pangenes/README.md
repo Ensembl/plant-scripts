@@ -88,7 +88,7 @@ In addition to minimap2, two other genome aligners have been integrated:
 |software|flag|source|installation instructions|
 |:-------|:---|:-----|:------------------------|
 |GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make install_gsalign |
-|Wfmash| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash |
+|Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash |
 
 ## Example run
 

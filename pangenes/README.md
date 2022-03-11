@@ -221,8 +221,29 @@ The TSV files of collinear pairs supporting these clusters can be found in
 Multiple alignments can be computed for each FASTA file to determine most 
 conserved gene structures.
 
-The script also produces % of Conserved Sequence (POCS) and pangenome matrices, 
-see examples 
-[here](https://github.com/Ensembl/plant-scripts/tree/master/phylogenomics). 
+The script also produces % of Conserved Sequence (POCS) and pangenome matrices,
+which look like this:
+ 
+    genomes	Oryza_nivara_v1.chr1	Oryza_indica.ASM465v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
+    Oryza_nivara_v1.chr1	100.00	59.69	60.96
+    Oryza_indica.ASM465v1.chr1	59.69	100.00	61.54
+    Oryza_sativa.IRGSP-1.0.chr1	60.96	61.54	100.00
 
-Note that currently clusters are not guaranteed to be sorted by chr position.
+and
+
+    source:Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr
+    chrunsorted	NA	NA	NA	
+    gene:ONIVA01G00100	gene:ONIVA01G00100	gene:Os01g0100100,gene:Os01g0100200	gene:BGIOSGA002569,gene:BGIOSGA002570	
+    gene:ONIVA01G00110	gene:ONIVA01G00110	gene:Os01g0100300	gene:BGIOSGA002567	
+    gene:ONIVA01G00120	gene:ONIVA01G00120	gene:Os01g0100400	gene:BGIOSGA002571	
+    gene:ONIVA01G00130	gene:ONIVA01G00130	gene:Os01g0100500	gene:BGIOSGA002572	
+    ...
+
+If GSAlign was selected (option -g), ANI matrices are also produced:
+
+    genomes	Oryza_indica.ASM465v1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
+    Oryza_indica.ASM465v1.chr1	100.00	97.88	97.47
+    Oryza_nivara_v1.chr1	97.88	100.00	96.86
+    Oryza_sativa.IRGSP-1.0.chr1	97.47	96.86	100.00
+
+These matrices can be plotted as explained [here](https://github.com/Ensembl/plant-scripts/tree/master/phylogenomics). 

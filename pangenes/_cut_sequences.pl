@@ -159,7 +159,7 @@ sub parse_gffread {
 	return $num_seqs
 }
 
-# Parses gene names as parent IDs of transcripts.
+# Reads in GFF file to parse gene names as parent IDs of transcripts.
 # Returns: 
 # i) ref to hash mapping transcript ID -> gene ID
 # ii) ref to hash mapping transcript ID -> gene coords
@@ -182,7 +182,7 @@ sub parse_genes {
 			$geneid = $2;
 			chomp $geneid;
 
-			$coord = "$F[0]:$F[3]-$F[4]";
+			$coord = "$F[0]:$F[3]-$F[4]($F[6])";
 
 			$names{$mrnaid} = $geneid;
 			$coords{$mrnaid} = $coord;

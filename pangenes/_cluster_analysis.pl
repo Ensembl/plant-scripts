@@ -37,7 +37,7 @@ my ( $outfolder, $params, $bedtools_path) = ('', '', '');
 my ( $help, $sp, $sp2, $show_supported, $seed );
 my ( $infile, $filename, $cdsfile, $pepfile, $gdnafile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
-my ( $NOSINGLES , $dogrowth ) = ( 0, 0 );
+my ( $NOSINGLES, $dogrowth, $chregex ) = ( 0, 0, '' );
 my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
 my ( @infiles, @supported_species, @ignore_species);
 my ( %species, %ignore, %supported );
@@ -54,6 +54,7 @@ GetOptions(
     "folder|f=s"    => \$outfolder,
     "seq|s=s"       => \$seqfolder,
     "mintaxa|t=i"   => \$min_taxa,
+    "regex|x=s"     => \$chregex,
     #"soft|z"        => \$dosoft,
     "seed|R=i"      => \$seed,
     "bedtools|B=s"  => \$bedtools_path
@@ -70,6 +71,7 @@ sub help_message {
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-s folder with gene seqs of species in TSV (optional, default current folder, files created by _cut_sequences.pl)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
+      . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
       #. "-z add soft-core to genome growth analysis (optional)\n"
@@ -144,7 +146,7 @@ else {
     }
 
     print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES ".
-      "-v $verbose -t $min_taxa -R $RNDSEED -B $bedtools_path\n";
+      "-v $verbose -t $min_taxa -x $chregex -R $RNDSEED -B $bedtools_path\n";
 
     print "# ";
     foreach $infile (@infiles) {
@@ -223,7 +225,7 @@ print "# total selected species : $n_of_species\n\n";
 my ( $cluster_id, $chr, $seqtype, $coords_id ) = ( 0, '' );
 my ( $line, $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
-my ( $ref_geneid, $ref_fasta, $segment_cluster, $num_segments );
+my ( $ref_geneid, $ref_fasta, $ref_id2chr, $segment_cluster, $num_segments );
 my ( %incluster, %cluster, %coords, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %POCS_matrix );
 my ( %sorted_ids, %id2chr );
@@ -417,9 +419,10 @@ foreach $species (@supported_species) {
             die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
         }
 
-        ( $ref_geneid, $ref_fasta ) = parse_sequence_FASTA_file( $filename );
+        ( $ref_geneid, $ref_fasta, $ref_id2chr ) = parse_sequence_FASTA_file( $filename );
 
         $sorted_ids{$species} = $ref_geneid;
+        $id2chr{$species} = $ref_id2chr;
 
         # count number of genes in this species
         $totalgenes{$species} = scalar(@$ref_geneid);
@@ -695,8 +698,22 @@ foreach $sp2 (sort {$POCS2ref{$b}<=>$POCS2ref{$a}} keys(%POCS2ref)) {
 
 ## 4)  write pangenome matrices in output folder
 
-# Note: clusters are not necessarily ordered
-push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
+# unsorted clusters
+if(!$chregex){
+    push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
+}
+else { # ordered along homologous chromosomes matching regex
+
+    %sorted_cluster_ids = sort_clusters_by_position( 
+        \@supported_species_POCS,\%sorted_ids, \%id2chr, $chregex, 
+        \%incluster, \%cluster );
+
+    foreach $chr (sort keys(%sorted_cluster_ids)) {
+	    printf("# clusters sorted by position in chr %s = %d\n", 
+        $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
+    }
+} #exit;
+
 
 # set matrix filenames and write headers
 my $pangene_matrix_file = "$outfolder/pangene_matrix$params\.tab";
@@ -748,10 +765,13 @@ foreach $species (@supported_species_POCS) {
 
         foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
 
-            if ( $cluster{$cluster_id}{$species} ) {
+            if( defined($cluster{$cluster_id}{$species}) && 
+                scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
+
                 printf( PANGEMATRIX "\t%d",
                     scalar( @{ $cluster{$cluster_id}{$species} } )
                 );
+
                 printf( PANGENEMATRIX "\t%s",
                     join( ',', @{ $cluster{$cluster_id}{$species} } )
                 );
@@ -901,22 +921,30 @@ print "# core-gene (number of clusters) = $core_file\n";
 # format: ">mrnaid geneid coords [production_name]" and thus supports
 # the same gene having several associated sequences.
 # Returns:
-# i) ref to list with coord-sorted gene ids
-# ii) ref to hash with FASTA strings with genes as keys
+# i)   ref to list with coord-sorted gene ids
+# ii)  ref to hash with FASTA strings with genes as keys
+# iii) ref to hash mapping gene ids to chr
 sub parse_sequence_FASTA_file {
 
     my ( $fname ) = @_;
-    my ( $geneid, @geneids, %fasta );
+    my ( $geneid, $coords, $chr, @geneids, %id2chr, %fasta );
 
     open(FASTA,"<",$fname) || 
         die "# ERROR(parse_sequence_FASTA_file): cannot read $fname\n";
-    while(<FASTA>){
-        if(/^>\S+\s+(\S+)\s+\S+\s+\[[^\]]+\]/){
-            $geneid = $1;
+    while(<FASTA>) {
+        #>transcript:Os01t0100100-01 gene:Os01g0100100 1:2983-10815(+) [Oryza_sativa.IRGSP-1.0.chr1]
+        if(/^>\S+\s+(\S+)\s+(\S+)\s+\[[^\]]+\]/) {
+            ($geneid, $coords) = ($1,$2);
+            if($coords =~ m/^(\S+)?:\d+-\d+\(([+-])\)/) {
+                $chr = $1;
+            } else { # should not occur
+                $chr = 'NA';
+            }
 
             # conserved gene id order			
-            if(!$fasta{$geneid}){
+            if(!$fasta{$geneid}) {
                 push(@geneids,$geneid);
+                $id2chr{$geneid} = $chr;
             }
 
             $fasta{$geneid} .= $_;
@@ -926,7 +954,7 @@ sub parse_sequence_FASTA_file {
     }
     close(FASTA);
 
-    return ( \@geneids, \%fasta );
+    return ( \@geneids, \%fasta, \%id2chr );
 }
 
 # Takes the name string of a FASTA file created by bedtools getfasta
@@ -1004,5 +1032,166 @@ sub write_boxplot_file {
     close(BOXDATA);
 
     return $outfile;
+}
+
+# Returns a hash with lists of clusters sorted by chr position.
+# Only genes in chromosomes, named according to regex, are sorted; 
+# remaining genes are added to virtual chr 'unplaced'
+# 
+# Params:
+# i)   ref to list with species, reference in 1st position
+# ii)  ref to 2-way hash with a list of chr-sorted gene_ids per species
+# iii) ref to 2-way hash mapping gene_ids to per species
+# iv)  regex to match chr names; unmatched are added to 'unplaced' virtual chr
+# v)   ref to hash mapping gene_ids to clusters
+# vi)  ref to 2-way hash containing clustered gene_ids
+# vii) optional boolean flag to enable verbose output
+sub sort_clusters_by_position {
+
+    my ($ref_species, $ref_sorted_ids, $ref_id2chr, 
+        $regex, $ref_incluster, $ref_cluster, 
+        $verbose) = @_;
+
+    my $species_seen = 0;
+    my ($species, $sp, $gene, $last_gene, $gene_id, $chr, $cluster_id);
+    my ($cluster_idx, $cluster_id2, $chr_name, $sortable_chr);
+    my ($chr2, $gene_id2, $gene2, $last_gene2, $next_cluster_id);
+    my $prev_cluster_idx; # index of cluster where previous clustered gene sits
+    my $next_cluster_idx; # index of cluster where next clustered gene sits
+    my (%cluster_seen, %sorted_cluster_ids);
+
+    foreach $species (@$ref_species) {
+
+        $species_seen++;
+        $prev_cluster_idx = -1;
+        $last_gene = scalar(@{ $ref_sorted_ids->{$species} }) - 1;
+
+        foreach $gene (0 .. $last_gene) {
+
+            # initialize this gene
+            $sortable_chr = 0;
+            ($chr_name, $cluster_id) = ('unplaced', '');
+
+            $gene_id = $ref_sorted_ids->{$species}[$gene];
+            $chr = $ref_id2chr->{$species}{$gene_id};
+
+            # check chr matches regex, only these chromosomes
+            # are guaranteed to be homologous across genomes
+            if($chr =~ m/$regex/) {
+                $sortable_chr = 1; 
+                $chr_name = $chr; 
+            }
+
+            # find out which cluster contains this gene
+            if(!defined($ref_incluster->{$gene_id})){
+                print "# WARNING(sort_clusters_by_position): skip unclustered $gene_id\n" 
+                    if($verbose);
+                    next;
+            } else {
+                $cluster_id = $ref_incluster->{$gene_id};
+            }  
+
+            # first time this cluster was seen (a cluster can only be added once)
+            if(!$cluster_seen{$cluster_id}) {
+				
+                # non-reference species, find out where to insert this cluster 
+                if($species_seen > 1 && $sortable_chr == 1) {
+
+                    ## 1) get index of cluster harborig next clustered gene
+                    $next_cluster_idx = -1;
+                    foreach $gene2 ($gene .. $last_gene) {
+                            
+                        $gene_id2 = $ref_sorted_ids->{$species}[$gene2];
+                        $chr2 = $ref_id2chr->{$species}{$gene_id2};
+                        last if($chr2 ne $chr);
+ 
+                        if($ref_incluster->{$gene_id2} && 
+                            $cluster_seen{$ref_incluster->{$gene_id2}}){
+
+                            # cluster containg this sequence
+                            $next_cluster_id = $ref_incluster->{$gene_id2};
+
+                            # index of this cluster in sorted list
+                            $next_cluster_idx = _get_element_index( 
+                                $sorted_cluster_ids{$chr}, $next_cluster_id);
+                            last;
+                        }
+                    }
+
+                    print "$species $gene_id $cluster_id $chr $prev_cluster_idx ".
+                        "$next_cluster_idx $next_cluster_id\n" if($verbose); 
+
+                    # 2) actually insert cluster in list 
+
+                    # before previous clusters
+                    # prev: NA
+                    # next: cluster-------->[0] 
+                    if($prev_cluster_idx == -1) {
+
+                        unshift( @{ $sorted_cluster_ids{$chr_name} }, $cluster_id );
+                        $cluster_idx = 0
+ 
+                    } elsif($next_cluster_idx == -1) {
+                            # after previous clusters -> 
+                            # prev: [$#sorted_cluster_ids]-------->cluster
+                            # next: NA
+							
+                        push( @{ $sorted_cluster_ids{$chr_name} }, $cluster_id );
+                        $cluster_idx = scalar(@{ $sorted_cluster_ids{$chr_name} })-1;
+
+                    }else {
+                        # inserted amid previous clusters
+                        # prev: [0..N]----->cluster
+                        # next: cluster-----> [N+1..$#sorted_cluster_ids]
+					
+                        splice( @{ $sorted_cluster_ids{$chr_name} }, 
+                            $prev_cluster_idx+1, 0, $cluster_id );
+                        $cluster_idx = $prev_cluster_idx+1
+                    }
+   
+                    # take note this cluster is already processed
+                    $cluster_seen{$cluster_id}++;    
+
+                } else {
+
+                    push(@{ $sorted_cluster_ids{$chr_name} }, $cluster_id);
+                    $cluster_seen{$cluster_id}++;
+
+                    printf("> %s %d\n",
+                        $cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name} })) 
+                        if($verbose);
+                }
+            } else {
+                # cluster already sorted, can only happen with non-ref species
+                if($sortable_chr == 1) {
+                    $cluster_idx =
+                        _get_element_index( $sorted_cluster_ids{$chr_name}, $cluster_id);
+                }
+            }
+
+            # save this cluster as previous for next iteration
+            $prev_cluster_idx = $cluster_idx;
+        }
+    }
+
+    return %sorted_cluster_ids;
+}
+
+# Takes 3 params:
+# i) list ref
+# ii) string of element to search
+# iii) integer with 0-based starting index, optional
+# Return index of elem in list, else -1
+sub _get_element_index {
+
+    my ($ref_list, $elem) = @_;
+	
+    foreach my $idx (0 .. $#$ref_list) {
+        if($ref_list->[$idx] eq $elem) {
+            return $idx
+        }
+    }
+
+    return -1;
 }
 

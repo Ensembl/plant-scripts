@@ -4,7 +4,8 @@
 These scripts interrogate Ensembl Plants through [REST endpoints](https://rest.ensembl.org) 
 and the FTP site to export data that might be useful for phylogenomic and pan-gene set studies.
 
-These scripts were tested at the [CABANA workshop: Analysis of crop genomics data ](http://training.ensembl.org/events/2021/2021-03-01-CABANA).
+These scripts were tested at the 
+[CABANA workshop: Analysis of crop genomics data ](http://training.ensembl.org/events/2021/2021-03-01-CABANA).
 
 ## Documentation and examples
 
@@ -80,7 +81,7 @@ perl ens_syntelogs.pl -c Brassicaceae -f Brassicaceae.fna
 
 ### ens_pangene_analysis.pl
 
-This script can be used to analyse a clade-specific pan-gene set, with several options:
+This is an experimental script that can be used to analyse a clade-specific pan-gene set, with several options:
 
 ```
 usage: ens_pangene_analysis.pl [options]

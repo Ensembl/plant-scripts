@@ -11,3 +11,5 @@
 02032022: added & tested _collinear_genes.pl -sg
 04032022: added & tested get_pangenes.pl -s
 04032022: get_pangenes.pl -s prints ANI matrix from GSAlign estimates
+15032022: collinearity TSV files sorted
+15032022: pangenome matrices are chr-sorted with -s

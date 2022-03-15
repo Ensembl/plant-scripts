@@ -366,7 +366,7 @@ else {
         $splitPAF =  $tmpdir . "_$sp2.$sp1.$alg.split.$chr.paf";
         if($repetitive) {
             $splitPAF =~ s/\.paf$/.highrep.paf/;
-        }#print ">$chr $chrfasta1 $chrfasta2 $splitPAF\n"; 
+        }
 
         if ( $reuse && -s $splitPAF ) {
             print "# re-using $splitPAF\n";
@@ -374,8 +374,8 @@ else {
             next;
         }
 
-        # make empty PAF file when chr files are empty
-        if(!$indexonly && (!-s $chrfasta1 || !-s $chrfasta2)) {
+        # create empty PAF file when chr files are empty, and move to next chr
+        if(!-s $chrfasta1 || !-s $chrfasta2) {
             open(EMPTYPAF, ">", $splitPAF); 
             close(EMPTYPAF);
             push(@WGAoutfiles, $splitPAF);

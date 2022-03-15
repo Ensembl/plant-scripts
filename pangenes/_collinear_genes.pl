@@ -48,9 +48,9 @@ my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]
 my $SAMTOOLSEXE = 'samtools';
 
 my $THREADS      = 4;
-my $SORTLIMITRAM = "500M";                               # buffer size
-my $SORTBIN      = "sort --buffer-size=$SORTLIMITRAM";
-$ENV{'LC_ALL'} = 'POSIX';
+my $SORTBIN      = $ENV{'EXE_SORT'} || 'sort';
+my $SORTPARS     = "--buffer-size=1G "; 
+$ENV{'LC_ALL'}   = 'POSIX';
 my $GZIPBIN      = $ENV{'EXE_GZIP'} || 'gzip';
 my $BZIP2BIN     = $ENV{'EXE_BZIP2'} ||'bzip2';
 
@@ -600,7 +600,7 @@ elsif ( !-s $sp2wgaBEDfile ) {
     die "# ERROR: failed generating $sp2wgaBEDfile file ($cmd)\n";
 }
 
-$cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp2wgaBEDfile > $sp2wgaBEDfile_sorted";
+$cmd = "$SORTBIN $SORTPARS -k4,4 -k5,5nr -k14,14nr $sp2wgaBEDfile > $sp2wgaBEDfile_sorted";
 system("$cmd");
 if ( $? != 0 ) {
     die "# ERROR: failed sorting (WGA, $cmd)\n";
@@ -622,7 +622,7 @@ elsif ( !-s $sp1wgaBEDfile ) {
     die "# ERROR: failed generating $sp1wgaBEDfile file ($cmd)\n";
 }
 
-$cmd = "$SORTBIN -k4,4 -k5,5nr -k14,14nr $sp1wgaBEDfile > $sp1wgaBEDfile_sorted";
+$cmd = "$SORTBIN $SORTPARS -k4,4 -k5,5nr -k14,14nr $sp1wgaBEDfile > $sp1wgaBEDfile_sorted";
 system("$cmd");
 if ( $? != 0 ) {
     die "# ERROR: failed sorting (WGArev, $cmd)\n";
@@ -697,7 +697,7 @@ my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped,
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
         $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
 
-$cmd = "$SORTBIN -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
+$cmd = "$SORTBIN $SORTPARS -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
            "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";
 
 system($cmd);

@@ -46,8 +46,12 @@ my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
 my @FEATURES2CHECK = (
   'EXE_MINIMAP','EXE_BEDTOOLS','EXE_GFFREAD',
   'EXE_COLLINEAR','EXE_CUTSEQUENCES','EXE_CLUSTANALYSIS',
-  'EXE_GZIP', 'EXE_BZIP2'
+  'EXE_GZIP', 'EXE_BZIP2', 'EXE_SORT'
 );
+
+my $SORTBIN      = $ENV{'EXE_SORT'} || 'sort';
+my $SORTPARS     = "--buffer-size=1G "; 
+$ENV{'LC_ALL'}   = 'POSIX';
 
 my (%opts,%included_input_files);
 my ($newDIR,$output_mask,$pancore_mask,$include_file) = ('','','',0);
@@ -857,10 +861,11 @@ if($runmode eq 'cluster') {
 
 print "# done\n\n";
 
-# concat alignment results to $merged_tsv_file (global var)
+# sort & concat alignment results to $merged_tsv_file (global var)
 if(@tmp_wga_output_files) {
-  print "# concatenating WGA results...\n";
-  $command = 'cat ';
+  print "# sorting collinearity results...\n";
+
+  $command = "$SORTBIN $SORTPARS -k1,1 -k4,4nr ";
   foreach $outTSVfile (@tmp_wga_output_files) {
     if(!-e $outTSVfile) {
       die "# EXIT, $outTSVfile does not exist, WGA might have failed ".
@@ -937,7 +942,11 @@ $clusteroutfile = $outfolder.'.queue';
 $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
   "-T $merged_tsv_file -r $reference_name ".
   "-f $outfolder -t $min_cluster_size -s $newDIR ".
-  "-B $ENV{'EXE_BEDTOOLS'} ";
+  "-B $ENV{'EXE_BEDTOOLS'} -v ";
+
+if($split_chr_regex) {
+    $command .= "-x '$split_chr_regex' ";
+}
 
 if($do_genome_composition) {
   $command .= "-g $NOFSAMPLESREPORT -R $random_number_generator_seed ";

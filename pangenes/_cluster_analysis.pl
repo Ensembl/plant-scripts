@@ -723,7 +723,7 @@ my $pangene_gene_file   = "$outfolder/pangene_matrix_genes$params\.tab";
 my $pangene_matrix_tr   = "$outfolder/pangene_matrix$params\.tr.tab";
 my $pangene_gene_tr     = "$outfolder/pangene_matrix_genes$params\.tr.tab";
 my $pangene_fasta_file  = "$outfolder/pangene_matrix$params\.fasta";
-my $pangene_bed_file    = "$outfolder/pangene_matrix$params\.bed";
+my $pangene_bed_file    = "$outfolder/pangene_matrix$params\.tr.bed";
 
 open( PANGEMATRIX, ">$pangene_matrix_file" )
   || die "# EXIT: cannot create $pangene_matrix_file\n";
@@ -805,8 +805,11 @@ print "# pangene_file (occup) = $pangene_matrix_file tranposed = $pangene_matrix
 print "# pangene_file (names) = $pangene_gene_file transposed = $pangene_gene_tr\n";
 #print "# pangene_FASTA_file = $pangene_fasta_file\n";
 
-# BED format matrix if clusters are chr-sorted
+# 4.1) BED format matrix if clusters are chr-sorted
 if($chregex) {
+
+    my ( $start, $end, $strand, $occup, @sorted_ref_gene_ids );
+
     open( PANGEMATRIBED, ">$pangene_bed_file" )
         || die "# EXIT: cannot create $pangene_bed_file\n";
 
@@ -814,31 +817,59 @@ if($chregex) {
 
         foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
 
+            # compute occupancy (number of genomes where gene is present)
+            $occup = 0;
             foreach $species (@supported_species_POCS) {
+                if(defined($cluster{$cluster_id}{$species}) &&
+                    scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
+                    $occup++
+                } 
+            }            
 
-                # 1st species (reference)
-                if($species eq $ref_genome) {
+            # check reference genes, if any
+            if( defined($cluster{$cluster_id}{$ref_genome}) &&
+                scalar(@{ $cluster{$cluster_id}{$ref_genome} }) > 0 ) {
 
-                   # work out coords
-                   if( defined($cluster{$cluster_id}{$species}) &&
-                       scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
+                @sorted_ref_gene_ids = @{ $cluster{$cluster_id}{$ref_genome} };
 
-                       foreach $gene_stable_id (@{ $cluster{$cluster_id}{$species} }) {
-           
-                           printf("%s\t%d\t%d\t%s\t100\t%s\t%s",
-                               $id2coords{$species}{$gene_stable_id}[0],
-                               $id2coords{$species}{$gene_stable_id}[1],
-                               $id2coords{$species}{$gene_stable_id}[2],
-                               $cluster_id,
-                               $gene_stable_id_id}[3]);
-                       }
-                   } else { # gene absent from reference
-                       #print "#
-                   }
+            } else { # if none add dummy
+                @sorted_ref_gene_ids = ('dummy');
+            }
 
-                } else { # all other species/annotations
+            foreach $gene_stable_id (@sorted_ref_gene_ids) {
 
+                # print each reference gene in a new BED line
+                if($gene_stable_id ne 'dummy' ) {
+
+                    ( $start, $end, $strand ) =
+                        @{$id2coords{$species}{$gene_stable_id}}[1,2,3];
+
+                        printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
+                            $chr,$start,$end,$cluster_id,$occup,$strand,$gene_stable_id);
+ 
+                } else {
+                    ( $start, $end, $strand ) = ( "#$chr", 0, 0 );
+
+                    printf(PANGEMATRIBED "#%s\tNA\tNA\t%s\t%d\t%s\tNA",
+                        $chr,$cluster_id,$occup,$strand);
                 }
+         
+                # print genes from other species
+                foreach $species (@supported_species_POCS) {
+
+                    next if($species eq $ref_genome);
+
+                    if( defined($cluster{$cluster_id}{$species}) &&
+                        scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
+
+                        printf(PANGEMATRIBED "\t%s",
+                            join( ',', @{ $cluster{$cluster_id}{$species} } ));
+                    } else {    # absent genes
+                        print PANGEMATRIBED "\tNA";
+                    }
+                }
+ 
+                print PANGEMATRIBED "\n";
             }
         }
     }

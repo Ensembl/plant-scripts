@@ -28,9 +28,12 @@ my %SEQEXT = (
     'pep'  => '.cds.faa'
 );
 
+# cluster quality control
+my $MAXDISTNEIGHBORS = 5; # neighbor genes in a cluster cannot be more than N genes away
+
 # genome composition report
 my $RNDSEED          = 12345;
-my $NOFSAMPLESREPORT = 10;
+my $NOFSAMPLESREPORT = 5;
 
 my ( $ref_genome, $seqfolder, $clusterdir ) = ( '', '', '' );
 my ( $outfolder, $params, $bedtools_path) = ('', '', '');
@@ -217,6 +220,9 @@ if($show_supported) {
     exit(0);
 }
 
+print "\n# clustering parameters:\n";
+print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n\n";
+
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
@@ -227,8 +233,8 @@ my ( $line, $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
 my ( $ref_geneid, $ref_fasta, $ref_coords, $segment_cluster, $num_segments );
 my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
-my ( %totalgenes, %totalclusters, %POCS_matrix );
-my ( %sorted_ids, %id2coords );
+my ( %totalgenes, %totalclusters, %totaloverlap, %POCS_matrix );
+my ( %unclustered, %sorted_ids, %id2coords );
 
 # columns of TSV file as produced by get_collinear_genes.pl
 
@@ -249,7 +255,10 @@ my (
 );
 
 # Iteratively get & parse TSV files that define pairs of collinear genes (made with _collinear_genes.pl) 
-# Note: Clusters emerge after parsing all pairwise TSV files, see heuristic below
+# Clusters are first created as pairs and grow as new collinear genes from other species are added.
+# Note: Assumes TSV files have been sorted by $gene_stable_id and $overlap (see get_pangenes.pl) and
+# warns (-v) about genes whose partner was previously added to a different cluster
+
 print "# parsing TSV files\n";
 foreach $infile (@infiles) {
 
@@ -289,6 +298,9 @@ foreach $infile (@infiles) {
 
                 push( @{ $cluster{$cluster_id}{$species} }, $gene_stable_id );
 
+                # record overlap
+                $totaloverlap{$gene_stable_id} += $overlap;
+
             } else {
                 # set cluster for $hom_species anyway
                 $cluster_id = $incluster{$gene_stable_id};
@@ -301,9 +313,11 @@ foreach $infile (@infiles) {
                 # currently 1st pair where $hom_gene_stable_id appears (heuristic)
                 $incluster{$hom_gene_stable_id} = $cluster_id;
 
-                push( @{ $cluster{$cluster_id}{$hom_species} },
-                    $hom_gene_stable_id
-                );
+                push( @{ $cluster{$cluster_id}{$hom_species} }, $hom_gene_stable_id);
+
+                # record overlap
+                $totaloverlap{$hom_gene_stable_id} += $overlap;
+
             } else {
                 # $hom_species gene already clustered (same or different cluster)
                 if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
@@ -337,14 +351,6 @@ foreach $infile (@infiles) {
     close(TSV);
 } print "\n";  
 
-# count how many clusters include each species
-foreach $cluster_id (@cluster_ids) {
-    foreach $species (@supported_species) {
-        if ( $cluster{$cluster_id}{$species} ) {
-            $totalclusters{$species}++;
-        }
-    }
-}  
 
 # 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
 # and store them in a hash with (species,coords) keys
@@ -412,6 +418,9 @@ foreach $species (@supported_species) {
 # Note: there might be 1+ sequences for the same gene, same species in GFF
 foreach $species (@supported_species) {
 
+    # init, see 2.3
+    $unclustered{$species} = 0;
+
     foreach $seqtype (@SEQTYPE) {
 
         $filename = "$seqfolder$species$SEQEXT{$seqtype}";
@@ -420,14 +429,6 @@ foreach $species (@supported_species) {
         }
 
         ( $ref_geneid, $ref_fasta, $ref_coords ) = parse_sequence_FASTA_file( $filename );
-
-         
-
-        $sorted_ids{$species} = $ref_geneid;
-        $id2coords{$species} = $ref_coords;
-
-        # count number of genes in this species
-        $totalgenes{$species} = scalar(@$ref_geneid);
 
         # save these sequences
         foreach $gene_stable_id ( @$ref_geneid ) {
@@ -439,10 +440,86 @@ foreach $species (@supported_species) {
             die "# ERROR: cannot create $outfolder/input.log\n";
         print INLOG "$filename\n";
         close(INLOG);
+
+        if($seqtype eq 'cdna') {
+            $sorted_ids{$species} = $ref_geneid;
+            $id2coords{$species} = $ref_coords;
+
+            # count number of genes in this species
+            $totalgenes{$species} = scalar(@$ref_geneid);
+        }
     }
 }
 
-# 2.3) add unaligned sequences as singletons 
+
+# 2.3) quality control of clusters, criteria: 
+# i)  genes from same species should be neighbors, else should be removed
+# ii) genes from same species should be ordered along chr
+
+my ($best_index, $index, $index_dist, $new_cluster_id);
+
+foreach $cluster_id (@cluster_ids) { 
+    foreach $species (@supported_species) {
+
+        if( defined($cluster{$cluster_id}{$species}) &&
+            scalar(@{ $cluster{$cluster_id}{$species} }) > 1 ) {
+
+            my @checked_ids;
+
+            # rank genes in terms of cumulative overlap
+            my @ranked_ids = sort {$totaloverlap{$b}<=>$totaloverlap{$a}}
+                @{ $cluster{$cluster_id}{$species} };
+ 
+            # get index of gene with highest overlap
+            $gene_stable_id = shift(@ranked_ids);
+            $best_index = _get_element_index($sorted_ids{$species},$gene_stable_id);
+            push(@checked_ids, $gene_stable_id);
+
+            # iteratively compute index distance of remaining genes 
+            foreach $gene_stable_id (@ranked_ids) {
+                    $index = _get_element_index($sorted_ids{$species},$gene_stable_id);
+                    $index_dist = abs($index - $best_index);
+
+                    if($index_dist > $MAXDISTNEIGHBORS) {
+
+                        if($verbose) {
+                            print "# WARN: remove $gene_stable_id from cluster $cluster_id ($index_dist)\n";
+                        }
+
+                        # create new cluster
+                        $new_cluster_id = $gene_stable_id;
+                        $incluster{$gene_stable_id} = $new_cluster_id;
+
+                        push( @{ $cluster{$new_cluster_id}{$species} }, $gene_stable_id );
+                        push( @cluster_ids, $cluster_id );
+
+                        $totalclusters{$species}++;
+                        $unclustered{$species}++;
+
+                    } else { # gene passes QC
+                        push(@checked_ids, $gene_stable_id);
+                    }
+            }
+
+            # updated gene_ids in cluster
+            $cluster{$cluster_id}{$species} = \@checked_ids; #print join(",",@{ $cluster{$cluster_id}{$species} })."\n";
+        }
+    }
+} 
+
+%totaloverlap = (); # not needed anymore
+
+# count how many clusters include each species
+foreach $cluster_id (@cluster_ids) {
+    foreach $species (@supported_species) {
+        if ( $cluster{$cluster_id}{$species} ) {
+            $totalclusters{$species}++;
+        }
+    }
+}
+
+
+# 2.4) add unpaired sequences as singletons 
 my $total_seqs = 0;
 foreach $species (@supported_species) {
 
@@ -466,14 +543,15 @@ foreach $species (@supported_species) {
 
     $total_seqs += $totalgenes{$species};
 
-    printf( "# %s : sequences = %d clusters = %d (singletons = %d)\n",
-        $species, $totalgenes{$species}, $totalclusters{$species}, $singletons );
+    printf( "# %s : sequences = %d clusters = %d (unclustered = %d , singletons = %d)\n",
+        $species, $totalgenes{$species}, $totalclusters{$species}, 
+        $unclustered{$species}, $singletons );
 }
 
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
 
-# 2.4) create and print shadow clusters of genomic sequences
+# 2.5) create and print shadow clusters of genomic sequences
 foreach $cluster_id (@cluster_ids) {
 
     next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
@@ -801,8 +879,10 @@ close(PANGEMATRIF);
 system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
-print "# pangene_file (occup) = $pangene_matrix_file tranposed = $pangene_matrix_tr\n";
-print "# pangene_file (names) = $pangene_gene_file transposed = $pangene_gene_tr\n";
+print "# pangene_file (occup) = $pangene_matrix_file\n";
+print "# pangene_file (occup, tranposed) = $pangene_matrix_tr\n";
+print "# pangene_file (names) = $pangene_gene_file\n";
+print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
 #print "# pangene_FASTA_file = $pangene_fasta_file\n";
 
 # 4.1) BED format matrix if clusters are chr-sorted
@@ -816,6 +896,8 @@ if($chregex) {
     foreach $chr (sort keys(%sorted_cluster_ids)) {
 
         foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+
+            $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
 
             # compute occupancy (number of genomes where gene is present)
             $occup = 0;
@@ -845,13 +927,13 @@ if($chregex) {
                         @{$id2coords{$species}{$gene_stable_id}}[1,2,3];
 
                         printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
-                            $chr,$start,$end,$cluster_id,$occup,$strand,$gene_stable_id);
+                            $chr,$start,$end,$filename,$occup,$strand,$gene_stable_id);
  
                 } else {
                     ( $start, $end, $strand ) = ( "#$chr", 0, 0 );
 
                     printf(PANGEMATRIBED "#%s\tNA\tNA\t%s\t%d\t%s\tNA",
-                        $chr,$cluster_id,$occup,$strand);
+                        $chr,$filename,$occup,$strand);
                 }
          
                 # print genes from other species
@@ -1178,7 +1260,7 @@ sub sort_clusters_by_position {
                 # non-reference species, find out where to insert this cluster 
                 if($species_seen > 1 && $sortable_chr == 1) {
 
-                    ## 1) get index of cluster harborig next clustered gene
+                    ## 1) get index of cluster harboring next clustered gene
                     $next_cluster_idx = -1;
                     foreach $gene2 ($gene .. $last_gene) {
                             
@@ -1266,7 +1348,7 @@ sub sort_clusters_by_position {
 sub _get_element_index {
 
     my ($ref_list, $elem) = @_;
-	
+
     foreach my $idx (0 .. $#$ref_list) {
         if($ref_list->[$idx] eq $elem) {
             return $idx

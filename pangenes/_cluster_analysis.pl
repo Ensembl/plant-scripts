@@ -820,13 +820,17 @@ if($chregex) {
                 if($species eq $ref_genome) {
 
                    # work out coords
-
                    if( defined($cluster{$cluster_id}{$species}) &&
                        scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
 
                        foreach $gene_stable_id (@{ $cluster{$cluster_id}{$species} }) {
            
-                           print "$cluster_id $gene_stable_id $id2coords{$species}{$gene_stable_id}[0]\n";
+                           printf("%s\t%d\t%d\t%s\t100\t%s\t%s",
+                               $id2coords{$species}{$gene_stable_id}[0],
+                               $id2coords{$species}{$gene_stable_id}[1],
+                               $id2coords{$species}{$gene_stable_id}[2],
+                               $cluster_id,
+                               $gene_stable_id_id}[3]);
                        }
                    } else { # gene absent from reference
                        #print "#

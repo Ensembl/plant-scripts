@@ -4,7 +4,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 
 # Makes pan-gene analysis based on clusters of collinear genes shared by
-# species in a pre-computed Minimap2/Wfmash synteny TSV file, produced by 
+# species in a pre-computed Minimap2/GSAlign synteny TSV file, produced by 
 # _collinear_genes.pl
 # Adapted from https://github.com/eead-csic-compbio/get_homologues
 
@@ -225,10 +225,10 @@ print "# total selected species : $n_of_species\n\n";
 my ( $cluster_id, $chr, $seqtype, $coords_id ) = ( 0, '' );
 my ( $line, $stable_id, $segment_species, $coords, $segment_coords );
 my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
-my ( $ref_geneid, $ref_fasta, $ref_id2chr, $segment_cluster, $num_segments );
-my ( %incluster, %cluster, %coords, %sequence, %segment, %segment_sequence );
+my ( $ref_geneid, $ref_fasta, $ref_coords, $segment_cluster, $num_segments );
+my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %POCS_matrix );
-my ( %sorted_ids, %id2chr );
+my ( %sorted_ids, %id2coords );
 
 # columns of TSV file as produced by get_collinear_genes.pl
 
@@ -269,7 +269,7 @@ foreach $infile (@infiles) {
         next if ( !$supported{$species} || !$supported{$hom_species} );
 
         if ( $homology_type =~ m/ortholog/ ) {
-
+ 
             # add $species gene to cluster only if not clustered yet
             if ( !$incluster{$gene_stable_id} ) {
 
@@ -308,8 +308,8 @@ foreach $infile (@infiles) {
                 # $hom_species gene already clustered (same or different cluster)
                 if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
                     print "# WARN: possibly conflicting clusters for $cluster_id & $incluster{$hom_gene_stable_id}\n";
-                    # TODO: merge clusters? Would require a hash of merged cluster_ids
-                    # downside: will inflate core subset
+                    # Typically when a long gene model overlaps 2+ shorther ones,
+                    # not sure whether to merge clusters, would require a hash of merged cluster_ids
                 }
             }
                 
@@ -419,10 +419,12 @@ foreach $species (@supported_species) {
             die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
         }
 
-        ( $ref_geneid, $ref_fasta, $ref_id2chr ) = parse_sequence_FASTA_file( $filename );
+        ( $ref_geneid, $ref_fasta, $ref_coords ) = parse_sequence_FASTA_file( $filename );
+
+         
 
         $sorted_ids{$species} = $ref_geneid;
-        $id2chr{$species} = $ref_id2chr;
+        $id2coords{$species} = $ref_coords;
 
         # count number of genes in this species
         $totalgenes{$species} = scalar(@$ref_geneid);
@@ -705,14 +707,14 @@ if(!$chregex){
 else { # ordered along homologous chromosomes matching regex
 
     %sorted_cluster_ids = sort_clusters_by_position( 
-        \@supported_species_POCS,\%sorted_ids, \%id2chr, $chregex, 
+        \@supported_species_POCS,\%sorted_ids, \%id2coords, $chregex, 
         \%incluster, \%cluster );
 
     foreach $chr (sort keys(%sorted_cluster_ids)) {
 	    printf("# clusters sorted by position in chr %s = %d\n", 
         $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
     }
-} #exit;
+} 
 
 
 # set matrix filenames and write headers
@@ -721,6 +723,7 @@ my $pangene_gene_file   = "$outfolder/pangene_matrix_genes$params\.tab";
 my $pangene_matrix_tr   = "$outfolder/pangene_matrix$params\.tr.tab";
 my $pangene_gene_tr     = "$outfolder/pangene_matrix_genes$params\.tr.tab";
 my $pangene_fasta_file  = "$outfolder/pangene_matrix$params\.fasta";
+my $pangene_bed_file    = "$outfolder/pangene_matrix$params\.bed";
 
 open( PANGEMATRIX, ">$pangene_matrix_file" )
   || die "# EXIT: cannot create $pangene_matrix_file\n";
@@ -740,7 +743,7 @@ print PANGEMATRIX "\n";
 
 print PANGENEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (keys(%sorted_cluster_ids)) {
-    print PANGENEMATRIX "\tchr$chr";
+    print PANGENEMATRIX "\tchr:$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
         $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
         print PANGENEMATRIX "\t$filename"; 
@@ -757,7 +760,7 @@ foreach $species (@supported_species_POCS) {
     print PANGENEMATRIX "$species";
     print PANGEMATRIF ">$species\n";
 
-    foreach $chr (keys(%sorted_cluster_ids)) {
+    foreach $chr (sort keys(%sorted_cluster_ids)) {
 
         # chr lines have no genes
         print PANGEMATRIX "\tNA";
@@ -794,12 +797,52 @@ close(PANGEMATRIX);
 close(PANGENEMATRIX);
 close(PANGEMATRIF);
 
+# transposed matrices can be more convenient, with genes as rows
 system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
 print "# pangene_file (occup) = $pangene_matrix_file tranposed = $pangene_matrix_tr\n";
 print "# pangene_file (names) = $pangene_gene_file transposed = $pangene_gene_tr\n";
 #print "# pangene_FASTA_file = $pangene_fasta_file\n";
+
+# BED format matrix if clusters are chr-sorted
+if($chregex) {
+    open( PANGEMATRIBED, ">$pangene_bed_file" )
+        || die "# EXIT: cannot create $pangene_bed_file\n";
+
+    foreach $chr (sort keys(%sorted_cluster_ids)) {
+
+        foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+
+            foreach $species (@supported_species_POCS) {
+
+                # 1st species (reference)
+                if($species eq $ref_genome) {
+
+                   # work out coords
+
+                   if( defined($cluster{$cluster_id}{$species}) &&
+                       scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
+
+                       foreach $gene_stable_id (@{ $cluster{$cluster_id}{$species} }) {
+           
+                           print "$cluster_id $gene_stable_id $id2coords{$species}{$gene_stable_id}[0]\n";
+                       }
+                   } else { # gene absent from reference
+                       #print "#
+                   }
+
+                } else { # all other species/annotations
+
+                }
+            }
+        }
+    }
+
+    close(PANGEMATRIBED);
+
+    print "# pangene_file (BED-like) = $pangene_bed_file\n";
+}
 
 exit if(!$dogrowth);
 
@@ -922,12 +965,14 @@ print "# core-gene (number of clusters) = $core_file\n";
 # the same gene having several associated sequences.
 # Returns:
 # i)   ref to list with coord-sorted gene ids
-# ii)  ref to hash with FASTA strings with genes as keys
-# iii) ref to hash mapping gene ids to chr
+# ii)  ref to hash with FASTA strings with genes as keys, 
+#       might contain 2+ seqs for the same gene id 
+# iii) ref to hash mapping gene ids to chr coordinates
 sub parse_sequence_FASTA_file {
 
     my ( $fname ) = @_;
-    my ( $geneid, $coords, $chr, @geneids, %id2chr, %fasta );
+    my ( $geneid, $coords, $chr, $start, $end, $strand );
+    my ( @geneids, %chr_coords, %fasta );
 
     open(FASTA,"<",$fname) || 
         die "# ERROR(parse_sequence_FASTA_file): cannot read $fname\n";
@@ -935,26 +980,27 @@ sub parse_sequence_FASTA_file {
         #>transcript:Os01t0100100-01 gene:Os01g0100100 1:2983-10815(+) [Oryza_sativa.IRGSP-1.0.chr1]
         if(/^>\S+\s+(\S+)\s+(\S+)\s+\[[^\]]+\]/) {
             ($geneid, $coords) = ($1,$2);
-            if($coords =~ m/^(\S+)?:\d+-\d+\(([+-])\)/) {
-                $chr = $1;
-            } else { # should not occur
-                $chr = 'NA';
-            }
+            
+            if($coords =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
 
-            # conserved gene id order			
-            if(!$fasta{$geneid}) {
-                push(@geneids,$geneid);
-                $id2chr{$geneid} = $chr;
-            }
+                ($chr, $start, $end, $strand) = ($1, $2, $3, $4);
+            
+                # conserved gene id order			
+                if(!$fasta{$geneid}) {
+                    push(@geneids,$geneid);
+                    $chr_coords{$geneid} = [$chr, $start, $end, $strand];
+                }
 
-            $fasta{$geneid} .= $_;
+                # concat in case this is the second isoform
+                $fasta{$geneid} .= $_;
+            }
         } else {
             $fasta{$geneid} .= $_;
         }
     }
     close(FASTA);
 
-    return ( \@geneids, \%fasta, \%id2chr );
+    return ( \@geneids, \%fasta, \%chr_coords );
 }
 
 # Takes the name string of a FASTA file created by bedtools getfasta
@@ -1041,14 +1087,14 @@ sub write_boxplot_file {
 # Params:
 # i)   ref to list with species, reference in 1st position
 # ii)  ref to 2-way hash with a list of chr-sorted gene_ids per species
-# iii) ref to 2-way hash mapping gene_ids to per species
+# iii) ref to 2-way hash mapping gene_ids to coordinates [ chr, start, end, strand ]
 # iv)  regex to match chr names; unmatched are added to 'unplaced' virtual chr
 # v)   ref to hash mapping gene_ids to clusters
 # vi)  ref to 2-way hash containing clustered gene_ids
 # vii) optional boolean flag to enable verbose output
 sub sort_clusters_by_position {
 
-    my ($ref_species, $ref_sorted_ids, $ref_id2chr, 
+    my ($ref_species, $ref_sorted_ids, $ref_id2coords, 
         $regex, $ref_incluster, $ref_cluster, 
         $verbose) = @_;
 
@@ -1073,7 +1119,7 @@ sub sort_clusters_by_position {
             ($chr_name, $cluster_id) = ('unplaced', '');
 
             $gene_id = $ref_sorted_ids->{$species}[$gene];
-            $chr = $ref_id2chr->{$species}{$gene_id};
+            $chr = $ref_id2coords->{$species}{$gene_id}[0];
 
             # check chr matches regex, only these chromosomes
             # are guaranteed to be homologous across genomes
@@ -1102,7 +1148,7 @@ sub sort_clusters_by_position {
                     foreach $gene2 ($gene .. $last_gene) {
                             
                         $gene_id2 = $ref_sorted_ids->{$species}[$gene2];
-                        $chr2 = $ref_id2chr->{$species}{$gene_id2};
+                        $chr2 = $ref_id2coords->{$species}{$gene_id2}[0];
                         last if($chr2 ne $chr);
  
                         if($ref_incluster->{$gene_id2} && 

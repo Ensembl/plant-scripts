@@ -464,7 +464,7 @@ foreach $cluster_id (@cluster_ids) {
         if( defined($cluster{$cluster_id}{$species}) &&
             scalar(@{ $cluster{$cluster_id}{$species} }) > 1 ) {
 
-            my @checked_ids;
+            my (@checked_ids);
 
             # rank genes in terms of cumulative overlap
             my @ranked_ids = sort {$totaloverlap{$b}<=>$totaloverlap{$a}}
@@ -480,6 +480,7 @@ foreach $cluster_id (@cluster_ids) {
                     $index = _get_element_index($sorted_ids{$species},$gene_stable_id);
                     $index_dist = abs($index - $best_index);
 
+                    # remove/uncluster genes that are no neighbors
                     if($index_dist > $MAXDISTNEIGHBORS) {
 
                         if($verbose) {
@@ -501,8 +502,15 @@ foreach $cluster_id (@cluster_ids) {
                     }
             }
 
+            # rank genes in terms of chr position
+            @checked_ids = sort {
+                $id2coords{$species}{$a}[1] <=>
+                $id2coords{$species}{$b}[1]
+                }
+                @checked_ids;
+
             # updated gene_ids in cluster
-            $cluster{$cluster_id}{$species} = \@checked_ids; #print join(",",@{ $cluster{$cluster_id}{$species} })."\n";
+            $cluster{$cluster_id}{$species} = \@checked_ids; 
         }
     }
 } 

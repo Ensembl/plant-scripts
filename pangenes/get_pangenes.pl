@@ -1006,7 +1006,7 @@ if(!$dogsalign) {
 
 # print ANI matrix in output folder, 
 # Note: order might be different in POCS matrix
-my $ANI_matrix_file = $outfolder . '/ANI.tsv';
+my $ANI_matrix_file = $outfolder . '/ANI.tab';
 open(ANIMATRIX, ">", $ANI_matrix_file)
   || die "# EXIT: cannot create $ANI_matrix_file\n";
 

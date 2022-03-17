@@ -21,6 +21,7 @@ The main task of these scripts is to cluster collinear/orthologous genes
 across a set of genomes (or pangenome) so that pan-genes can be defined:
 
 ![Graphical summary of pangene set analysis](pics/pangene_set_nomenclature.png)
+
 *Figure 1. Graphical summary of pangene set analysis.*
 
 
@@ -29,6 +30,7 @@ across a set of genomes (or pangenome) so that pan-genes can be defined:
 The next flowchart shows the three main tasks of the pipeline:
 
 ![Pipeline flowchart](pics/flow-get-pangenes.png)
+
 *Figure 2. Pipeline flowchart.*
 
 By defaults it performs the required tasks serially, but it 
@@ -43,6 +45,7 @@ The second block of the flow aligns genome sequences (in pairs A & B) and uses
 the resulting alignments to transform gene coordinates:
  
 ![WGA and gene mapping](pics/collinear_pangenes_minimap2.png)
+
 *Figure 3. Whole Genome Alignment (WGA) and gene mapping.*
 
 ### Overlap calculation
@@ -51,6 +54,7 @@ This is how the overlap of genes is computed (with bedtools intersect)
 to call collinear pairs:
 
 ![How gene overlaps are computed](pics/wgaoverlap.png)
+
 *Figure 4. How gene overlaps are computed.*
 
 Note that the overlap value is computed from WGA alignments and that the gene coordinates from the source GFF file are used.
@@ -72,6 +76,7 @@ TSV files are merged and sorted by gene and overlap. The resulting file is used 
 of clusters from pairs of collinear genes as follows:
 
 ![From genes to clusters](pics/pairs2clusters.png)
+
 *Figure 5. Clustering sequences from pairs of collinear genes.*
 
 
@@ -452,12 +457,15 @@ Here are a few examples:
 These will produce figures such as these:
 
 ![Pan-gene plot](./plots/pan_gene.tab_pan.png)
+
 *Figure 6. Pan-gene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
 
 ![Core-gene plot](./plots/core_gene.tab_core_both.png)
+
 *Figure 7. Core-gene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl.
 
 ![Pan-gene occupancy barplot](./plots/pangenome_matrix__shell.png)
+
 *Figure 8. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
 
 ## Sequence alignments of clusters 

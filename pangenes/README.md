@@ -35,7 +35,7 @@ and produces different types of output:
 - [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
-- [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
 
 
 
@@ -524,7 +524,7 @@ get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_
 ```
 
 
-## Debugging
+## Troubleshooting
 
 If you encounter an error, or the program stops, it is useful to look for error messages in the logfiles.
 As get_pangenes-pl includes 3 other scripts, logs are split in independent files:

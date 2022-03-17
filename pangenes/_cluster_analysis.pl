@@ -771,7 +771,7 @@ foreach $sp ( 0 .. $#supported_species ) {
 }
 close(POCSMATRIX);
 
-print "\n# percent_conserved_proteins_file = $POCS_matrix_file\n\n";
+print "\n# percent_conserved_sequences_file = $POCS_matrix_file\n\n";
 
 # sort species from ref down by decreasing POCS
 my @supported_species_POCS;

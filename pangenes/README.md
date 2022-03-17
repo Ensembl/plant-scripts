@@ -56,7 +56,7 @@ The next flowchart shows the three main tasks of the pipeline:
 
 *Figure 2. Pipeline flowchart.*
 
-By defaults it performs the required tasks serially, but it 
+By default it performs the required tasks serially, but it 
 can also run in parallel on a cluster both with options -m cluster (see more about this below)
 and -m dryrun, if you prefer to paste your commands in batches directly.
 

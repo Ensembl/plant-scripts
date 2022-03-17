@@ -9,7 +9,9 @@ It is designed to process (in a multicore computer or HPC cluster) files
 contained in a directory (-d), so that new .fna & .gff files can be added
 while conserving previous results.
 
-This script calls *_cut_sequences.pl*, *_collinear_genes.pl* & *_cluster_analysis.pl*
+This script calls [_cut_sequences.pl](./_cut_sequences.pl), 
+[_collinear_genes.pl](./_collinear_genes.pl) and 
+[_cluster_analysis.pl](./_cluster_analysis.pl)
 and produces different types of output:
 
  1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes (FASTA)
@@ -17,13 +19,31 @@ and produces different types of output:
  3) matrix of % conserved sequences that summarize shared clusters across genomes
  4) optionally (-c) matrices with core- and pangene set growth simulations
 
+- [Objective](#objective)
+- [How it works](#how-it-works)
+	- [Transformation of gene coordinates](#transformation-of-gene-coordinates)
+	- [Overlap calculation](#overlap-calculation)
+	- [Pairwise genome comparisons](#pairwise-genome-comparisons)
+	- [From pairs of genes to clusters](#from-pairs-of-genes-to-clusters)
+	- [Parameters](#parameters)
+- [Dependencies](#dependencies)
+- [Example 1](#example-1)
+- [Example 2](#example-2)
+- [Example 3](#example-3)
+- [Example 4](#example-4)
+- [Plotting the results](#plotting-the-results)
+- [Sequence alignments of clusters](#sequence-alignments-of-clusters)
+- [Debugging](#debugging)
+
+
+## Objective
+
 The main task of these scripts is to cluster collinear/orthologous genes 
 across a set of genomes (or pangenome) so that pan-genes can be defined:
 
 ![Graphical summary of pangene set analysis](pics/pangene_set_nomenclature.png)
 
 *Figure 1. Graphical summary of pangene set analysis.*
-
 
 ## How it works
 

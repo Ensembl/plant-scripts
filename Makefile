@@ -68,7 +68,7 @@ install_gsalign:
 	-cd pangenes/bin && git clone https://github.com/hsinnan75/GSAlign.git && cd GSAlign && make
 
 uninstall_pangenes:
-	-cd pangenes/bin && rm -rf gffread-0.12.7.Linux_x86_64 minimap2-2.17 wfmash
+	-cd pangenes/bin && rm -rf gffread-0.12.7.Linux_x86_64 minimap2-2.17 wfmash GSAlign
 	cd files && rm -rf test_rice
 
 test_pangenes:

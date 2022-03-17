@@ -22,6 +22,8 @@ before_script:
 script:
   - "make test_travis"
   - "make test_repeats_travis"
+  - "make install_pangenes"
+  - "make test_pangenes"
 
 notifications:
   email:

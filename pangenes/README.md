@@ -19,6 +19,8 @@ and produces different types of output:
  3) matrix of % conserved sequences that summarize shared clusters across genomes
  4) optionally (-c) matrices with core- and pangene set growth simulations
 
+## Table of contents
+
 - [Objective](#objective)
 - [How it works](#how-it-works)
 	- [Transformation of gene coordinates](#transformation-of-gene-coordinates)

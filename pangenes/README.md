@@ -33,6 +33,9 @@ By defaults it performs the required tasks serially, but it
 can also run in parallel on a cluster both with options -m cluster (see more about this below)
 and -m dryrun, if you prefer to paste your commands in batches directly.
 
+Note that each of the three scripts called by get_pangenes.pl 
+(cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl) create their own logfiles.
+
 ### Transformation of gene coordinates 
 The second block of the flow aligns genome sequences (in pairs A & B) and uses 
 the resulting alignments to transform gene coordinates:
@@ -65,6 +68,23 @@ TSV files are merged and sorted by gene and overlap. The resulting file is used 
 of clusters from pairs of collinear genes as follows:
 
 ![From genes to clusters](pics/pairs2clusters.png)
+
+### Parameters
+
+A few parameters are encoded as variables in the scripts and their values printed to log files.
+Here I list the most important ones, they can be changed by editing the script file:
+
+|script|variable|value|meaning|
+|:-----|:-------|:----|:------|
+|get_pangenes.pl|$MINGFFLEN|100|min length of sequences of features (cdna, cds) extracted from input GFF files|
+|get_pangenes.pl|$NOFSAMPLESREPORT|20|number of samples while simulating pangene growth with -c|
+|_collinear_genes.pl|MINIMAPPARS|--secondary=no --cs -x asm20 -r1k,5k|minimap2 settings|
+|_collinear_genes.pl|$GSALIGNPARS|-sen -no_vcf -fmt 1|GSAlign settings|
+|_collinear_genes.pl|$BEDINTSCPAR|-wo -f XXX -F XXX -e|bedtools intersect parameters, XXX replaced with user selected overlap [0-1]|
+|_collinear_genes.pl|$MINMASKLEN|100000|mask longer (intergenic, repetitive) fragments with -H|
+|_collinear_genes.pl|$GENEMARGIN|5000|do not mask gene margins|
+|_collinear_genes.pl|$MINALNLEN|100|min alignment length when transforming gene coords on WGA|
+|_cluster_analysis.pl|$MAXDISTNEIGHBORS|5|neighbor genes in a cluster cannot be more than N genes away|
 
 ## Dependencies
 

@@ -28,12 +28,13 @@ and produces different types of output:
 	- [Parameters](#parameters)
 - [Dependencies](#dependencies)
 - [Example 1](#example-1)
-- [Example 2](#example-2)
-- [Example 3](#example-3)
-- [Example 4](#example-4)
+- [Example 2: splitting genome in chromosomes](#example-2-splitting-genome-in-chromosomes)
+- [Example 3: using GSAlign instead of minimap2](#example-3-using-GSAlign-instead-of-minimap2)
+- [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Debugging](#debugging)
+
 
 
 ## Objective
@@ -401,7 +402,7 @@ which summarizes the %identity of pairs of aligned genomes:
     Oryza_sativa.IRGSP-1.0.chr1	97.47	96.86	100.00
 
 
-## Example 4 : simulation of pangene set growth
+## Example 4: simulation of pangene set growth
 
 A pangene set growth analysis can be performed by adding option -c, which will produce two files
 with random-sampling simulations on how the core- and pan-gene set grow as new genomes are added,

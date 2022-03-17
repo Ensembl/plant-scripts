@@ -13,3 +13,6 @@
 04032022: get_pangenes.pl -s prints ANI matrix from GSAlign estimates
 15032022: collinearity TSV files sorted
 15032022: pangenome matrices are chr-sorted with -s
+16032022: _cluster_analysis.pl unclusters non-neighbors more than $MAXDISTNEIGHBORS away
+16032022: BED-like pangenome matrices produced with -s
+17032022: updated documentation in README 

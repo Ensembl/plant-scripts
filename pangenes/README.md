@@ -33,15 +33,24 @@ By defaults it performs the required tasks serially, but it
 can also run in parallel on a cluster both with options -m cluster (see more about this below)
 and -m dryrun, if you prefer to paste your commands in batches directly.
 
+### Transformation of gene coordinates 
 The second block of the flow aligns genome sequences (in pairs A & B) and uses 
 the resulting alignments to transform gene coordinates:
  
 ![WGA and gene mapping](pics/collinear_pangenes_minimap2.png)
 
+### Overlap calculation
+
 This is how the overlap of genes is computed (with bedtools intersect) 
 to call collinear pairs:
 
 ![How gene overlaps are computed](pics/wgaoverlap.png)
+
+Note that the overlap value is computed from WGA alignments and that the gene coordinates from the source GFF file are used.
+Note also that these files also consider cases where a gene model annotated in one assembly matches a genomic segment from the other species,
+even when the same model was not annotated in the latter.
+
+### Pairwise genome comparisons
 
 Collinear pairs are internally stored in Compara-like TSV files, which look like this:
 
@@ -50,10 +59,12 @@ Collinear pairs are internally stored in Compara-like TSV files, which look like
     Oryza_indica.ASM465v1.chr1:1:217360-222398:+    segment Oryza_indica.ASM465v1.chr1      5038    segment_collinear       gene:ONIVA01G00180      gene:ONIVA01G00180      Oryza_nivara_v1.chr1    5038    NULL    NULL    NULL    100.00  1       1:217360-222398(+);1:155040-165322(+)
     gene:BGIOSGA002594      gene:BGIOSGA002594      Oryza_indica.ASM465v1.chr1      3838    segment_collinear       Oryza_nivara_v1.chr1:1:178848-182686:+  segment Oryza_nivara_v1.chr1    3838    NULL    NULL    NULL    100.00  1       1:246911-252389(+);1:178848-182686(+)
 
+### From pairs of genes to clusters 
 
-Note that the overlap value is computed from WGA alignments and that the gene coordinates from the source GFF file are used.
-Note also that these files also consider cases where a gene model annotated in one assembly matches a genomic segment from the other species, 
-even when the same model was not annotated in the latter.
+TSV files are merged and sorted by gene and overlap. The resulting file is used to drive the construction 
+of clusters from pairs of collinear genes as follows:
+
+![From genes to clusters](pics/pairs2clusters.png)
 
 ## Dependencies
 
@@ -239,11 +250,57 @@ and
     gene:ONIVA01G00130	gene:ONIVA01G00130	gene:Os01g0100500	gene:BGIOSGA002572	
     ...
 
-If GSAlign was selected (option -g), ANI matrices are also produced:
+If GSAlign was selected (option -g), an Average Nucleotide identitiy (ANI) matrix is also produced, named ANI.tab:
 
     genomes	Oryza_indica.ASM465v1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
     Oryza_indica.ASM465v1.chr1	100.00	97.88	97.47
     Oryza_nivara_v1.chr1	97.88	100.00	96.86
     Oryza_sativa.IRGSP-1.0.chr1	97.47	96.86	100.00
 
-These matrices can be plotted as explained [here](https://github.com/Ensembl/plant-scripts/tree/master/phylogenomics). 
+Note that a pangene set growth analysis can also be performed (option -c), which will produce two files 
+with random-sampling simulations on how the core- and pan-gene set grow as new genomes are added,
+named core_gene.tab and pan_gene.tab
+
+
+These data files can be plotted with help from scripts from package 
+[GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues)
+as explained [here](https://github.com/Ensembl/plant-scripts/tree/master/phylogenomics).
+
+
+## Advanced example: genomes split by chr & simulation of pangene set growth
+
+
+perl get_pangenes.pl -d ../files/test_rice/ -s '^\d+$' -g -m cluster -c
+
+
+
+get_homologues/plot_pancore_matrix.pl -f core_both -i core_gene.tab
+
+get_homologues/plot_pancore_matrix.pl -f pan -i pan_gene.tab
+
+get_homologues/plot_matrix_heatmap.sh -i POCS.matrix.tab -k "Percent Conserved Sequences (POCS)"
+
+get_homologues/parse_pangenome_matrix.pl -m pangene_matrix.tab -s
+
+y annotate_clusters.pl
+
+
+
+
+![Core pan-gene plot](./Oryza/plots/core_gene.tab_core_both.png)
+
+*Fig. 1. Core-gene plot of 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
+
+All sequences | No singletons
+:-------------------------:|:-------------------------:
+![Pan pan-gene plot](./Oryza/plots/pan_gene.tab_pan.png) | ![Pan pan-gene plot](./Oryza/plots/pan_gene_nosingles.tab_pan.png)
+
+*Fig. 2. Pan-gene plot of 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl.
+Left) all sequences; right) after excluding unclustered sequences (singletons).*
+
+![Pan-gene occupancy barplot](./Oryza/plots/pangenome_matrix__shell.png)
+
+*Fig. 3. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
+
+
+

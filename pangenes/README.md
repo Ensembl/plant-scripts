@@ -539,3 +539,9 @@ As get_pangenes-pl includes 3 other scripts, logs are split in independent files
 |_collinear_genes.pl|test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.Oryza_nivara_v1.chr1.algMmap.overlap0.5.tsv.queue|
 |_cluster_analysis.pl|test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_.queue|
 
+The log of _cluster_analysis.pl might contain warnings like these:
+
+* WARN: possibly conflicting clusters for gene:BGIOSGA000012 & gene:BGIOSGA000011. This happens when a sequence can belong to two different clusters.
+
+* WARN: remove gene:Os01g0531000 from cluster gene:BGIOSGA001469 (46). This happens when a non-neighbor gene is removed from a cluster for having too many intervening genes in between.
+

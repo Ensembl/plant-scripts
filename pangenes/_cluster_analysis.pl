@@ -785,9 +785,7 @@ foreach $sp2 (sort {$POCS2ref{$b}<=>$POCS2ref{$a}} keys(%POCS2ref)) {
 
 
 ## 4)  write pangenome matrices in output folder
-
-# unsorted clusters
-if(!$chregex){
+if(!$chregex){ # unsorted clusters
     push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
 }
 else { # ordered along homologous chromosomes matching regex
@@ -801,6 +799,8 @@ else { # ordered along homologous chromosomes matching regex
         $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
     }
 } 
+
+my @sorted_chrs = sort {$a cmp $b} keys(%sorted_cluster_ids);
 
 
 # set matrix filenames and write headers
@@ -818,19 +818,21 @@ open( PANGENEMATRIX, ">$pangene_gene_file" )
   || die "# EXIT: cannot create $pangene_gene_file\n";
 
 print PANGEMATRIX "source:$outfolder/$clusterdir";
-foreach $chr (keys(%sorted_cluster_ids)) {
+foreach $chr (@sorted_chrs) {
     print PANGEMATRIX "\tchr$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
-        $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+        next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
+	$filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
         print PANGEMATRIX "\t$filename"; 
     }
 }	
 print PANGEMATRIX "\n";
 
 print PANGENEMATRIX "source:$outfolder/$clusterdir";
-foreach $chr (keys(%sorted_cluster_ids)) {
+foreach $chr (@sorted_chrs) {
     print PANGENEMATRIX "\tchr:$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+        next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
         $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
         print PANGENEMATRIX "\t$filename"; 
     }
@@ -846,13 +848,17 @@ foreach $species (@supported_species_POCS) {
     print PANGENEMATRIX "$species";
     print PANGEMATRIF ">$species\n";
 
-    foreach $chr (sort keys(%sorted_cluster_ids)) {
+    foreach $chr (@sorted_chrs) {
 
         # chr lines have no genes
         print PANGEMATRIX "\tNA";
         print PANGENEMATRIX "\tNA";
 
         foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+
+            # skip genes with less occupancy than required
+            next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
+
 
             if( defined($cluster{$cluster_id}{$species}) && 
                 scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {

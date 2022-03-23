@@ -28,7 +28,8 @@ and produces different types of output:
 	- [Pairwise genome comparisons](#pairwise-genome-comparisons)
 	- [From pairs of genes to clusters](#from-pairs-of-genes-to-clusters)
 	- [Parameters](#parameters)
-- [Dependencies](#dependencies)
+	- [Dependencies](#dependencies)
+	- [Command-line options](#command-line-options)
 - [Example 1](#example-1)
 - [Example 2: splitting genome in chromosomes](#example-2-splitting-genome-in-chromosomes)
 - [Example 3: using GSAlign instead of minimap2](#example-3-using-GSAlign-instead-of-minimap2)
@@ -120,7 +121,7 @@ Here I list the most important ones, they can be changed by editing the script f
 |_collinear_genes.pl|$MINALNLEN|100|min alignment length when transforming gene coords on WGA|
 |_cluster_analysis.pl|$MAXDISTNEIGHBORS|5|neighbor genes in a cluster cannot be more than N genes away|
 
-## Dependencies
+### Dependencies
 
 In addition to Perl, these scripts require:
 
@@ -156,6 +157,13 @@ In addition to minimap2, two other genome aligners have been integrated:
 |GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make install_gsalign |
 |Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash |
 
+### Command-line options
+
+See all options with:
+
+    perl get_pangenes.pl -h
+
+
 ## Example 1
 
 If the installation was succesfull you should have a copy of a test dataset.
@@ -185,10 +193,6 @@ While computing WGA alignments you can tell the script to split each genome
 in chromosomes and align only homologous chromosomes. Please use option *-s*
 for this, which requires a [regular expression](https://perlmaven.com/regex-cheat-sheet). 
 For instance, use *-s '\d+'* to split in chromosomes named with natural numbers. 
-
-See all options with:
-
-    perl get_pangenes.pl -h
 
 The output of the test looks like this:
 

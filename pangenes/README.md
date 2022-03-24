@@ -101,7 +101,8 @@ of clusters from pairs of collinear genes as follows:
 
 ![From genes to clusters](pics/pairs2clusters.png)
 
-*Figure 5. Clustering sequences from pairs of collinear genes.*
+*Figure 5. Clustering sequences from pairs of collinear genes. 
+Option -N controls the max distance (in genes) among sequences of same species in a cluster.*
 
 
 ### Parameters
@@ -119,7 +120,6 @@ Here I list the most important ones, they can be changed by editing the script f
 |_collinear_genes.pl|$MINMASKLEN|100000|mask longer (intergenic, repetitive) fragments with -H|
 |_collinear_genes.pl|$GENEMARGIN|5000|do not mask gene margins|
 |_collinear_genes.pl|$MINALNLEN|100|min alignment length when transforming gene coords on WGA|
-|_cluster_analysis.pl|$MAXDISTNEIGHBORS|5|neighbor genes in a cluster cannot be more than N genes away|
 
 ### Dependencies
 
@@ -199,9 +199,9 @@ The output of the test looks like this:
 ```
 $ perl get_pangenes.pl -d ../files/test_rice
 
-# get_pangenes.pl -d ../files/test_rice -o 0 -r 0 -t all -c 0 -z 0 -I 0 -m local -w 0 -g 0 -O 0.5 -Q 50 -s '' -H 0 -W '' -G '' -B '' -S '' -n 4 -R 0
+# get_pangenes.pl -d ../files/test_rice -o 0 -r 0 -t all -c 0 -z 0 -I 0 -m local -w 0 -g 0 -O 0.5 -Q 50 -N 5 -s '' -H 0 -W '' -G '' -B '' -S '' -n 4 -R 0
 
-# version 17032022
+# version 24032022
 # results_directory=pangenes/test_rice_pangenes
 # parameters: MINGFFLEN=100
 
@@ -222,7 +222,7 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # taxa considered = 3 genes = 15706
 
-# mask=Oryza_nivara_v1chr1_alltaxa_algMmap_ (_algMmap)
+# mask=Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ (_5neigh_algMmap_split)
 
 
 # indexing genomes ...
@@ -239,25 +239,27 @@ $ perl get_pangenes.pl -d ../files/test_rice
 # clustering sequences ...
 # done
 
-# number of clusters = 7888 (core = 2985)
+# number of clusters = 7888 (core = 2962)
 
-# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1.cluster_list
-# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1
+# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
+# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
 
-# percent_conserved_sequences_file = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/POCS.matrix.tab
+# percent_conserved_sequences_file = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
 
-# pangene_file (occup) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix.tab
-# pangene_file (occup, tranposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix.tr.tab
-# pangene_file (names) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix_genes.tab
-# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix_genes.tr.tab
+# pangene_file (occup) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix.tab
+# pangene_file (occup, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix.tr.tab
+# pangene_file (names) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tab
+# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
+
+
 ```
 In this example, the clusters are stored in folder 
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
 
 and a text file describing the clusters is also produced
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1.cluster_list
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 
 which looks like this:
 
@@ -273,7 +275,7 @@ supporting the alignment of annotated genes from one assembly to genomic segment
 Clusters are FASTA files like this, and might include **several sequences for the same gene**:
 
 ```
-$ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
+$ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
 
 >transcript:ONIVA01G52180.1 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
 >transcript:ONIVA01G52180.2 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
@@ -291,16 +293,16 @@ The merged TSV file of collinear pairs supporting these clusters can be found in
 The script also produces % of Conserved Sequence (POCS) and pangene matrices,
 which look like this:
  
-    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/POCS.matrix.tab
+    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
     genomes	Oryza_nivara_v1.chr1	Oryza_indica.ASM465v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
-    Oryza_nivara_v1.chr1	100.00	60.23	61.72
-    Oryza_indica.ASM465v1.chr1	60.23	100.00	62.29
-    Oryza_sativa.IRGSP-1.0.chr1	61.72	62.29	100.00
+    Oryza_nivara_v1.chr1	100.00	59.57	60.78
+    Oryza_indica.ASM465v1.chr1	59.57	100.00	61.44
+    Oryza_sativa.IRGSP-1.0.chr1	60.78	61.44	100.00
 
 And 
 
-    $ head  test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix.tr.tab
-    source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
+    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix.tr.tab
+    source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5niegh_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
     chrunsorted	NA	NA	NA	
     gene:ONIVA01G52180	1	1	1	
     gene:ONIVA01G52140	1	1	1	
@@ -311,8 +313,8 @@ And
     gene:ONIVA01G52060	1	1	1	
     gene:ONIVA01G52030	1	1	1	
 
-    $ head  test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/pangene_matrix_genes.tr.tab
-    source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
+    $ head  test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
+    source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
     chr:unsorted	NA	NA	NA	
     gene:ONIVA01G52180	gene:ONIVA01G52180	gene:Os01g0978100	gene:BGIOSGA000001	
     gene:ONIVA01G52140	gene:ONIVA01G52140	gene:Os01g0977600	gene:BGIOSGA000002	
@@ -352,7 +354,7 @@ This matches the nuclear chromosomes in the test data, see:
 
 Other possibly useful regexes include '^\d+H$' or 'chr\d+$'.
 
-Any chromosome names that don't match the regex are pooled in a virtual 'unplaced' chromosome.
+Any chromosome names that don't match the regex are pooled in a dummy 'unplaced' chromosome.
     
 When you run it you'll see a couple differences in the output:
 
@@ -372,20 +374,25 @@ When you run it you'll see a couple differences in the output:
 # ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 chrs/contigs=1
 
 ...
-# clusters sorted by position in chr 1 = 7888
+# clusters sorted by position in chr 1 = 7860
 ...
-# pangene_file (BED-like) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_split_/pangene_matrix.tr.bed
+# pangene_file (BED-like) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.bed
 ```
 
 The BED file contents should be like this, with genome occupancy in column 5:
 
-    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_split_/pangene_matrix.tr.bed
+    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.bed
     #1	NA	NA	gene:BGIOSGA002568	1	0	NA	NA	gene:BGIOSGA002568
     1	4848	11824	gene:ONIVA01G00010	1	+	gene:ONIVA01G00010	NA	NA
     1	43371	62621	gene:ONIVA01G00020	1	+	gene:ONIVA01G00020	NA	NA
     1	62743	64526	gene:ONIVA01G00030	1	+	gene:ONIVA01G00030	NA	NA
     1	64707	65654	gene:ONIVA01G00040	1	+	gene:ONIVA01G00040	NA	NA
- 
+    1	68827	69733	gene:ONIVA01G00050	1	+	gene:ONIVA01G00050	NA	NA
+    1	73630	75670	gene:ONIVA01G00060	1	+	gene:ONIVA01G00060	NA	NA
+    1	78105	78695	gene:ONIVA01G00070	1	+	gene:ONIVA01G00070	NA	NA
+    1	98770	99876	gene:ONIVA01G00080	1	-	gene:ONIVA01G00080	NA	NA
+    1	100726	101071	gene:ONIVA01G00090	1	-	gene:ONIVA01G00090	NA	NA
+
 
 ## Example 3: using GSAlign instead of minimap2
 
@@ -396,12 +403,12 @@ You can try it out with:
 
 Note that the output folder is now
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algGSal_
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_
 
 A unique output produce by GSAlign is an Average Nucleotide identitiy (ANI) matrix,
 which summarizes the %identity of pairs of aligned genomes:
 
-    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algGSal_/ANI.matrix.tab
+    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_/ANI.matrix.tab
     genomes	Oryza_indica.ASM465v1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
     Oryza_indica.ASM465v1.chr1	100.00	97.88	97.47
     Oryza_nivara_v1.chr1	97.88	100.00	96.86
@@ -420,44 +427,44 @@ named core_gene.tab and pan_gene.tab
 ```
 # genome composition report (samples=6,seed=12345)
 ## sample 0 (Oryza_nivara_v1.chr1 | 0,1,2,)
-# adding Oryza_nivara_v1.chr1: core=5090 pan=5090
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3155 pan=6828
-# adding Oryza_indica.ASM465v1.chr1: core=2962 pan=7913
-## sample 1 (Oryza_sativa.IRGSP-1.0.chr1 | 1,2,0,)
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=4918 pan=4918
-# adding Oryza_indica.ASM465v1.chr1: core=3501 pan=6457
-# adding Oryza_nivara_v1.chr1: core=2962 pan=7913
-## sample 2 (Oryza_indica.ASM465v1.chr1 | 2,1,0,)
-# adding Oryza_indica.ASM465v1.chr1: core=5065 pan=5065
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3501 pan=6457
-# adding Oryza_nivara_v1.chr1: core=2962 pan=7913
-## sample 3 (Oryza_indica.ASM465v1.chr1 | 2,0,1,)
-# adding Oryza_indica.ASM465v1.chr1: core=5065 pan=5065
-# adding Oryza_nivara_v1.chr1: core=3416 pan=6714
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=2962 pan=7913
-## sample 4 (Oryza_sativa.IRGSP-1.0.chr1 | 1,0,2,)
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=4918 pan=4918
-# adding Oryza_nivara_v1.chr1: core=3155 pan=6828
-# adding Oryza_indica.ASM465v1.chr1: core=2962 pan=7913
-## sample 5 (Oryza_nivara_v1.chr1 | 0,2,1,)
-# adding Oryza_nivara_v1.chr1: core=5090 pan=5090
-# adding Oryza_indica.ASM465v1.chr1: core=3416 pan=6714
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=2962 pan=7913
+# adding Oryza_nivara_v1.chr1: core=5057 pan=5057
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3133 pan=6818
+# adding Oryza_indica.ASM465v1.chr1: core=2953 pan=7860
+## sample 1 (Oryza_sativa.IRGSP-1.0.chr1 | 1,0,2,)
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=4894 pan=4894
+# adding Oryza_nivara_v1.chr1: core=3133 pan=6818
+# adding Oryza_indica.ASM465v1.chr1: core=2953 pan=7860
+## sample 2 (Oryza_indica.ASM465v1.chr1 | 2,0,1,)
+# adding Oryza_indica.ASM465v1.chr1: core=5011 pan=5011
+# adding Oryza_nivara_v1.chr1: core=3416 pan=6652
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=2953 pan=7860
+## sample 3 (Oryza_indica.ASM465v1.chr1 | 2,1,0,)
+# adding Oryza_indica.ASM465v1.chr1: core=5011 pan=5011
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3506 pan=6399
+# adding Oryza_nivara_v1.chr1: core=2953 pan=7860
+## sample 4 (Oryza_nivara_v1.chr1 | 0,2,1,)
+# adding Oryza_nivara_v1.chr1: core=5057 pan=5057
+# adding Oryza_indica.ASM465v1.chr1: core=3416 pan=6652
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=2953 pan=7860
+## sample 5 (Oryza_nivara_v1.chr1 | 0,1,2,)
+# adding Oryza_nivara_v1.chr1: core=5057 pan=5057
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3133 pan=6818
+# adding Oryza_indica.ASM465v1.chr1: core=2953 pan=7860
 
-# pan-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_split_/pan_gene.tab
-# core-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_split_/core_gene.tab
+# pan-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
+# core-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/core_gene.tab
 ```
 
 The resulting pan and core gene files look like this:
 
-    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_split_/pan_gene.tab
+    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
     g1	g2	g3	
-    5090	6828	7913	
-    4918	6457	7913	
-    5065	6457	7913	
-    5065	6714	7913	
-    4918	6828	7913	
-    5090	6714	7913	
+    5057	6818	7860	
+    4894	6818	7860	
+    5011	6652	7860	
+    5011	6399	7860	
+    5057	6652	7860	
+    5057	6818	7860	
 
 ## Plotting the results
 
@@ -523,8 +530,8 @@ you can also compute local BLAST alignments, coverage and sequence identity to t
 in a cluster as follows:
 
 ```
-get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.aln.fna
-get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cds.faa
+get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.aln.fna
+get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cds.faa
 ```
 
 

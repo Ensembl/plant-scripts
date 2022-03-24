@@ -40,6 +40,7 @@ my ( $outfolder, $params, $bedtools_path) = ('', '', '');
 my ( $help, $sp, $sp2, $show_supported, $seed );
 my ( $infile, $filename, $cdsfile, $pepfile, $gdnafile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
+my ( $maxdistneigh ) = ( $MAXDISTNEIGHBORS );
 my ( $NOSINGLES, $dogrowth, $chregex ) = ( 0, 0, '' );
 my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
 my ( @infiles, @supported_species, @ignore_species);
@@ -57,6 +58,7 @@ GetOptions(
     "folder|f=s"    => \$outfolder,
     "seq|s=s"       => \$seqfolder,
     "mintaxa|t=i"   => \$min_taxa,
+    "maxdist|m=i"   => \$maxdistneigh,
     "regex|x=s"     => \$chregex,
     #"soft|z"        => \$dosoft,
     "seed|R=i"      => \$seed,
@@ -74,6 +76,7 @@ sub help_message {
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-s folder with gene seqs of species in TSV (optional, default current folder, files created by _cut_sequences.pl)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
+      . "-m max distance among neighbor genes       (optional, example: -m 10, default: $maxdistneigh)\n"
       . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
@@ -102,6 +105,14 @@ else {
     if($seqfolder && $seqfolder !~ /\/$/){
         $seqfolder .= '/';
     }
+
+    if($maxdistneigh < 0) {
+        print "# ERROR: -m must be a natural number\n\n";
+        exit;
+    } else {
+        $maxdistneigh = int($maxdistneigh);
+        $params .= "_neigh$maxdistneigh";
+    } 
 
     if ($NOSINGLES) {
         $params .= "_nosingles";
@@ -148,7 +159,7 @@ else {
         exit;
     }
 
-    print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES ".
+    print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES -m $maxdistneigh ".
       "-v $verbose -t $min_taxa -x $chregex -R $RNDSEED -B $bedtools_path\n";
 
     print "# ";
@@ -488,8 +499,8 @@ foreach $cluster_id (@cluster_ids) {
                     $index_dist = abs($index - $best_index); 
 
                     # remove/uncluster genes that are no neighbors
-                    if($index_dist > $MAXDISTNEIGHBORS) { 
-                    #if($index_dist > $MAXDISTNEIGHBORS || $gene_stable_id eq 'gene:BGIOSGA000009') { # debug
+                    if($index_dist > $maxdistneigh) { 
+                    #if($index_dist > $maxdistneigh || $gene_stable_id eq 'gene:BGIOSGA000009') { # debug
 
                         # create separate singleton cluster for this gene
 

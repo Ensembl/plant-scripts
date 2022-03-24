@@ -478,8 +478,7 @@ foreach $cluster_id (@cluster_ids) {
                 @{ $cluster{$main_cluster_id}{$species} };
  
             # get index of gene with highest overlap
-            $best_gene_stable_id = shift(@ranked_ids);
-            #$best_gene_stable_id = pop(@ranked_ids); #debug
+            $best_gene_stable_id = shift(@ranked_ids); #$best_gene_stable_id = pop(@ranked_ids); #debug
             $best_index = _get_element_index($sorted_ids{$species},$best_gene_stable_id);
             push(@checked_ids, $best_gene_stable_id);
 
@@ -532,7 +531,6 @@ foreach $cluster_id (@cluster_ids) {
                                 print "# WARN: remove $gene_stable_id from cluster $cluster_id ($index_dist)\n";
                             }
 
-                            $totalclusters{$species}++;
                             $unclustered{$species}++; 
                         }
 
@@ -554,7 +552,7 @@ foreach $cluster_id (@cluster_ids) {
     }
 } 
 
-#foreach $sp2 (@supported_species){ foreach $gene_id (@{ $cluster{'gene:BGIOSGA000010'}{$sp2} }) { print "$gene_id $sp2\n" } }
+#foreach $sp2 (@supported_species){ foreach $gene_id (@{ $cluster{'gene:BGIOSGA000010'}{$sp2} }) { print "$gene_id\n" } }
 
 %totaloverlap = (); # not needed anymore
 
@@ -935,7 +933,7 @@ system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
 print "# pangene_file (occup) = $pangene_matrix_file\n";
-print "# pangene_file (occup, tranposed) = $pangene_matrix_tr\n";
+print "# pangene_file (occup, transposed) = $pangene_matrix_tr\n";
 print "# pangene_file (names) = $pangene_gene_file\n";
 print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
 #print "# pangene_FASTA_file = $pangene_fasta_file\n";
@@ -1076,8 +1074,6 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
         if ($verbose); 
 
     for ( $sp = 1 ; $sp < $n_of_species ; $sp++ ) {
- 
-#   for ( $sp = 1 ; $sp < 2 ; $sp++ ) {
 
         # init core- & pan- values
         $coregenome[$s][$sp] = 0;
@@ -1097,19 +1093,11 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
                     $n_of_taxa_in_cluster{$cluster_id}++
                 }
 
-                #if($cluster_id eq 'gene:BGIOSGA002511') {
-                #print "$cl $sp $chr gene:BGIOSGA002511 $n_of_taxa_in_cluster{'gene:BGIOSGA002511'}\n";
-                #}
-
                 # check $sp is represented in this cluster
                 if ( defined($cluster{$cluster_id}{ $tmptaxa[$sp] }) &&
                     scalar(@{ $cluster{$cluster_id}{ $tmptaxa[$sp] } }) > 0 ) {
                     $n_of_taxa_in_cluster{$cluster_id}++
                 }
-
-                #if($cluster_id eq 'gene:BGIOSGA002511') {
-                #print "$cl $sp $chr gene:BGIOSGA002511 $n_of_taxa_in_cluster{'gene:BGIOSGA002511'}\n";
-                #}
 
                 # work out cluster occupancy
                 if ( $n_of_taxa_in_cluster{$cluster_id} &&
@@ -1119,10 +1107,6 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
                     # core genes must contain all previously seen species
                     if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {
                         $coregenome[$s][$sp]++;
-
-                        #$filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
-                        #print "$filename $cluster_id $coregenome[$s][$sp]\n";
-
 
                     }    # pan genes must be novel to this species
                     elsif ( $n_of_taxa_in_cluster{$cluster_id} == 1 ) {

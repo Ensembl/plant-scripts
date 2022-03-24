@@ -41,6 +41,7 @@ my $MINQUAL    = 50;       # minimap2 mapping quality
 my $MINOVERLAP = 0.50;     # used by bedtools to call overlapping features    
 my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
 my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
+my $MAXDISTNEIGHBORS = 5;  # neighbor genes in a cluster cannot be more than N genes away
 
 ## list of features/binaries required by this program (do not edit)
 my @FEATURES2CHECK = (
@@ -56,7 +57,7 @@ $ENV{'LC_ALL'}   = 'POSIX';
 my (%opts,%included_input_files);
 my ($newDIR,$output_mask,$pancore_mask,$include_file) = ('','','',0);
 my ($dowfmash,$dogsalign,$reference_string) = (0,0,0);
-my ($onlywga,$inputDIR,$alg) = (0);
+my ($onlywga,$maxdistneigh,$inputDIR,$alg) = (0,$MAXDISTNEIGHBORS);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft, $highly_repetitive) = ($NUMCPUS,0,0);
 my ($bedtools_path,$samtools_path,$wfmash_path,$gsalign_path) = ('','','','');
@@ -66,7 +67,7 @@ my $random_number_generator_seed = 0;
 my $pwd = getcwd(); 
 $pwd .= '/';
 
-getopts('hvcoAHzgwG:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvcoAHzgwN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)) {
 
@@ -125,7 +126,10 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "(by default takes file with\n".
     "                                                            ".   
     " least annotated genes/features)\n";
-  #print   "-z add soft-core to genome composition analysis\n";
+  print   "-N max distance among neighbor genes                        ".
+    "(optional, example: -N 10, default: $maxdistneigh)\n";
+  
+#print   "-z add soft-core to genome composition analysis\n";
     
   print "\n".
     "This program computes whole genome alignments (WGA) to define clusters\n".
@@ -216,6 +220,13 @@ if(defined($opts{'t'}) && $opts{'t'} >= 0) {
   $min_cluster_size = 'all'; 
   $output_mask .= "alltaxa_"; 
 }
+
+if(defined($opts{'N'}) && $opts{'N'} >= 0) {
+  $maxdistneigh = int($opts{'N'})
+}
+
+$output_mask .= $maxdistneigh."neigh_";
+$pancore_mask .= '_'.$maxdistneigh."neigh";
 
 if($opts{'I'} && $inputDIR) {
   $include_file = $opts{'I'};
@@ -323,7 +334,7 @@ if(defined($opts{'B'})) {
 print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
   "-m $runmode -w $dowfmash -g $dogsalign -O $min_overlap -Q $min_map_qual ".
-  "-s '$split_chr_regex' -H $highly_repetitive ".
+  "-N $maxdistneigh -s '$split_chr_regex' -H $highly_repetitive ".
   "-W '$wfmash_path' -G '$gsalign_path' -B '$bedtools_path' -S '$samtools_path' ".
   "-n $n_of_cpus -R $random_number_generator_seed\n\n";
 

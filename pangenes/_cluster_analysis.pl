@@ -230,7 +230,7 @@ print "# total selected species : $n_of_species\n\n";
 
 my ( $cluster_id, $chr, $seqtype, $coords_id ) = ( 0, '' );
 my ( $line, $stable_id, $segment_species, $coords, $segment_coords );
-my ( @cluster_ids, %sorted_cluster_ids, %segment_species );
+my ( @cluster_ids, @sorted_chrs, %sorted_cluster_ids, %segment_species );
 my ( $ref_geneid, $ref_fasta, $ref_coords, $segment_cluster, $num_segments );
 my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %totaloverlap, %POCS_matrix );
@@ -456,46 +456,85 @@ foreach $species (@supported_species) {
 # i)  genes from same species should be neighbors, else should be removed
 # ii) genes from same species should be ordered along chr
 
-my ($best_index, $index, $index_dist, $new_cluster_id);
+my ($best_index, $best_gene_stable_id, $index, $index_dist);
+my ($main_cluster_id, $new_cluster_id, $gene_id);
 
-foreach $cluster_id (@cluster_ids) { 
+foreach $cluster_id (@cluster_ids) {
+
+    #next if($cluster_id ne 'gene:BGIOSGA000009'); #debug
+
+    # set main cluster id, note it can be updated within the loop
+    $main_cluster_id = $cluster_id;
+
     foreach $species (@supported_species) {
 
-        if( defined($cluster{$cluster_id}{$species}) &&
-            scalar(@{ $cluster{$cluster_id}{$species} }) > 1 ) {
+        if( defined($cluster{$main_cluster_id}{$species}) &&
+            scalar(@{ $cluster{$main_cluster_id}{$species} }) > 1 ) {
 
             my (@checked_ids);
 
             # rank genes in terms of cumulative overlap
             my @ranked_ids = sort {$totaloverlap{$b}<=>$totaloverlap{$a}}
-                @{ $cluster{$cluster_id}{$species} };
+                @{ $cluster{$main_cluster_id}{$species} };
  
             # get index of gene with highest overlap
-            $gene_stable_id = shift(@ranked_ids);
-            $best_index = _get_element_index($sorted_ids{$species},$gene_stable_id);
-            push(@checked_ids, $gene_stable_id);
+            $best_gene_stable_id = shift(@ranked_ids);
+            #$best_gene_stable_id = pop(@ranked_ids); #debug
+            $best_index = _get_element_index($sorted_ids{$species},$best_gene_stable_id);
+            push(@checked_ids, $best_gene_stable_id);
 
             # iteratively compute index distance of remaining genes 
             foreach $gene_stable_id (@ranked_ids) {
                     $index = _get_element_index($sorted_ids{$species},$gene_stable_id);
-                    $index_dist = abs($index - $best_index);
+                    $index_dist = abs($index - $best_index); 
 
                     # remove/uncluster genes that are no neighbors
-                    if($index_dist > $MAXDISTNEIGHBORS) {
+                    if($index_dist > $MAXDISTNEIGHBORS) { 
+                    #if($index_dist > $MAXDISTNEIGHBORS || $gene_stable_id eq 'gene:BGIOSGA000009') { # debug
 
-                        if($verbose) {
-                            print "# WARN: remove $gene_stable_id from cluster $cluster_id ($index_dist)\n";
+                        # create separate singleton cluster for this gene
+
+                        # original cluster was named after this gene,
+                        # we'll need to create a new one and set it as main cluster
+                        # NOTE: this can only happen once per cluster
+                        if(defined($cluster{$gene_stable_id})) {
+
+                            # copy original cluster to new main cluster id
+                            $new_cluster_id = $best_gene_stable_id;                            
+                            foreach $sp2 (@supported_species) { 
+                                next if($sp2 eq $species);
+                                foreach $gene_id (@{ $cluster{$cluster_id}{$sp2} }) {
+                                    push(@{ $cluster{$new_cluster_id}{$sp2}}, $gene_id);
+                                    $incluster{$gene_id} = $new_cluster_id;
+                                } 
+                            } 
+
+                            # update main cluster id and add it to list
+                            $main_cluster_id = $new_cluster_id;
+                            push( @cluster_ids, $main_cluster_id );
+
+                            # replace original cluster with singleton 
+                            $cluster{$cluster_id} = ();
+                            push(@{ $cluster{$cluster_id}{$species}}, $gene_stable_id); 
+
+                            if($verbose) {
+                                print "# WARN: remove $gene_stable_id from cluster $cluster_id -> $main_cluster_id ($index_dist)\n";
+                            }
+ 
+                        } else { # new cluster with new cluster_id
+
+                            $new_cluster_id = $gene_stable_id;
+                            $incluster{$gene_stable_id} = $new_cluster_id;
+                            push( @{ $cluster{$new_cluster_id}{$species} }, $gene_stable_id );
+                            push( @cluster_ids, $new_cluster_id );
+
+                            if($verbose) {
+                                print "# WARN: remove $gene_stable_id from cluster $cluster_id ($index_dist)\n";
+                            }
+
+                            $totalclusters{$species}++;
+                            $unclustered{$species}++; 
                         }
-
-                        # create new cluster
-                        $new_cluster_id = $gene_stable_id;
-                        $incluster{$gene_stable_id} = $new_cluster_id;
-
-                        push( @{ $cluster{$new_cluster_id}{$species} }, $gene_stable_id );
-                        push( @cluster_ids, $cluster_id );
-
-                        $totalclusters{$species}++;
-                        $unclustered{$species}++;
 
                     } else { # gene passes QC
                         push(@checked_ids, $gene_stable_id);
@@ -509,11 +548,13 @@ foreach $cluster_id (@cluster_ids) {
                 }
                 @checked_ids;
 
-            # updated gene_ids in cluster
-            $cluster{$cluster_id}{$species} = \@checked_ids; 
+            # updated species gene_ids in main cluster
+            $cluster{$main_cluster_id}{$species} = \@checked_ids; 
         }
     }
 } 
+
+#foreach $sp2 (@supported_species){ foreach $gene_id (@{ $cluster{'gene:BGIOSGA000010'}{$sp2} }) { print "$gene_id $sp2\n" } }
 
 %totaloverlap = (); # not needed anymore
 
@@ -800,8 +841,8 @@ else { # ordered along homologous chromosomes matching regex
     }
 } 
 
-my @sorted_chrs = sort {$a cmp $b} keys(%sorted_cluster_ids);
-
+# sort chromosome names, will be used later on
+@sorted_chrs = sort {$a cmp $b} keys(%sorted_cluster_ids);
 
 # set matrix filenames and write headers
 my $pangene_matrix_file = "$outfolder/pangene_matrix$params\.tab";
@@ -979,8 +1020,9 @@ exit if(!$dogrowth);
 
 
 ## 5) optionally make genome composition analysis to simulate pangene set growth
-##    as new annotated genomes are added to the pool
-## NOTE: this is measured in clusters added/missed per genome
+## as new annotated genomes are added to the pool
+## NOTE: this is measured in clusters added/missed per genome, 
+## a cluster might contain 1+ gene of same species
 
 my ( $core_occup, $mean, $sd, $data_file, $sort, $s ); #$s = sample
 my ( %previous_sorts, @sample, @clusters, @pangenome, @coregenome );
@@ -1031,37 +1073,56 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
     $pangenome[$s][0]  = $coregenome[$s][0];
 
     print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n"
-        if ($verbose);
+        if ($verbose); 
 
     for ( $sp = 1 ; $sp < $n_of_species ; $sp++ ) {
+ 
+#   for ( $sp = 1 ; $sp < 2 ; $sp++ ) {
 
+        # init core- & pan- values
         $coregenome[$s][$sp] = 0;
         $pangenome[$s][$sp]  = $pangenome[$s][ $sp - 1 ];
+
+        # update required occupancy
         $core_occup          = $sp + 1;
 
-        foreach $chr (keys(%sorted_cluster_ids)) {
-            foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+        foreach $chr (@sorted_chrs) {
+            foreach my $cl (0 .. scalar(@{ $sorted_cluster_ids{$chr} })-1) {
+
+                $cluster_id = $sorted_cluster_ids{$chr}->[$cl];
 
                 # check reference species is in this cluster (1st iteration only)
-                if ( $sp == 1 && $cluster{$cluster_id}{ $tmptaxa[0] } && 
+                if ( $sp == 1 && defined($cluster{$cluster_id}{ $tmptaxa[0] }) && 
                     scalar(@{ $cluster{$cluster_id}{ $tmptaxa[0] } }) > 0 ) {
                     $n_of_taxa_in_cluster{$cluster_id}++
                 }
 
+                #if($cluster_id eq 'gene:BGIOSGA002511') {
+                #print "$cl $sp $chr gene:BGIOSGA002511 $n_of_taxa_in_cluster{'gene:BGIOSGA002511'}\n";
+                #}
+
                 # check $sp is represented in this cluster
-                if ( $cluster{$cluster_id}{ $tmptaxa[$sp] } &&
+                if ( defined($cluster{$cluster_id}{ $tmptaxa[$sp] }) &&
                     scalar(@{ $cluster{$cluster_id}{ $tmptaxa[$sp] } }) > 0 ) {
                     $n_of_taxa_in_cluster{$cluster_id}++
                 }
 
+                #if($cluster_id eq 'gene:BGIOSGA002511') {
+                #print "$cl $sp $chr gene:BGIOSGA002511 $n_of_taxa_in_cluster{'gene:BGIOSGA002511'}\n";
+                #}
+
                 # work out cluster occupancy
                 if ( $n_of_taxa_in_cluster{$cluster_id} &&
-                    $cluster{$cluster_id}{ $tmptaxa[$sp] } &&
+                    defined($cluster{$cluster_id}{ $tmptaxa[$sp] }) &&
                     scalar(@{ $cluster{$cluster_id}{ $tmptaxa[$sp] } }) > 0 ) {
 
                     # core genes must contain all previously seen species
                     if ( $n_of_taxa_in_cluster{$cluster_id} == $core_occup ) {
                         $coregenome[$s][$sp]++;
+
+                        #$filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+                        #print "$filename $cluster_id $coregenome[$s][$sp]\n";
+
 
                     }    # pan genes must be novel to this species
                     elsif ( $n_of_taxa_in_cluster{$cluster_id} == 1 ) {
@@ -1072,8 +1133,8 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
         }
 
         print "# adding $tmptaxa[$sp]: core=$coregenome[$s][$sp] pan=$pangenome[$s][$sp]\n"
-          if ($verbose); 
-    } 
+          if ($verbose);  
+    }  
 }
 
 # write genome composition stats to boxplot files
@@ -1309,9 +1370,9 @@ sub sort_clusters_by_position {
                         $cluster_idx = 0
  
                     } elsif($next_cluster_idx == -1) {
-                            # after previous clusters -> 
-                            # prev: [$#sorted_cluster_ids]-------->cluster
-                            # next: NA
+                        # after previous clusters -> 
+                        # prev: [$#sorted_cluster_ids]-------->cluster
+                        # next: NA
 							
                         push( @{ $sorted_cluster_ids{$chr_name} }, $cluster_id );
                         $cluster_idx = scalar(@{ $sorted_cluster_ids{$chr_name} })-1;

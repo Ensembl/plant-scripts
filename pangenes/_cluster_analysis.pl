@@ -111,7 +111,6 @@ else {
         exit;
     } else {
         $maxdistneigh = int($maxdistneigh);
-        $params .= "_neigh$maxdistneigh";
     } 
 
     if ($NOSINGLES) {

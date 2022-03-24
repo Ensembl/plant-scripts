@@ -15,4 +15,5 @@
 15032022: pangenome matrices are chr-sorted with -s
 16032022: _cluster_analysis.pl unclusters non-neighbors more than $MAXDISTNEIGHBORS away
 16032022: BED-like pangenome matrices produced with -s
-17032022: updated documentation in README 
+17032022: updated documentation in README
+24032022: added get_pangenes.pl -N (and _cluster_analysis.pl -m)

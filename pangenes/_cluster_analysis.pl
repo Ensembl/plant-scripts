@@ -2,6 +2,9 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
+use FindBin '$Bin';
+use lib "$Bin/lib";
+use pangeneTools qw(parse_sequence_FASTA_file);
 
 # Makes pan-gene analysis based on clusters of collinear genes shared by
 # species in a pre-computed Minimap2/GSAlign synteny TSV file, produced by 
@@ -1144,50 +1147,6 @@ print "# core-gene (number of clusters) = $core_file\n";
 
 
 #######################################################
-
-# Takes the name string of a FASTA file created by _cut_sequences.pl
-# and parses the sequences in there. Assumes the following header
-# format: ">mrnaid geneid coords [production_name]" and thus supports
-# the same gene having several associated sequences.
-# Returns:
-# i)   ref to list with coord-sorted gene ids
-# ii)  ref to hash with FASTA strings with genes as keys, 
-#       might contain 2+ seqs for the same gene id 
-# iii) ref to hash mapping gene ids to chr coordinates
-sub parse_sequence_FASTA_file {
-
-    my ( $fname ) = @_;
-    my ( $geneid, $coords, $chr, $start, $end, $strand );
-    my ( @geneids, %chr_coords, %fasta );
-
-    open(FASTA,"<",$fname) || 
-        die "# ERROR(parse_sequence_FASTA_file): cannot read $fname\n";
-    while(<FASTA>) {
-        #>transcript:Os01t0100100-01 gene:Os01g0100100 1:2983-10815(+) [Oryza_sativa.IRGSP-1.0.chr1]
-        if(/^>\S+\s+(\S+)\s+(\S+)\s+\[[^\]]+\]/) {
-            ($geneid, $coords) = ($1,$2);
-            
-            if($coords =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
-
-                ($chr, $start, $end, $strand) = ($1, $2, $3, $4);
-            
-                # conserved gene id order			
-                if(!$fasta{$geneid}) {
-                    push(@geneids,$geneid);
-                    $chr_coords{$geneid} = [$chr, $start, $end, $strand];
-                }
-
-                # concat in case this is the second isoform
-                $fasta{$geneid} .= $_;
-            }
-        } else {
-            $fasta{$geneid} .= $_;
-        }
-    }
-    close(FASTA);
-
-    return ( \@geneids, \%fasta, \%chr_coords );
-}
 
 # Takes the name string of a FASTA file created by bedtools getfasta
 # and parses the sequences in there. Assumes the following header

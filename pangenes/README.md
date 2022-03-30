@@ -37,6 +37,7 @@ and produces different types of output:
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
+- [Lifting over gene models in genomic segment clusters](#lifting-over-gene-models-in-genomic-segment-clusters)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -286,6 +287,11 @@ $ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzan
 >transcript:Os01t0978100-02 gene:Os01g0978100 1:43232034-43238012(-) [Oryza_sativa.IRGSP-1.0.chr1]
 >transcript:Os01t0978100-03 gene:Os01g0978100 1:43232036-43237974(-) [Oryza_sativa.IRGSP-1.0.chr1]
 ```
+
+While cdna, cds and pep cluster files contain sequences annotated in the input GFF files,
+the gdna FASTA files contain genomic segments from assemblies matching gene models annotated in other
+genomes. The latter files are good starting points for lifting over genes, as explained in section
+[Lifting over gene models in genomic segment clusters](#lifting-over-gene-models-in-genomic-segment-clusters).
 
 The script also produces % of Conserved Sequence (POCS) and pangene matrices,
 which look like this:
@@ -553,6 +559,22 @@ it is possible to extract the collinearity evidence supporting them as follows:
     gene:BGIOSGA000001	gene:BGIOSGA000001	Oryza_indica.ASM465v1.chr1	3066	ortholog_collinear	gene:Os01g0978100	gene:Os01g0978100	Oryza_sativa.IRGSP-1.0.chr1	3066	NULL	NULL	NULL	100.00	1	1:47275569-47278635(-);1:43232026-43238506(-)
     gene:ONIVA01G52180	gene:ONIVA01G52180	Oryza_nivara_v1.chr1	5657	ortholog_collinear	gene:Os01g0978100	gene:Os01g0978100	Oryza_sativa.IRGSP-1.0.chr1	5657	NULL	NULL	NULL	100.00	1	1:42818941-42824598(-);1:43232026-43238506(-)
 
+
+## Lifting over gene models in genomic segment clusters
+
+As mentioned earlier, clusters with genomic segments, with extension .gdna.fna, can be used to 
+lift over (or transfer) gene models across taxa/annotation in the same cluster, as shown in
+the next example with external software [GMAP](https://doi.org/10.1093/bioinformatics/bti310):
+
+    $ gmap-2013-08-31/bin/gmap_build -D ./ -d samplegene Os01g0100300.gdna.db.fna
+    $ gmap-2013-08-31/bin/gmap -D ./ -d samplegene/ Os01g0100300.cdna.fna -f 2
+
+    Chr1_11371-12284(-)    samplegene    gene    1    913    .    +    .    ID=Os01t0100300-00.path1;Name=Os01t0100300-00
+    Chr1_11371-12284(-)    samplegene    mRNA    1    913    .    +    .    ID=Os01t0100300-00.mrna1;.;coverage=100.0;identity=100.0
+    Chr1_11371-12284(-)    samplegene    exon    1    139    100    +    .    ID=Os01t0100300-00.mrna1.exon1;.. 1 139 +
+    Chr1_11371-12284(-)    samplegene    exon    243    913    100    +    .    ID=Os01t0100300-00.mrna1.exon2;.. 140 810 +
+    Chr1_11371-12284(-)    samplegene    CDS    1    139    100    +    0    ID=Os01t0100300-00.mrna1.cds1;.. 1 139 +
+    Chr1_11371-12284(-)    samplegene    CDS    243    913    100    +    1    ID=Os01t0100300-00.mrna1.cds2;.. 140 810 +
 
 
 ## Troubleshooting

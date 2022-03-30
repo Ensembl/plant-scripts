@@ -36,6 +36,7 @@ and produces different types of output:
 - [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
+- [Evidence supporting clusters](#evidence-supporting-clusters)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -286,10 +287,6 @@ $ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzan
 >transcript:Os01t0978100-03 gene:Os01g0978100 1:43232036-43237974(-) [Oryza_sativa.IRGSP-1.0.chr1]
 ```
 
-The merged TSV file of collinear pairs supporting these clusters can be found in
- 
-    test_rice_pangenes/tmp/mergedpairs.tsv
-
 The script also produces % of Conserved Sequence (POCS) and pangene matrices,
 which look like this:
  
@@ -530,9 +527,32 @@ you can also compute local BLAST alignments, coverage and sequence identity to t
 in a cluster as follows:
 
 ```
-get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.aln.fna
+get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
 get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cds.faa
 ```
+
+## Evidence supporting clusters
+
+In section [Pairwise genome comparisons](#pairwise-genome-comparisons) we saw that collinear gene pairs 
+are stored in TSV files, one per pair of genomes compared. On each get_pangenes.pl run these files are 
+merged and sorted in a signle TSV file that can be found in
+
+    test_rice_pangenes/tmp/mergedpairs.tsv
+
+Note that this file is overwritten with every new run. 
+For sequence clusters computed with the same parameters as the most recent run
+it is possible to extract the collinearity evidence supporting them as follows:
+
+
+    $ perl check_evidence.pl -i test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna \
+        -d test_rice_pangenes/
+
+    # cluster genes = 3
+    gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlapdn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
+    gene:BGIOSGA000001	gene:BGIOSGA000001	Oryza_indica.ASM465v1.chr1	3066	ortholog_collinear	gene:ONIVA01G52180	gene:ONIVA01G52180	Oryza_nivara_v1.chr1	3066	NULL	NULL	NULL	100.00	1	1:47275569-47278635(-);1:42818941-42824598(-)
+    gene:BGIOSGA000001	gene:BGIOSGA000001	Oryza_indica.ASM465v1.chr1	3066	ortholog_collinear	gene:Os01g0978100	gene:Os01g0978100	Oryza_sativa.IRGSP-1.0.chr1	3066	NULL	NULL	NULL	100.00	1	1:47275569-47278635(-);1:43232026-43238506(-)
+    gene:ONIVA01G52180	gene:ONIVA01G52180	Oryza_nivara_v1.chr1	5657	ortholog_collinear	gene:Os01g0978100	gene:Os01g0978100	Oryza_sativa.IRGSP-1.0.chr1	5657	NULL	NULL	NULL	100.00	1	1:42818941-42824598(-);1:43232026-43238506(-)
+
 
 
 ## Troubleshooting

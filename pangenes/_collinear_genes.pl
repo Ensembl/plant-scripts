@@ -35,8 +35,13 @@ my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive across species than v2.2
 my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
 my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE ".
                   "-r1k,5k"; # https://github.com/lh3/minimap2/issues/813, 2949 -> 2956
-my $WFMASHEXE   = 'wfmash';                  # v0.7.0
-my $WFMASHPARS  = '-p 90 -s 1000';           # median rice gene 2362, barley 1323
+
+my $WFMASHEXE   = 'wfmash';          # v0.8.1-25-g1344b9e
+my $WFMASHPARS  = '-p 80 -s 1000';   # -s: median rice gene 2362, barley 1323
+                                     # -p: ~ asm20
+                                     # -p 90 -s 1000 -> 1652
+                                     # -p 80 -s 1000 -> 1793
+                                     # -p 80 -s 2000 -> 1528
 
 my $GSALIGNPATH = './';
 my $GSAINDXEXE   = 'bwt_index';

@@ -716,11 +716,12 @@ elsif ( !-s $intersectBEDfile_sorted ) {
 push(@tmpBEDfiles, $segment_intersectBEDfile, $segment_intersectBEDfile1);
 push(@tmpBEDfiles, $gene_intersectBEDfile, $intersectBEDfile_sorted);
 
-my ($num_pairs, $num_segments) = 
+my ($num_pairs, $num_segments, $hits_per_gene) = 
     bed2compara( $intersectBEDfile_sorted, $geneBEDfile1, $geneBEDfile2,
         $outfilename, $sp1, $sp2, $noheader);
 
-printf( "# %d collinear gene pairs , %d collinear segments\n", $num_pairs, $num_segments );
+printf( "# %d collinear gene pairs , %d collinear segments, %1.3f hits/gene\n", 
+    $num_pairs, $num_segments, $hits_per_gene );
 
 if($num_pairs > 0 && -s $outfilename) {
     print "# TSV file: $outfilename\n";
@@ -1487,7 +1488,11 @@ sub genes_mapped2segments {
 # vi)   string with name of species2
 # vii)  boolean to remove header from TSV
 # TODO) boolean to remove redundant parts from gene names (experimental, see below)
-# Returns i) number of collinear gene pairs & ii) number of collinear segments
+# Returns:  
+# i) number of collinear gene pairs 
+# ii) number of collinear segments
+# iii) float with average hits per gene (on same species)
+#
 # Columns in TSV output format, homology_type = ['ortholog_collinear','segment_collinear']:
 # gene_stable_id protein_stable_id species overlap homology_type homology_gene_stable_id
 # homology_protein_stable_id homology_species overlap dn ds goc_score wga_coverage
@@ -1498,6 +1503,7 @@ sub bed2compara {
 
     my ( $gene1, $gene2, $coords1, $coords2, $coords, $homoltype );
     my ($num_pairs, $num_segments) = (0, 0);
+    my ($num_matched_genes, $num_hits_genes, %hit) = (0, 0);
     my ($ref_orig_coords1,$ref_orig_coords2);
 
     # read gene model coordinates 
@@ -1600,12 +1606,21 @@ sub bed2compara {
             1,      # high confidence
             $coords
         );
+
+        # compile match stats
+        if($homoltype ne 'segment_collinear') {
+            if(!$hit{$gene1}{$sp2}) { 
+                $num_matched_genes++ 
+            }
+            $hit{$gene1}{$sp2}=1;
+            $num_hits_genes++;
+        }
     }
 
     close(TSV);
     close(BEDINT);
 
-    return ($num_pairs, $num_segments);
+    return ($num_pairs, $num_segments, $num_hits_genes/$num_matched_genes);
 }
 
 sub calc_median {

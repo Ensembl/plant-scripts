@@ -51,6 +51,18 @@ across a set of genomes (or pangenome) so that pan-genes can be defined:
 
 *Figure 1. Graphical summary of pangene set analysis.*
 
+|occupancy class|definition|
+|:--------------|:---------|
+|core|Genes contained in all considered genomes/taxa.|
+|soft-core|Genes contained in 95% of the considered genomes/taxa.|
+|cloud|Genes present only in a few genomes/taxa, generally 1 or 2. The cutoff is defined as the class next to the most populated non-core class.|
+|shell|Remaining genes, present in several genomes/taxa.|
+
+*Table 1. Definitions of occupancy classes for pangenes, 
+taken from [GET_HOMOLOGUES](http://eead-csic-compbio.github.io/get_homologues/manual). 
+Accessory genes include both shell and cloud genes.*
+
+
 ## How it works
 
 The next flowchart shows the three main tasks of the pipeline:

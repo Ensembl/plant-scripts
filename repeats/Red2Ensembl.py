@@ -7,7 +7,7 @@
 # pyenv local 3.7.6
 # pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
 #
-# Copyright [2020-21] EMBL-European Bioinformatics Institute
+# Copyright [2020-22] EMBL-European Bioinformatics Institute
 
 import argparse
 import sys
@@ -148,29 +148,30 @@ def parse_params_from_log(log_filename):
     return (version, params, summary)
 
 
-def _parse_rptfiles_from_log(log_filename):
-    """Parses Red stdout log and returns a list with
-    the names of output files with repeat coordinates"""
+def _parse_files_from_log(regex, log_filename, order=[]):
+    """Parses Red stdout log and returns an (optionally orderred) list with
+    the names of output files matched with regex"""
 
-    rpt_files = []
+    parsed_files = []
+    order_files = []
 
     try:
         logfile = open(log_filename)
     except OSError as error:
         print("# ERROR: cannot open/read file:", log_filename, error)
-        return rpt_files
+        return parsed_files
 
     job_done = False
-    repeats_ok = True
+    parsing_ok = True
     for line in logfile:
-        repeats = re.search(r"locations to: (\S+)", line)
-        if repeats:
-            rpt_filename = repeats.group(1)
-            if not (os.path.isfile(rpt_filename)):
-                repeats_ok = False
+        match = re.search(regex, line)
+        if match:
+            filename = match.group(1)
+            if not (os.path.isfile(filename)):
+                parsing_ok = False
                 break
             else:
-                rpt_files.append(rpt_filename)
+                parsed_files.append(filename)
         else:  # last line in log
             summary = re.search(r"Genome length: \d+", line)
             if summary:
@@ -178,51 +179,35 @@ def _parse_rptfiles_from_log(log_filename):
 
     logfile.close
 
-    if repeats_ok and job_done:
-        return rpt_files
+    if parsing_ok and job_done:
+    
+        # sort parsed files if required
+        if order:
+            for elem in order:
+                elemOK = False
+                for file in parsed_files:
+                    thisregex = "rpt/" + elem + "\." 
+                    match = re.search(thisregex, file)
+                    if match:
+                        order_files.append(file)
+                        elemOK = True
+                        break
+
+                if elemOK == False:
+                    print("# ERROR: cannot match ordered contig: ", elem) 
+                                
+            return order_files 
+
+        else:
+            return parsed_files
     else:
         return []
 
 
-def _parse_mskfiles_from_log(log_filename):
-    """Parses Red stdout log and returns a list with
-    the names of soft-masked files"""
-
-    msk_files = []
-
-    try:
-        logfile = open(log_filename)
-    except OSError as error:
-        print("# ERROR: cannot open/read file:", log_filename, error)
-        return rpt_files
-
-    job_done = False
-    mask_ok = True
-    for line in logfile:
-        repeats = re.search(r"masked sequence to: (\S+)", line)
-        if repeats:
-            rpt_filename = repeats.group(1)
-            if not (os.path.isfile(rpt_filename)):
-                repeats_ok = False
-                break
-            else:
-                msk_files.append(rpt_filename)
-        else:  # last line in log
-            summary = re.search(r"Genome length: \d+", line)
-            if summary:
-                job_done = True
-
-    logfile.close
-
-    if mask_ok and job_done:
-        return msk_files
-    else:
-        return []
-
-
-def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepath):
+def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname, 
+    log_filepath, seqnames):
     """Calls Red, waits for job completion and logs stdout.
-    Returns list of TSV repeat filenames.
+    Returns list of TSV repeat filenames in same order as input sequences.
     If repeat outfiles are in place then Red is skipped.
     Note: repeats are requested in format 3, 1-based inclusive (Red2)"""
 
@@ -230,7 +215,8 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepath
 
     # check whether previous results exist
     if os.path.isfile(log_filepath):
-        rpt_files = _parse_rptfiles_from_log(log_filepath)
+        rpt_files = _parse_files_from_log(
+          "locations to: (\S+)", log_filepath, seqnames)
         if rpt_files:
             print("# re-using previous Red results")
             return rpt_files
@@ -271,16 +257,19 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname, log_filepath
 
     # merge masked chromosomes if requested
     if outmskfilename:
-        msk_files = _parse_mskfiles_from_log(log_filepath)
+        msk_files = _parse_files_from_log(
+          "masked sequence to: (\S+)", log_filepath, seqnames)
         with open(outmskfilename, "w") as outmskfile:
             for fname in msk_files:
                 with open(fname) as infile:
                     for line in infile:
                         outmskfile.write(line)
+        
         print("# FASTA file with soft-masked sequences: %s" % (outmskfilename))
 
     # parse log and capture repeat filenames
-    rpt_files = _parse_rptfiles_from_log(log_filepath)
+    rpt_files = _parse_files_from_log(
+      "locations to: (\S+)", log_filepath, seqnames)
     return rpt_files
 
 
@@ -658,7 +647,9 @@ def main():
     # run Red, or else re-use previous results
     print("# running Red")
     repeat_filenames = run_red(
-        args.exe, args.cor, args.msk_file, gnmdir, rptdir, log_filepath
+        args.exe, args.cor, args.msk_file, 
+        gnmdir, rptdir, 
+        log_filepath, sequence_names
     )
     
     if repeat_filenames:

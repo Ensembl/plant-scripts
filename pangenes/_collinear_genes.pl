@@ -412,6 +412,7 @@ else {
             next if($indexonly);
 
             $cmd = "$wfmash_path $WFMASHPARS -t $threads $chrfasta1 $chrfasta2 > $splitPAF";
+            print "# $cmd\n";
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
@@ -449,6 +450,7 @@ else {
 
             $cmd = "$GSALIGNEXE $GSALIGNPARS -t $threads -i $preffix -q $chrfasta2 ".
                 "-o $splitMAFpreffix 2> $splitMAFpreffix.log";
+            print "# $cmd\n";
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
@@ -498,6 +500,7 @@ else {
                 }
             } else {
                 $cmd = "$minimap_path $MINIMAPTYPE -t $threads -d $index_fasta1 $chrfasta1";
+                print "# $cmd\n";
                 system($cmd);
                 if ( $? != 0 ) {
                     die "# ERROR: failed running minimap2 (probably ran out of memory, $cmd)\n";

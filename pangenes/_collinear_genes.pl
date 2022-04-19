@@ -21,7 +21,7 @@ $|=1;
 # GSAlign  [https://doi.org/10.1186/s12864-020-6569-1]
 # wfmash   [https://github.com/ekg/wfmash]
 
-# perl get_collinear_genes.pl -sp1 oryza_sativa \
+# perl _collinear_genes.pl -sp1 oryza_sativa \
 #  -fa1 Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
 #  -gf1 Oryza_sativa.IRGSP-1.0.51.gff3 -sp2 oryza_nivara -fa2 \
 #  Oryza_nivara.Oryza_nivara_v1.0.dna.toplevel.fa \
@@ -30,13 +30,19 @@ $|=1;
 # collinear | Osativa vs Onivara | Athaliana vs Ahalleri
 # 2.17      |     24502          |     10637
 # 2.22      |     18770          |      8231
+# 2.24      |     25227          |         ?
 
-my $MINIMAP2EXE = 'minimap2'; # 2.17-r941 more senstive across species than v2.22
+#hardcode different minimap
+#$ENV{'EXE_MINIMAP'} = '~/soft/minimap2-2.24_x64-linux/minimap2';
+
+my $MINIMAP2EXE = 'minimap2';  
 my $MINIMAPTYPE = '-x asm20'; # https://github.com/lh3/minimap2/issues/225
-my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE ".
-                  "-r1k,5k"; # https://github.com/lh3/minimap2/issues/813, 2949 -> 2956
+my $MINIMAPPARS = "--secondary=no --cs $MINIMAPTYPE " .
+                  "-r1k,5k"; # https://github.com/lh3/minimap2/issues/813, 
+                  # 2949 -> 2956 2.17
+                  # 2956 -> 2951 , 25277 -> 25209 2.24 
 
-my $WFMASHEXE   = 'wfmash';          # v0.8.1-25-g1344b9e
+my $WFMASHEXE   = $ENV{'EXE_WFMASH'} || 'wfmash';   # v0.8.1-25-g1344b9e
 my $WFMASHPARS  = '-p 80 -s 1000';   # -s: median rice gene 2362, barley 1323
                                      # -p: ~ asm20
                                      # -p 90 -s 1000 -> 1652
@@ -44,11 +50,11 @@ my $WFMASHPARS  = '-p 80 -s 1000';   # -s: median rice gene 2362, barley 1323
                                      # -p 80 -s 2000 -> 1528
 
 my $GSALIGNPATH = './';
-my $GSAINDXEXE   = 'bwt_index';
+my $GSAINDXEXE  = 'bwt_index';
 my $GSALIGNEXE  = 'GSAlign';
 my $GSALIGNPARS = '-sen -no_vcf -fmt 1';
 
-my $BEDTOOLSEXE = 'bedtools';                # v2.30.0
+my $BEDTOOLSEXE = 'bedtools';  # v2.30.0
 my $BEDINTSCPAR = '-wo -f XXX -F XXX -e';    # XXX to be replaced with [0-1]
 my $SAMTOOLSEXE = 'samtools';
 

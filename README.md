@@ -25,7 +25,7 @@ See examples and documentation in folder [repeats](./repeats/).
 
 If you want to annotate repeats you must first run: 
 
-    make install_repeats
+    make install install_repeats
 
 
 ## List of recipes
@@ -113,11 +113,17 @@ Some of the scripts depend on additional software packages, see below to learn h
 
 #### FTP
 
-The examples for bulk downloads from the FTP site require the software [wget](https://www.gnu.org/software/wget/), which is usually installed on most Linux distributions. For macOS it is available on [Homebrew](https://brew.sh). For Windows it ships with [MobaXterm](https://mobaxterm.mobatek.net).
+The examples for bulk downloads from the FTP site require the software [wget](https://www.gnu.org/software/wget/), which is usually installed on most Linux distributions. For macOS it is available on [Homebrew](https://brew.sh). For Windows it ships with [MobaXterm](https://mobaxterm.mobatek.net). You can also install it with:
+
+    make install 
 
 #### MySQL
 
-The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client. Depending on your Linux flavour this package can be named *mysql-client* or simply *mysql*.
+The examples for SQL queries to Ensembl Genomes database servers require the [MySQL](https://www.mysql.com) client. 
+Depending on your Linux flavour this package can be named *mysql-client* or simply *mysql*. You can also install it with:
+
+    make install 
+
 
 #### Perl
 
@@ -125,11 +131,11 @@ As listed in [cpanfile](./files/cpanfile), several modules are required for the 
 
 Provided you have [cpanm](https://metacpan.org/pod/App::cpanminus) installed on your system, you can get this dependencies with
 
-    make install_REST
+    make install install_REST
 
 The dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip), together with those used by recipes using the Ensembl Perl API, can be installed with
 
-    make install_ensembl
+    make install install_ensembl
 
 Ensembl API installation instructions can be found [here](http://plants.ensembl.org/info/docs/api/api_installation.html), or if you use git [here](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). Note that your local Ensembl API should match the version of the current Ensembl release.
 
@@ -137,7 +143,7 @@ Ensembl API installation instructions can be found [here](http://plants.ensembl.
 
 The REST recipes written in python require library [requests](https://pypi.org/project/requests), which can be installed with:
 
-    make install_REST
+    make install install_REST
 
 #### R
 
@@ -151,7 +157,7 @@ See examples and documentation in folder [pangenes](./pangenes/).
 
 If you want to run any of those scripts you must first run:
 
-    make install_pangenes
+    make install install_pangenes
 
 ## Phylogenomics
 
@@ -159,7 +165,7 @@ See examples and documentation in folder [phylogenomics](./phylogenomics/).
 
 If you want to run any of those scripts you must first run:
 
-    make install_REST
+    make install install_REST
 
 ## Species tree
 

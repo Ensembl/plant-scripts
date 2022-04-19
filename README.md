@@ -127,17 +127,24 @@ Depending on your Linux flavour this package can be named *mysql-client* or simp
 
 #### Perl
 
-As listed in [cpanfile](./files/cpanfile), several modules are required for the REST examples: [JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and [HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). 
-
-Provided you have [cpanm](https://metacpan.org/pod/App::cpanminus) installed on your system, you can get this dependencies with
+As listed in [cpanfile](./files/cpanfile), several modules are required for the REST examples: 
+[JSON](https://metacpan.org/pod/JSON), [JSON::XS](https://metacpan.org/pod/JSON::XS) and 
+[HTTP::Tiny](https://metacpan.org/pod/HTTP::Tiny). These can be installed with 
+[cpanm](https://metacpan.org/pod/App::cpanminus) or with:
 
     make install install_REST
 
-The dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) and [Archive::Zip](https://metacpan.org/pod/Archive::Zip), together with those used by recipes using the Ensembl Perl API, can be installed with
+The dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) 
+and [Archive::Zip](https://metacpan.org/pod/Archive::Zip), together with those used by recipes using the Ensembl Perl API, 
+can be installed with:
 
     make install install_ensembl
 
-Ensembl API installation instructions can be found [here](http://plants.ensembl.org/info/docs/api/api_installation.html), or if you use git [here](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging [guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). Note that your local Ensembl API should match the version of the current Ensembl release.
+Ensembl API installation instructions can be found [here](http://plants.ensembl.org/info/docs/api/api_installation.html), 
+or if you use git [here](http://plants.ensembl.org/info/docs/api/api_git.html). There is also a debugging 
+[guide](http://plants.ensembl.org/info/docs/api/debug_installation_guide.html), which lists some extra dependencies that might not have, 
+such as modules [DBI](https://metacpan.org/pod/DBI) and [DBD::mysql](https://metacpan.org/pod/DBD::mysql). 
+Note that your local Ensembl API should match the version of the current Ensembl release.
 
 #### Python
 

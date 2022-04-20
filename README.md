@@ -150,7 +150,7 @@ The REST recipes written in python require library [requests](https://pypi.org/p
 Provided pip3 is available in your system (for instance after make install), it can be installed with:
 
     #make install
-    make install install_REST
+    make install_REST
 
 #### R
 
@@ -178,7 +178,7 @@ See examples and documentation in folder [pangenes](./pangenes/).
 If you want to run any of those scripts you must first run:
 
     #make install # install required bedtools
-    make install install_pangenes # requires gcc & g++ compilers
+    make install_pangenes # requires gcc & g++ compilers
 
 ## Phylogenomics
 

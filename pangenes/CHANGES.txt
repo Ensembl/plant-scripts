@@ -18,3 +18,5 @@
 17032022: updated documentation in README
 24032022: added get_pangenes.pl -N (and _cluster_analysis.pl -m)
 04042022: tested wfmash v0.8.1-25-g1344b9e on rice chr1 testset (-p 80 -s 1000)
+20042022: added sub split_genome_sequences_per_chr_bedtools to _collinear_genes (uses faster bedtools)
+20042022: adopted minimap2-2.24 and updated Makefile

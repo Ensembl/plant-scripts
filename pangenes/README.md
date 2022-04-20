@@ -144,6 +144,7 @@ In addition to Perl, these scripts require:
 * https://bedtools.readthedocs.io/en/latest/
 
 Assuming *bedtools* are installed in most settings,
+and that gcc & g++ compilers are available,
 the remaining dependencies can be installed on Ubuntu/Debian in folder bin/ with:
 
     cd ../..
@@ -166,10 +167,10 @@ This should print something like this:
 
 In addition to minimap2, two other genome aligners have been integrated:
 
-|software|flag|source|installation instructions|
-|:-------|:---|:-----|:------------------------|
-|GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make install_gsalign |
-|Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash |
+|software|flag|source|installation instructions|notes|
+|:-------|:---|:-----|:------------------------|-----|
+|GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make install_gsalign | requires gcc compiler |
+|Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash | requires sudo & g++ compiler |
 
 ### Command-line options
 

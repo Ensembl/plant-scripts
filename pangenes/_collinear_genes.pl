@@ -322,9 +322,19 @@ if($repetitive) {
 # Note: reduces complexity (good for large/polyploid genomes) but misses translocations
 if ($split_chr_regex ne '') {
     print "\n# splitting sequences with regex\n";
-    $ref_chr_pairs = 
-        split_genome_sequences_per_chr($tmpdir, $fasta1, $fasta2, 
-            $split_chr_regex, $indexonly, $reuse);
+
+    # bedtools approach (7m to 4m wheat), requires .fai index
+    if(-e $fasta1.'.fai' && -e $fasta2.'.fai') {
+        $ref_chr_pairs =
+            split_genome_sequences_per_chr_bedtools($tmpdir, $fasta1, $fasta2,
+                $split_chr_regex, $bedtools_path, $indexonly, $reuse);
+
+    } else { 
+
+        $ref_chr_pairs = 
+            split_genome_sequences_per_chr($tmpdir, $fasta1, $fasta2, 
+                $split_chr_regex, $indexonly, $reuse); 
+    }
 }
 else {
     # single reference by default
@@ -825,6 +835,38 @@ sub parse_genes_GFF {
 }
 
 # Takes 2 strings:
+# 1) name of FASTA .fai index file
+# 2) regex to match chromosome names, applied to 1st column
+# Returns ref to hash with chr and/or 'unplaced' as keys and BED strings as value
+sub read_FAI_regex2hash {
+    my ($faifile,$regex) = @_;
+
+    my ($seqname,$size);
+    my %bed;
+
+    open(FAI,"<$faifile") ||
+        die "# ERROR(read_FAI_regex2hash): cannot read $faifile $!\n"; 
+
+    while (<FAI>) {
+        #1A      602900890       60      60      61
+        #1B      697493198       612949359       60      61
+        if(/^(\S+)\t(\d+)/) {
+            ($seqname, $size) = ($1, $2);
+            if($seqname !~ m/^$regex$/) { 
+                $bed{'unplaced'} .= "$seqname\t0\t$size\n";
+            } else {
+                $bed{$seqname} = "$seqname\t0\t$size\n";
+            }
+        } 
+    }
+
+    close(FAI);
+
+    return \%bed;
+}
+
+
+# Takes 2 strings:
 # 1) name of FASTA file
 # 2) regex to match chromosome names, applied to first non-blank token (\S+)
 # Returns ref to hash with chr and/or 'unplaced' as keys and sequences as value
@@ -869,6 +911,117 @@ sub read_FASTA_regex2hash {
     return \%fasta;
 }
 
+# Takes 7 params:
+# 1) path to write files to
+# 2) name of FASTA file (ref)
+# 3) name of FASTA file (query)
+# 4) regex to match chromosome names
+# 5) bedtools path
+# 6) indexing job (boolean)
+# 7) reuse (boolean)
+# Returns ref to hash with chr and/or 'unplaced' as keys and two FASTA files as value (ref, query)
+# Note: 'unplaced' might hold genuine unplaced sequences but also non-shared chr names
+# Note: creates FASTA & BED files with prefix _
+# Note: if doindex is true only creates files for $fastafile1
+sub split_genome_sequences_per_chr_bedtools {
+    my ($path,$fastafile1,$fastafile2,$regex,$bedtools_path,$doindex,$reuse) = @_;
+
+    my ($faifile1, $faifile2) = ( $fastafile1.'.fai' , $fastafile2.'.fai' );
+    my ($chr,$chrfasta1,$chrfasta2,$unplacedbed1,$unplacedbed2,$cmd);
+    my (%shared_chrs,%chr_pairs);
+
+    my $ref_bed1 = read_FAI_regex2hash($faifile1,$regex);
+    my $ref_bed2 = read_FAI_regex2hash($faifile2,$regex);
+
+    # check chr names found in both files
+    foreach $chr (keys(%$ref_bed1)){
+        if(defined($ref_bed2->{$chr}) && $chr !~ 'unplaced'){
+            $shared_chrs{$chr} = 1;
+        }
+    } 
+
+    # write chr-specific FASTA files
+    foreach $chr (keys(%shared_chrs)) { 
+        $chrfasta1 = $path . "_".basename($fastafile1).".$chr.fna";
+        $chrfasta2 = $path . "_".basename($fastafile2).".$chr.fna";
+
+        if(!$reuse || !-e $chrfasta1) {
+            $cmd = "echo '$ref_bed1->{$chr}' | $bedtools_path getfasta -fi $fastafile1 -bed stdin | " .
+                " perl -lne 's/^>(\\S+?):\\d+-\\d+/>\$1/; print' > $chrfasta1";
+            system($cmd); #print($cmd);
+            sleep(2);
+            if ( $? != 0 ) {
+                die "# ERROR(split_genome_sequences_per_chr_bedtools): failed running bedtools (chr, $cmd)\n";
+            } elsif ( !-s $chrfasta1 ) {
+                die "# ERROR(split_genome_sequences_per_chr_bedtools): failed generating $chrfasta1 file ($cmd)\n";
+            }
+        } 
+
+        if(!$doindex && (!$reuse || !-e $chrfasta2)) {
+            $cmd = "echo '$ref_bed2->{$chr}' | $bedtools_path getfasta -fi $fastafile2 -bed stdin | " .
+                " perl -lne 's/^>(\\S+?):\\d+-\\d+/>\$1/; print' > $chrfasta2";
+            system($cmd);
+            sleep(2);
+            if ( $? != 0 ) {
+                die "# ERROR(split_genome_sequences_per_chr_bedtools): failed running bedtools (chr, $cmd)\n";
+            } elsif ( !-s $chrfasta1 ) {
+                die "# ERROR(split_genome_sequences_per_chr_bedtools): failed generating $chrfasta2 file ($cmd)\n";
+            }
+        }
+
+        $chr_pairs{$chr} = [$chrfasta1,$chrfasta2];
+    }
+
+    # write unplaced and/or not-shared chr names
+    $chrfasta1 = $path . "_".basename($fastafile1).".unplaced.fna";
+    $chrfasta2 = $path . "_".basename($fastafile2).".unplaced.fna";
+
+    # as there might be many unplaced contigs, these are better written to file
+    $unplacedbed1 = $path . "_".basename($fastafile1).".unplaced.bed";
+    $unplacedbed2 = $path . "_".basename($fastafile2).".unplaced.bed";
+
+    if($ref_bed1->{'unplaced'} && (!$reuse || !-e $chrfasta1)) {
+
+        open( UBED1, ">", $unplacedbed1) ||
+            die "# ERROR(split_genome_sequences_per_chr_bedtools): cannot write $unplacedbed1\n";
+        print UBED1 $ref_bed1->{'unplaced'};
+        close(UBED1);        
+
+        $cmd = "$bedtools_path getfasta -fi $fastafile1 -bed $unplacedbed1 | " .
+            " perl -lne 's/^>(\\S+?):\\d+-\\d+/>\$1/; print' > $chrfasta1";
+        system($cmd); 
+        sleep(2);
+        if ( $? != 0 ) {
+            die "# ERROR(split_genome_sequences_per_chr_bedtools): failed running bedtools (chr, $cmd)\n";
+        } elsif ( !-s $chrfasta1 ) {
+            die "# ERROR(split_genome_sequences_per_chr_bedtools): failed generating $chrfasta1 file ($cmd)\n";
+        }
+    }
+
+    if(!$doindex && $ref_bed2->{'unplaced'} && (!$reuse || !-e $chrfasta2)) {
+
+        open( UBED2, ">", $unplacedbed2) ||
+            die "# ERROR(split_genome_sequences_per_chr_bedtools): cannot write $unplacedbed2\n";
+        print UBED2 $ref_bed2->{'unplaced'};
+        close(UBED2);
+
+        $cmd = "$bedtools_path getfasta -fi $fastafile2 -bed $unplacedbed2 | " .
+            " perl -lne 's/^>(\\S+?):\\d+-\\d+/>\$1/; print' > $chrfasta2";
+        system($cmd); 
+        sleep(2);
+        if ( $? != 0 ) {
+            die "# ERROR(split_genome_sequences_per_chr_bedtools): failed running bedtools (chr, $cmd)\n";
+        } elsif ( !-s $chrfasta1 ) {
+            die "# ERROR(split_genome_sequences_per_chr_bedtools): failed generating $chrfasta2 file ($cmd)\n";
+        }
+    }
+
+    $chr_pairs{'unplaced'} = [$chrfasta1,$chrfasta2];
+
+    return \%chr_pairs;
+}
+
+
 # Takes 6 params:
 # 1) path to write files to
 # 2) name of FASTA file (ref)
@@ -884,7 +1037,7 @@ sub split_genome_sequences_per_chr {
 
     my ($path,$fastafile1,$fastafile2,$regex,$doindex,$reuse) = @_;
 
-    my ($chr,$chrfasta1,$chrfasta2,$summaryfile);
+    my ($chr,$chrfasta1,$chrfasta2);
     my (%shared_chrs,%chr_pairs);
 
     my $ref_fasta1 = read_FASTA_regex2hash($fastafile1,$regex);

@@ -5,6 +5,7 @@ use Getopt::Long qw(:config no_ignore_case);
 
 # Takes a GFF & FASTA files and produces FASTA files with 
 # CDS nucl & pep sequences of the 1st transcript found
+# Note: also creates a FASTA index file (.fai)
 #
 # Uses external software: gffread [https://f1000research.com/articles/9-304/v2]
 

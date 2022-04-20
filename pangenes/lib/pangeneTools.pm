@@ -69,10 +69,10 @@ sub set_pangeneTools_env {
 
   # installed in this repo
   if( ! defined($ENV{"EXE_MINIMAP"}) ){ 
-    $ENV{"EXE_MINIMAP"} = $ENV{'PANGENE'}.'bin/minimap2-2.17/minimap2' 
+    $ENV{"EXE_MINIMAP"} = $ENV{'PANGENE'}.'../lib/minimap2/minimap2' 
   }
   if( ! defined($ENV{"EXE_GFFREAD"}) ){ 
-    $ENV{"EXE_GFFREAD"} = $ENV{'PANGENE'}.'bin/gffread-0.12.7.Linux_x86_64/gffread' 
+    $ENV{"EXE_GFFREAD"} = $ENV{'PANGENE'}.'bin/gffread/gffread' 
   }
   if( ! defined($ENV{"EXE_WFMASH"}) ){ 
     $ENV{"EXE_WFMASH"} = $ENV{'PANGENE'}.'bin/wfmash/build/bin/wfmash' 

@@ -544,7 +544,7 @@ foreach $infile (@inputfiles) {
   }
 
   # extract cDNA and CDS sequences
-  # Note: this also creates a FASTA index file that might be used by wfmash later on
+  # Note: this also creates a FASTA index file that can be used to split assemblies in chrs
   if(-s $outpep && -s $outCDS && -s $outcDNA) {
     #print "# re-using $outCDS\n";
     

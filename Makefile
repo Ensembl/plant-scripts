@@ -84,4 +84,4 @@ test_pangenes:
 	cd pangenes && perl get_pangenes.pl -d ../files/test_rice
 
 clean_pangenes:
-	cd pangenes && rm -rf ../files/test_rice_pangenes
+	cd pangenes && rm -rf test_rice_pangenes

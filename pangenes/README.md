@@ -169,8 +169,8 @@ In addition to minimap2, two other genome aligners have been integrated:
 
 |software|flag|source|installation instructions|notes|
 |:-------|:---|:-----|:------------------------|-----|
-|GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make install_gsalign | requires gcc compiler |
-|Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make install_wfmash | requires sudo & g++ compiler |
+|GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make [install_gsalign](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L75) | requires gcc compiler |
+|Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make [install_wfmash](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L71) | requires sudo & g++ compiler |
 
 ### Command-line options
 

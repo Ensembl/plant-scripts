@@ -20,7 +20,8 @@ my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 
 my (%opts,$INP_dir,$INP_clusterfile);
 my ($cluster_list_file,$cluster_folder);
-my ($gene_id, %cluster_gene_id, %seen, @pairs);
+my ($gene_id, $hom_gene_id, $homology_type, $overlap);
+my (%seen, %overlap, %cluster_gene_id, @pairs);
 
 getopts('hd:i:', \%opts);
 
@@ -91,15 +92,29 @@ while(<TSV>) {
 
   my @data = split(/\t/,$_);
   next if(scalar(@data) < 15);
-  if($data[4] eq 'ortholog_collinear') {
-    next if(!$cluster_gene_id{$data[0]} || !$cluster_gene_id{$data[5]});
-    $seen{$data[0]}++;
-    $seen{$data[5]}++;
+
+  ($gene_id, $overlap, $homology_type, $hom_gene_id) = 
+    ($data[0],$data[3],$data[4],$data[5]);
+
+  if($homology_type eq 'ortholog_collinear') {
+
+    next if(!$cluster_gene_id{$gene_id} || !$cluster_gene_id{$hom_gene_id});
+
+    $seen{$gene_id}++;
+    $seen{$hom_gene_id}++;
+
+    # overlap only considered for gene pairs (not segments)
+    $overlap{$gene_id} += $overlap;
+    $overlap{$hom_gene_id} += $overlap; 
+
     push(@pairs, $_);
-  } elsif($data[4] eq 'segment_collinear') {
-    next if(!$cluster_gene_id{$data[0]} && !$cluster_gene_id{$data[5]});
-    if($data[1] ne 'segment'){ $seen{$data[0]}++ }
-    elsif($data[6] ne 'segment'){ $seen{$data[5]}++ }
+
+  } elsif($homology_type eq 'segment_collinear') {
+
+    next if(!$cluster_gene_id{$gene_id} && !$cluster_gene_id{$hom_gene_id});
+
+    if($data[1] ne 'segment'){ $seen{$gene_id}++ }
+    elsif($data[6] ne 'segment'){ $seen{$hom_gene_id}++ }
     push(@pairs, $_)
   }
 
@@ -110,11 +125,17 @@ if(scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
   die "# ERROR: cannot find collinear evidence for cluster $INP_clusterfile , please re-run get_pangenes.pl with same arguments\n";
 }
 else { 
-  print "gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t" .
+  print "#gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t" .
     "homology_protein_stable_id\thomology_species\toverlap\tdn\tds\tgoc_score\twga_coverage\t" .
     "is_high_confidence\tcoordinates\n";
   print @pairs;
 }
 
-
+print "\n# gene\tpairs\tgene_overlap\n";
+foreach $gene_id (keys(%seen)){
+  printf("%s\t%d\t%1.0f\n",
+    $gene_id,
+    $seen{$gene_id},
+    $overlap{$gene_id});
+}
 

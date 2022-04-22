@@ -20,8 +20,9 @@ my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 
 my (%opts,$INP_dir,$INP_clusterfile);
 my ($cluster_list_file,$cluster_folder);
-my ($gene_id, $hom_gene_id, $homology_type, $overlap);
-my (%seen, %overlap, %cluster_gene_id, @pairs);
+my ($gene_id, $hom_gene_id, $homology_type);
+my ($overlap, $coords, $hom_coords);
+my (%seen, %overlap, %cluster_gene_id, %gene_length, @pairs);
 
 getopts('hd:i:', \%opts);
 
@@ -93,8 +94,8 @@ while(<TSV>) {
   my @data = split(/\t/,$_);
   next if(scalar(@data) < 15);
 
-  ($gene_id, $overlap, $homology_type, $hom_gene_id) = 
-    ($data[0],$data[3],$data[4],$data[5]);
+  ($gene_id, $overlap, $homology_type, $hom_gene_id, $coords) = 
+    ($data[0],$data[3],$data[4],$data[5], $data[14]);
 
   if($homology_type eq 'ortholog_collinear') {
 
@@ -107,14 +108,35 @@ while(<TSV>) {
     $overlap{$gene_id} += $overlap;
     $overlap{$hom_gene_id} += $overlap; 
 
+    # compute gene length
+    ($coords, $hom_coords) = split(/;/,$coords);
+
+    if(!$gene_length{$gene_id}) {
+      if($coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
+        $gene_length{$gene_id} = 1+$2-$1;
+      } else {
+        die "# ERROR: cannot parse $coords\n";
+      }
+    }
+
+    if(!$gene_length{$hom_gene_id}) {
+      if($hom_coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
+        $gene_length{$hom_gene_id} = 1+$2-$1;
+      } else { 
+        die "# ERROR: cannot parse $hom_coords\n";
+      }
+    }
+
     push(@pairs, $_);
 
   } elsif($homology_type eq 'segment_collinear') {
 
     next if(!$cluster_gene_id{$gene_id} && !$cluster_gene_id{$hom_gene_id});
 
-    if($data[1] ne 'segment'){ $seen{$gene_id}++ }
-    elsif($data[6] ne 'segment'){ $seen{$hom_gene_id}++ }
+    # segment-gene pairs not considered for stats 
+    #if($data[1] ne 'segment'){ $seen{$gene_id}++ }
+    #elsif($data[6] ne 'segment'){ $seen{$hom_gene_id}++ }
+
     push(@pairs, $_)
   }
 
@@ -131,10 +153,11 @@ else {
   print @pairs;
 }
 
-print "\n# gene\tpairs\tgene_overlap\n";
-foreach $gene_id (keys(%seen)){
-  printf("%s\t%d\t%1.0f\n",
+print "\n# gene\tlength\tpairs\tgene_overlap\n";
+foreach $gene_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
+  printf("%s\t%d\t%d\t%1.0f\n",
     $gene_id,
+    $gene_length{$gene_id},
     $seen{$gene_id},
     $overlap{$gene_id});
 }

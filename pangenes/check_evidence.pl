@@ -164,7 +164,7 @@ else {
   print @pairs;
 }
 
-print "\n#species\tgene\tlength\tpairs\tgene_overlap\tspecies\n";
+print "\n#gene\tlength\tpairs\tgene_overlap\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   $gene_id = $fullid2id{$full_id};

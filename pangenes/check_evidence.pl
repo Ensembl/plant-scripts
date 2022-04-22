@@ -20,9 +20,9 @@ my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 
 my (%opts,$INP_dir,$INP_clusterfile);
 my ($cluster_list_file,$cluster_folder);
-my ($gene_id, $hom_gene_id, $homology_type);
-my ($overlap, $coords, $hom_coords);
-my (%seen, %overlap, %cluster_gene_id, %gene_length, @pairs);
+my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
+my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
+my (%seen, %overlap, @pairs, %cluster_gene_id, %fullid2id, %gene_length);
 
 getopts('hd:i:', \%opts);
 
@@ -71,8 +71,9 @@ if($clusternameOK == 0) {
 }
 
 # 2) parse FASTA headers of input cluster to extract gene names
-my ( $ref_geneid, $ref_fasta, $ref_coords ) = 
-  parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" );
+my ( $ref_geneid, $ref_fasta, $ref_coords, $ref_taxon ) = 
+  parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
+
 foreach $gene_id (@$ref_geneid) {
   $cluster_gene_id{$gene_id} = 1;
 }
@@ -94,34 +95,41 @@ while(<TSV>) {
   my @data = split(/\t/,$_);
   next if(scalar(@data) < 15);
 
-  ($gene_id, $overlap, $homology_type, $hom_gene_id, $coords) = 
-    ($data[0],$data[3],$data[4],$data[5], $data[14]);
+  ($gene_id, $species, $overlap, $homology_type, $hom_gene_id, $hom_species, $coords) = 
+    ($data[0],$data[2],$data[3],$data[4],$data[5],$data[7],$data[14]);
 
   if($homology_type eq 'ortholog_collinear') {
 
     next if(!$cluster_gene_id{$gene_id} || !$cluster_gene_id{$hom_gene_id});
+    next if($ref_taxon->{$gene_id} ne $species || $ref_taxon->{$hom_gene_id} ne $hom_species);
 
-    $seen{$gene_id}++;
-    $seen{$hom_gene_id}++;
+    # concat species & gene_id in case there are repeated gene ids
+    $full_id = $species.$gene_id;
+    $hom_full_id = $hom_species.$hom_gene_id;
+    $fullid2id{$full_id} = $gene_id;
+    $fullid2id{$hom_full_id} = $hom_gene_id;
+
+    $seen{$full_id}++;
+    $seen{$hom_full_id}++;
 
     # overlap only considered for gene pairs (not segments)
-    $overlap{$gene_id} += $overlap;
-    $overlap{$hom_gene_id} += $overlap; 
+    $overlap{$full_id} += $overlap;
+    $overlap{$hom_full_id} += $overlap; 
 
     # compute gene length
     ($coords, $hom_coords) = split(/;/,$coords);
 
-    if(!$gene_length{$gene_id}) {
+    if(!$gene_length{$full_id}) {
       if($coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
-        $gene_length{$gene_id} = 1+$2-$1;
+        $gene_length{$full_id} = 1+$2-$1;
       } else {
         die "# ERROR: cannot parse $coords\n";
       }
     }
 
-    if(!$gene_length{$hom_gene_id}) {
+    if(!$gene_length{$hom_full_id}) {
       if($hom_coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
-        $gene_length{$hom_gene_id} = 1+$2-$1;
+        $gene_length{$hom_full_id} = 1+$2-$1;
       } else { 
         die "# ERROR: cannot parse $hom_coords\n";
       }
@@ -132,6 +140,8 @@ while(<TSV>) {
   } elsif($homology_type eq 'segment_collinear') {
 
     next if(!$cluster_gene_id{$gene_id} && !$cluster_gene_id{$hom_gene_id});
+    next if($cluster_gene_id{$gene_id} && $ref_taxon->{$gene_id} ne $species);
+    next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
 
     # segment-gene pairs not considered for stats 
     #if($data[1] ne 'segment'){ $seen{$gene_id}++ }
@@ -144,21 +154,27 @@ while(<TSV>) {
 close(TSV);
 
 if(scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
-  die "# ERROR: cannot find collinear evidence for cluster $INP_clusterfile , please re-run get_pangenes.pl with same arguments\n";
+  die "# ERROR: cannot find collinear evidence for cluster $INP_clusterfile ,".
+    "please re-run get_pangenes.pl with same arguments\n";
 }
 else { 
-  print "#gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t" .
+  print "\n#gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\thomology_gene_stable_id\t" .
     "homology_protein_stable_id\thomology_species\toverlap\tdn\tds\tgoc_score\twga_coverage\t" .
     "is_high_confidence\tcoordinates\n";
   print @pairs;
 }
 
-print "\n# gene\tlength\tpairs\tgene_overlap\n";
-foreach $gene_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
-  printf("%s\t%d\t%d\t%1.0f\n",
+print "\n#species\tgene\tlength\tpairs\tgene_overlap\tspecies\n";
+foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
+
+  $gene_id = $fullid2id{$full_id};
+
+  printf("%s\t%d\t%d\t%1.0f\t%s\n",
     $gene_id,
-    $gene_length{$gene_id},
-    $seen{$gene_id},
-    $overlap{$gene_id});
+    $gene_length{$full_id},
+    $seen{$full_id},
+    $overlap{$full_id},
+    $ref_taxon->{$gene_id}
+  );
 }
 

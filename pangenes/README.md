@@ -158,12 +158,16 @@ Note this will also download a test rice dataset. You can test everything is in 
 This should print something like this:
 
     Checking required binaries and data sources, set in pangeneTools.pm or in command line:
-      EXE_MINIMAP : OK (path:bin/minimap2-2.17/minimap2)
+      EXE_MINIMAP : OK (path:/home/contrera/plant-scripts/pangenes/../lib/minimap2/minimap2)
       EXE_BEDTOOLS : OK (path:bedtools)
-      EXE_GFFREAD : OK (path:bin/gffread-0.12.7.Linux_x86_64/gffread)
-      EXE_COLLINEAR : OK (path:_collinear_genes.pl)
-      EXE_CUTSEQUENCES : OK (path:_cut_sequences.pl)
-      EXE_CLUSTANALYSIS : OK (path:_cluster_analysis.pl)
+      EXE_GFFREAD : OK (path:/home/contrera/plant-scripts/pangenes/bin/gffread/gffread)
+      EXE_COLLINEAR : OK (path:/home/contrera/plant-scripts/pangenes/_collinear_genes.pl)
+      EXE_CUTSEQUENCES : OK (path:/home/contrera/plant-scripts/pangenes/_cut_sequences.pl)
+      EXE_CLUSTANALYSIS : OK (path:/home/contrera/plant-scripts/pangenes/_cluster_analysis.pl)
+      EXE_GZIP : OK (path:gzip)
+      EXE_BZIP2 : OK (path:bzip2)
+      EXE_SORT : OK (path:sort)
+
 
 In addition to minimap2, two other genome aligners have been integrated:
 
@@ -254,7 +258,7 @@ $ perl get_pangenes.pl -d ../files/test_rice
 # clustering sequences ...
 # done
 
-# number of clusters = 7888 (core = 2962)
+# number of clusters = 7891 (core = 2951)
 
 # cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 # cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
@@ -287,6 +291,7 @@ which looks like this:
 Note that up to four types of clusters are generated (cdna, cds, pep & gdna), 
 depending on the nature of the gene and also on the existence of WGA alignments 
 supporting the alignment of annotated genes from one assembly to genomic segments on another. 
+
 Clusters are FASTA files like this, and might include **several sequences for the same gene**:
 
 ```
@@ -306,14 +311,22 @@ the gdna FASTA files contain genomic segments from assemblies matching gene mode
 genomes. The latter files are good starting points for lifting over genes, as explained in section
 [Lifting over gene models in genomic segment clusters](#lifting-over-gene-models-in-genomic-segment-clusters).
 
+The **collinearity evidence** supporting the clusters is summarized in a compressed file
+which is added to the output folder of each run of the script. In this example this is:
+
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/mergedpairs.tsv.gz
+
+See section [Evidence supporting clusters](#evidence-supporting-clusters) to learn how to 
+extract the evidence for a selected cluster.
+
 The script also produces % of Conserved Sequence (POCS) and pangene matrices,
 which look like this:
  
     $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
     genomes	Oryza_nivara_v1.chr1	Oryza_indica.ASM465v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
-    Oryza_nivara_v1.chr1	100.00	59.57	60.78
-    Oryza_indica.ASM465v1.chr1	59.57	100.00	61.44
-    Oryza_sativa.IRGSP-1.0.chr1	60.78	61.44	100.00
+    Oryza_nivara_v1.chr1	100.00	59.41	60.55
+    Oryza_indica.ASM465v1.chr1	59.41	100.00	61.34
+    Oryza_sativa.IRGSP-1.0.chr1	60.55	61.34	100.00
 
 And 
 
@@ -552,25 +565,29 @@ get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_
 
 ## Evidence supporting clusters
 
-In section [Pairwise genome comparisons](#pairwise-genome-comparisons) we saw that collinear gene pairs 
-are stored in TSV files, one per pair of genomes compared. On each get_pangenes.pl run these files are 
-merged and sorted in a signle TSV file that can be found in
+In sections [Pairwise genome comparisons](#pairwise-genome-comparisons) and 
+[Example 1](#example-1) we saw that collinear gene pairs are stored in TSV files. 
+These files summarize the **collinearity evidence** supporting the produced clusters.
+For each get_pangenes.pl run these files are merged and sorted in a compressed TSV file such as 
 
-    test_rice_pangenes/tmp/mergedpairs.tsv
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/mergedpairs.tsv.gz
 
-Note that this file is overwritten with every new run. 
-For sequence clusters computed with the same parameters as the most recent run
-it is possible to extract the collinearity evidence supporting them as follows:
+It is possible to extract the collinearity evidence supporting selected clusters as follows:
 
+    $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
+    # cluster genes = 4
+    #gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlapdn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
+    Oryza_indica.ASM465v1.chr1:1:46475865-46476413(-)	segment	Oryza_indica.ASM465v1.chr1	548	segment_collinear	gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	548	NULL	NULL	NULL	100.00	1	1:46475865-46476413(-);1:42033863-42034305(-)
+    gene:BGIOSGA000064	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1	4598	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4598	NULL	NULL	NULL	100.00	1	1:46471290-46475888(-);1:42393585-42401178(-)
+    gene:BGIOSGA000064	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1	4538	ortholog_collinear	gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4538	NULL	NULL	NULL	100.00	1	1:46471290-46475888(-);1:42029287-42033826(-)
+    gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4539	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4539	NULL	NULL	NULL	100.00	1	1:42029287-42033826(-);1:42393585-42401178(-)
+    gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	442	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	442	NULL	NULL	NULL	100.00	1	1:42033863-42034305(-);1:42393585-42401178(-)
 
-    $ perl check_evidence.pl -i test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna \
-        -d test_rice_pangenes/
-
-    # cluster genes = 3
-    gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlapdn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
-    gene:BGIOSGA000001	gene:BGIOSGA000001	Oryza_indica.ASM465v1.chr1	3066	ortholog_collinear	gene:ONIVA01G52180	gene:ONIVA01G52180	Oryza_nivara_v1.chr1	3066	NULL	NULL	NULL	100.00	1	1:47275569-47278635(-);1:42818941-42824598(-)
-    gene:BGIOSGA000001	gene:BGIOSGA000001	Oryza_indica.ASM465v1.chr1	3066	ortholog_collinear	gene:Os01g0978100	gene:Os01g0978100	Oryza_sativa.IRGSP-1.0.chr1	3066	NULL	NULL	NULL	100.00	1	1:47275569-47278635(-);1:43232026-43238506(-)
-    gene:ONIVA01G52180	gene:ONIVA01G52180	Oryza_nivara_v1.chr1	5657	ortholog_collinear	gene:Os01g0978100	gene:Os01g0978100	Oryza_sativa.IRGSP-1.0.chr1	5657	NULL	NULL	NULL	100.00	1	1:42818941-42824598(-);1:43232026-43238506(-)
+    # gene	length	pairs	gene_overlap
+    gene:Os01g0961600	7594	3	9579
+    gene:ONIVA01G50850	4540	2	9077
+    gene:BGIOSGA000064	4599	2	9136
+    gene:ONIVA01G50860	443	1	442
 
 
 ## Lifting over gene models in genomic segment clusters

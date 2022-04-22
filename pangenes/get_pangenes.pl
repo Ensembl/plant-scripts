@@ -31,7 +31,7 @@ use Cwd;
 use FindBin '$Bin';
 use lib "$Bin/lib";
 use HPCluster;
-use pangeneTools;
+use pangeneTools; # export $merged_tsv_file
 
 my $VERSION = '1.x';
 
@@ -142,7 +142,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     " 1) clusters of CDS (nucl & pep), cDNA and gDNA sequences of collinear genes\n".
     " 2) pangenome matrices that summarize the genome occupancy of clusters\n".
     " 3) matrix of % conserved sequences summarizing shared cDNA clusters across genomes\n".
-    " 4) optionally (-c) matrices with core- and pan-gene set growth simulations\n";
+    " 4) optionally (-c) matrices with core- and pan-gene set growth simulations\n\n";
   exit;
 }
 
@@ -945,8 +945,6 @@ if($do_genome_composition) {
 }
 print "...\n";
 
-  $newDIR = $pwd.basename($inputDIR)."_pangenes";
-
 my $outfolder = "$newDIR/$output_mask"; 
 $clusteroutfile = $outfolder.'.queue';
 
@@ -1004,12 +1002,18 @@ open(CLUSTERSLOG,'<', $clusteroutfile) ||
   die "# ERROR: cannot read $clusteroutfile\n";
 while(<CLUSTERSLOG>) {
 
-  if(/^# number of clusters/){ 
+  if(/^# number of clusters/) { 
     $printOK = 1 
   }
   print if($printOK);
 }
 close(CLUSTERSLOG);
+
+# save compressed copy of $merged_tsv_file as evidence of clusters
+if($printOK) {
+  my $mergedTSVcopy = "$outfolder/mergedpairs.tsv.gz";
+  system("$ENV{'EXE_GZIP'} -c $merged_tsv_file > $mergedTSVcopy");
+}
 
 if(!$dogsalign) {
   exit(0);

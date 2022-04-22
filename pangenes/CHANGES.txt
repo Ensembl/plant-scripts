@@ -21,3 +21,4 @@
 20042022: added sub split_genome_sequences_per_chr_bedtools to _collinear_genes (uses faster bedtools)
 20042022: adopted minimap2-2.24 and updated Makefile
 22042022: save compressed copy of $merged_tsv_file as evidence of clusters
+22042022: check_evidence.pl prints basic stats for a cluster 

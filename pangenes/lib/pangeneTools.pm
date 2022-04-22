@@ -263,7 +263,9 @@ sub get_string_with_previous_genomes {
 
 
 
-# Takes the name string of a FASTA file created by _cut_sequences.pl
+# Takes:
+# i) name string of a FASTA file created by _cut_sequences.pl
+# ii optional) boolean to return also hash ref mapping id to production_name 
 # and parses the sequences in there. Assumes the following header
 # format: ">mrnaid geneid coords [production_name]" and thus supports
 # the same gene having several associated sequences.
@@ -272,18 +274,19 @@ sub get_string_with_previous_genomes {
 # ii)  ref to hash with FASTA strings with genes as keys,
 #       might contain 2+ seqs for the same gene id
 # iii) ref to hash mapping gene ids to chr coordinates
+# iv optional)  ref to hash mapping gene ids to [production_name]
 sub parse_sequence_FASTA_file {
 
-  my ( $fname ) = @_;
-  my ( $geneid, $coords, $chr, $start, $end, $strand );
-  my ( @geneids, %chr_coords, %fasta );
+  my ( $fname, $add_production_name ) = @_;
+  my ( $geneid, $coords, $chr, $start, $end, $strand, $prod_name );
+  my ( @geneids, %chr_coords, %fasta, %prod_names );
 
   open(FASTA,"<",$fname) ||
     die "# ERROR(parse_sequence_FASTA_file): cannot read $fname\n";
   while(<FASTA>) {
     #>transcript:Os01t0100100-01 gene:Os01g0100100 1:2983-10815(+) [Oryza_sativa.IRGSP-1.0.chr1]
-    if(/^>\S+\s+(\S+)\s+(\S+)\s+\[[^\]]+\]/) {
-      ($geneid, $coords) = ($1,$2);
+    if(/^>\S+\s+(\S+)\s+(\S+)\s+\[([^\]]+)\]/) {
+      ($geneid, $coords, $prod_name) = ($1, $2, $3);
 
       if($coords =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
 
@@ -293,6 +296,10 @@ sub parse_sequence_FASTA_file {
         if(!$fasta{$geneid}) {
           push(@geneids,$geneid);
           $chr_coords{$geneid} = [$chr, $start, $end, $strand];
+
+          if($add_production_name) {
+            $prod_names{$geneid} = $prod_name
+          }
         }
 
         # concat in case this is the second isoform
@@ -303,8 +310,12 @@ sub parse_sequence_FASTA_file {
     }
   }
   close(FASTA);
-
-  return ( \@geneids, \%fasta, \%chr_coords );
+  
+  if($add_production_name) {
+    return ( \@geneids, \%fasta, \%chr_coords, \%prod_names )
+  } else {
+    return ( \@geneids, \%fasta, \%chr_coords )
+  }
 }
 
  

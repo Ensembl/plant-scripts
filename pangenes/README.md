@@ -584,11 +584,12 @@ It is possible to extract the collinearity evidence supporting selected clusters
     gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4539	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4539	NULL	NULL	NULL	100.00	1	1:42029287-42033826(-);1:42393585-42401178(-)
     gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	442	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	442	NULL	NULL	NULL	100.00	1	1:42033863-42034305(-);1:42393585-42401178(-)
 
-    #gene	length	pairs	gene_overlap	species
-    gene:Os01g0961600	7594	3	9579	Oryza_sativa.IRGSP-1.0.chr1
-    gene:BGIOSGA000064	4599	2	9136	Oryza_indica.ASM465v1.chr1
-    gene:ONIVA01G50850	4540	2	9077	Oryza_nivara_v1.chr1
-    gene:ONIVA01G50860	443	1	442	Oryza_nivara_v1.chr1    
+    #length	pairs	gene_overlap	gene	species
+    7594	3	9579	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1
+    4540	2	9077	gene:ONIVA01G50850	Oryza_nivara_v1.chr1
+    4599	2	9136	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1
+    443	1	442	gene:ONIVA01G50860	Oryza_nivara_v1.chr1
+    4570	2	9106	median	values
 
 
 ## Lifting over gene models in genomic segment clusters

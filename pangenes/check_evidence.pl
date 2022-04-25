@@ -16,13 +16,13 @@ use DB_File;
 use Compress::Zlib qw(compress uncompress);
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw( parse_sequence_FASTA_file );
+use pangeneTools qw( parse_sequence_FASTA_file calc_median );
 
 $ENV{'LC_ALL'}   = 'POSIX';
 
 my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 
-my (%opts,$INP_dir,$INP_clusterfile);
+my (%opts,$INP_dir,$INP_clusterfile,$INP_noraw);
 my ($cluster_list_file,$cluster_folder);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -30,7 +30,7 @@ my ($line, $segment, $hom_segment, $dummy, $TSVdata);
 my (%TSVdb, @sorted_ids, @pairs);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
-getopts('hd:i:', \%opts);
+getopts('hnd:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -38,15 +38,26 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-h this message\n";
   print "-d output directory produced by get_pangenes.pl    (example: -d /path/to/data_pangenes/..._algMmap_)\n";
   print "-i cluster filename as shown in .cluster_list file (example: -i gene:ONIVA01G52180.cdna.fna)\n\n";
+  print "-n do not print raw evidence                       (optional)\n";
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
 
-if(defined($opts{'d'})){  $INP_dir = $opts{'d'} }
+if(defined($opts{'d'})) { 
+  $INP_dir = $opts{'d'} 
+}
 else{ die "# EXIT : need a -d directory\n" }
 
-if(defined($opts{'i'})){  $INP_clusterfile = $opts{'i'} }
+if(defined($opts{'i'})){  
+  $INP_clusterfile = $opts{'i'} 
+}
 else{ die "# EXIT : need parameter -i\n" }
+
+if(defined($opts{'n'})){ 
+  $INP_noraw = 1 
+}
+else { $INP_noraw = 0 }
+
 
 # 1) locate .cluster_list file to check clusterfile is there
 opendir(INPDIR,$INP_dir) || 
@@ -149,79 +160,78 @@ foreach $gene_id (@sorted_ids) {
 
   $TSVdata = uncompress($TSVdb{$gene_id});
  
-foreach $line (split(/\n/,$TSVdata)) { 
+  foreach $line (split(/\n/,$TSVdata)) { 
 
-  #LOC_Os01g01019 LOC_Os01g01019 oryza_sativa_MSU 1065 ortholog_collinear
-  #gene:Osir64_01g0000020 gene:Osir64_01g0000020 oryza_sativa_ir64 1065	
-  #NULL NULL NULL 100.00 1 Chr1:11217-12435(+);1:19441-20506(+)
+    #LOC_Os01g01019 LOC_Os01g01019 oryza_sativa_MSU 1065 ortholog_collinear
+    #gene:Osir64_01g0000020 gene:Osir64_01g0000020 oryza_sativa_ir64 1065	
+    #NULL NULL NULL 100.00 1 Chr1:11217-12435(+);1:19441-20506(+)
 
-  ( $gene_id, $segment, $species, $overlap, $homology_type, 
-    $hom_gene_id, $hom_segment, $hom_species, $dummy, 
-    $dummy, $dummy, $dummy, $dummy, $dummy, $coords   
-  ) = split( /\t/, $line );
+    ( $gene_id, $segment, $species, $overlap, $homology_type, 
+      $hom_gene_id, $hom_segment, $hom_species, $dummy, 
+      $dummy, $dummy, $dummy, $dummy, $dummy, $coords   
+    ) = split( /\t/, $line );
  
-  if($homology_type eq 'ortholog_collinear') {
+    if($homology_type eq 'ortholog_collinear') {
 
-    next if(!$cluster_gene_id{$gene_id} || !$cluster_gene_id{$hom_gene_id});
-    next if($ref_taxon->{$gene_id} ne $species || $ref_taxon->{$hom_gene_id} ne $hom_species);
+      next if(!$cluster_gene_id{$gene_id} || !$cluster_gene_id{$hom_gene_id});
+      next if($ref_taxon->{$gene_id} ne $species || $ref_taxon->{$hom_gene_id} ne $hom_species);
 
-    # concat species & gene_id in case there are repeated gene ids
-    $full_id = $species.$gene_id;
-    $hom_full_id = $hom_species.$hom_gene_id;
-    $fullid2id{$full_id} = $gene_id;
-    $fullid2id{$hom_full_id} = $hom_gene_id;
+      # concat species & gene_id in case there are repeated gene ids
+      $full_id = $species.$gene_id;
+      $hom_full_id = $hom_species.$hom_gene_id;
+      $fullid2id{$full_id} = $gene_id;
+      $fullid2id{$hom_full_id} = $hom_gene_id;
 
-    $seen{$full_id}++;
-    $seen{$hom_full_id}++;
+      $cluster_gene_id{$gene_id}++;
+      $seen{$full_id}++;
+      $seen{$hom_full_id}++;
 
-    # overlap only considered for gene pairs (not segments)
-    $overlap{$full_id} += $overlap;
-    $overlap{$hom_full_id} += $overlap; 
+      # overlap only considered for gene pairs (not segments)
+      $overlap{$full_id} += $overlap;
+      $overlap{$hom_full_id} += $overlap; 
 
-    # compute gene length
-    ($coords, $hom_coords) = split(/;/,$coords); 
+      # compute gene length
+      ($coords, $hom_coords) = split(/;/,$coords); 
 
-    if(!$gene_length{$full_id}) {
-      if($coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
-        $gene_length{$full_id} = 1+$2-$1;
-      } else {
-        die "# ERROR: cannot parse $coords $_\n";
+      if(!$gene_length{$full_id}) {
+        if($coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
+          $gene_length{$full_id} = 1+$2-$1;
+        } else {
+          die "# ERROR: cannot parse $coords $_\n";
+        }
       }
-    }
 
-    if(!$gene_length{$hom_full_id}) {
-      if($hom_coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
-        $gene_length{$hom_full_id} = 1+$2-$1;
-      } else { 
-        die "# ERROR: cannot parse $hom_coords\n";
+      if(!$gene_length{$hom_full_id}) {
+        if($hom_coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
+          $gene_length{$hom_full_id} = 1+$2-$1;
+        } else { 
+          die "# ERROR: cannot parse $hom_coords\n";
+        }
       }
+
+      push(@pairs, "$line\n");
+
+    } elsif($homology_type eq 'segment_collinear') {
+
+      next if(!$cluster_gene_id{$gene_id} && !$cluster_gene_id{$hom_gene_id});
+      next if($cluster_gene_id{$gene_id} && $ref_taxon->{$gene_id} ne $species);
+      next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
+
+      # segment-gene pairs not considered for stats 
+      $cluster_gene_id{$gene_id}++;
+
+      push(@pairs, "$line\n");
     }
-
-    push(@pairs, "$line\n");
-
-  } elsif($homology_type eq 'segment_collinear') {
-
-    next if(!$cluster_gene_id{$gene_id} && !$cluster_gene_id{$hom_gene_id});
-    next if($cluster_gene_id{$gene_id} && $ref_taxon->{$gene_id} ne $species);
-    next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
-
-    # segment-gene pairs not considered for stats 
-
-    push(@pairs, "$line\n");
   }
-
-}
-
 }
 
 untie(%TSVdb);
 
 # 5) print raw collinear TSV evidence
-if(scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
-  die "# ERROR: cannot find collinear evidence for cluster $INP_clusterfile ,".
-    "please re-run get_pangenes.pl with same arguments\n";
-}
-else { 
+if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
+  die "# ERROR: cannot find collinear evidence for cluster $INP_clusterfile\n";
+
+} elsif(!$INP_noraw) { 
   print "\n#gene_stable_id\tprotein_stable_id\tspecies\toverlap\thomology_type\t" .
     "homology_gene_stable_id\thomology_protein_stable_id\thomology_species\t".
     "overlap\tdn\tds\tgoc_score\twga_coverage\tis_high_confidence\tcoordinates\n";
@@ -229,17 +239,28 @@ else {
 }
 
 # 6) print summary stats
-print "\n#gene\tlength\tpairs\tgene_overlap\tspecies\n";
+my (%scores);
+print "\n#length\tpairs\tgene_overlap\tgene\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   $gene_id = $fullid2id{$full_id};
 
-  printf("%s\t%d\t%d\t%1.0f\t%s\n",
-    $gene_id,
+  printf("%d\t%d\t%1.0f\t%s\t%s\n",
     $gene_length{$full_id},
     $seen{$full_id},
     $overlap{$full_id},
+    $gene_id,
     $ref_taxon->{$gene_id}
   );
+
+  push(@{ $scores{'pairs'} }, $seen{$full_id});
+  push(@{ $scores{'overlap'} }, $overlap{$full_id});
+  push(@{ $scores{'length'} }, $gene_length{$full_id});
 }
+
+printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
+    calc_median($scores{'length'}),
+    calc_median($scores{'pairs'}),
+    calc_median($scores{'overlap'}),
+);
 

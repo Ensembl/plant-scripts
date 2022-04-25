@@ -3,6 +3,9 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 use File::Basename qw(basename dirname);
+use FindBin '$Bin';
+use lib "$Bin/lib";
+use pangeneTools qw(calc_median);
 
 $|=1;
 
@@ -1783,21 +1786,6 @@ sub bed2compara {
     close(BEDINT);
 
     return ($num_pairs, $num_segments, $num_hits_genes/$num_matched_genes);
-}
-
-sub calc_median {
-    
-    my ($dataref) = @_;
-
-    my $mid = int(scalar(@$dataref)/2);
-    my @sorted = sort {$a<=>$b} (@$dataref);
-
-    if(scalar(@sorted) % 2) { 
-        return $sorted[ $mid ] 
-    }
-    else { 
-        return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2) 
-    }
 }
 
 # Takes up to 3 parameters:

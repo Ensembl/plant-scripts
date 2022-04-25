@@ -13,6 +13,7 @@ require Exporter;
   parse_GFF_regex
   get_string_with_previous_genomes
   parse_sequence_FASTA_file
+  calc_median
 
   $merged_tsv_file
   $lockfile
@@ -318,7 +319,21 @@ sub parse_sequence_FASTA_file {
   }
 }
 
- 
+# Takes ref to list of numbers and returns the median
+sub calc_median {
+
+    my ($dataref) = @_;
+
+    my $mid = int(scalar(@$dataref)/2);
+    my @sorted = sort {$a<=>$b} (@$dataref);
+
+    if(scalar(@sorted) % 2) {
+        return $sorted[ $mid ]
+    }
+    else {
+        return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
+    }
+}
 
 
 1;

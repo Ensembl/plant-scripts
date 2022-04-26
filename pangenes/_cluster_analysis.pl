@@ -711,6 +711,10 @@ foreach $cluster_id (@cluster_ids) {
 
             $n_cluster_sp++;
             foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
+
+                # no sequence printed if not available for this seqtype,
+                # frequently you might see cDNA clusters with empty twin CDS clusters
+                # for non-protein coding genes 
                 next if(!$sequence{$species}{$gene_stable_id}{$seqtype}); 
 
                 print CLUSTER $sequence{$species}{$gene_stable_id}{$seqtype};

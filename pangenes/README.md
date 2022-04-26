@@ -292,6 +292,13 @@ Note that up to four types of clusters are generated (cdna, cds, pep & gdna),
 depending on the nature of the gene and also on the existence of WGA alignments 
 supporting the alignment of annotated genes from one assembly to genomic segments on another. 
 
+|cluster type|sequence type|definition|notes|
+|:-----------|:------------|:---------|:----|
+|cdna|nucleotides|transcript/mRNA features in GFF file|Often several for the same gene.|
+|cds|nucleotides|CDS features in GFF file|Often several for the same gene. Might be empty on non-coding genes.|
+|pep|amino acids|CDS features in GFF file|Often several for the same gene. Might be empty on non-coding genes.|
+|gdna|nucleotides|genomic segment in one genome matching a gene model in another|Provided as obvious candidate regions for lifting over genes.|
+
 Clusters are FASTA files like this, and might include **several sequences for the same gene**:
 
 ```

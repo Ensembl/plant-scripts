@@ -326,7 +326,7 @@ if($repetitive) {
 if ($split_chr_regex ne '') {
     print "\n# splitting sequences with regex\n";
 
-    # bedtools approach (7m to 4m wheat), requires .fai index
+    # bedtools approach (7m to 4m in wheat), requires .fai index
     if(-e $fasta1.'.fai' && -e $fasta2.'.fai') {
         $ref_chr_pairs =
             split_genome_sequences_per_chr_bedtools($tmpdir, $fasta1, $fasta2,
@@ -570,7 +570,7 @@ if($indexonly) {
 }
 
 ## 3) produce BED-like file of sp2-to-sp1 coords 10 columns
-my ($cigar,@tmpBEDfiles);
+my ($cigar,@tmpBEDfiles, @block_length);
 
 my $wgaBEDfile    = $tmpdir . "_$sp2.$sp1.$alg.bed";
 
@@ -597,7 +597,10 @@ while (<PAF>) {
     $cigar =~ tr/ID\+\-/DI\-\+/;
 
     print BEDREV
-      "$F[5]\t$F[7]\t$F[8]\t$F[4]\t$F[0]\t$F[2]\t$F[3]\t$F[9]\t$F[11]\t$cigar"
+      "$F[5]\t$F[7]\t$F[8]\t$F[4]\t$F[0]\t$F[2]\t$F[3]\t$F[9]\t$F[11]\t$cigar";
+
+    # record aligned block length
+    push(@block_length, $F[10]);
 }
 
 close(BED);
@@ -606,6 +609,11 @@ close(BEDREV);
 close(PAF);
 
 push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
+
+printf("# median WGA alignment length: %1.1f\n",
+    calc_median(\@block_length));
+@block_length = ();
+
 
 ## 4) intersect gene positions with WGA, sort by gene > cDNA ovlp > genomic matches
 

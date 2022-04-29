@@ -16,29 +16,30 @@ use DB_File;
 use Compress::Zlib qw(compress uncompress);
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw( parse_sequence_FASTA_file calc_median );
+use pangeneTools qw( parse_sequence_FASTA_file calc_median get_outlier_cutoffs );
 
 $ENV{'LC_ALL'}   = 'POSIX';
 
 my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 
-my (%opts,$INP_dir,$INP_clusterfile,$INP_noraw);
+my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($cluster_list_file,$cluster_folder);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata);
-my (%TSVdb, @sorted_ids, @pairs);
+my (%opts,%TSVdb, @sorted_ids, @pairs);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
-getopts('hnd:i:', \%opts);
+getopts('hfnd:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
   print "-d output directory produced by get_pangenes.pl    (example: -d /path/to/data_pangenes/..._algMmap_)\n";
-  print "-i cluster filename as shown in .cluster_list file (example: -i gene:ONIVA01G52180.cdna.fna)\n\n";
+  print "-i cluster filename as shown in .cluster_list file (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-n do not print raw evidence                       (optional)\n";
+  print "-f fix gene models and produce GFF                 (optional)\n\n";
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
@@ -56,7 +57,10 @@ else{ die "# EXIT : need parameter -i\n" }
 if(defined($opts{'n'})){ 
   $INP_noraw = 1 
 }
-else { $INP_noraw = 0 }
+
+if(defined($opts{'f'})){
+  $INP_fix = 1
+}
 
 
 # 1) locate .cluster_list file to check clusterfile is there
@@ -263,4 +267,48 @@ printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
     calc_median($scores{'pairs'}),
     calc_median($scores{'overlap'}),
 );
+
+if(!$INP_fix) {
+    exit(0);
+}
+
+# 7) suggest fixes for poor gene models
+
+# 7.1) get outlier cutfoff values
+my ($cutoff_low_pairs, $cutoff_high_pairs) = get_outlier_cutoffs( $scores{'pairs'} );
+my ($cutoff_low_len, $cutoff_high_len) = get_outlier_cutoffs( $scores{'length'} );
+
+# identify long models with too many collinear pairs
+foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
+
+    if($seen{$full_id} > $cutoff_high_pairs && 
+        $gene_length{$full_id} > $cutoff_high_len) {
+   
+        $gene_id = $fullid2id{$full_id};
+
+        # liftover nonoutlier models 
+        print "L $gene_id $ref_taxon->{$gene_id}\n";
+
+    
+    } 
+}
+
+
+# identify short models from same species with too few collinear pairs
+foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
+
+    if($seen{$full_id} < $cutoff_low_pairs &&
+        $gene_length{$full_id} < $cutoff_low_len) {
+
+        $gene_id = $fullid2id{$full_id};
+
+        # likely split models
+        print "S $gene_id $ref_taxon->{$gene_id}\n";
+    }  
+    
+}
+
+
+
+
 

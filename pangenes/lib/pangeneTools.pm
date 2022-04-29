@@ -14,6 +14,7 @@ require Exporter;
   get_string_with_previous_genomes
   parse_sequence_FASTA_file
   calc_median
+  get_outlier_cutoffs
 
   $merged_tsv_file
   $lockfile
@@ -333,6 +334,29 @@ sub calc_median {
     else {
         return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
     }
+}
+
+# Takes ref to list of numbers and returns lower and upper cutoff to call outliers,
+# i)  Q1 - 1.5 IQR 
+# ii) Q3 + 1.5 IQR
+sub get_outlier_cutoffs {
+
+    my ($dataref) = @_;
+
+    my @values = sort {$a<=>$b} (@$dataref);
+
+    # 25% percentile (Q1)
+    my $Q1 = $values[sprintf("%.0f",(0.25*($#values)))];
+
+    # 75% percentile (Q3)
+    my $Q3 = $values[sprintf("%.0f",(0.75*($#values)))];
+
+    my $IQR = $Q3-$Q1;
+
+    return (
+        sprintf("%1.1f", $Q1 - (1.5 * $IQR)),
+        sprintf("%1.1f", $Q3 + (1.5 * $IQR)),
+    )
 }
 
 

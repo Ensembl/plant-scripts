@@ -268,9 +268,10 @@ sub get_string_with_previous_genomes {
 # Takes:
 # i) name string of a FASTA file created by _cut_sequences.pl
 # ii optional) boolean to return also hash ref mapping id to production_name 
-# and parses the sequences in there. Assumes the following header
-# format: ">mrnaid geneid coords [production_name]" and thus supports
-# the same gene having several associated sequences.
+# and parses the sequences in there. Assumes the following header formats:
+# >mrnaid geneid coords [production_name]
+# >chr01:11217-12435(+) [oryza_sativa_RAPDB]
+# and thus supports the same gene having several associated sequences.
 # Returns:
 # i)   ref to list with coord-sorted gene ids
 # ii)  ref to hash with FASTA strings with genes as keys,
@@ -307,7 +308,27 @@ sub parse_sequence_FASTA_file {
         # concat in case this is the second isoform
         $fasta{$geneid} .= $_;
       }
-    } else {
+
+    } elsif(/^>(\S+)\s+\[([^\]]+)\]/) { #>chr01:11217-12435(+) [oryza_sativa]
+
+      # geneid is actually segment interval
+      ($geneid, $prod_name) = ($1, $2); 
+
+      if($geneid =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
+
+        ($chr, $start, $end, $strand) = ($1, $2, $3, $4);
+
+        push(@geneids,$geneid);
+        $chr_coords{$geneid} = [$chr, $start, $end, $strand];
+        if($add_production_name) {
+          $prod_names{$geneid} = $prod_name
+        }
+
+        $fasta{$geneid} = $_;
+      }
+
+    # concat sequence
+    } else { 
       $fasta{$geneid} .= $_;
     }
   }

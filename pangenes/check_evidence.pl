@@ -1,8 +1,10 @@
 #!/usr/bin/env perl
 
-# This script takes a cluster produced by get_pangenes.pl and retrieves
+# This script takes a cDNA cluster produced by get_pangenes.pl and retrieves
 # the collinearity data evidence supporting it, inferred from whole genome
 # alignments, contained in mergedpairs.tsv.gz (sorted with -k1,1 -k4,4nr)
+# Optionally it can also suggest fixes to the gene models based on the 
+# pangene consensus
 
 # Copyright [2022]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -23,11 +25,11 @@ $ENV{'LC_ALL'}   = 'POSIX';
 my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
-my ($cluster_list_file,$cluster_folder);
+my ($cluster_list_file,$cluster_folder,$gdna_clusterfile);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
-my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
+my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id, $id2);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata);
-my (%opts,%TSVdb, @sorted_ids, @pairs);
+my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
 getopts('hfnd:i:', \%opts);
@@ -36,10 +38,10 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
-  print "-d output directory produced by get_pangenes.pl    (example: -d /path/to/data_pangenes/..._algMmap_)\n";
-  print "-i cluster filename as shown in .cluster_list file (example: -i gene:ONIVA01G52180.cdna.fna)\n";
-  print "-n do not print raw evidence                       (optional)\n";
-  print "-f fix gene models and produce GFF                 (optional)\n\n";
+  print "-d output directory produced by get_pangenes.pl         (example: -d /path/to/data_pangenes/..._algMmap_)\n";
+  print "-i cdna cluster filename as shown in .cluster_list file (example: -i gene:ONIVA01G52180.cdna.fna)\n";
+  print "-n do not print raw evidence                            (optional)\n";
+  print "-f fix gene models and produce GFF                      (optional)\n\n";
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
@@ -50,7 +52,13 @@ if(defined($opts{'d'})) {
 else{ die "# EXIT : need a -d directory\n" }
 
 if(defined($opts{'i'})){  
-  $INP_clusterfile = $opts{'i'} 
+  $INP_clusterfile = $opts{'i'};
+  if($INP_clusterfile !~ /\.cdna\.fna$/) {
+    die "# EXIT : need a .cdna.fna cluster filename with parameter -i\n"
+  } else {
+    $gdna_clusterfile = $INP_clusterfile;
+    $gdna_clusterfile =~ s/\.cdna\.fna/.gdna.fna/;
+  }
 }
 else{ die "# EXIT : need parameter -i\n" }
 
@@ -101,9 +109,25 @@ foreach $gene_id (sort @$ref_geneid) {
   push(@sorted_ids, $gene_id);
 } 
 
-printf("\n# cluster %s genes = %d\n",
-  $INP_clusterfile, 
-  scalar(keys(%cluster_gene_id)));
+# 2.1) parse segment gDNA file if required
+if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
+
+  print "# parsing twin .gdna.fna cluster file $gdna_clusterfile\n\n";
+
+  my ( $ref_geneid_seg, $ref_fasta_seg, $ref_coords_seg, $ref_taxon_seg ) =
+    parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$gdna_clusterfile" , 1);
+
+  printf("\n# cluster %s genes = %d genomic segments = %d\n",
+    $INP_clusterfile,
+    scalar(keys(%cluster_gene_id)),
+    scalar(@$ref_geneid_seg));
+
+} else {
+
+  printf("\n# cluster %s genes = %d\n",
+    $INP_clusterfile,
+    scalar(keys(%cluster_gene_id)));
+}
 
 
 # 3) parse compressed merged TSV file and feed Berkeley DB
@@ -222,7 +246,29 @@ foreach $gene_id (@sorted_ids) {
       next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
 
       # segment-gene pairs not considered for stats 
-      $cluster_gene_id{$gene_id}++;
+      #$cluster_gene_id{$gene_id}++;
+
+      if($segment eq 'segment') {
+        push(@segments,$gene_id)
+
+      } elsif($hom_segment eq 'segment') {
+        push(@segments,$hom_gene_id)
+      } 
+#gene:Os125619_01g0000020	gene:Os125619_01g0000020	oryza_sativa_larhamugad	870	segment_collinear	oryza_sativa_n22:1:22778-23648(+)	segment	oryza_sativa_n22	870	NULL	NULL	NULL	100.00	1	1:10408-11473(+);1:22778-23648(+)
+
+#>chr01:11217-12435(+) [oryza_sativa_RAPDB]
+
+      #      # record coords of this gene-segment pair
+      #      if($prot_stable_id eq 'segment') {
+      #          $stable_id = $hom_gene_stable_id;
+      #          $segment_species = $species;
+      #          $species = $hom_species;
+      #          ($segment_coords, $coords) = split(/;/,$coordinates);
+      #      } else {
+      #          $stable_id = $gene_stable_id;
+      #          $segment_species = $hom_species;
+      #          ($coords, $segment_coords) = split(/;/,$coordinates); 
+      #      }
 
       push(@pairs, "$line\n");
     }
@@ -243,7 +289,7 @@ if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
 }
 
 # 6) print summary stats
-my (%scores);
+my (%scores, %taxon_obs);
 print "\n#length\tpairs\tgene_overlap\tgene\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
@@ -260,54 +306,73 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
   push(@{ $scores{'pairs'} }, $seen{$full_id});
   push(@{ $scores{'overlap'} }, $overlap{$full_id});
   push(@{ $scores{'length'} }, $gene_length{$full_id});
+
+  $taxon_obs{ $ref_taxon->{$gene_id} }++;
 }
 
 printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
-    calc_median($scores{'length'}),
-    calc_median($scores{'pairs'}),
-    calc_median($scores{'overlap'}),
+  calc_median($scores{'length'}),
+  calc_median($scores{'pairs'}),
+  calc_median($scores{'overlap'}),
 );
 
 if(!$INP_fix) {
-    exit(0);
+  exit(0);
 }
 
-# 7) suggest fixes for poor gene models
+# 7) suggest fixes for poor gene models based on pan-gene consensus
+
+my (@long_models, @split_models, @non_outliers);
 
 # 7.1) get outlier cutfoff values
 my ($cutoff_low_pairs, $cutoff_high_pairs) = get_outlier_cutoffs( $scores{'pairs'} );
 my ($cutoff_low_len, $cutoff_high_len) = get_outlier_cutoffs( $scores{'length'} );
 
-# identify long models with too many collinear pairs
+# 7.2) identify outlier gene models
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
-    if($seen{$full_id} > $cutoff_high_pairs && 
-        $gene_length{$full_id} > $cutoff_high_len) {
+  $gene_id = $fullid2id{$full_id};
+
+  # long models with too many collinear pairs
+  if($seen{$full_id} > $cutoff_high_pairs && 
+    $gene_length{$full_id} > $cutoff_high_len) {
    
-        $gene_id = $fullid2id{$full_id};
+      push(@long_models, $gene_id)
 
-        # liftover nonoutlier models 
-        print "L $gene_id $ref_taxon->{$gene_id}\n";
+  # short models from same species with too few collinear pairs
+  } elsif($seen{$full_id} < $cutoff_low_pairs &&
+        $gene_length{$full_id} < $cutoff_low_len &&
+        $taxon_obs{ $ref_taxon->{$gene_id} } > 1) {
 
-    
-    } 
+    push(@split_models, $gene_id)
+
+  } else {
+    push(@non_outliers, $gene_id)
+  }
 }
 
 
-# identify short models from same species with too few collinear pairs
-foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
+# 7.3) suggest model fixes
 
-    if($seen{$full_id} < $cutoff_low_pairs &&
-        $gene_length{$full_id} < $cutoff_low_len) {
+# see if nonoutlier models can be lifted over 
+if(@long_models) {
 
-        $gene_id = $fullid2id{$full_id};
+  foreach $gene_id (@long_models) {
 
-        # likely split models
-        print "S $gene_id $ref_taxon->{$gene_id}\n";
-    }  
-    
+      print "L $gene_id $ref_taxon->{$gene_id} $ref_coords->{$gene_id}[0]:$ref_coords->{$gene_id}[1]-$ref_coords->{$gene_id}[2]\n";
+
+    foreach $id2 (@non_outliers) {
+      print "$id2 $ref_taxon->{$id2} $ref_fasta->{$id2}\n";
+    }
+  }
+
+  # split models are only fixed if there are no long models
+} elsif(@split_models) {
+
+  # possible split models, possible fix: liftover long model, are there intervening TEs?
+  # print "S $gene_id $ref_taxon->{$gene_id}\n";
+
 }
-
 
 
 

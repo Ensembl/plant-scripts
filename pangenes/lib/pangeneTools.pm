@@ -37,14 +37,15 @@ my $PANGENEPATH = "$Bin";
 
 my %feature_output = (
 
-  # default output of binaries when corrected installed, add as required for
-  # check_installed_features
+  # default output keywords of binaries when corrected installed, 
+  # add as required for sub check_installed_features
   'EXE_BEDTOOLS'=>'sage',
   'EXE_SAMTOOLS'=>'Usage',
   'EXE_MINIMAP'=>'Usage',
   'EXE_WFMASH'=>'OPTIONS',
   'EXE_GSALIGN'=> 'Usage',
   'EXE_GFFREAD'=>'Usage',
+  'EXE_GMAP' => 'Usage',
   'EXE_COLLINEAR'=>'usage',
   'EXE_CUTSEQUENCES'=>'usage',
   'EXE_CLUSTANALYSIS'=>'ERROR',
@@ -82,6 +83,9 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{"EXE_GSAPATH"}) ){
     $ENV{"EXE_GSAPATH"} = $ENV{'PANGENE'}.'bin/GSAlign/bin/';
     $ENV{"EXE_GSALIGN"} = $ENV{'EXE_GSAPATH'}.'GSAlign';
+  }
+  if( ! defined($ENV{"EXE_GMAP"}) ){
+    $ENV{"EXE_GMAP"} = $ENV{'PANGENE'}.'bin/gmap/exe/bin/gmap';
   }
 
   # should be pre-installed in most settings

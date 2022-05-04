@@ -1,6 +1,7 @@
 
 minimap2release = 2.24
 gffreadrelease  = 0.12.7
+gmaprelease     = 2021-12-17
 
 test:
 	perl demo_test.t
@@ -34,15 +35,21 @@ install_ensembl:
 	cd lib && git clone https://github.com/Ensembl/ensembl-metadata.git
 	cd lib && git clone -b release-1-6-924 --depth 1 https://github.com/bioperl/bioperl-live.git
 
-install_repeats:
-	pip3 install --user -r lib/requirements.txt
+install_minimap2:
+	if [ ! -d "lib/minimap2" ]; then \
+		cd lib && wget https://github.com/lh3/minimap2/releases/download/v${minimap2release}/minimap2-${minimap2release}.tar.bz2 && \
+			tar xfj minimap2-${minimap2release}.tar.bz2 && cd minimap2-${minimap2release} && make && cd .. && \
+			rm -f minimap2-${minimap2release}.tar.bz2 && ln -fs minimap2-${minimap2release} minimap2; \
+	fi
+
+install_Red:
 	cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make
 	#in case you need to use an alternative g++ compiler
-	#cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make CXX=g++-10
+        #cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make CXX=g++-10
+
+install_repeats: install_minimap2 install_Red
+	pip3 install --user -r lib/requirements.txt
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.3/nrTEplantsJune2020.fna.bz2 && bunzip2 nrTEplantsJune2020.fna.bz2
-	if [ ! -d "lib/minimap2" ]; then \
-		cd lib && wget https://github.com/lh3/minimap2/releases/download/v${minimap2release}/minimap2-${minimap2release}.tar.bz2 && tar xfj minimap2-${minimap2release}.tar.bz2 && cd minimap2-${minimap2release} && make && cd .. && rm -f minimap2-${minimap2release}.tar.bz2 && ln -s minimap2-${minimap2release} minimap2; \
-	fi
 
 install_redat:
 	cd files && wget -c ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz && gunzip mipsREdat_9.3p_ALL.fasta.gz
@@ -51,7 +58,8 @@ test_repeats_travis:
 	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna
 
 test_repeats:
-	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && ./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.nrTEplants.bed
+	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna && \
+		./AnnotRedRepeats.py ../files/nrTEplantsJune2020.fna test_Atha_chr4 --bed_file test.nrTEplants.bed
 
 uninstall_repeats:
 	cd files && rm -rf nrTEplantsJune2020.fna*
@@ -60,12 +68,19 @@ uninstall_repeats:
 clean_repeats:
 	cd repeats && rm -rf test_Atha_chr4 Atha.sm.fna test.nrTEplants.bed
 
-install_pangenes:
-	cd pangenes/bin && wget https://github.com/gpertea/gffread/releases/download/v${gffreadrelease}/gffread-${gffreadrelease}.tar.gz && tar xfz gffread-${gffreadrelease}.tar.gz && cd gffread-${gffreadrelease} && make && cd .. && rm -f gffread-${gffreadrelease}.tar.gz && ln -s gffread-${gffreadrelease} gffread
+# gmap takes several minutes to compile
+install_gmap: 
+	cd pangenes/bin && wget http://research-pub.gene.com/gmap/src/gmap-gsnap-${gmaprelease}.tar.gz && tar xfz gmap-gsnap-${gmaprelease}.tar.gz && \
+		cd gmap-${gmaprelease} && ./configure --prefix=${PWD}/pangenes/bin/gmap-${gmaprelease}/exe && \
+		make && make install && cd .. && rm -rf gmap-gsnap-${gmaprelease}.tar.gz && ln -fs gmap-${gmaprelease} gmap
+	
+install_gffread:
+	cd pangenes/bin && wget https://github.com/gpertea/gffread/releases/download/v${gffreadrelease}/gffread-${gffreadrelease}.tar.gz && \
+		tar xfz gffread-${gffreadrelease}.tar.gz && cd gffread-${gffreadrelease} && make && cd .. && \
+		rm -f gffread-${gffreadrelease}.tar.gz && ln -fs gffread-${gffreadrelease} gffread
+
+install_pangenes: install_minimap2 install_gffread install_gmap
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.4/test_rice.tgz && tar xfz test_rice.tgz && rm -f test_rice.tgz
-	if [ ! -d "lib/minimap2" ]; then \
-		cd lib && wget https://github.com/lh3/minimap2/releases/download/v${minimap2release}/minimap2-${minimap2release}.tar.bz2 && tar xfj minimap2-${minimap2release}.tar.bz2 && cd minimap2-${minimap2release} && make && cd .. && rm -f minimap2-${minimap2release}.tar.bz2 && ln -s minimap2-${minimap2release} minimap2; \
-	fi
 
 # see https://github.com/ekg/wfmash for other options
 install_wfmash:
@@ -76,7 +91,7 @@ install_gsalign:
 	cd pangenes/bin && git clone https://github.com/hsinnan75/GSAlign.git && cd GSAlign && make
 
 uninstall_pangenes:
-	cd pangenes/bin && rm -rf gffread-${gffreadrelease} gffread wfmash GSAlign
+	cd pangenes/bin && rm -rf gffread-${gffreadrelease} gmap-${gmaprelease} gffread wfmash GSAlign gmap
 	cd lib && rm -rf minimap2-${minimap2release} minimap2
 	cd files && rm -rf test_rice
 

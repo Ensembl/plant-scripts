@@ -359,12 +359,6 @@ if(!@non_outliers) {
   die "# ERROR: need non-outliers/consensus gene models to fix cluster, exit\n";
 }
 
-# create FASTA file with sequences of consensus/non-outlier gene models
-#my ($modelsfh, $models_file) = tempfile(UNLINK => 0); print "M $models_file\n";
-#foreach $gene_id (@non_outliers) {
-#  print $modelsfh ">$gene_id $ref_taxon->{$gene_id} $ref_fasta->{$gene_id}\n";
-#}
-
 if(@long_models &&
   $non_outlier_pairs/scalar(@non_outliers) >= $MINPAIRPECNONOUTLIERS) {
 
@@ -382,27 +376,10 @@ if(@long_models &&
       $ref_coords->{$gene_id}[0],
       $ref_coords->{$gene_id}[1],
       $ref_coords->{$gene_id}[2],
+      $ref_coords->{$gene_id}[3],
       $genome_file,
       $BEDTOOLSBIN 
     );
-
-    # create BED file with gene coordinates
-    #my ($bedfh, $bedfile) = tempfile(UNLINK => 0); print "B $bedfile\n";
-    #print $bedfh "$ref_coords->{$gene_id}[0]\t".
-    #  "$ref_coords->{$gene_id}[1]\t$ref_coords->{$gene_id}[2]\n";
-   
-    # create FASTA file with genomic target sequence (outlier) with bedtools
-    #my ($targetfh, $target_file) = tempfile(UNLINK => 0); print "T $target_file\n";
-    #$cmd = "echo $BEDTOOLSBIN getfasta -bed $bedfile -fi $genome_file -fo $target_file";    
-    #system($cmd);
-    #if ( $? != 0 ) {
-    #  die "# ERROR: failed running bedtools ($cmd)\n";
-    #}
-    #elsif ( !-s $target_file ) {
-    #  die "# ERROR: failed generating $target_file file ($cmd)\n";
-    #}
-
-
 
     foreach $gene_id (@non_outliers) {
 
@@ -430,18 +407,19 @@ if(@long_models &&
 
 }
 
-# Cuts FASTA sequence for a passed BED-format interval.
-# Takes 5 params:
+# Cuts FASTA sequence for a passed genomic interval.
+# Takes 6 params:
 # i)   chr name
 # ii)  start coord
 # iii) end coord
-# iv)  FASTA file with reference sequence
-# v)   path to bedtools
+# iv)  strand
+# v)  FASTA file with reference sequence
+# vi)   path to bedtools
 # Returns string with one sequence in FASTA format
 sub cut_genomic_segment_bedtools {
-  my ($chr, $start, $end, $fastafile, $bedtools_path) = @_;
+  my ($chr, $start, $end, $strand, $fastafile, $bedtools_path) = @_;
   
-  my $cmd = "echo '$chr\t$start\t$end' | $bedtools_path getfasta -fi $fastafile -bed -";
+  my $cmd = "echo '$chr\t$start\t$end\tfrag\t0\t$strand' | $bedtools_path getfasta -fi $fastafile -bed -";
   my $fasta_segment = '';
 
   open(BEDTOOLS, "$cmd |") ||
@@ -464,6 +442,10 @@ sub liftover_gmap {
   my ($cmd);  
   my (%lifted_model);
  
+  # check coordinates of target DNA in source 
+  #if($hom_coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
+
+
   # map query cDNA on genomic target, parse GFF, compute coord offsat and length
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -t 1 -2 -f 2";
   open(GMAP, "$cmd 2>&1 |") || 

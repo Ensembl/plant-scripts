@@ -2,10 +2,10 @@
 
 # This script takes a cDNA cluster produced by get_pangenes.pl and retrieves
 # the collinearity data evidence supporting it, inferred from whole genome
-# alignments, contained in mergedpairs.tsv.gz (sorted with -k1,1 -k4,4nr)
+# alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr)
 #
 # Optionally it can also suggest fixes to the gene models based on the 
-# pangene consensus (-f)
+# pangene consensus (-f), this requires gmap
 
 # Copyright [2022]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -19,30 +19,36 @@ use DB_File;
 use Compress::Zlib qw(compress uncompress);
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw( parse_sequence_FASTA_file calc_median get_outlier_cutoffs );
+use pangeneTools qw( check_installed_features parse_sequence_FASTA_file 
+                     calc_median get_outlier_cutoffs );
 
 my $MINPAIRPECNONOUTLIERS = 0.50;
+
+my @FEATURES2CHECK = (
+  'EXE_BEDTOOLS', 'EXE_GMAP', 'EXE_GZIP'
+);
 
 $ENV{'LC_ALL'}   = 'POSIX';
 
 my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 my $BEDTOOLSBIN = $ENV{'EXE_BEDTOOLS'} || 'bedtools';
-my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap-2021-12-17/bin/bin/gmap';
+my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
-my ($cluster_list_file,$cluster_folder,$gdna_clusterfile);
+my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
-getopts('hfnd:i:', \%opts);
+getopts('hvfnd:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
+  print "-v print credits and checks installation\n";
   print "-d output directory produced by get_pangenes.pl (example: -d /path/data_pangenes/..._algMmap_,\n";
   print "                                                 genomic sequences usually one folder up)\n";
   print "-i cdna cluster as shown in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
@@ -51,6 +57,18 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
+
+if(defined($opts{'v'})) {
+
+  print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
+  print "\nThis software uses external algorithms, please cite them accordingly:\n";
+  print " gmap https://doi.org/10.1093/bioinformatics/bti310\n";
+
+  # check all binaries needed by this program and print diagnostic info
+  print check_installed_features(@FEATURES2CHECK);
+  exit(0);
+}
+
 
 if(defined($opts{'d'})) { 
   $INP_dir = $opts{'d'} 
@@ -251,8 +269,7 @@ foreach $gene_id (@sorted_ids) {
       next if($cluster_gene_id{$gene_id} && $ref_taxon->{$gene_id} ne $species);
       next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
 
-      # segment-gene pairs not considered for stats 
-      #$cluster_gene_id{$gene_id}++;
+      #$cluster_gene_id{$gene_id}++; #segment-gene pairs not considered for stats
 
       if($segment eq 'segment') {
         push(@segments,$gene_id)
@@ -308,6 +325,8 @@ printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
 
 if(!$INP_fix) {
   exit(0);
+} else {
+  print "\n";
 }
 
 # 7) suggest fixes for poor gene models based on pan-gene consensus
@@ -325,6 +344,11 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   $gene_id = $fullid2id{$full_id};
 
+  $genome_file = "$INP_dir/../_$ref_taxon->{$gene_id}.fna";
+  if(!-e $genome_file) {
+    die "# ERROR: cannot find genome file $genome_file\n";
+  }
+
   # long models with too many collinear pairs
   if($seen{$full_id} > $cutoff_high_pairs && 
     $gene_length{$full_id} > $cutoff_high_len) {
@@ -338,7 +362,7 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
     push(@split_models, $gene_id)
 
-  } else {
+  } else { # non-outlier/consensus models
 
     if(!$seen_outlier_taxon{ $ref_taxon->{$gene_id} }) {
       $seen_outlier_taxon{ $ref_taxon->{$gene_id} } = 1;
@@ -357,7 +381,6 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 if(!@non_outliers) {
   die "# ERROR: need non-outliers/consensus gene models to fix cluster, exit\n";
 }
-
 if(@long_models &&
   $non_outlier_pairs/scalar(@non_outliers) >= $MINPAIRPECNONOUTLIERS) {
 
@@ -365,39 +388,112 @@ if(@long_models &&
   # proposed fix: liftover individual consensus models, 2+ hits on same strand
   foreach $gene_id (@long_models) {
 
-    # check whether genome sequence file is available
-    my $genome_file = "$INP_dir/../_$ref_taxon->{$gene_id}.fna";
-    if(!-e $genome_file) {
-      die "# ERROR: cannot find genome sequence file $genome_file\n";  
-    }
+    my %lifted;
 
-    my $segment = cut_genomic_segment_bedtools( 
+    # cut genomic segment harboring this (long) gene
+    $genome_file = "$INP_dir/../_$ref_taxon->{$gene_id}.fna";
+    $segment = cut_genomic_segment_bedtools( 
       $ref_coords->{$gene_id}[0],
       $ref_coords->{$gene_id}[1],
       $ref_coords->{$gene_id}[2],
       $ref_coords->{$gene_id}[3],
       $genome_file,
-      $BEDTOOLSBIN 
-    );
+      $BEDTOOLSBIN );
 
-    foreach $gene_id (@non_outliers) {
+    # lift-over consensus models
+    foreach $hom_gene_id (@non_outliers) {
 
-      my $ref_lifted_model = liftover_gmap( 
-        $segment,   
-        $ref_fasta->{$gene_id},
-        $GMAPBIN );
+      my $ref_lifted_model = liftover_gmap(
+        $segment, $ref_fasta->{$hom_gene_id}, $GMAPBIN );
 
-      exit;
+      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
+      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } += $ref_lifted_model->{'matches'};
+      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'mismatches' } += $ref_lifted_model->{'mismatches'};
+      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } += $ref_lifted_model->{'indels'};
+      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } .= $ref_lifted_model->{'GFF'};
     }
 
+    # choose best (short) models to replace long one
+    foreach $species (sort { 
+        $lifted{$b}{'total'} <=> $lifted{$a}{'total'} ||
+        $lifted{$b}{'matches'} <=> $lifted{$a}{'matches'} ||
+        $lifted{$a}{'mismatches'} <=> $lifted{$b}{'mismatches'} ||
+        $lifted{$a}{'indels'} <=> $lifted{$b}{'indels'}
+      } keys(%lifted)) {
+
+      # at least from same species needed
+      next if($lifted{ $species }{ 'total' } < 2);
+
+      print "# replace $gene_id with:\n";
+      print "$species $lifted{ $species }{ 'GFF' }\n";
+    }
   }
 
 } elsif(@split_models) {
 
-  # hypothesis: the real gene is long and was split in two partial genes
-  # proposed fix: i) liftover consensus (longer) models, ii) are there intervening TEs?
+  # hypothesis: the real gene is long and was split in 2+ partial genes
+  # proposed fix: liftover consensus (longer) models
 
-  # print "S $gene_id $ref_taxon->{$gene_id}\n";
+  foreach $species (keys(%taxon_obs)) {
+
+    next if( $taxon_obs{$species} < 2 );
+
+    # cut genomic segment harboring these (split) genes, 
+    # make sure they're from the same chromosome/contig
+    my %segment_data;
+    $genome_file = "$INP_dir/../_$species.fna";
+
+    foreach $gene_id (@split_models) {
+      next if($ref_taxon->{$gene_id} ne $species);
+      if(!$segment_data{'chr'}) {
+        $segment_data{'chr'}    = $ref_coords->{$gene_id}[0];
+        $segment_data{'start'}  = $ref_coords->{$gene_id}[1];
+        $segment_data{'end'}    = $ref_coords->{$gene_id}[2];
+        $segment_data{'strand'} = $ref_coords->{$gene_id}[3];
+        $segment_data{'models'} = 1;
+      } else {
+        next if($ref_coords->{$gene_id}[0] ne $segment_data{'chr'} ||
+          $ref_coords->{$gene_id}[3] ne $segment_data{'strand'});
+
+        if($ref_coords->{$gene_id}[1] < $segment_data{'start'}) {
+          $segment_data{'start'} = $ref_coords->{$gene_id}[1];
+          $segment_data{'models'}++;
+        } elsif($ref_coords->{$gene_id}[2] > $segment_data{'end'}) {
+          $segment_data{'end'} = $ref_coords->{$gene_id}[2];
+          $segment_data{'models'}++;
+        }
+      }
+    }
+
+    next if(!$segment_data{'models'} || $segment_data{'models'} < 2);
+
+    $segment = cut_genomic_segment_bedtools(
+      $segment_data{'chr'},
+      $segment_data{'start'},
+      $segment_data{'end'},
+      $segment_data{'strand'},
+      $genome_file,
+      $BEDTOOLSBIN );
+
+    # lift-over consensus models
+    my %lifted_model;
+    foreach $gene_id (@non_outliers) {
+
+      my $ref_lifted_model = liftover_gmap(
+        $segment, $ref_fasta->{$gene_id}, $GMAPBIN );
+
+      $lifted_model{ $ref_taxon->{$gene_id} }{ 'total' } ++;
+      $lifted_model{ $ref_taxon->{$gene_id} }{ 'matches' } += $ref_lifted_model->{'matches'};
+      $lifted_model{ $ref_taxon->{$gene_id} }{ 'mismatches' } += $ref_lifted_model->{'mismatches'};
+      $lifted_model{ $ref_taxon->{$gene_id} }{ 'indels' } += $ref_lifted_model->{'indels'};
+      $lifted_model{ $ref_taxon->{$gene_id} }{ 'GFF' } .= $ref_lifted_model->{'GFF'};
+    }
+
+    # choose best (long) model to replace split ones
+
+
+    # TODO: are there intervening TEs?
+  }
 
 } elsif(@segments) {
 

@@ -23,6 +23,7 @@ use pangeneTools qw( check_installed_features parse_sequence_FASTA_file
                      calc_median get_outlier_cutoffs );
 
 my $MINPAIRPECNONOUTLIERS = 0.50;
+my $GMAPARAMS = '-t 1 -N 1 -F -2 -z sense_force';
 
 my @FEATURES2CHECK = (
   'EXE_BEDTOOLS', 'EXE_GMAP', 'EXE_GZIP'
@@ -33,6 +34,8 @@ $ENV{'LC_ALL'}   = 'POSIX';
 my $GZIPBIN = $ENV{'EXE_GZIP'} || 'gzip';
 my $BEDTOOLSBIN = $ENV{'EXE_BEDTOOLS'} || 'bedtools';
 my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
+$GMAPBIN .= " $GMAPARAMS ";
+
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_appendGFF,$INP_outdir) = (0, '');
@@ -610,7 +613,7 @@ sub liftover_gmap {
   }
 
   # 1st run: get alignment summary to parse scores
-  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -t 1 -2 -S -z sense_force";
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -S";
   open(GMAP, "$cmd 2>&1 |") ||
     die " ERROR(liftover_gmap): cannot run $cmd\n";
   while(<GMAP>) { 
@@ -621,7 +624,7 @@ sub liftover_gmap {
   close(GMAP);
 
   # 2nd run: map query cDNA on genomic target, parse GFF and apply coord offset
-  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -t 1 -2 -f 2 -z sense_force";
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";
   
   open(GMAP, "$cmd 2>&1 |") || 
     die " ERROR(liftover_gmap): cannot run $cmd\n";
@@ -662,6 +665,8 @@ sub liftover_gmap {
   $lifted_model{'matches'} = $match;
   $lifted_model{'mismatches'} = $mismatch;
   $lifted_model{'indels'} = $indel;
+
+  #TODO: make sure protein sequence does not include stop codons
 
   return \%lifted_model;
 }

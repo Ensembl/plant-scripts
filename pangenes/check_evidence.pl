@@ -38,7 +38,7 @@ my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
-my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd);
+my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
@@ -403,8 +403,11 @@ if(@long_models &&
     # lift-over consensus models
     foreach $hom_gene_id (@non_outliers) {
 
-      my $ref_lifted_model = liftover_gmap(
-        $segment, $ref_fasta->{$hom_gene_id}, $GMAPBIN );
+      # leave gene name as only FASTA header of cDNA
+      $cDNA = $ref_fasta->{$hom_gene_id};
+      $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
+
+      my $ref_lifted_model = liftover_gmap( "$gene_id,", $segment, $cDNA, $GMAPBIN ); 
 
       $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
       $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } += $ref_lifted_model->{'matches'};
@@ -413,7 +416,7 @@ if(@long_models &&
       $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } .= $ref_lifted_model->{'GFF'};
     }
 
-    # choose best (short) models to replace long one
+    # choose best (pair of short) models to replace long one
     foreach $species (sort { 
         $lifted{$b}{'total'} <=> $lifted{$a}{'total'} ||
         $lifted{$b}{'matches'} <=> $lifted{$a}{'matches'} ||
@@ -424,8 +427,9 @@ if(@long_models &&
       # at least from same species needed
       next if($lifted{ $species }{ 'total' } < 2);
 
-      print "# replace $gene_id with:\n";
+      print "# replace $gene_id with: $lifted{$species}{'matches'} $lifted{$species}{'mismatches'} $lifted{$species}{'indels'}\n";
       print "$species $lifted{ $species }{ 'GFF' }\n";
+      last; # take only best
     }
   }
 
@@ -451,6 +455,7 @@ if(@long_models &&
         $segment_data{'end'}    = $ref_coords->{$gene_id}[2];
         $segment_data{'strand'} = $ref_coords->{$gene_id}[3];
         $segment_data{'models'} = 1;
+        $segment_data{'genes'}  = "$gene_id,";
       } else {
         next if($ref_coords->{$gene_id}[0] ne $segment_data{'chr'} ||
           $ref_coords->{$gene_id}[3] ne $segment_data{'strand'});
@@ -458,9 +463,11 @@ if(@long_models &&
         if($ref_coords->{$gene_id}[1] < $segment_data{'start'}) {
           $segment_data{'start'} = $ref_coords->{$gene_id}[1];
           $segment_data{'models'}++;
+          $segment_data{'genes'}  = "$gene_id,";
         } elsif($ref_coords->{$gene_id}[2] > $segment_data{'end'}) {
           $segment_data{'end'} = $ref_coords->{$gene_id}[2];
           $segment_data{'models'}++;
+          $segment_data{'genes'}  = "$gene_id,";
         }
       }
     }
@@ -479,8 +486,10 @@ if(@long_models &&
     my %lifted_model;
     foreach $gene_id (@non_outliers) {
 
-      my $ref_lifted_model = liftover_gmap(
-        $segment, $ref_fasta->{$gene_id}, $GMAPBIN );
+      $cDNA = $ref_fasta->{$gene_id};
+      $cDNA =~ s/^>.*\n/>$gene_id\n/;
+
+      my $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, $segment, $cDNA, $GMAPBIN );
 
       $lifted_model{ $ref_taxon->{$gene_id} }{ 'total' } ++;
       $lifted_model{ $ref_taxon->{$gene_id} }{ 'matches' } += $ref_lifted_model->{'matches'};
@@ -501,6 +510,9 @@ if(@long_models &&
   # proposed fix: liftover consensus models
 
 }
+
+
+################################################################################
 
 # Cuts FASTA sequence for a passed genomic interval.
 # Takes 6 params:
@@ -533,15 +545,19 @@ sub cut_genomic_segment_bedtools {
   return $fasta_segment;
 }
 
+
 # Lifts over a gene model upon gmap mapping of a cDNA.
-# Takes 3 params:
-# i)   FASTA string of genomic sequence (target)
-# ii)  FASTA string of cDNA sequence (query)
-# iii) path to gmap
+# Takes 4 params:
+# i)   original gene_ids (comma separated strings)
+# ii)  FASTA string of genomic sequence (target)
+# iii) FASTA string of cDNA sequence (query)
+# iv)  path to gmap
 # Returns ref to hash with model features, including 'GFF' and
 # several scores such as 'matches', 'mismatches' or 'indels'
+# Note: gene_id of lifted models if that of source cDNA
+# Note: original gene_id annotated as old_locus_tag in GFF's attributes column
 sub liftover_gmap {
-  my ($target_fna, $query_cdna, $gmap_path) = @_;
+  my ($old_gene_ids,$target_fna, $query_cdna, $gmap_path) = @_;
   my ($chr,$start,$end,$strand,$offset,$cmd);  
   my ($match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0);
   my (%lifted_model);
@@ -587,7 +603,15 @@ sub liftover_gmap {
       $GFF[3] += $offset;
       $GFF[4] += $offset; 
 
-      $lifted_model{'GFF'} = join("\t",@GFF);
+      # add note saying which original gene is replaced by this
+      if($GFF[2] eq 'gene') {
+        $GFF[8] =~ s/\n/;/;
+        foreach my $gene_id (split(/,/,$old_gene_ids)) {
+          $GFF[8] .= "old_locus_tag=$gene_id;";
+        } $GFF[8] .= "\n";
+      }
+
+      $lifted_model{'GFF'} .= join("\t",@GFF);
     }
 
     if(/^# Generated by GMAP/) {

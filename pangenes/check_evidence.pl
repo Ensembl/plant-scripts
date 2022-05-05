@@ -23,7 +23,7 @@ use pangeneTools qw( check_installed_features parse_sequence_FASTA_file
                      calc_median get_outlier_cutoffs );
 
 my $MINPAIRPECNONOUTLIERS = 0.50;
-my $GMAPARAMS = '-t 1 -N 1 -F -2 -z sense_force';
+my $GMAPARAMS = '-t 1 -n 1 -2 -z sense_force -F';
 
 my @FEATURES2CHECK = (
   'EXE_BEDTOOLS', 'EXE_GMAP', 'EXE_GZIP'
@@ -622,6 +622,10 @@ sub liftover_gmap {
     }
   }
   close(GMAP);
+
+  if($match == 0) {
+    return \%lifted_model
+  }
 
   # 2nd run: map query cDNA on genomic target, parse GFF and apply coord offset
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";

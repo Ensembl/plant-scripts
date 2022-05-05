@@ -424,6 +424,13 @@ if($INP_outdir) {
   }
 }
 
+if($INP_verbose) {
+  printf("# non-outliers %d/%d >= %1.2f\n",
+    $non_outlier_pairs,
+    scalar(@non_outliers),
+    $MINPAIRPECNONOUTLIERS);
+}
+
 if(@long_models &&
   $non_outlier_pairs/scalar(@non_outliers) >= $MINPAIRPECNONOUTLIERS) {
 
@@ -628,7 +635,7 @@ sub liftover_gmap {
   my (%lifted_model);
  
   # check coordinates of target DNA in source 
-  if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)\([+-]\)/) {
+  if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)\([+-]\)/) { 
     ($chr,$start,$end,$strand) = ($1, $2, $3, $4);
     $offset = $start - 1;
   } else {

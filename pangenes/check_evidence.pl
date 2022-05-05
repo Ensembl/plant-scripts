@@ -427,7 +427,14 @@ if(@long_models &&
       # at least from same species needed
       next if($lifted{ $species }{ 'total' } < 2);
 
-      print "# replace $gene_id with: $lifted{$species}{'matches'} $lifted{$species}{'mismatches'} $lifted{$species}{'indels'}\n";
+      printf("## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+        $gene_id, 
+        $ref_taxon->{$gene_id},
+        $species,
+        $lifted{$species}{'matches'},
+        $lifted{$species}{'mismatches'},
+         $lifted{$species}{'indels'});
+
       print "$species $lifted{ $species }{ 'GFF' }\n";
       last; # take only best
     }

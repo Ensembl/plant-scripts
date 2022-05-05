@@ -35,6 +35,7 @@ my $BEDTOOLSBIN = $ENV{'EXE_BEDTOOLS'} || 'bedtools';
 my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
+my ($INP_appendGFF,$INP_outdir) = (0, '');
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -42,18 +43,20 @@ my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
-getopts('hvfnd:i:', \%opts);
+getopts('havfno:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
   print "-v print credits and checks installation\n";
-  print "-d output directory produced by get_pangenes.pl (example: -d /path/data_pangenes/..._algMmap_,\n";
+  print "-d directory produced by get_pangenes.pl        (example: -d /path/data_pangenes/..._algMmap_,\n";
   print "                                                 genomic sequences usually one folder up)\n";
   print "-i cdna cluster as shown in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-n do not print raw evidence                    (optional)\n";
-  print "-f fix gene models and produce GFF              (optional)\n\n";
+  print "-f fix gene models and produce GFF              (optional, GFF printed to stdout by default)\n";
+  print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
+  print "-a append GFF output                            (optional, requires -f -o)\n";  
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
@@ -91,7 +94,18 @@ if(defined($opts{'n'})){
 }
 
 if(defined($opts{'f'})){
-  $INP_fix = 1
+  $INP_fix = 1;
+
+  if(defined($opts{'o'})){
+    $INP_outdir = $opts{'o'};
+    if(!-e $INP_outdir) {
+      mkdir($INP_outdir);
+    }
+
+    if(defined($opts{'a'})){
+      $INP_appendGFF = 1 
+    }
+  }
 }
 
 
@@ -376,11 +390,26 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 }
 
 
-# 7.3) suggest model fixes, in order of priority: long > split > missing
+# 7.3) suggest model fixes in GFF format, order of priority: long > split > missing
 
 if(!@non_outliers) {
   die "# ERROR: need non-outliers/consensus gene models to fix cluster, exit\n";
 }
+
+# open output GFF files if requested
+my ($gfffh, %outfhandles);
+if($INP_outdir) {
+  foreach $species (keys(%taxon_obs)) {
+    if($INP_appendGFF) {
+      open(my $fh,'>>',"$INP_outdir/$species.fixes.gff");
+      $outfhandles{$species} = $fh;
+    } else {
+      open(my $fh,'>',"$INP_outdir/$species.fixes.gff");
+      $outfhandles{$species} = $fh;
+    }
+  }
+}
+
 if(@long_models &&
   $non_outlier_pairs/scalar(@non_outliers) >= $MINPAIRPECNONOUTLIERS) {
 
@@ -427,7 +456,10 @@ if(@long_models &&
       # at least from same species needed
       next if($lifted{ $species }{ 'total' } < 2);
 
-      printf("## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+      # actually print GFF
+      $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
+
+      printf($gfffh "## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
         $gene_id, 
         $ref_taxon->{$gene_id},
         $species,
@@ -435,7 +467,7 @@ if(@long_models &&
         $lifted{$species}{'mismatches'},
          $lifted{$species}{'indels'});
 
-      print "$species $lifted{ $species }{ 'GFF' }\n";
+      print $gfffh "$species $lifted{ $species }{ 'GFF' }\n";
       last; # take only best
     }
   }

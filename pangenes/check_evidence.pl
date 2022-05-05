@@ -38,7 +38,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
-my ($INP_appendGFF,$INP_outdir) = (0, '');
+my ($INP_verbose,$INP_appendGFF,$INP_outdir) = (0,0, '');
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -46,13 +46,13 @@ my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 
-getopts('havfno:d:i:', \%opts);
+getopts('hvacfno:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
-  print "-v print credits and checks installation\n";
+  print "-c print credits and checks installation\n";
   print "-d directory produced by get_pangenes.pl        (example: -d /path/data_pangenes/..._algMmap_,\n";
   print "                                                 genomic sequences usually one folder up)\n";
   print "-i cdna cluster as shown in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
@@ -64,7 +64,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   exit(0);
 }
 
-if(defined($opts{'v'})) {
+if(defined($opts{'c'})) {
 
   print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
@@ -110,6 +110,11 @@ if(defined($opts{'f'})){
     }
   }
 }
+
+if(defined($opts{'v'})){
+  $INP_verbose = 1
+}
+
 
 
 # 1) locate .cluster_list file to check clusterfile is there
@@ -352,9 +357,13 @@ my $non_outlier_pairs = 0;
 my %seen_outlier_taxon;
 my (@long_models, @split_models, @non_outliers);
 
-# 7.1) get outlier cutfoff values
-my ($cutoff_low_pairs, $cutoff_high_pairs) = get_outlier_cutoffs( $scores{'pairs'} );
-my ($cutoff_low_len, $cutoff_high_len) = get_outlier_cutoffs( $scores{'length'} );
+# 7.1) get outlier cutfoff values 
+
+# works for normal dists
+my ($median_pairs, $cutoff_low_pairs, $cutoff_high_pairs) = 
+  get_outlier_cutoffs( $scores{'pairs'} , $INP_verbose );
+my ($median_len, $cutoff_low_len, $cutoff_high_len) = 
+  get_outlier_cutoffs( $scores{'length'} , $INP_verbose );
 
 # 7.2) identify outlier gene models
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
@@ -367,10 +376,12 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
   }
 
   # long models with too many collinear pairs
-  if($seen{$full_id} > $cutoff_high_pairs && 
-    $gene_length{$full_id} > $cutoff_high_len) {
-  
-      push(@long_models, $gene_id)
+  if($seen{$full_id} > $cutoff_high_pairs &&
+    ($gene_length{$full_id} > $cutoff_high_len ||
+     $gene_length{$full_id} > $median_len)) {
+
+      push(@long_models, $gene_id);
+      print "# long $gene_id\n" if($INP_verbose); 
   
   } elsif( # short models from same species with few collinear pairs
     $seen{$full_id} < $cutoff_low_pairs &&
@@ -440,12 +451,18 @@ if(@long_models &&
       $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
       my $ref_lifted_model = liftover_gmap( "$gene_id,", $segment, $cDNA, $GMAPBIN ); 
-
-      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
-      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } += $ref_lifted_model->{'matches'};
-      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'mismatches' } += $ref_lifted_model->{'mismatches'};
-      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } += $ref_lifted_model->{'indels'};
-      $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } .= $ref_lifted_model->{'GFF'};
+   
+      if($ref_lifted_model->{'matches'}) {
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } += 
+          $ref_lifted_model->{'matches'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'mismatches' } += 
+          $ref_lifted_model->{'mismatches'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } += 
+          $ref_lifted_model->{'indels'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } .= 
+          $ref_lifted_model->{'GFF'};
+      }
     }
 
     # choose best (pair of short) models to replace long one
@@ -470,7 +487,7 @@ if(@long_models &&
         $lifted{$species}{'mismatches'},
          $lifted{$species}{'indels'});
 
-      print $gfffh "$species $lifted{ $species }{ 'GFF' }\n";
+      print $gfffh "$lifted{ $species }{ 'GFF' }\n";
       last; # take only best
     }
   }
@@ -533,11 +550,17 @@ if(@long_models &&
 
       my $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, $segment, $cDNA, $GMAPBIN );
 
-      $lifted_model{ $ref_taxon->{$gene_id} }{ 'total' } ++;
-      $lifted_model{ $ref_taxon->{$gene_id} }{ 'matches' } += $ref_lifted_model->{'matches'};
-      $lifted_model{ $ref_taxon->{$gene_id} }{ 'mismatches' } += $ref_lifted_model->{'mismatches'};
-      $lifted_model{ $ref_taxon->{$gene_id} }{ 'indels' } += $ref_lifted_model->{'indels'};
-      $lifted_model{ $ref_taxon->{$gene_id} }{ 'GFF' } .= $ref_lifted_model->{'GFF'};
+      if($ref_lifted_model->{'matches'}) {
+        $lifted_model{ $ref_taxon->{$gene_id} }{ 'total' } ++;
+        $lifted_model{ $ref_taxon->{$gene_id} }{ 'matches' } += 
+          $ref_lifted_model->{'matches'};
+        $lifted_model{ $ref_taxon->{$gene_id} }{ 'mismatches' } += 
+          $ref_lifted_model->{'mismatches'};
+        $lifted_model{ $ref_taxon->{$gene_id} }{ 'indels' } += 
+          $ref_lifted_model->{'indels'};
+        $lifted_model{ $ref_taxon->{$gene_id} }{ 'GFF' } .= 
+          $ref_lifted_model->{'GFF'};
+      }
     }
 
     # choose best (long) model to replace split ones

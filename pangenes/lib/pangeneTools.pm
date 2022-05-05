@@ -366,7 +366,7 @@ sub calc_median {
 # ii) Q3 + 1.5 IQR
 sub get_outlier_cutoffs {
 
-    my ($dataref) = @_;
+    my ($dataref, $verbose) = @_;
 
     my @values = sort {$a<=>$b} (@$dataref);
 
@@ -376,7 +376,9 @@ sub get_outlier_cutoffs {
     # 75% percentile (Q3)
     my $Q3 = $values[sprintf("%.0f",(0.75*($#values)))];
 
-    my $IQR = $Q3-$Q1;
+    my $IQR = $Q3-$Q1; 
+
+    print "# Q1 $Q1 Q3 $Q3 IQR $IQR\n" if($verbose);
 
     return (
         sprintf("%1.1f", $Q1 - (1.5 * $IQR)),

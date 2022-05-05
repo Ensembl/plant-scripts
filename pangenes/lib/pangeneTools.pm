@@ -361,9 +361,11 @@ sub calc_median {
     }
 }
 
-# Takes ref to list of numbers and returns lower and upper cutoff to call outliers,
-# i)  Q1 - 1.5 IQR 
-# ii) Q3 + 1.5 IQR
+# Takes ref to list of numbers and returns median, 
+# lower and upper cutoff (scalars) to call outliers:
+# i)   median
+# ii)  Q1 - 1.5 IQR 
+# iii) Q3 + 1.5 IQR
 sub get_outlier_cutoffs {
 
     my ($dataref, $verbose) = @_;
@@ -373,6 +375,9 @@ sub get_outlier_cutoffs {
     # 25% percentile (Q1)
     my $Q1 = $values[sprintf("%.0f",(0.25*($#values)))];
 
+    # 50% median
+    my $median = $values[sprintf("%.0f",(0.5*($#values)))];
+
     # 75% percentile (Q3)
     my $Q3 = $values[sprintf("%.0f",(0.75*($#values)))];
 
@@ -381,6 +386,7 @@ sub get_outlier_cutoffs {
     print "# Q1 $Q1 Q3 $Q3 IQR $IQR\n" if($verbose);
 
     return (
+        $median,
         sprintf("%1.1f", $Q1 - (1.5 * $IQR)),
         sprintf("%1.1f", $Q3 + (1.5 * $IQR)),
     )

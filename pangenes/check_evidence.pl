@@ -23,7 +23,7 @@ use pangeneTools qw( check_installed_features
                      parse_sequence_FASTA_file extract_isoforms_FASTA
                      calc_median get_outlier_cutoffs );
 
-my $MINPAIRPECNONOUTLIERS = 0.50;
+my $MINPAIRPECNONOUTLIERS = 0.25;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F';
 
 my @FEATURES2CHECK = (

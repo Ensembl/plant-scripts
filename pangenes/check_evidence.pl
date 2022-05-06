@@ -360,7 +360,7 @@ if(!$INP_fix) {
 # 7) suggest fixes for poor gene models based on pan-gene consensus
 
 my $non_outlier_pairs = 0;
-my ($chr,$start,$end,$strand,$isof,$ref_lifted_model);
+my ($chr,$start,$end,$strand,$isof,$ref_lifted_model,$GFF);
 my (@long_models, @split_models, @non_outliers, %seen_outlier_taxon);
 
 # 7.1) get outlier cutfoff values 
@@ -476,6 +476,7 @@ if(@long_models &&
       } 
 
       if($best_isof_model->{'matches'}) { 
+
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } += 
           $best_isof_model->{'matches'};
@@ -483,8 +484,9 @@ if(@long_models &&
           $best_isof_model->{'mismatches'};
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } += 
           $best_isof_model->{'indels'};
-        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } .= 
-          $best_isof_model->{'GFF'};
+
+        push(@{ $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } },
+          $best_isof_model->{'GFF'} );
       }
     }
 
@@ -498,19 +500,25 @@ if(@long_models &&
 
       # at least from same species needed
       next if($lifted{ $species }{ 'total' } < 2);
+ 
+      # sort GFF features and make sure they don't overlap
+      $GFF = sort_check_overlap_genes_GFF( @{ $lifted{ $species }{'GFF'} } );
+
+      next if(!$GFF); # mapped models actually overlap
 
       # actually print GFF
       $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
 
       printf($gfffh "## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
-        $gene_id, 
+        $gene_id,
         $ref_taxon->{$gene_id},
         $species,
         $lifted{$species}{'matches'},
         $lifted{$species}{'mismatches'},
         $lifted{$species}{'indels'});
 
-      print $gfffh "$lifted{ $species }{ 'GFF' }\n";
+      print $gfffh "$GFF\n";
+
       last; # take only best
     }
   }
@@ -571,7 +579,7 @@ if(@long_models &&
       $genome_file,$BEDTOOLSBIN );
 
     # lift-over consensus models
-    my %lifted_model;
+    my %lifted;
     foreach $full_id (@non_outliers) {
 
       $gene_id = $fullid2id{$full_id};
@@ -582,15 +590,15 @@ if(@long_models &&
       my $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, $segment, $cDNA, $GMAPBIN );
 
       if($ref_lifted_model->{'matches'}) {
-        $lifted_model{ $ref_taxon->{$gene_id} }{ 'total' } ++;
-        $lifted_model{ $ref_taxon->{$gene_id} }{ 'matches' } += 
+        $lifted{ $ref_taxon->{$gene_id} }{ 'total' } ++;
+        $lifted{ $ref_taxon->{$gene_id} }{ 'matches' } += 
           $ref_lifted_model->{'matches'};
-        $lifted_model{ $ref_taxon->{$gene_id} }{ 'mismatches' } += 
+        $lifted{ $ref_taxon->{$gene_id} }{ 'mismatches' } += 
           $ref_lifted_model->{'mismatches'};
-        $lifted_model{ $ref_taxon->{$gene_id} }{ 'indels' } += 
+        $lifted{ $ref_taxon->{$gene_id} }{ 'indels' } += 
           $ref_lifted_model->{'indels'};
-        $lifted_model{ $ref_taxon->{$gene_id} }{ 'GFF' } .= 
-          $ref_lifted_model->{'GFF'};
+        #$lifted{ $ref_taxon->{$gene_id} }{ 'GFF' } .= 
+        #  $ref_lifted_model->{'GFF'};
       }
     }
 
@@ -732,4 +740,40 @@ sub liftover_gmap {
   #TODO: make sure protein sequence does not include stop codons
 
   return \%lifted_model;
+}
+
+# Takes array with GFF string blocks, one per gene, sorts them,
+# makes sure they don't overlap and return sorted GFF string.
+# If two block overlap and empty string is returned
+sub sort_check_overlap_genes_GFF {
+  my @unsortedGFF = @_;
+
+  my ($GFFblock, $start, $end, $key);
+  my (%block, @sorted_blocks);
+  my $GFFstring = '';
+
+  # compute block start and end coords, assumes 1st line is gene
+  foreach my $b (0 .. $#unsortedGFF) {
+    $GFFblock = $unsortedGFF[$b];
+    ($start,$end) = (split(/\t/,$GFFblock,6))[3,4];
+    $key = "$start,$end";
+    $block{$key} = [$start,$end,$b];  
+  } 
+
+  # sort blocks
+  @sorted_blocks = sort {$block{$a}->[0]<=>$block{$b}->[0]} keys(%block);
+
+  # make sure one block does not overlap the next one
+  for $key (0 .. $#sorted_blocks-1) {
+    if($block{$sorted_blocks[$key]}->[1] >= $block{$sorted_blocks[$key+1]}->[0]) {
+      return $GFFstring
+    }
+  }
+
+  # concat sorted, non-overlapping blocks 
+  for $key (0 .. $#sorted_blocks) {
+    $GFFstring .= $unsortedGFF[ $block{$sorted_blocks[$key]}->[2] ];
+  } 
+
+  return $GFFstring
 }

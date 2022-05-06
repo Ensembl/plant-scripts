@@ -13,6 +13,7 @@ require Exporter;
   parse_GFF_regex
   get_string_with_previous_genomes
   parse_sequence_FASTA_file
+  extract_isoforms_FASTA
   calc_median
   get_outlier_cutoffs
 
@@ -344,6 +345,34 @@ sub parse_sequence_FASTA_file {
     return ( \@geneids, \%fasta, \%chr_coords )
   }
 }
+
+# Takes a string with gene sequence in FASTA format, as those in \%fasta produced  
+# by sub parse_sequence_FASTA_file, and returns an array with individual
+# isoform sequences, if any
+sub extract_isoforms_FASTA {
+  my ($all_isof_FASTA) = @_;
+
+  my @isoform_seqs;
+  my $isoform = '';
+
+  my @seqs = split(/\n/,$all_isof_FASTA);
+  foreach my $s (0 .. $#seqs) {
+    if($seqs[$s] =~ m/^>/) {
+      if($isoform) {
+        push(@isoform_seqs, $isoform)
+      }
+      $isoform = "$seqs[$s]\n"; # header
+    } else {
+      $isoform .= "$seqs[$s]";
+    }
+  }
+
+  # last isof
+  push(@isoform_seqs, $isoform);
+
+  return @isoform_seqs;
+}
+
 
 # Takes ref to list of numbers and returns the median
 sub calc_median {

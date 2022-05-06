@@ -22,4 +22,5 @@
 20042022: adopted minimap2-2.24 and updated Makefile
 22042022: save compressed copy of $merged_tsv_file as evidence of clusters
 22042022: check_evidence.pl prints basic stats for a cluster
-05052022: check_evidence.pl -f prints GFF fixes for long gene models 
+05052022: check_evidence.pl -f prints GFF fixes for long gene models
+06052022: check_evidence.pl -f prints sorted- non-overlapping GFF fixes for long gene models 

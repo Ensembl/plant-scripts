@@ -19,11 +19,12 @@ use DB_File;
 use Compress::Zlib qw(compress uncompress);
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw( check_installed_features parse_sequence_FASTA_file 
+use pangeneTools qw( check_installed_features 
+                     parse_sequence_FASTA_file extract_isoforms_FASTA
                      calc_median get_outlier_cutoffs );
 
 my $MINPAIRPECNONOUTLIERS = 0.50;
-my $GMAPARAMS = '-t 1 -n 1 -2 -z sense_force -F';
+my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F';
 
 my @FEATURES2CHECK = (
   'EXE_BEDTOOLS', 'EXE_GMAP', 'EXE_GZIP'
@@ -44,7 +45,7 @@ my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
-my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
+my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length, %genome_coords);
 
 getopts('hvacfno:d:i:', \%opts);
 
@@ -147,7 +148,7 @@ if($clusternameOK == 0) {
 }
 
 # 2) parse FASTA headers of input cluster to extract gene names
-my ( $ref_geneid, $ref_fasta, $ref_coords, $ref_taxon ) = 
+my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
 
 foreach $gene_id (sort @$ref_geneid) {
@@ -247,8 +248,10 @@ foreach $gene_id (@sorted_ids) {
  
     if($homology_type eq 'ortholog_collinear') {
 
-      next if(!$cluster_gene_id{$gene_id} || !$cluster_gene_id{$hom_gene_id});
-      next if($ref_taxon->{$gene_id} ne $species || $ref_taxon->{$hom_gene_id} ne $hom_species);
+      next if(!$cluster_gene_id{$gene_id} || 
+        !$cluster_gene_id{$hom_gene_id});
+      next if($ref_taxon->{$gene_id} ne $species || 
+        $ref_taxon->{$hom_gene_id} ne $hom_species);
 
       # concat species & gene_id in case there are repeated gene ids
       $full_id = $species.$gene_id;
@@ -260,7 +263,7 @@ foreach $gene_id (@sorted_ids) {
       $seen{$full_id}++;
       $seen{$hom_full_id}++;
 
-      # overlap only considered for gene pairs (not segments)
+      # add overlap of gene pair (segments not considered)
       $overlap{$full_id} += $overlap;
       $overlap{$hom_full_id} += $overlap; 
 
@@ -268,6 +271,7 @@ foreach $gene_id (@sorted_ids) {
       ($coords, $hom_coords) = split(/;/,$coords); 
 
       if(!$gene_length{$full_id}) {
+        $genome_coords{$full_id} = $coords;
         if($coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
           $gene_length{$full_id} = 1+$2-$1;
         } else {
@@ -276,6 +280,7 @@ foreach $gene_id (@sorted_ids) {
       }
 
       if(!$gene_length{$hom_full_id}) {
+        $genome_coords{$hom_full_id} = $hom_coords;
         if($hom_coords =~ m/^\S+?:(\d+)-(\d+)\([+-]\)/) {
           $gene_length{$hom_full_id} = 1+$2-$1;
         } else { 
@@ -319,6 +324,7 @@ if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
 
 # 6) print summary stats
 my (%scores, %taxon_obs);
+
 print "\n#length\tpairs\tgene_overlap\tgene\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
@@ -354,12 +360,10 @@ if(!$INP_fix) {
 # 7) suggest fixes for poor gene models based on pan-gene consensus
 
 my $non_outlier_pairs = 0;
-my %seen_outlier_taxon;
-my (@long_models, @split_models, @non_outliers);
+my ($chr,$start,$end,$strand,$isof,$ref_lifted_model);
+my (@long_models, @split_models, @non_outliers, %seen_outlier_taxon);
 
 # 7.1) get outlier cutfoff values 
-
-# works for normal dists
 my ($median_pairs, $cutoff_low_pairs, $cutoff_high_pairs) = 
   get_outlier_cutoffs( $scores{'pairs'} , $INP_verbose );
 my ($median_len, $cutoff_low_len, $cutoff_high_len) = 
@@ -380,7 +384,7 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
     ($gene_length{$full_id} > $cutoff_high_len ||
      $gene_length{$full_id} > $median_len)) {
 
-      push(@long_models, $gene_id);
+      push(@long_models, $full_id);
       print "# long $gene_id\n" if($INP_verbose); 
   
   } elsif( # short models from same species with few collinear pairs
@@ -388,7 +392,8 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
     $gene_length{$full_id} < $cutoff_low_len &&
     $taxon_obs{ $ref_taxon->{$gene_id} } > 1) {
 
-    push(@split_models, $gene_id)
+    push(@split_models, $full_id);
+    print "# split $gene_id\n" if($INP_verbose);
 
   } else { # non-outlier/consensus models
 
@@ -399,7 +404,7 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
       }
     }
 
-    push(@non_outliers, $gene_id);
+    push(@non_outliers, $full_id);
   }
 }
 
@@ -435,40 +440,51 @@ if(@long_models &&
   $non_outlier_pairs/scalar(@non_outliers) >= $MINPAIRPECNONOUTLIERS) {
 
   # hypothesis: a long model actually merges two single genes by mistake
-  # proposed fix: liftover individual consensus models, 2+ hits on same strand
-  foreach $gene_id (@long_models) {
+  # proposed fix: liftover individual consensus models against genomic segment containing long gene, 
+  # expect 2+ hits from same species on same strand
+  foreach $full_id (@long_models) {
 
     my %lifted;
 
+    $gene_id = $fullid2id{$full_id};
+
     # cut genomic segment harboring this (long) gene
     $genome_file = "$INP_dir/../_$ref_taxon->{$gene_id}.fna";
-    $segment = cut_genomic_segment_bedtools( 
-      $ref_coords->{$gene_id}[0],
-      $ref_coords->{$gene_id}[1],
-      $ref_coords->{$gene_id}[2],
-      $ref_coords->{$gene_id}[3],
-      $genome_file,
-      $BEDTOOLSBIN );
+    $segment = cut_genomic_segment_bedtools(
+      $genome_coords{$full_id},$genome_file,$BEDTOOLSBIN ); 
 
     # lift-over consensus models
-    foreach $hom_gene_id (@non_outliers) {
-
-      # leave gene name as only FASTA header of cDNA
-      $cDNA = $ref_fasta->{$hom_gene_id};
-      $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
-
-      my $ref_lifted_model = liftover_gmap( "$gene_id,", $segment, $cDNA, $GMAPBIN ); 
+    foreach $hom_full_id (@non_outliers) {
    
-      if($ref_lifted_model->{'matches'}) {
+      $hom_gene_id = $fullid2id{$hom_full_id};
+
+      # extract all isoforms/transcripts of this gene, 
+      # and select the one with most matches in cDNA alignment
+      my $best_isof_model;
+      my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id}); 
+      
+      foreach $isof (@isofs) { 
+        $cDNA = $isof; # leave gene name as only FASTA header of cDNA
+        $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;  
+
+        $ref_lifted_model = liftover_gmap( "$gene_id,", $segment, $cDNA, $GMAPBIN ); 
+
+        if($ref_lifted_model->{'matches'} && (!$best_isof_model || 
+            $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
+          $best_isof_model = $ref_lifted_model;
+        } 
+      } 
+
+      if($best_isof_model->{'matches'}) { 
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } += 
-          $ref_lifted_model->{'matches'};
+          $best_isof_model->{'matches'};
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'mismatches' } += 
-          $ref_lifted_model->{'mismatches'};
+          $best_isof_model->{'mismatches'};
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } += 
-          $ref_lifted_model->{'indels'};
+          $best_isof_model->{'indels'};
         $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } .= 
-          $ref_lifted_model->{'GFF'};
+          $best_isof_model->{'GFF'};
       }
     }
 
@@ -492,7 +508,7 @@ if(@long_models &&
         $species,
         $lifted{$species}{'matches'},
         $lifted{$species}{'mismatches'},
-         $lifted{$species}{'indels'});
+        $lifted{$species}{'indels'});
 
       print $gfffh "$lifted{ $species }{ 'GFF' }\n";
       last; # take only best
@@ -513,25 +529,35 @@ if(@long_models &&
     my %segment_data;
     $genome_file = "$INP_dir/../_$species.fna";
 
-    foreach $gene_id (@split_models) {
+    foreach $full_id (@split_models) {
+
+      $gene_id = $fullid2id{$full_id};
+
       next if($ref_taxon->{$gene_id} ne $species);
+
+      if($genome_coords{$full_id} =~ m/^(\S+?):(\d+)-(\d+)\(([+-])\)/) {
+        ($chr,$start,$end,$strand) = ($1, $2, $3, $4)
+      } else {
+        die "# ERROR: cannot parse genomic coords of $gene_id ($genome_coords{$gene_id})\n"
+      }
+
       if(!$segment_data{'chr'}) {
-        $segment_data{'chr'}    = $ref_coords->{$gene_id}[0];
-        $segment_data{'start'}  = $ref_coords->{$gene_id}[1];
-        $segment_data{'end'}    = $ref_coords->{$gene_id}[2];
-        $segment_data{'strand'} = $ref_coords->{$gene_id}[3];
+        $segment_data{'chr'}    = $chr;
+        $segment_data{'start'}  = $start;
+        $segment_data{'end'}    = $end;
+        $segment_data{'strand'} = $strand;
         $segment_data{'models'} = 1;
         $segment_data{'genes'}  = "$gene_id,";
       } else {
-        next if($ref_coords->{$gene_id}[0] ne $segment_data{'chr'} ||
-          $ref_coords->{$gene_id}[3] ne $segment_data{'strand'});
+        next if($chr ne $segment_data{'chr'} ||
+          $strand ne $segment_data{'strand'});
 
-        if($ref_coords->{$gene_id}[1] < $segment_data{'start'}) {
-          $segment_data{'start'} = $ref_coords->{$gene_id}[1];
+        if($start < $segment_data{'start'}) {
+          $segment_data{'start'} = $start;
           $segment_data{'models'}++;
           $segment_data{'genes'}  = "$gene_id,";
-        } elsif($ref_coords->{$gene_id}[2] > $segment_data{'end'}) {
-          $segment_data{'end'} = $ref_coords->{$gene_id}[2];
+        } elsif($end > $segment_data{'end'}) {
+          $segment_data{'end'} = $end;
           $segment_data{'models'}++;
           $segment_data{'genes'}  = "$gene_id,";
         }
@@ -541,16 +567,14 @@ if(@long_models &&
     next if(!$segment_data{'models'} || $segment_data{'models'} < 2);
 
     $segment = cut_genomic_segment_bedtools(
-      $segment_data{'chr'},
-      $segment_data{'start'},
-      $segment_data{'end'},
-      $segment_data{'strand'},
-      $genome_file,
-      $BEDTOOLSBIN );
+      "$segment_data{'chr'}:$segment_data{'start'}-$segment_data{'end'}($segment_data{'strand'})",
+      $genome_file,$BEDTOOLSBIN );
 
     # lift-over consensus models
     my %lifted_model;
-    foreach $gene_id (@non_outliers) {
+    foreach $full_id (@non_outliers) {
+
+      $gene_id = $fullid2id{$full_id};
 
       $cDNA = $ref_fasta->{$gene_id};
       $cDNA =~ s/^>.*\n/>$gene_id\n/;
@@ -587,17 +611,22 @@ if(@long_models &&
 ################################################################################
 
 # Cuts FASTA sequence for a passed genomic interval.
-# Takes 6 params:
-# i)   chr name
-# ii)  start coord
-# iii) end coord
-# iv)  strand
-# v)  FASTA file with reference sequence
-# vi)   path to bedtools
+# Takes 3 params:
+# i)   string with BED genomic coords (chr:start-end(strand)
+# ii)  FASTA file with reference sequence
+# iii) path to bedtools
 # Returns string with one sequence in FASTA format
 sub cut_genomic_segment_bedtools {
-  my ($chr, $start, $end, $strand, $fastafile, $bedtools_path) = @_;
-  
+  my ($genome_coords, $fastafile, $bedtools_path) = @_;
+ 
+  # parse coord string 
+  my ($chr, $start, $end, $strand);
+  if($genome_coords =~ m/^(\S+?):(\d+)-(\d+)\(([+-])\)/) {
+    ($chr,$start,$end,$strand) = ($1, $2, $3, $4)
+  } else {
+    die "# ERROR(cut_genomic_segment_bedtools): cannot parse genomic coords $genome_coords\n"
+  }
+
   my $cmd = "echo '$chr\t$start\t$end\tfrag\t0\t$strand' | ".
     "$bedtools_path getfasta -fi $fastafile -bed - -s";
 
@@ -643,9 +672,9 @@ sub liftover_gmap {
   }
 
   # 1st run: get alignment summary to parse scores
-  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -S";
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -S"; 
   open(GMAP, "$cmd 2>&1 |") ||
-    die " ERROR(liftover_gmap): cannot run $cmd\n";
+    die " ERROR(liftover_gmap): cannot run $cmd\n"; 
   while(<GMAP>) { 
     if(/^\s+Percent identity: \S+ \((\d+) matches, (\d+) mismatches, (\d+) indels/){ 
       ($match, $mismatch, $indel) = ($1, $2, $3); 
@@ -687,7 +716,7 @@ sub liftover_gmap {
         } $GFF[8] .= "\n";
       }
 
-      $lifted_model{'GFF'} .= join("\t",@GFF);
+      $lifted_model{'GFF'} .= join("\t",@GFF); # if($GFF[2] eq 'gene');
     }
 
     if(/^# Generated by GMAP/) {

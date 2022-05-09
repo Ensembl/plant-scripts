@@ -248,6 +248,7 @@ foreach $gene_id (@sorted_ids) {
  
     if($homology_type eq 'ortholog_collinear') {
 
+      # skip sequences from other clusters
       next if(!$cluster_gene_id{$gene_id} || 
         !$cluster_gene_id{$hom_gene_id});
       next if($ref_taxon->{$gene_id} ne $species || 
@@ -323,7 +324,7 @@ if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
 }
 
 # 6) print summary stats
-my (%scores, %taxon_obs);
+my (%scores, %taxon_genes);
 
 print "\n#length\tpairs\tgene_overlap\tgene\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
@@ -342,7 +343,8 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
   push(@{ $scores{'overlap'} }, $overlap{$full_id});
   push(@{ $scores{'length'} }, $gene_length{$full_id});
 
-  $taxon_obs{ $ref_taxon->{$gene_id} }++;
+  # group genes from same taxon/species
+  push(@{ $taxon_genes{ $ref_taxon->{$gene_id} }}, $full_id);
 }
 
 printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
@@ -370,6 +372,7 @@ my ($median_len, $cutoff_low_len, $cutoff_high_len) =
   get_outlier_cutoffs( $scores{'length'} , $INP_verbose );
 
 # 7.2) identify outlier gene models
+my %split_seen;
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   $gene_id = $fullid2id{$full_id};
@@ -378,7 +381,7 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
   if(!-e $genome_file) {
     die "# ERROR: cannot find genome file $genome_file\n";
   }
-
+ 
   # long models with too many collinear pairs
   if($seen{$full_id} > $cutoff_high_pairs &&
     ($gene_length{$full_id} > $cutoff_high_len ||
@@ -389,17 +392,24 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
   
   } elsif( # short models from same species with few collinear pairs
     $seen{$full_id} < $cutoff_low_pairs &&
-    $gene_length{$full_id} < $cutoff_low_len &&
-    $taxon_obs{ $ref_taxon->{$gene_id} } > 1) {
+    ($gene_length{$full_id} < $cutoff_low_len ||
+       $gene_length{$full_id} < $median_len) &&
+      scalar(@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) > 1 &&
+      !defined($split_seen{$ref_taxon->{$gene_id}})) {
 
-    push(@split_models, $full_id);
-    print "# split $gene_id\n" if($INP_verbose);
+        $split_seen{$ref_taxon->{$gene_id}} = 1;
+        foreach my $id (@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) {
+          push(@split_models, $id);
+          print "# split $id\n" if($INP_verbose);
+        }
 
   } else { # non-outlier/consensus models
 
+    # record taxa with 2+ non-outlier genes, 
+    # these might be used to fix long genes (if there are enough) 
     if(!$seen_outlier_taxon{ $ref_taxon->{$gene_id} }) {
       $seen_outlier_taxon{ $ref_taxon->{$gene_id} } = 1;
-      if( $taxon_obs{ $ref_taxon->{$gene_id} } > 1) {
+      if( scalar(@{$taxon_genes{ $ref_taxon->{$gene_id} }}) > 1) {
         $non_outlier_pairs++;
       }
     }
@@ -418,7 +428,7 @@ if(!@non_outliers) {
 # open output GFF files if requested
 my ($gfffh, %outfhandles);
 if($INP_outdir) {
-  foreach $species (keys(%taxon_obs)) {
+  foreach $species (keys(%taxon_genes)) {
     if($INP_appendGFF) {
       open(my $fh,'>>',"$INP_outdir/$species.fixes.gff");
       $outfhandles{$species} = $fh;
@@ -430,10 +440,10 @@ if($INP_outdir) {
 }
 
 if($INP_verbose) {
-  printf("# non-outliers %d/%d >= %1.2f\n",
-    $non_outlier_pairs,
-    scalar(@non_outliers),
-    $MINPAIRPECNONOUTLIERS);
+  printf("# long model candidates %d\n", scalar(@long_models));
+  printf("# split model candidates %d\n", scalar(@split_models));
+  printf("# non-outliers %d pairs %d\n",
+    scalar(@non_outliers),$non_outlier_pairs);  
 }
 
 if(@long_models &&
@@ -506,8 +516,10 @@ if(@long_models &&
 
       next if(!$GFF); # mapped models actually overlap
 
-      # actually print GFF
+      # actually print GFF and log
       $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
+
+      print "# long gene model: corrected $gene_id [$ref_taxon->{$gene_id}]\n";
 
       printf($gfffh "## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
         $gene_id,
@@ -528,18 +540,18 @@ if(@long_models &&
   # hypothesis: the real gene is long and was split in 2+ partial genes
   # proposed fix: liftover consensus (longer) models
 
-  foreach $species (keys(%taxon_obs)) {
+  foreach $species (keys(%taxon_genes)) {
 
-    next if( $taxon_obs{$species} < 2 );
+    next if( scalar(@{$taxon_genes{$species}}) < 2 );
 
     # cut genomic segment harboring these (split) genes, 
     # make sure they're from the same chromosome/contig
     my %segment_data;
-    $genome_file = "$INP_dir/../_$species.fna";
+    $genome_file = "$INP_dir/../_$species.fna"; 
 
     foreach $full_id (@split_models) {
 
-      $gene_id = $fullid2id{$full_id};
+      $gene_id = $fullid2id{$full_id}; 
 
       next if($ref_taxon->{$gene_id} ne $species);
 
@@ -547,63 +559,106 @@ if(@long_models &&
         ($chr,$start,$end,$strand) = ($1, $2, $3, $4)
       } else {
         die "# ERROR: cannot parse genomic coords of $gene_id ($genome_coords{$gene_id})\n"
-      }
+      }  
 
-      if(!$segment_data{'chr'}) {
+      if(!defined($segment_data{'chr'})) {
         $segment_data{'chr'}    = $chr;
         $segment_data{'start'}  = $start;
         $segment_data{'end'}    = $end;
         $segment_data{'strand'} = $strand;
         $segment_data{'models'} = 1;
-        $segment_data{'genes'}  = "$gene_id,";
+        $segment_data{'genes'}  = "$gene_id";
+
       } else {
-        next if($chr ne $segment_data{'chr'} ||
-          $strand ne $segment_data{'strand'});
+
+        next if($chr ne $segment_data{'chr'} || $strand ne $segment_data{'strand'});
 
         if($start < $segment_data{'start'}) {
           $segment_data{'start'} = $start;
           $segment_data{'models'}++;
-          $segment_data{'genes'}  = "$gene_id,";
+          $segment_data{'genes'} .= ",$gene_id";
+
         } elsif($end > $segment_data{'end'}) {
           $segment_data{'end'} = $end;
           $segment_data{'models'}++;
-          $segment_data{'genes'}  = "$gene_id,";
+          $segment_data{'genes'} .= ",$gene_id";
         }
       }
     }
-
+   
     next if(!$segment_data{'models'} || $segment_data{'models'} < 2);
 
     $segment = cut_genomic_segment_bedtools(
       "$segment_data{'chr'}:$segment_data{'start'}-$segment_data{'end'}($segment_data{'strand'})",
-      $genome_file,$BEDTOOLSBIN );
+      $genome_file,$BEDTOOLSBIN ); 
 
     # lift-over consensus models
     my %lifted;
-    foreach $full_id (@non_outliers) {
+    foreach $hom_full_id (@non_outliers) {
 
-      $gene_id = $fullid2id{$full_id};
+      $hom_gene_id = $fullid2id{$hom_full_id};
 
-      $cDNA = $ref_fasta->{$gene_id};
-      $cDNA =~ s/^>.*\n/>$gene_id\n/;
+      # extract all isoforms/transcripts of this gene,
+      # and select the one with most matches in cDNA alignment
+      my $best_isof_model;
+      my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id});
 
-      my $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, $segment, $cDNA, $GMAPBIN );
+      foreach $isof (@isofs) {
+        $cDNA = $isof; # leave gene name as only FASTA header of cDNA
+        $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
-      if($ref_lifted_model->{'matches'}) {
-        $lifted{ $ref_taxon->{$gene_id} }{ 'total' } ++;
-        $lifted{ $ref_taxon->{$gene_id} }{ 'matches' } += 
-          $ref_lifted_model->{'matches'};
-        $lifted{ $ref_taxon->{$gene_id} }{ 'mismatches' } += 
-          $ref_lifted_model->{'mismatches'};
-        $lifted{ $ref_taxon->{$gene_id} }{ 'indels' } += 
-          $ref_lifted_model->{'indels'};
-        #$lifted{ $ref_taxon->{$gene_id} }{ 'GFF' } .= 
-        #  $ref_lifted_model->{'GFF'};
+        $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, $segment, $cDNA, $GMAPBIN );
+
+        if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
+            $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
+          $best_isof_model = $ref_lifted_model;
+        }
+      }
+
+      if($best_isof_model->{'matches'}) {
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } +=
+          $best_isof_model->{'matches'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'mismatches' } +=
+          $best_isof_model->{'mismatches'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } +=
+          $best_isof_model->{'indels'};
+
+        push(@{ $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } },
+          $best_isof_model->{'GFF'} );
       }
     }
 
     # choose best (long) model to replace split ones
+    foreach $hom_species (sort {
+        $lifted{$b}{'matches'} <=> $lifted{$a}{'matches'} ||
+        $lifted{$a}{'mismatches'} <=> $lifted{$b}{'mismatches'} ||
+        $lifted{$a}{'indels'} <=> $lifted{$b}{'indels'}
+      } keys(%lifted)) {
 
+      # skip genes with multiple mappings
+      next if($lifted{ $species }{ 'total' } > 1);
+
+      # sort GFF features and make sure they don't overlap
+      $GFF = $lifted{ $hom_species }{'GFF'}->[0];
+
+      # actually print GFF and log
+      $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
+
+      print "# split gene model: corrected $segment_data{'genes'} [$species]\n";
+
+      printf($gfffh "## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+        $segment_data{'genes'},
+        $species,
+        $hom_species,
+        $lifted{$hom_species}{'matches'},
+        $lifted{$hom_species}{'mismatches'},
+        $lifted{$hom_species}{'indels'});
+
+      print $gfffh "$GFF\n";
+
+      last; # take only best
+    }
 
     # TODO: are there intervening TEs?
   }

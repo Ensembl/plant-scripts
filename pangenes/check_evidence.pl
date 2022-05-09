@@ -157,11 +157,13 @@ foreach $gene_id (sort @$ref_geneid) {
 } 
 
 # 2.1) parse segment gDNA file if required
+my ($ref_geneid_seg,$ref_fasta_seg,$ref_coords_seg,$ref_taxon_seg );
+
 if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
 
   print "# parsing twin .gdna.fna cluster file $gdna_clusterfile\n\n";
 
-  my ( $ref_geneid_seg, $ref_fasta_seg, $ref_coords_seg, $ref_taxon_seg ) =
+  ( $ref_geneid_seg, $ref_fasta_seg, $ref_coords_seg, $ref_taxon_seg ) =
     parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$gdna_clusterfile" , 1);
 
   printf("\n# cluster %s genes = %d genomic segments = %d\n",
@@ -639,7 +641,6 @@ if(@long_models &&
       # skip genes with multiple mappings
       next if($lifted{ $species }{ 'total' } > 1);
 
-      # sort GFF features and make sure they don't overlap
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 
       # actually print GFF and log
@@ -666,8 +667,84 @@ if(@long_models &&
 } elsif(@segments) {
 
   # hypothesis: model exists but failed to be annotated
-  # proposed fix: liftover consensus models
+  # proposed fix: liftover consensus models over matching genomic segment
 
+  foreach my $segment_id (@$ref_geneid_seg){
+
+    # skip if genes were parsed for this species/taxon
+    next if($taxon_genes{ $ref_taxon_seg->{$segment_id} });
+
+    $segment = $ref_fasta_seg->{$segment_id};
+
+    # lift-over consensus models
+    my %lifted;
+    foreach $hom_full_id (@non_outliers) {
+
+      $hom_gene_id = $fullid2id{$hom_full_id};
+
+      # extract all isoforms/transcripts of this gene,
+      # and select the one with most matches in cDNA alignment
+      my $best_isof_model;
+      my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id});
+
+      foreach $isof (@isofs) {
+        $cDNA = $isof; # leave gene name as only FASTA header of cDNA
+        $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
+
+        $ref_lifted_model = liftover_gmap( 'missing', $segment, $cDNA, $GMAPBIN );
+
+        if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
+            $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
+          $best_isof_model = $ref_lifted_model;
+        }
+      }
+
+      if($best_isof_model->{'matches'}) {
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'total' } ++;
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'matches' } +=
+          $best_isof_model->{'matches'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'mismatches' } +=
+          $best_isof_model->{'mismatches'};
+        $lifted{ $ref_taxon->{$hom_gene_id} }{ 'indels' } +=
+          $best_isof_model->{'indels'};
+
+        push(@{ $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } },
+          $best_isof_model->{'GFF'} );
+      }
+    }
+
+    # choose best model to replace missing one
+    foreach $hom_species (sort {
+        $lifted{$b}{'matches'} <=> $lifted{$a}{'matches'} ||
+        $lifted{$a}{'mismatches'} <=> $lifted{$b}{'mismatches'} ||
+        $lifted{$a}{'indels'} <=> $lifted{$b}{'indels'}
+      } keys(%lifted)) {
+
+      # skip genes with multiple mappings
+      next if($lifted{ $species }{ 'total' } > 1);
+
+      $GFF = $lifted{ $hom_species }{'GFF'}->[0];
+
+      # actually print GFF and log
+      $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
+
+      print "# missing gene model: corrected $segment_id [$ref_taxon_seg->{$segment_id}]\n";
+
+      printf($gfffh "## adds %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+        $segment_id,
+        $ref_taxon_seg->{$segment_id},
+        $hom_species,
+        $lifted{$hom_species}{'matches'},
+        $lifted{$hom_species}{'mismatches'},
+        $lifted{$hom_species}{'indels'});
+
+      print $gfffh "$GFF\n";
+
+      last; # take only best
+    }
+
+
+  }
 }
 
 

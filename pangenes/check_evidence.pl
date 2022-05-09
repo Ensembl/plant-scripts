@@ -402,8 +402,10 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
         $split_seen{$ref_taxon->{$gene_id}} = 1;
         foreach my $id (@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) {
-          push(@split_models, $id);
-          print "# split $id\n" if($INP_verbose);
+          if($gene_length{$id} < $median_len) {
+            push(@split_models, $id);
+            print "# split $id\n" if($INP_verbose);
+          }
         }
 
   } else { # non-outlier/consensus models

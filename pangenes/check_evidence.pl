@@ -24,7 +24,8 @@ use pangeneTools qw( check_installed_features
                      calc_median get_outlier_cutoffs );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
-my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F';
+my $MINLIFTIDENTITY = 95.0;
+my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
 
 my @FEATURES2CHECK = (
   'EXE_BEDTOOLS', 'EXE_GMAP', 'EXE_GZIP'
@@ -479,7 +480,8 @@ if(@long_models &&
         $cDNA = $isof; # leave gene name as only FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;  
 
-        $ref_lifted_model = liftover_gmap( "$gene_id,", $segment, $cDNA, $GMAPBIN ); 
+        $ref_lifted_model = liftover_gmap( "$gene_id,", 
+          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, $INP_verbose ); 
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model || 
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -609,7 +611,8 @@ if(@long_models &&
         $cDNA = $isof; # leave gene name as only FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
-        $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, $segment, $cDNA, $GMAPBIN );
+        $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, 
+          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, $INP_verbose );
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -691,7 +694,8 @@ if(@long_models &&
         $cDNA = $isof; # leave gene name as only FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
-        $ref_lifted_model = liftover_gmap( 'missing', $segment, $cDNA, $GMAPBIN );
+        $ref_lifted_model = liftover_gmap( 'missing', 
+          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, $INP_verbose );
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -780,7 +784,7 @@ sub cut_genomic_segment_bedtools {
   close(BEDTOOLS);
 
   if(!$fasta_segment) {
-    die " ERROR(cut_genomic_segment_bedtools): $cmd produced no sequence\n";
+    die "# ERROR(cut_genomic_segment_bedtools): $cmd produced no sequence\n";
   }
 
   return $fasta_segment;
@@ -788,19 +792,23 @@ sub cut_genomic_segment_bedtools {
 
 
 # Lifts over a gene model upon gmap mapping of a cDNA.
-# Takes 4 params:
+# Takes 5+1 params:
 # i)   original gene_ids (comma separated strings)
 # ii)  FASTA string of genomic sequence (target)
 # iii) FASTA string of cDNA sequence (query)
 # iv)  path to gmap
+# v)   min identity percentage (float)
+# vi)  verbose boolean, optional
 # Returns ref to hash with model features, including 'GFF' and
 # several scores such as 'matches', 'mismatches' or 'indels'
 # Note: gene_id of lifted models if that of source cDNA
 # Note: original gene_id annotated as old_locus_tag in GFF's attributes column
 sub liftover_gmap {
-  my ($old_gene_ids,$target_fna, $query_cdna, $gmap_path) = @_;
+  my ($old_gene_ids,$target_fna, $query_cdna, $gmap_path, $min_identity, $verbose) = @_;
+
   my ($chr,$start,$end,$strand,$offset,$cmd);  
-  my ($match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0);
+  my ($seqname,$aa, %aaseq);
+  my ($identity, $match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0, 0);
   my (%lifted_model);
  
   # check coordinates of target DNA in source 
@@ -808,29 +816,48 @@ sub liftover_gmap {
     ($chr,$start,$end,$strand) = ($1, $2, $3, $4);
     $offset = $start - 1;
   } else {
-    die " ERROR(liftover_gmap): cannot parse target coords ($target_fna)\n";
+    die "# ERROR(liftover_gmap): cannot parse target coords ($target_fna)\n";
   }
 
   # 1st run: get alignment summary to parse scores
-  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -S"; 
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A"; 
   open(GMAP, "$cmd 2>&1 |") ||
-    die " ERROR(liftover_gmap): cannot run $cmd\n"; 
+    die "# ERROR(liftover_gmap): cannot run $cmd\n"; 
   while(<GMAP>) { 
-    if(/^\s+Percent identity: \S+ \((\d+) matches, (\d+) mismatches, (\d+) indels/){ 
-      ($match, $mismatch, $indel) = ($1, $2, $3); 
+    if(/^\s+Percent identity: (\S+) \((\d+) matches, (\d+) mismatches, (\d+) indels/){ 
+      ($identity, $match, $mismatch, $indel) = ($1, $2, $3, $4); 
+      if($identity < $min_identity) {
+        ($match, $mismatch, $indel) = (0, 0, 0);
+      }
+    } elsif(/^aa\.([cg])\s+\d+\s(.*)/) {
+      #aa.g        48  N  N  P  S  S  Q  I  T  Y  G  L  T  I  H  H  A  V 
+      ($seqname,$aa) = ($1,$2);
+      $aaseq{$seqname} .= $aa;
     }
+    print if($verbose);
   }
   close(GMAP);
 
-  if($match == 0) {
-    return \%lifted_model
+  # are there premature stop codons in the genomic sequence?
+  my ($stoposg, $stoposc) = (-1,-1);
+  if($aaseq{'g'} =~ m/\*/) { $stoposg = $-[0] }
+  if($aaseq{'c'} =~ m/\*/) { $stoposc = $-[0] }
+  if($stoposg < $stoposc) {
+    $match = 0;
+    if($verbose){
+      print "# WARN(liftover_gmap): premature stop codon ($stoposg < $stoposc)\n";
+    }
   }
+
+  if($match == 0) { 
+    return \%lifted_model
+  } 
 
   # 2nd run: map query cDNA on genomic target, parse GFF and apply coord offset
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";
   
   open(GMAP, "$cmd 2>&1 |") || 
-    die " ERROR(liftover_gmap): cannot run $cmd\n";
+    die "# ERROR(liftover_gmap): cannot run $cmd\n";
   while(<GMAP>) {
 
     last if(/^###/);
@@ -865,11 +892,10 @@ sub liftover_gmap {
   }
   close(GMAP);
 
+  $lifted_model{'identity'} = $identity;
   $lifted_model{'matches'} = $match;
   $lifted_model{'mismatches'} = $mismatch;
   $lifted_model{'indels'} = $indel;
-
-  #TODO: make sure protein sequence does not include stop codons
 
   return \%lifted_model;
 }

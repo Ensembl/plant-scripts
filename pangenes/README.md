@@ -37,7 +37,7 @@ and produces different types of output:
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
-- [Remediating pan-gene models](#remediating-pan-gene-models-with-checkevidencepl)
+- [Remediating pan-gene models](#remediating-pan-gene-models-with-check_evidencepl)
 - [Troubleshooting](#troubleshooting)
 
 

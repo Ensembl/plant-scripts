@@ -822,8 +822,9 @@ sub liftover_gmap {
   }
 
   # 1st run: get alignment summary to parse scores
+  # Note: discard stderr as it gets in teh way while parsing stdout
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A"; 
-  open(GMAP, "$cmd 2>&1 |") ||
+  open(GMAP, "$cmd 2>/dev/null |") ||
     die "# ERROR(liftover_gmap): cannot run $cmd\n"; 
   while(<GMAP>) { 
     if(/^\s+Percent identity: (\S+) \((\d+) matches, (\d+) mismatches, (\d+) indels/){ 
@@ -858,7 +859,7 @@ sub liftover_gmap {
   # 2nd run: map query cDNA on genomic target, parse GFF and apply coord offset
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";
   
-  open(GMAP, "$cmd 2>&1 |") || 
+  open(GMAP, "$cmd 2>/dev/null |") || 
     die "# ERROR(liftover_gmap): cannot run $cmd\n";
   while(<GMAP>) {
 

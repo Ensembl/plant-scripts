@@ -37,7 +37,7 @@ and produces different types of output:
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
-- [Remediating pan-gene models](#remediating-pan-gene-models)
+- [Remediating pan-gene models](#remediating-pan-gene-models-with-checkevidencepl)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -651,6 +651,7 @@ The following call shows an example cluster analyzed with argument -f (option -n
 
 
 Arguments -o and -a can be used to append any GFF output to a data file which can be used downstream.
+argument -v can be added to increase verbosity and see the raw gmap alignments used while lifting-over features.
 
 ## Troubleshooting
 

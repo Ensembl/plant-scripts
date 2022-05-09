@@ -37,7 +37,7 @@ and produces different types of output:
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
-- [Lifting over gene models in genomic segment clusters](#lifting-over-gene-models-in-genomic-segment-clusters)
+- [Remediating pan-gene models](#remediating-pan-gene-models)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -134,6 +134,9 @@ Here I list the most important ones, they can be changed by editing the script f
 |_collinear_genes.pl|$MINMASKLEN|100000|mask longer (intergenic, repetitive) fragments with -H|
 |_collinear_genes.pl|$GENEMARGIN|5000|do not mask gene margins|
 |_collinear_genes.pl|$MINALNLEN|100|min alignment length when transforming gene coords on WGA|
+|check_evidence.pl|$GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
+|check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
+|check_evidence.pl|$MINLIFTIDENTITY|95.0|min % of identity of gmap cDNA to genome alignments to be considered|
 
 ### Dependencies
 
@@ -598,23 +601,56 @@ It is possible to extract the collinearity evidence supporting selected clusters
     443	1	442	gene:ONIVA01G50860	Oryza_nivara_v1.chr1
     4570	2	9106	median	values
 
+Note this script builds a local BerkeleyDB database the first time is run, which takes a minute, so that subsequent calls run efficiently.
 
-## Lifting over gene models in genomic segment clusters
 
-As mentioned earlier, clusters with genomic segments, with extension .gdna.fna, can be used to 
-lift over (or transfer) gene models across taxa/annotation in the same cluster, as shown in
-the next example with external software [GMAP](https://doi.org/10.1093/bioinformatics/bti310):
+## Remediating pan-gene models with check_evidence.pl
 
-    $ gmap-2013-08-31/bin/gmap_build -D ./ -d samplegene Os01g0100300.gdna.db.fna
-    $ gmap-2013-08-31/bin/gmap -D ./ -d samplegene/ Os01g0100300.cdna.fna -f 2
+The *check_evidence.pl* script can also be used to try and fix individual gene models based
+on the evidence supporting a pan-gene cluster. This requires the software 
+[GMAP](https://doi.org/10.1093/bioinformatics/bti310),
+which is installed by default as explained in section [Dependencies](#dependencies).
+Currently, the following fixes have been tested:
 
-    Chr1_11371-12284(-)    samplegene    gene    1    913    .    +    .    ID=Os01t0100300-00.path1;Name=Os01t0100300-00
-    Chr1_11371-12284(-)    samplegene    mRNA    1    913    .    +    .    ID=Os01t0100300-00.mrna1;.;coverage=100.0;identity=100.0
-    Chr1_11371-12284(-)    samplegene    exon    1    139    100    +    .    ID=Os01t0100300-00.mrna1.exon1;.. 1 139 +
-    Chr1_11371-12284(-)    samplegene    exon    243    913    100    +    .    ID=Os01t0100300-00.mrna1.exon2;.. 140 810 +
-    Chr1_11371-12284(-)    samplegene    CDS    1    139    100    +    0    ID=Os01t0100300-00.mrna1.cds1;.. 1 139 +
-    Chr1_11371-12284(-)    samplegene    CDS    243    913    100    +    1    ID=Os01t0100300-00.mrna1.cds2;.. 140 810 +
+|problem|ihypothesis|proposed solution|
+|:------|:----------|:----------------|
+|long gene model|long model actually merges two single genes by mistake|liftover individual consensus models against genomic segment containing long gene|
+|split gene model|the real gene is long and was split in 2+ partial genes|liftover consensus (longer) models on genomic segment containing both split models|
+|missing gene model|gene model exists but failed to be annotated|liftover consensus models over matching genomic segment, used precomputed clusters with genomic segments, with extension .gdna.fna|
 
+The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
+
+    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna -f   
+
+    # cluster gene:ONIVA01G50800.cdna.fna genes = 5
+
+    #length	pairs	gene_overlap	gene	species
+    5672	4	7533	gene:ONIVA01G50800	Oryza_nivara_v1.chr1
+    2228	2	3964	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1
+    1724	2	3446	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1
+    835	2	1668	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1
+    2736	2	3569	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1
+    2228	2	3569	median	values
+
+    # long gene model: corrected gene:ONIVA01G50800 [Oryza_nivara_v1.chr1]
+    ## replaces gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] source=Oryza_sativa.IRGSP-1.0.chr1 matches=1671 mismatches=9 indels=14
+    1	gmap	gene	41997592	41998425	.	+	.	ID=gene:Os01g0960900.path1;Name=gene:Os01g0960900;Dir=indeterminate;old_locus_tag=gene:ONIVA01G50800;
+    1	gmap	mRNA	41997592	41998425	.	+	.	ID=gene:Os01g0960900.mrna1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.path1;Dir=indeterminate;coverage=100.0;identity=99.4;matches=829;mismatches=5;indels=0;unknowns=0
+    1	gmap	exon	41997592	41998425	99	+	.	ID=gene:Os01g0960900.mrna1.exon1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
+    1	gmap	CDS	41997592	41998425	99	+	0	ID=gene:Os01g0960900.mrna1.cds1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
+    1	gmap	gene	41998871	42001111	.	+	.	ID=gene:Os01g0960800.path1;Name=gene:Os01g0960800;Dir=sense;old_locus_tag=gene:ONIVA01G50800;
+    1	gmap	mRNA	41998871	42001111	.	+	.	ID=gene:Os01g0960800.mrna1;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.path1;Dir=sense;coverage=100.0;identity=97.9;matches=842;mismatches=4;indels=14;unknowns=0
+    1	gmap	exon	41998871	41999158	94	+	.	ID=gene:Os01g0960800.mrna1.exon1;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 1 274 +
+    1	gmap	exon	41999299	41999386	100	+	.	ID=gene:Os01g0960800.mrna1.exon2;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 275 362 +
+    1	gmap	exon	42000485	42000615	100	+	.	ID=gene:Os01g0960800.mrna1.exon3;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 363 493 +
+    1	gmap	exon	42000759	42001111	99	+	.	ID=gene:Os01g0960800.mrna1.exon4;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 494 846 +
+    1	gmap	CDS	41999156	41999158	100	+	0	ID=gene:Os01g0960800.mrna1.cds1;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 272 274 +
+    1	gmap	CDS	41999299	41999386	100	+	0	ID=gene:Os01g0960800.mrna1.cds2;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 275 362 +
+    1	gmap	CDS	42000485	42000615	100	+	1	ID=gene:Os01g0960800.mrna1.cds3;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 363 493 +
+    1	gmap	CDS	42000759	42000878	100	+	0	ID=gene:Os01g0960800.mrna1.cds4;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 494 613 +
+
+
+Arguments -o and -a can be used to append any GFF output to a data file which can be used downstream.
 
 ## Troubleshooting
 

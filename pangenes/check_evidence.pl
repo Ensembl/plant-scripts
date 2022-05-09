@@ -5,7 +5,7 @@
 # alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr)
 #
 # Optionally it can also suggest fixes to the gene models based on the 
-# pangene consensus (-f), this requires gmap
+# pangene consensus (-f), this requires gmap (make install_pangenes)
 
 # Copyright [2022]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC

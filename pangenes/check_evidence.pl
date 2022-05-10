@@ -820,16 +820,14 @@ sub liftover_gmap {
   my ($old_gene_ids, $target_fna, $query_cdna, 
       $gmap_path, $min_identity, $verbose) = @_;
 
-  my ($chr,$start,$end,$strand,$offset,$cmd);  
+  my ($chr,$start,$end,$offset,$cmd);  
   my ($seqname,$aa, %aaseq);
   my ($identity, $match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0, 0);
   my (%lifted_model);
 
-  # check coordinates of target DNA in source 
-  if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)\(([+-])\)/) { 
-    ($chr,$start,$end,$strand) = ($1, $2, $3, $4); 
-    $offset = $start;
-  } elsif($target_fna =~ m/^>(\S+?):(\d+)-(\d+)/) {
+  # check coordinates of target DNA in source, expects plus strand 
+  # so that strand in the produced GFF can be applied to raw gDNA
+  if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)/) {
     ($chr,$start,$end) = ($1, $2, $3);
     $offset = $start;
   } else {
@@ -875,7 +873,7 @@ sub liftover_gmap {
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";
   
   open(GMAP, "$cmd 2>/dev/null |") || 
-    die "# ERROR(liftover_gmap): cannot run $cmd\n"; print $cmd; 
+    die "# ERROR(liftover_gmap): cannot run $cmd\n";  
   while(<GMAP>) {
 
     last if(/^###/);

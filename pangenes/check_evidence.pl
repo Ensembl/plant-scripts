@@ -762,7 +762,7 @@ if(@long_models &&
 
 # Cuts FASTA sequence for a passed genomic interval.
 # Takes 3+1 params:
-# i)   string with BED genomic coords (chr:start-end(strand)
+# i)   string with 1-based genomic coords (chr:start-end(strand)
 # ii)  FASTA file with reference sequence
 # iii) path to bedtools
 # iv)  force strandness (optional boolean)
@@ -773,7 +773,9 @@ sub cut_genomic_segment_bedtools {
   # parse coord string 
   my ($chr, $start, $end, $strand);
   if($genome_coords =~ m/^(\S+?):(\d+)-(\d+)\(([+-])\)/) {
-    ($chr,$start,$end,$strand) = ($1, $2, $3, $4)
+    ($chr,$start,$end,$strand) = ($1, $2, $3, $4);
+    $start -= 1; # make it 0-based, as in BED format
+
   } else {
     die "# ERROR(cut_genomic_segment_bedtools): cannot parse genomic coords $genome_coords\n"
   }
@@ -822,19 +824,14 @@ sub liftover_gmap {
   my ($seqname,$aa, %aaseq);
   my ($identity, $match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0, 0);
   my (%lifted_model);
-die $target_fna; 
+
   # check coordinates of target DNA in source 
-  if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)\([+-]\)/) { 
-    ($chr,$start,$end,$strand) = ($1, $2, $3, $4);
+  if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)\(([+-])\)/) { 
+    ($chr,$start,$end,$strand) = ($1, $2, $3, $4); 
     $offset = $start;
-    if($strand eq '-') {
-      
-    }
   } elsif($target_fna =~ m/^>(\S+?):(\d+)-(\d+)/) {
     ($chr,$start,$end) = ($1, $2, $3);
     $offset = $start;
-
-
   } else {
     die "# ERROR(liftover_gmap): cannot parse target coords ($target_fna)\n";
   }

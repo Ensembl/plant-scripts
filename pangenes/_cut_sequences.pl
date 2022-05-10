@@ -19,6 +19,7 @@ my $GFFREADEXE = 'gffread'; # v0.12.7
 
 my ( $help, $nored, $gffreadpath, $sp1, $fasta1) = (0, 0);
 my ( $minlen, $gff1, $patchgff1, $tname, $outpath ) = (0, '', '');
+my ( $patched_gff_filename );
 
 GetOptions(
   "help|?"       => \$help,
@@ -87,7 +88,7 @@ if($outpath) {
 
 # only bother if not empty
 if(-s $patchgff1) {
-  my $patched_gff_filename = patch_gff($gff1, $patchgff1);
+  $patched_gff_filename = patch_gff($gff1, $patchgff1);
   $gff1 = $patched_gff_filename;
 }
 

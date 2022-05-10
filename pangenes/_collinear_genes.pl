@@ -1651,7 +1651,7 @@ sub genes_mapped2segments {
 
 
 # Parses bedtools intersect file and BED files with original gene coords 
-# to produce Ensembl Compara-like TSV file.
+# to produce Ensembl Compara-like TSV file, with 1-based coordinates
 # Takes 7 parameters:
 # i)    BED intersect filename (see format below)
 # ii)   BED file with sp1 gene coords
@@ -1729,7 +1729,7 @@ sub bed2compara {
         #    $gene2 =~ s/t/g/;
         #}
 
-        # workout genomic coordinates
+        # workout genomic coordinates (1-based)
         if($data[3] ne 'segment') {
             if( $ref_orig_coords1->{$gene1} &&
                 $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {

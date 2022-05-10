@@ -157,8 +157,8 @@ foreach $gene_id (sort @$ref_geneid) {
   push(@sorted_ids, $gene_id);
 } 
 
-# 2.1) parse segment gDNA file if required
-my ($ref_geneid_seg,$ref_fasta_seg,$ref_coords_seg,$ref_taxon_seg );
+# 2.1) parse segment gDNA file if required (1-based coordinates)
+my ($ref_geneid_seg,$ref_fasta_seg,$ref_coords_seg,$ref_taxon_seg);
 
 if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
 
@@ -679,7 +679,11 @@ if(@long_models &&
     # skip if genes were parsed for this species/taxon
     next if($taxon_genes{ $ref_taxon_seg->{$segment_id} });
 
+    # obtain DNA sequence of segment in plus strand
     $segment = $ref_fasta_seg->{$segment_id};
+    if($ref_coords_seg->{$segment_id}[3] eq '-'){
+        $segment = revcomp_fasta($segment);
+    } 
 
     # lift-over consensus models
     my %lifted;
@@ -757,13 +761,14 @@ if(@long_models &&
 ################################################################################
 
 # Cuts FASTA sequence for a passed genomic interval.
-# Takes 3 params:
+# Takes 3+1 params:
 # i)   string with BED genomic coords (chr:start-end(strand)
 # ii)  FASTA file with reference sequence
 # iii) path to bedtools
+# iv)  force strandness (optional boolean)
 # Returns string with one sequence in FASTA format
 sub cut_genomic_segment_bedtools {
-  my ($genome_coords, $fastafile, $bedtools_path) = @_;
+  my ($genome_coords, $fastafile, $bedtools_path, $force_strand) = @_;
  
   # parse coord string 
   my ($chr, $start, $end, $strand);
@@ -773,8 +778,12 @@ sub cut_genomic_segment_bedtools {
     die "# ERROR(cut_genomic_segment_bedtools): cannot parse genomic coords $genome_coords\n"
   }
 
-  my $cmd = "echo '$chr\t$start\t$end\tfrag\t0\t$strand' | ".
+  my $cmd = "echo '$chr\t$start\t$end' | ".
+    "$bedtools_path getfasta -fi $fastafile -bed -";
+  if($force_strand) {
+    $cmd = "echo '$chr\t$start\t$end\tfrag\t0\t$strand' | ".
     "$bedtools_path getfasta -fi $fastafile -bed - -s";
+  }
 
   my $fasta_segment = '';
 
@@ -806,17 +815,26 @@ sub cut_genomic_segment_bedtools {
 # Note: gene_id of lifted models if that of source cDNA
 # Note: original gene_id annotated as old_locus_tag in GFF's attributes column
 sub liftover_gmap {
-  my ($old_gene_ids,$target_fna, $query_cdna, $gmap_path, $min_identity, $verbose) = @_;
+  my ($old_gene_ids, $target_fna, $query_cdna, 
+      $gmap_path, $min_identity, $verbose) = @_;
 
   my ($chr,$start,$end,$strand,$offset,$cmd);  
   my ($seqname,$aa, %aaseq);
   my ($identity, $match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0, 0);
   my (%lifted_model);
- 
+die $target_fna; 
   # check coordinates of target DNA in source 
   if($target_fna =~ m/^>(\S+?):(\d+)-(\d+)\([+-]\)/) { 
     ($chr,$start,$end,$strand) = ($1, $2, $3, $4);
-    $offset = $start - 1;
+    $offset = $start;
+    if($strand eq '-') {
+      
+    }
+  } elsif($target_fna =~ m/^>(\S+?):(\d+)-(\d+)/) {
+    ($chr,$start,$end) = ($1, $2, $3);
+    $offset = $start;
+
+
   } else {
     die "# ERROR(liftover_gmap): cannot parse target coords ($target_fna)\n";
   }
@@ -860,7 +878,7 @@ sub liftover_gmap {
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";
   
   open(GMAP, "$cmd 2>/dev/null |") || 
-    die "# ERROR(liftover_gmap): cannot run $cmd\n";
+    die "# ERROR(liftover_gmap): cannot run $cmd\n"; print $cmd; 
   while(<GMAP>) {
 
     last if(/^###/);
@@ -937,4 +955,23 @@ sub sort_check_overlap_genes_GFF {
   } 
 
   return $GFFstring
+}
+
+# Takes a DNA sequence FASTA string and returns its reverse complemente string
+sub revcomp_fasta {
+  my ($rawseq) = @_;
+
+  # work out header
+  my ($header,$seq) = (split(/\n/,$rawseq,2));
+  $header =~ s/\(-\)/(+)/;
+
+  # reverse sequence 
+  my $revcomp = $header;
+
+  foreach my $frag (split(/\n/,reverse($seq))) {
+    $frag =~ tr/ATGCNXatgcn/TACGNtacgnx/;
+    $revcomp .= "$frag\n";
+  }
+
+  return $revcomp;
 }

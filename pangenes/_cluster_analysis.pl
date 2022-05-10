@@ -44,7 +44,7 @@ my ( $help, $sp, $sp2, $show_supported, $seed );
 my ( $infile, $filename, $cdsfile, $pepfile, $gdnafile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $maxdistneigh ) = ( $MAXDISTNEIGHBORS );
-my ( $NOSINGLES, $dogrowth, $chregex ) = ( 0, 0, '' );
+my ( $NOSINGLES, $dogrowth, $patch, $chregex ) = ( 0, 0, 0, '' );
 my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
 my ( @infiles, @supported_species, @ignore_species);
 my ( %species, %ignore, %supported );
@@ -63,6 +63,7 @@ GetOptions(
     "mintaxa|t=i"   => \$min_taxa,
     "maxdist|m=i"   => \$maxdistneigh,
     "regex|x=s"     => \$chregex,
+    "patch|p"       => \$patch,
     #"soft|z"        => \$dosoft,
     "seed|R=i"      => \$seed,
     "bedtools|B=s"  => \$bedtools_path
@@ -81,6 +82,7 @@ sub help_message {
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-m max distance among neighbor genes       (optional, example: -m 10, default: $maxdistneigh)\n"
       . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
+      . "-p use patched sequences                   (optional, expects patch.SEQEXT extension)\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
       #. "-z add soft-core to genome growth analysis (optional)\n"
@@ -119,6 +121,8 @@ else {
     if ($NOSINGLES) {
         $params .= "_nosingles";
     }      	
+
+    #if ($patch) { $params .= "_patch" }
 
     if(!$ref_genome) {
         die "# ERROR: please set -r reference_genome\n";
@@ -162,7 +166,7 @@ else {
     }
 
     print "# $0 -r $ref_genome -f $outfolder -g $dogrowth -S $NOSINGLES -m $maxdistneigh ".
-      "-v $verbose -t $min_taxa -x $chregex -R $RNDSEED -B $bedtools_path\n";
+      "-v $verbose -t $min_taxa -x $chregex -p $patch -R $RNDSEED -B $bedtools_path\n";
 
     print "# ";
     foreach $infile (@infiles) {
@@ -437,6 +441,10 @@ foreach $species (@supported_species) {
     foreach $seqtype (@SEQTYPE) {
 
         $filename = "$seqfolder$species$SEQEXT{$seqtype}";
+        if($patch) {
+            $filename = "$seqfolder$species.patch$SEQEXT{$seqtype}";
+        }
+
         if(!-s $filename){
             die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
         }

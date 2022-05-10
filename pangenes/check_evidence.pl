@@ -435,10 +435,10 @@ my ($gfffh, %outfhandles);
 if($INP_outdir) {
   foreach $species (keys(%taxon_genes)) {
     if($INP_appendGFF) {
-      open(my $fh,'>>',"$INP_outdir/$species.fixes.gff");
+      open(my $fh,'>>',"$INP_outdir/$species.patch.gff");
       $outfhandles{$species} = $fh;
     } else {
-      open(my $fh,'>',"$INP_outdir/$species.fixes.gff");
+      open(my $fh,'>',"$INP_outdir/$species.patch.gff");
       $outfhandles{$species} = $fh;
     }
   }

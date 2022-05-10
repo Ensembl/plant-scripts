@@ -56,7 +56,7 @@ $ENV{'LC_ALL'}   = 'POSIX';
 
 my (%opts,%included_input_files);
 my ($newDIR,$output_mask,$pancore_mask,$include_file) = ('','','',0);
-my ($dowfmash,$dogsalign,$reference_string) = (0,0,0);
+my ($dowfmash,$dogsalign,$reference_string,$read_patches) = (0,0,0,0);
 my ($onlywga,$maxdistneigh,$inputDIR,$alg) = (0,$MAXDISTNEIGHBORS);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
 my ($n_of_cpus,$do_soft, $highly_repetitive) = ($NUMCPUS,0,0);
@@ -67,7 +67,7 @@ my $random_number_generator_seed = 0;
 my $pwd = getcwd(); 
 $pwd .= '/';
 
-getopts('hvcoAHzgwN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvpcoAHzgwN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)) {
 
@@ -80,6 +80,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "  output dir named 'directory_pangenes')\n";
   print   "\nOptional parameters:\n";
   print   "-o only run WGA jobs and exit\n";
+  print   "-p read GFF patches in -d folder with .patch.gff extension  ".
+    "(optional, ignored by default)\n";    
   print   "-c report pangene set growth analysis                       ".
   #  "(follows order in -I file if enforced,\n".
   #  "                                                               ".
@@ -209,6 +211,12 @@ if(defined($opts{'H'})) {
 
 if(defined($opts{'o'})){ $onlywga = 1 }
 
+if(defined($opts{'p'})){ 
+  $read_patches = 1;
+  $output_mask .= "patch_";
+  $pancore_mask .= '_patch';
+}
+
 if($opts{'r'}){ $reference_string = $opts{'r'} }
 else{ $reference_string = 0 }
 
@@ -331,7 +339,7 @@ if(defined($opts{'B'})) {
 # to test other minimap versions
 #$ENV{"EXE_MINIMAP"} = '~/soft/minimap2-2.24_x64-linux/minimap2';
 
-print "# $0 -d $inputDIR -o $onlywga -r $reference_string ".
+print "# $0 -d $inputDIR -p $read_patches -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
   "-m $runmode -w $dowfmash -g $dogsalign -O $min_overlap -Q $min_map_qual ".
   "-N $maxdistneigh -s '$split_chr_regex' -H $highly_repetitive ".
@@ -459,14 +467,14 @@ if(-s $input_order_file) {
 }
 
 # 1.3) iteratively parse input files
-my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$num_genes,$Mb);
+my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$patch_gffile,$num_genes,$Mb);
 my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2);
 my (%cluster_PIDs,%ngenes,@gff_outfiles,@gff_logfiles,@to_be_deleted);
 
 foreach $infile (@inputfiles) {
 
   # save this taxon
-  ++$n_of_taxa;  
+  $n_of_taxa++;  
   if($infile =~ m/(\S+?)\.f/){
     $taxon = $1;
     push(@taxa,$taxon);
@@ -475,10 +483,17 @@ foreach $infile (@inputfiles) {
   # check whether matching GFF file exists (expects same taxon preffix)
   $dnafile = $inputDIR."/$infile";
   $gffile  = $inputDIR."/$taxon";
-  $outcDNA = $newDIR."/$taxon.cdna.fna";
-  $outCDS  = $newDIR."/$taxon.cds.fna";
-  $outpep  = $newDIR."/$taxon.cds.faa";
+  if($read_patches) {
+    $outcDNA = $newDIR."/$taxon.patch.cdna.fna";
+    $outCDS  = $newDIR."/$taxon.patch.cds.fna";
+    $outpep  = $newDIR."/$taxon.patch.cds.faa";
+  } else {
+    $outcDNA = $newDIR."/$taxon.cdna.fna";
+    $outCDS  = $newDIR."/$taxon.cds.fna";
+    $outpep  = $newDIR."/$taxon.cds.faa";
+  }
   push(@gff_outfiles, $outcDNA, $outCDS, $outpep);
+  
 
   if(-s $gffile.'.gff'){
     $gffile .= '.gff'
@@ -543,14 +558,27 @@ foreach $infile (@inputfiles) {
       $num_genes);
   }
 
-  # extract cDNA and CDS sequences
+  # extract cDNA and CDS sequences, with patches if required
   # Note: this also creates a FASTA index file that can be used to split assemblies in chrs
-  if(-s $outpep && -s $outCDS && -s $outcDNA) {
+
+  if(-s $outpep && -s $outCDS && -s $outcDNA && !$read_patches) {
     #print "# re-using $outCDS\n";
     
   } else {
+
     $command = "$ENV{'EXE_CUTSEQUENCES'} -sp $taxon -fa $plain_dnafile ".
-      "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR"; #die $command; 
+      "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR";  
+
+    if($read_patches) {
+      $patch_gffile = "$inputDIR/$taxon\.patch.gff";
+      if(-e $patch_gffile){
+        $command .= " -pt $patch_gffile"; 
+        print "# using patch $patch_gffile\n";    
+      } else {
+        print "# EXIT: cannot find patch GFF file for $taxon ($patch_gffile),".
+          " note it can be empty, but must exist with -p\n";
+      }
+    } 
 
     if($runmode eq 'cluster') {
       unlink($clusteroutfile);
@@ -955,6 +983,10 @@ $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
 
 if($split_chr_regex) {
     $command .= "-x '$split_chr_regex' ";
+} 
+
+if($read_patches) {
+    $command .= "-p ";
 }
 
 if($do_genome_composition) {

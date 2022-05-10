@@ -19,7 +19,7 @@ my $GFFREADEXE = 'gffread'; # v0.12.7
 
 my ( $help, $nored, $gffreadpath, $sp1, $fasta1) = (0, 0);
 my ( $minlen, $gff1, $patchgff1, $tname, $outpath ) = (0, '', '');
-my ( $patched_gff_filename );
+my $patched_gff_filename = '';
 
 GetOptions(
   "help|?"       => \$help,
@@ -119,7 +119,7 @@ if($num_cds) {
 
 print "# $pepfile n=$num_pep\n";
 
-unlink($patched_gff_filename);
+unlink($patched_gff_filename) if(-e $patched_gff_filename);
 
 ###############################
 

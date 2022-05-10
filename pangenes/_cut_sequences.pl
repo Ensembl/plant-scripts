@@ -118,6 +118,8 @@ if($num_cds) {
 
 print "# $pepfile n=$num_pep\n";
 
+unlink($patched_gff_filename);
+
 ###############################
 
 # Runs gffread, parses its stdout and saves output in FASTA file.

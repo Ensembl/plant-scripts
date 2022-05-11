@@ -30,7 +30,7 @@ and produces different types of output:
 	- [Parameters](#parameters)
 	- [Dependencies](#dependencies)
 	- [Command-line options](#command-line-options)
-- [Example 1](#example-1)
+- [Example 1](#example-1-default-pan-gene-analysis)
 - [Example 2: splitting genome in chromosomes](#example-2-splitting-genome-in-chromosomes)
 - [Example 3: using GSAlign instead of minimap2](#example-3-using-GSAlign-instead-of-minimap2)
 - [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)
@@ -38,6 +38,7 @@ and produces different types of output:
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
 - [Remediating pan-gene models with check_evidence-pl](#remediating-pan-gene-models-with-check_evidencepl)
+- [Pan-gene analysis with GFF patches](#pan-gene-analysis-with-GFF-patches)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -186,7 +187,7 @@ See all options with:
     perl get_pangenes.pl -h
 
 
-## Example 1
+## Example 1: default pan-gene analysis
 
 If the installation was succesfull you should have a copy of a test dataset.
 You can browse it with:
@@ -612,9 +613,9 @@ on the evidence supporting a pan-gene cluster. This requires the software
 which is installed by default as explained in section [Dependencies](#dependencies).
 Currently, the following fixes have been tested:
 
-|problem|ihypothesis|proposed solution|
-|:------|:----------|:----------------|
-|long gene model|long model actually merges two single genes by mistake|liftover individual consensus models against genomic segment containing long gene|
+|problem|hypothesis|proposed solution|
+|:------|:---------|:----------------|
+|long gene model|long model actually merges two single genes by mistake/overlapping RNAseq reads|liftover individual consensus models against genomic segment containing long gene|
 |split gene model|the real gene is long and was split in 2+ partial genes|liftover consensus (longer) models on genomic segment containing both split models|
 |missing gene model|gene model exists but failed to be annotated|liftover consensus models over matching genomic segment, used precomputed clusters with genomic segments, with extension .gdna.fna|
 
@@ -649,9 +650,50 @@ The following call shows an example cluster analyzed with argument -f (option -n
     1	gmap	exon	41998576	41999409	99	-	.	ID=gene:Os01g0960900.mrna1.exon1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
     1	gmap	CDS	41998576	41999409	99	-	0	ID=gene:Os01g0960900.mrna1.cds1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
 
-
-Arguments -o and -a can be used to append any GFF output to a data file which can be used downstream.
+Arguments -o and -a can be used to append any GFF output to a patch GFF file which can be used downstream (see next section).
 argument -v can be added to increase verbosity and see the raw gmap alignments used while lifting-over features.
+
+
+## Pan-gene analysis with GFF patches
+
+    # locate cluster of interest 
+    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G50620.cdna.fna
+    >transcript:ONIVA01G50620.6 gene:ONIVA01G50620 1:41880970-41884290(+) [Oryza_nivara_v1.chr1]
+    >transcript:ONIVA01G50620.1 gene:ONIVA01G50620 1:41880970-41888135(+) [Oryza_nivara_v1.chr1]
+    >transcript:ONIVA01G50620.2 gene:ONIVA01G50620 1:41880970-41888135(+) [Oryza_nivara_v1.chr1]
+    >transcript:ONIVA01G50620.3 gene:ONIVA01G50620 1:41880970-41888135(+) [Oryza_nivara_v1.chr1]
+    >transcript:ONIVA01G50620.4 gene:ONIVA01G50620 1:41882945-41888135(+) [Oryza_nivara_v1.chr1]
+    >transcript:ONIVA01G50620.5 gene:ONIVA01G50620 1:41882945-41888135(+) [Oryza_nivara_v1.chr1]
+    >transcript:Os01t0958200-01 gene:Os01g0958200 1:42238811-42240420(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:Os01t0958400-01 gene:Os01g0958400 1:42240825-42244043(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:Os01t0958400-02 gene:Os01g0958400 1:42240837-42244651(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:Os01t0958400-03 gene:Os01g0958400 1:42240858-42245248(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:BGIOSGA005213-TA gene:BGIOSGA005213 1:46293601-46294992(+) [Oryza_indica.ASM465v1.chr1]
+    >transcript:BGIOSGA005214-TA gene:BGIOSGA005214 1:46296594-46299549(+) [Oryza_indica.ASM465v1.chr1]
+ 
+    # fix a gene model and save GFF patch in folder patch/
+    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50620.cdna.fna -f -o patch/
+
+    # copy patch GFF files to same input dir used in original run (Example 1)
+    cp patch/*.patch.gff ../files/test_rice/
+
+    # re-run pan-gene analysis using GFF patches
+    perl get_pangenes.pl -d ../files/test_rice/ -p -m cluster
+
+    # check how the updated clusters look like
+    grep "^>" Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:Os01g0958200.path1.cdna.fna
+    >gene:Os01g0958200.mrna1 gene:Os01g0958200.path1 1:41880969-41882234(+) [Oryza_nivara_v1.chr1]
+    >transcript:Os01t0958200-01 gene:Os01g0958200 1:42238811-42240420(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:BGIOSGA005213-TA gene:BGIOSGA005213 1:46293601-46294992(+) [Oryza_indica.ASM465v1.chr1]
+
+    grep "^>" Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:Os01g0958400.path1.cdna.fna
+    >gene:Os01g0958400.mrna1 gene:Os01g0958400.path1 1:41882957-41886772(+) [Oryza_nivara_v1.chr1]
+    >transcript:Os01t0958400-01 gene:Os01g0958400 1:42240825-42244043(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:Os01t0958400-02 gene:Os01g0958400 1:42240837-42244651(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:Os01t0958400-03 gene:Os01g0958400 1:42240858-42245248(+) [Oryza_sativa.IRGSP-1.0.chr1]
+    >transcript:BGIOSGA005214-TA gene:BGIOSGA005214 1:46296594-46299549(+) [Oryza_indica.ASM465v1.chr1]
+
+
 
 ## Troubleshooting
 

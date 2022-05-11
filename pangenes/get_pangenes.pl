@@ -27,7 +27,7 @@ use Fcntl qw(:flock);
 use File::Temp qw(tempfile);
 use File::Basename;
 use File::Copy "cp";
-use Cwd;
+use Cwd qw( abs_path getcwd );
 use FindBin '$Bin';
 use lib "$Bin/lib";
 use HPCluster;
@@ -468,7 +468,7 @@ if(-s $input_order_file) {
 
 # 1.3) iteratively parse input files
 my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$patch_gffile,$num_genes,$Mb);
-my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2);
+my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2,$patched_gffile);
 my (%cluster_PIDs,%ngenes,@gff_outfiles,@gff_logfiles,@to_be_deleted);
 
 foreach $infile (@inputfiles) {
@@ -570,10 +570,13 @@ foreach $infile (@inputfiles) {
       "-gf $plain_gffile -p $ENV{'EXE_GFFREAD'} -l $MINGFFLEN -o $newDIR";  
 
     if($read_patches) {
-      $patch_gffile = "$inputDIR/$taxon\.patch.gff";
+      $patch_gffile = abs_path( $inputDIR."/$taxon\.patch.gff" ); 
+      $patched_gffile = $newDIR ."/_$taxon.patched.gff";
       if(-e $patch_gffile){
-        $command .= " -pt $patch_gffile"; 
+        $command .= " -pt $patch_gffile "; 
         print "# using patch $patch_gffile\n";    
+        push(@gff_outfiles, $patched_gffile);
+
       } else {
         print "# EXIT: cannot find patch GFF file for $taxon ($patch_gffile),".
           " note it can be empty, but must exist with -p\n";
@@ -581,7 +584,7 @@ foreach $infile (@inputfiles) {
     } 
 
     if($runmode eq 'cluster') {
-      unlink($clusteroutfile);
+      unlink($clusteroutfile); 
       submit_cluster_job("cut$infile",$command,$clusteroutfile,$newDIR,\%cluster_PIDs);
     } elsif($runmode eq 'dryrun') {
           $command =~ s/\\//g;
@@ -768,7 +771,12 @@ foreach $tx1 (0 .. $#taxa) {
     "-sp2 $taxon ".
     "-fa2 $newDIR/_$taxon.fna -gf2 $newDIR/_$taxon.gff ".
     "-T $TMP_DIR -i -r ";
-    
+     
+  if($read_patches) {
+    $command .= '-p ';
+    $command =~ s/-gf1 \S+ / -gf1 $newDIR\/_$taxon.patched.gff /;
+    $command =~ s/-gf2 \S+ / -gf2 $newDIR\/_$taxon.patched.gff /;
+  } 
   if($split_chr_regex) {
     $command .= "-s '$split_chr_regex' ";
   }
@@ -779,10 +787,9 @@ foreach $tx1 (0 .. $#taxa) {
   } else {
     $command .= "-M $ENV{'EXE_MINIMAP'} "
   }
-  
   if($highly_repetitive) {
       $command .= '-H '
-  } #print "$taxon $command\n";
+  } 
 
   if($runmode eq 'cluster') {
     unlink($clusteroutfile);
@@ -822,7 +829,6 @@ foreach $tx1 (0 .. $#taxa-1) {
 
     $taxon2 = $taxa[$tx2];
     next if($include_file && !$included_input_files{$taxon2});
-    #print $taxon.$taxon2."\n";
 
     $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap";
     $outANIfile = $newDIR ."/_$taxon.$taxon2.alg$alg";
@@ -834,14 +840,20 @@ foreach $tx1 (0 .. $#taxa-1) {
       $outTSVfile .= '.highrep';
       $outANIfile .= '.highrep'
     }
+    if($read_patches) {
+      $outTSVfile .= '.patch';
+    }
     $outTSVfile .= '.tsv';
     $outANIfile .= '.ANI.tsv';
 
     # skip job if already computed 
     if(-s $outTSVfile) {
-      push(@tmp_wga_output_files,$outTSVfile);
-      $ANIfiles{$taxon}{$taxon2} = $outANIfile;
-      next;
+      if($read_patches) { unlink($outTSVfile) }
+      else {
+        push(@tmp_wga_output_files,$outTSVfile);
+        $ANIfiles{$taxon}{$taxon2} = $outANIfile;
+        next;
+      } 
     }
 
     $clusteroutfile = $outTSVfile.'.queue';
@@ -853,7 +865,12 @@ foreach $tx1 (0 .. $#taxa-1) {
         "-fa2 $newDIR/_$taxon2.fna -gf2 $newDIR/_$taxon2.gff ".
         "-B $ENV{'EXE_BEDTOOLS'} -T $TMP_DIR ".
         "-add -out $outTSVfile -r "; # reuse index & tmp files
-
+    
+    if($read_patches) {
+      $command .= '-p ';
+      $command =~ s/-gf1 \S+ /-gf1 $newDIR\/_$taxon.patched.gff /;
+      $command =~ s/-gf2 \S+ /-gf2 $newDIR\/_$taxon2.patched.gff /;
+    }
     if($split_chr_regex) {
       $command .= "-s '$split_chr_regex' ";
     } 
@@ -866,7 +883,7 @@ foreach $tx1 (0 .. $#taxa-1) {
     }
     if($highly_repetitive) {
         $command .= '-H '
-    } #die $command;
+    } 
 
     if($runmode eq 'cluster') {
       unlink($clusteroutfile);

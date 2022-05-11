@@ -3,8 +3,9 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 
-# Takes a GFF & FASTA files and produces FASTA files with 
-# CDS nucl & pep sequences of the 1st transcript found
+# Takes a GFF & FASTA pair of files and produces FASTA files with 
+# cDNA, CDS nucl & pep sequences. Optionally it can take also a 
+# GFF patch that modifies the input GFF.
 # Note: also creates a FASTA index file (.fai)
 #
 # Uses external software: gffread [https://f1000research.com/articles/9-304/v2]
@@ -38,7 +39,8 @@ sub help_message {
     . "-sp binomial/trinomial species name (required, example: -sp oryza_sativa, used to name outfiles)\n"
     . "-fa genome FASTA filename           (required, example: -fa oryza_sativa.fna)\n"
     . "-gf GFF filename                    (required, example: -gf oryza_sativa.RAPDB.gff)\n"
-    . "-pt GFF filename with patched       (optional, example: -pt oryza_sativa.RAPDB.patch.gff)\n"
+    . "-pt patch GFF filename              (optional, example: -pt oryza_sativa.RAPDB.patch.gff,\n"
+    . "                                     creates oryza_sativa.RAPDB.patched.gff)\n"
     . "-l  min length (bp) of features     (optional, example: -l 100)\n"
     . "-nr remove redundancy in seq names  (optional, ie 'gene:ONIVA01G00100')\n"
     . "-p  path to gffread binary          (optional, default: $GFFREADEXE)\n"
@@ -79,6 +81,8 @@ if($patchgff1){
   $cdnafile = "$sp1.patch.cdna.fna";
   $cdsfile  = "$sp1.patch.cds.fna";
   $pepfile  = "$sp1.patch.cds.faa";
+  $patched_gff_filename = $gff1;
+  $patched_gff_filename =~ s/\.gff$/.patched.gff/;
 }
 if($outpath) {
   $cdnafile = "$outpath/$cdnafile";
@@ -88,7 +92,7 @@ if($outpath) {
 
 # only bother if not empty
 if(-s $patchgff1) {
-  $patched_gff_filename = patch_gff($gff1, $patchgff1);
+  my $num_patches = patch_gff($gff1, $patchgff1, $patched_gff_filename);
   $gff1 = $patched_gff_filename;
 }
 
@@ -119,7 +123,6 @@ if($num_cds) {
 
 print "# $pepfile n=$num_pep\n";
 
-unlink($patched_gff_filename) if(-e $patched_gff_filename);
 
 ###############################
 
@@ -215,16 +218,14 @@ sub parse_genes {
 # Takes two GFF files (original and patch) and produces a new GFF file
 # that includes patched gene models. Patched models match the original
 # ones by means of 'old_locus_tag' tags in gene features. Two params:
-# i) GFF filename
-# ii) GFF filename with selected gene model patches
-# Returns:
-# i) output GFF filename 
-# ii) integer with number of patched gene models
+# i)   GFF filename
+# ii)  GFF filename with selected gene model patches
+# iii) output patched GFF filename 
+# Returns integer with number of patched gene models
 sub patch_gff {
 
-  my ($gff_file, $patchfile) = @_;
+  my ($gff_file, $patchfile, $patched_gff_filename) = @_;
 
-  my $patched_gff_filename = $gff_file . '.patched';
   my ($total_patched,$patch, $gene_id) = (0);
   my (%depr_gene_id);
 
@@ -278,5 +279,5 @@ sub patch_gff {
   print PATCHED $patch;
   close(PATCHED);
 
-  return $patched_gff_filename;
+  return $total_patched
 }

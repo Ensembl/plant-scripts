@@ -80,7 +80,7 @@ my $MINOVERLAP = 0.50;
 my $VERBOSE    = 0;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
-my ($dowfmash, $dogsalign, $split_chr_regex, $tmpdir ) = ( 0, 0, '', '' );
+my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = ( 0, 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
@@ -100,6 +100,7 @@ GetOptions(
     "gf2|gff2=s"     => \$gff2,
     "out|outfile=s"  => \$outfilename,
     "ovl|overlap=f"  => \$minoverlap,
+    "p|patch"        => \$patch,
     "q|quality=i"    => \$qual,
     "s|split=s"      => \$split_chr_regex,
     "c|check"        => \$do_sequence_check,
@@ -128,6 +129,7 @@ sub help_message {
       . "-fa2 genome FASTA [.gz] filename        (required, example: -fa2 oryza_nivara.fna)\n"
       . "-gf2 GFF [.gz] filename                 (required, example: -gf2 oryza_nivara.OGE.gff)\n"
       . "-out output filename (TSV format)       (optional, by default built from input, example: -out rice.tsv)\n"
+      . "-p   use patched gene models            (optional, forces recalculation of gene overlaps)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
       . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -s \'^\d+$\')'. "\n"
       . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
@@ -144,7 +146,7 @@ sub help_message {
       . "-A   output ANI filename                (optional, requires -gs, example: out.ani)\n"
 #. "-c   check sequences of collinear genes (optional)\n"
       . "-add concat TSV output with no header   (optional, example: -add, requires -out)\n"
-      . "-r   re-use previous results & index    (optional)\n"
+      . "-r   re-use previous results & index    (optional, partially overriden by -p)\n"
       . "-i   make index & tmp files, dont align (optional, requires -sp1 -fa1 -gf1)\n";
 }
 
@@ -205,14 +207,20 @@ if($tmpdir ne '' && $tmpdir !~ /\/$/){
 # set default outfile
 if ( !$outfilename ) {
     $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.tsv";
+    if($patch) {
+        $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.patch.tsv";
+    }
 
     if ($split_chr_regex ne '') {
         $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.split.tsv";
+        if($patch) {
+            $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.split.patch.tsv";
+        }
     }
 }
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
-  . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -a $noheader "
+  . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -p $patch -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -gs $dogsalign -A $outANIfile -c $do_sequence_check "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -G $gsalign_path -B $bedtools_path "
   . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive\n\n";
@@ -261,8 +269,12 @@ if ($dowfmash) {
 
 my $geneBEDfile1 = $tmpdir . "_$sp1.gene.bed";
 my $geneBEDfile2 = $tmpdir . "_$sp2.gene.bed";
+if($patch) {
+    $geneBEDfile1 = $tmpdir . "_$sp1.gene.patch.bed";
+    $geneBEDfile2 = $tmpdir . "_$sp2.gene.patch.bed";
+}
 
-if($reuse && -s $geneBEDfile1 && check_BED_format($geneBEDfile1)) {
+if($reuse && !$patch && -s $geneBEDfile1 && check_BED_format($geneBEDfile1)) {
     print "# re-using $geneBEDfile1\n";
 } else {
     my ( $num_genes1, $mean_gene_len1 ) = parse_genes_GFF( $gff1, $geneBEDfile1 );
@@ -271,7 +283,7 @@ if($reuse && -s $geneBEDfile1 && check_BED_format($geneBEDfile1)) {
 }
 
 if(!$indexonly) {
-    if($reuse && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
+    if($reuse && !$patch && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
         print "# re-using $geneBEDfile2\n";
     } else {
         my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );

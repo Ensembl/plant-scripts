@@ -11,8 +11,8 @@ $|=1;
 
 # Takes two FASTA files with genome sequences and 2 matching GFF files with 
 # annotated gene models.
-# Produces a TSV file with pairs of collinear genes in a format compatible 
-# with Ensembl Compara
+# Produces a TSV file with pairs of collinear genes in a format similar to
+# Ensembl Compara's, genomic coordinates are 1-based
 
 # Copyright [2021-22] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC

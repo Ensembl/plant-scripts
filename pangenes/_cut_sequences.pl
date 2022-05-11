@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
+use File::Copy qw(cp);
 
 # Takes a GFF & FASTA pair of files and produces FASTA files with 
 # cDNA, CDS nucl & pep sequences. Optionally it can take also a 
@@ -90,10 +91,14 @@ if($outpath) {
   $pepfile  = "$outpath/$pepfile";
 }
 
-# only bother if not empty
+# only patch if required
 if(-s $patchgff1) {
   my $num_patches = patch_gff($gff1, $patchgff1, $patched_gff_filename);
   $gff1 = $patched_gff_filename;
+
+} else {
+  # otherwise just make symb link
+  symlink($gff1, $patched_gff_filename);
 }
 
 my ($ref_names, $ref_coords) = parse_genes($gff1);

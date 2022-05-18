@@ -108,7 +108,17 @@ if(defined($opts{'f'})){
     }
 
     if(defined($opts{'a'})){
-      $INP_appendGFF = 1 
+      $INP_appendGFF = 1;
+
+      opendir(OUTDIR,$INP_outdir) || 
+        die "# EXIT: cannot list $INP_outdir\n";
+      my @files = grep{/gff/} readdir(OUTDIR);
+      closedir(OUTDIR);
+
+      if(@files) {
+        die "# EXIT: please empty folder $INP_outdir and re-run\n";
+        exit(-1);
+      }
     }
   }
 }
@@ -644,7 +654,8 @@ if(@long_models &&
       } keys(%lifted)) {
 
       # skip genes with multiple mappings
-      next if($lifted{ $species }{ 'total' } > 1);
+      next if(!$lifted{ $species }{ 'total' } ||
+        $lifted{ $species }{ 'total' } > 1);
 
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 

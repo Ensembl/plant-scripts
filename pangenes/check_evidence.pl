@@ -116,7 +116,7 @@ if(defined($opts{'f'})){
       closedir(OUTDIR);
 
       if(@files) {
-        die "# EXIT: please empty folder $INP_outdir and re-run\n";
+        die "# appending to GFF files in folder $INP_outdir/\n";
         exit(-1);
       }
     }

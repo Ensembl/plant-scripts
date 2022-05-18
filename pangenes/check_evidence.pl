@@ -731,7 +731,8 @@ if(@long_models &&
       } keys(%lifted)) {
 
       # skip genes with multiple mappings
-      next if($lifted{ $species }{ 'total' } > 1);
+      next if(!$lifted{ $species }{ 'total' } || 
+        $lifted{ $species }{ 'total' } > 1);
 
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 

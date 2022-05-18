@@ -856,8 +856,8 @@ sub liftover_gmap {
 
   # are there premature stop codons in the genomic sequence?
   my ($stoposg, $stoposc) = (-1,-1);
-  if($aaseq{'g'} =~ m/\*/) { $stoposg = $-[0] }
-  if($aaseq{'c'} =~ m/\*/) { $stoposc = $-[0] }
+  if($aaseq{'g'} && $aaseq{'g'} =~ m/\*/) { $stoposg = $-[0] }
+  if($aaseq{'c'} && $aaseq{'c'} =~ m/\*/) { $stoposc = $-[0] }
   if($stoposg < $stoposc) {
     $match = 0;
     if($verbose){

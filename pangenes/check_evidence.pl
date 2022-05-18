@@ -117,7 +117,6 @@ if(defined($opts{'f'})){
 
       if(@files) {
         die "# appending to GFF files in folder $INP_outdir/\n";
-        exit(-1);
       }
     }
   }

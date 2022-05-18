@@ -116,7 +116,7 @@ if(defined($opts{'f'})){
       closedir(OUTDIR);
 
       if(@files) {
-        die "# appending to GFF files in folder $INP_outdir/\n";
+        warn "# WARN: appending to GFF files in folder $INP_outdir/\n";
       }
     }
   }

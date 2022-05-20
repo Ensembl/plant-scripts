@@ -679,19 +679,20 @@ elsif ( !-s $sp1wgaBEDfile_sorted ) {
     die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
 }
 
-push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
-push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
+#push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
+#push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
 
 # compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
-my ( $ref_matched, $ref_unmatched ) =
+my ( $ref_matched, $ref_unmatched, $median_genes_block ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
-printf( "# %d genes mapped in %s (%d unmapped)\n",
-    scalar(@$ref_matched), $geneBEDfile2mapped, scalar(@$ref_unmatched) );
+printf( "# %d genes mapped (median %1.1f/block) in %s (%d unmapped)\n",
+    scalar(@$ref_matched), $median_genes_block,
+    $geneBEDfile2mapped, scalar(@$ref_unmatched) );
 
 if ( scalar(@$ref_matched) == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
@@ -699,12 +700,13 @@ if ( scalar(@$ref_matched) == 0 ) {
 
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
-my ( $ref_matched1, $ref_unmatched1 ) =
+my ( $ref_matched1, $ref_unmatched1, $median_genes_block1 ) =
   query2ref_coords( $sp1wgaBEDfile, $geneBEDfile1mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
-printf( "# %d genes mapped in %s (reverse, %d unmapped)\n",
-    scalar(@$ref_matched1), $geneBEDfile1mapped, scalar(@$ref_unmatched1) );
+printf( "# %d genes mapped (median %1.1f/block) in %s (reverse, %d unmapped)\n",
+    scalar(@$ref_matched1), $median_genes_block1,
+    $geneBEDfile1mapped, scalar(@$ref_unmatched1) );
 
 if ( scalar(@$ref_matched1) == 0 ) {
     die "# ERROR: failed mapping $sp1 genes in WGA alignment";
@@ -1205,7 +1207,10 @@ sub mask_intergenic_regions {
 # Parses sorted BED intersect -wo output and writes to BED file
 # features (cDNA/transcripts) mapped on reference genome. Note:
 # features might be unsorted.
-# Returns i) ref to list of matched genes and ii) ref to list of unmatched genes
+# Returns 
+# i) ref to list of matched genes 
+# ii) ref to list of unmatched genes
+# iii) median genes perl WGA block (int)
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA/gene only
 # example input:
@@ -1224,7 +1229,7 @@ sub query2ref_coords {
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
     my ( $deltaq,    $deltar,    $start_deltar, $end_deltar );
-    my ( %ref_coords, @matched, @unmatched, @segments );
+    my ( %ref_coords, %genes_per_block, @matched, @unmatched, @segments );
 
     open( BED, "<", $infile )
       || die "# ERROR(query2ref_coords): cannot read $infile\n";
@@ -1247,6 +1252,9 @@ sub query2ref_coords {
         next if ( defined( $ref_coords{$cname} ) );
 
         #next if($cname ne 'ONIVA01G00100'); # debug
+
+        # record <genes per alignment block
+        $genes_per_block{"$qchr:$qstart-$qend"}++;
 
         # make sure ref chr is taken
         $ref_coords{$cname}{'chr'} = $rchr;
@@ -1420,7 +1428,13 @@ sub query2ref_coords {
 
     close(OUTBED);    
 
-    return ( \@matched, \@unmatched );
+    # compute <genes> per WGA 
+    my @genespb;
+    foreach my $block (keys(%genes_per_block)) {
+        push(@genespb, $genes_per_block{$block});
+    }
+
+    return ( \@matched, \@unmatched, calc_median(\@genespb) );
 }
 
 # Takes 3 scalars:

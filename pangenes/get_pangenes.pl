@@ -511,7 +511,7 @@ foreach $infile (@inputfiles) {
   # make temporary copies of uncompressed FASTA & GFF files
   $plain_dnafile  = $newDIR ."/_$taxon.fna";
   $plain_gffile   = $newDIR ."/_$taxon.gff";
-  $clusteroutfile = $newDIR ."/_$infile.queue";
+  $clusteroutfile = $newDIR ."/_$infile.queue"; # HPC cluster log
 
   if(!-s $plain_dnafile) {
     if($dnafile =~ m/\.gz/) {
@@ -750,9 +750,9 @@ foreach $taxon (@taxa){ print SEL "$taxon\n" }
 close(SEL);
 
 
-## 2) compute pairwise whole-genome alignments (WGA) and call collinear genes
+## 2) compute pairwise Whole-Genome Alignments (WGA) and call collinear genes
 
-my ($outTSVfile,$outANIfile,@tmp_wga_output_files,%ANIfiles);
+my ($outTSVfile,$outANIfile,@tmp_wga_output_files,@clusterlogfiles,%ANIfiles);
 
 # remove previous merged results to make sure they are updated
 unlink($merged_tsv_file);
@@ -845,18 +845,18 @@ foreach $tx1 (0 .. $#taxa-1) {
     }
     $outTSVfile .= '.tsv';
     $outANIfile .= '.ANI.tsv';
+    $clusteroutfile = $outTSVfile.'.queue';
 
     # skip job if already computed 
     if(-s $outTSVfile) {
       if($read_patches) { unlink($outTSVfile) }
       else {
         push(@tmp_wga_output_files,$outTSVfile);
+        push(@clusterlogfiles,$clusteroutfile);
         $ANIfiles{$taxon}{$taxon2} = $outANIfile;
         next;
       } 
     }
-
-    $clusteroutfile = $outTSVfile.'.queue';
 
     $command = "$ENV{'EXE_COLLINEAR'} -ovl $min_overlap -t $n_of_cpus ".
         "-sp1 $taxon ".
@@ -901,6 +901,7 @@ foreach $tx1 (0 .. $#taxa-1) {
     }
 
     push(@tmp_wga_output_files,$outTSVfile);
+    push(@clusterlogfiles,$clusteroutfile);
     $ANIfiles{$taxon}{$taxon2} = $outANIfile;
   }  
 }  
@@ -936,6 +937,37 @@ if(@tmp_wga_output_files) {
   if($? != 0) {
     die "# EXIT: failed while concatenating WGA results\n";
   }
+
+  if(@clusterlogfiles) {
+
+    print "\n# WGA summary (N50, %mapped genes in blocks of 3+)\n";
+    my (%WGAblocks, $perc, $N50);
+    foreach $clusteroutfile (@clusterlogfiles) {
+      open(LOG,"<",$clusteroutfile) || 
+        die "# EXIT, cannot read $clusteroutfile\n";
+      while(<LOG>) { 
+        if(/^# .* -sp1 (\S+) .*? -sp2 (\S+)/) {
+          ($taxon, $taxon2) = ($1, $2);   
+        } elsif(/# WGA blocks: N50 (\d+)/) {
+          $N50 = $1;
+          push(@{ $WGAblocks{$taxon}{'N50'} }, $N50);
+          push(@{ $WGAblocks{$taxon2}{'N50'} }, $N50);
+
+        } elsif(/^# \d+ genes mapped \(([^%]+)% in/) {
+          $perc = $1;
+          push(@{ $WGAblocks{$taxon}{'block3'} }, $perc);
+          push(@{ $WGAblocks{$taxon2}{'block3'} }, $perc);
+        }
+      }
+      close(LOG);
+    }
+
+    foreach $taxon (@taxa) {
+      printf("%1.1f %1.1f %s\n", 
+        calc_median($WGAblocks{$taxon}{'N50'}),
+        calc_median($WGAblocks{$taxon}{'block3'}), $taxon);
+    }
+  } 
 }
 
 if($onlywga) {

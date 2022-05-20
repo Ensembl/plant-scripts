@@ -15,6 +15,7 @@ require Exporter;
   parse_sequence_FASTA_file
   extract_isoforms_FASTA
   calc_median
+  N50
   get_outlier_cutoffs
 
   $merged_tsv_file
@@ -389,6 +390,30 @@ sub calc_median {
         return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
     }
 }
+
+# Takes ref to list of numbers and returns N50
+sub N50 {
+
+    my ($dataref) = @_;
+
+    my ($total_len,$cumul_len,$N50,$seqlen) = (0,0,-1);
+    my @sorted = sort {$b<=>$a} (@$dataref);
+
+    foreach $seqlen (@sorted) {
+        $total_len += $seqlen
+    }
+
+    foreach $seqlen (@sorted) {
+        $cumul_len += $seqlen;
+        if($cumul_len>$total_len/2){ 
+            $N50 = $seqlen;
+            last 
+        }
+    }
+    
+    return $N50;
+}
+
 
 # Takes ref to list of numbers and returns median, 
 # lower and upper cutoff (scalars) to call outliers:

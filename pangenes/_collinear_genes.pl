@@ -5,7 +5,7 @@ use Getopt::Long qw(:config no_ignore_case);
 use File::Basename qw(basename dirname);
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw(calc_median);
+use pangeneTools qw(calc_median N50);
 
 $|=1;
 
@@ -622,7 +622,8 @@ close(PAF);
 
 push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
 
-printf("# median WGA alignment length: %1.1f\n",
+printf("# WGA blocks: N50 %d median %1.1f\n",
+    N50(\@block_length),
     calc_median(\@block_length));
 @block_length = ();
 
@@ -1729,18 +1730,6 @@ sub bed2compara {
         $gene1 = $data[3];
         $gene2 = $data[9];
   
-        # arbitrary regexes that should be taylored
-        #if ($workout_gene_names) {
-        #    # Work out gene names from transcripts':
-        #    # 1) remove suffix after . or -
-        #    # 2) t's in transcript name to be replaced with g' in gene names
-        #    # Example: 10t0100300.1 -> Os10g0100300
-        #    $gene1 =~ s/[\.-]\d+$//;
-        #    $gene2 =~ s/[\.-]\d+$//;
-        #    $gene1 =~ s/t/g/;
-        #    $gene2 =~ s/t/g/;
-        #}
-
         # workout genomic coordinates (1-based)
         if($data[3] ne 'segment') {
             if( $ref_orig_coords1->{$gene1} &&

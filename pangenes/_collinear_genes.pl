@@ -679,8 +679,8 @@ elsif ( !-s $sp1wgaBEDfile_sorted ) {
     die "# ERROR: failed generating $sp2wgaBEDfile_sorted file ($cmd)\n";
 }
 
-#push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
-#push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
+push(@tmpBEDfiles, $sp2wgaBEDfile, $sp2wgaBEDfile_sorted);
+push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
 
 # compute coords of mapped genes 
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";

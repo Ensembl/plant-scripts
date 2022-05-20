@@ -259,6 +259,11 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # sorting collinearity results...
 
+# WGA summary (N50, %mapped genes in blocks of 3+)
+39394.0 84.0 Oryza_indica.ASM465v1.chr1
+41044.0 84.0 Oryza_nivara_v1.chr1
+42940.0 86.0 Oryza_sativa.IRGSP-1.0.chr1
+
 # clustering sequences ...
 # done
 

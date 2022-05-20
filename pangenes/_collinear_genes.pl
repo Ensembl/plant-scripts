@@ -686,12 +686,12 @@ push(@tmpBEDfiles, $sp1wgaBEDfile, $sp1wgaBEDfile_sorted);
 my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
-my ( $ref_matched, $ref_unmatched, $median_genes_block ) =
+my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
   query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
-printf( "# %d genes mapped (median %1.1f/block) in %s (%d unmapped)\n",
-    scalar(@$ref_matched), $median_genes_block,
+printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n",
+    scalar(@$ref_matched), $perc_blocks_3genes,
     $geneBEDfile2mapped, scalar(@$ref_unmatched) );
 
 if ( scalar(@$ref_matched) == 0 ) {
@@ -700,12 +700,12 @@ if ( scalar(@$ref_matched) == 0 ) {
 
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
-my ( $ref_matched1, $ref_unmatched1, $median_genes_block1 ) =
+my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
   query2ref_coords( $sp1wgaBEDfile, $geneBEDfile1mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
-printf( "# %d genes mapped (median %1.1f/block) in %s (reverse, %d unmapped)\n",
-    scalar(@$ref_matched1), $median_genes_block1,
+printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n",
+    scalar(@$ref_matched1), $perc_blocks_3genes1,
     $geneBEDfile1mapped, scalar(@$ref_unmatched1) );
 
 if ( scalar(@$ref_matched1) == 0 ) {
@@ -1210,7 +1210,7 @@ sub mask_intergenic_regions {
 # Returns 
 # i) ref to list of matched genes 
 # ii) ref to list of unmatched genes
-# iii) median genes perl WGA block (int)
+# iii) % genes in WGA blocks of at least 3 genes (float)
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA/gene only
 # example input:
@@ -1428,13 +1428,17 @@ sub query2ref_coords {
 
     close(OUTBED);    
 
-    # compute <genes> per WGA 
-    my @genespb;
-    foreach my $block (keys(%genes_per_block)) {
-        push(@genespb, $genes_per_block{$block});
-    }
+    # compute % matched genes in WGA blocks of at least 3 genes
+    my $totgenes = 0;
+    foreach my $block 
+        (sort {$genes_per_block{$b}<=>$genes_per_block{$a}} 
+        keys(%genes_per_block)) {
 
-    return ( \@matched, \@unmatched, calc_median(\@genespb) );
+        last if($genes_per_block{$block} < 3);
+        $totgenes += $genes_per_block{$block};   
+    } 
+
+    return ( \@matched, \@unmatched, 100*$totgenes / scalar(@matched) );
 }
 
 # Takes 3 scalars:

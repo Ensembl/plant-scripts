@@ -15,6 +15,7 @@ require Exporter;
   parse_sequence_FASTA_file
   extract_isoforms_FASTA
   calc_median
+  calc_mode
   N50
   get_outlier_cutoffs
 
@@ -390,6 +391,45 @@ sub calc_median {
         return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
     }
 }
+
+# Takes ref to list of numbers and returns the median
+sub calc_median {
+
+    my ($dataref) = @_;
+
+    my $mid = int(scalar(@$dataref)/2);
+    my @sorted = sort {$a<=>$b} (@$dataref);
+
+    if(scalar(@sorted) % 2) {
+        return $sorted[ $mid ]
+    }
+    else {
+        return sprintf("%1.1f",($sorted[$mid-1] + $sorted[$mid])/2)
+    }
+}
+
+# Takes ref to list of numbers and returns the mode
+sub calc_mode {
+
+    my ($dataref) = @_;
+
+    my ($mode, $max, $elem, %obs) = ('',0);
+    foreach $elem (@$dataref) {
+        $obs{$elem}++;
+        if($obs{$elem} > $max) { 
+            $max = $obs{$elem}
+        }
+    }
+
+    foreach $elem (keys(%obs)) {
+        if($obs{$elem} == $max) {
+            $mode .= "$elem ";
+        }
+    }    
+
+    return $mode;
+}
+
 
 # Takes ref to list of numbers and returns N50
 sub N50 {

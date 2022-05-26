@@ -21,7 +21,7 @@ use FindBin '$Bin';
 use lib "$Bin/lib";
 use pangeneTools qw( check_installed_features 
                      parse_sequence_FASTA_file extract_isoforms_FASTA
-                     calc_median get_outlier_cutoffs );
+                     calc_median calc_mode get_outlier_cutoffs );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 95.0;
@@ -185,7 +185,10 @@ foreach $gene_id (sort @$ref_geneid) {
 my ($median_length, $cutoff_low_length, $cutoff_high_length) =
   get_outlier_cutoffs( \@len , $INP_verbose );
 
-printf("# isoform length in cluster: median=%1.1f\n\n",$median_length);
+my $mode_length = calc_mode( \@len );
+
+printf("# isoform length in cluster: median=%1.0f mode:%s\n\n",
+  $median_length, $mode_length);
 
 foreach $gene_id (sort @$ref_geneid) {
   foreach $isof_id (keys(%{$seq_length{$gene_id}})) {

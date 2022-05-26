@@ -301,7 +301,7 @@ sub parse_sequence_FASTA_file {
 
         ($chr, $start, $end, $strand) = ($1, $2, $3, $4);
 
-        # conserved gene id order
+        # conserved gene id order and chr coords, take 1st
         if(!$fasta{$geneid}) {
           push(@geneids,$geneid);
           $chr_coords{$geneid} = [$chr, $start, $end, $strand];

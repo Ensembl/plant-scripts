@@ -4,7 +4,7 @@
 # the collinearity data evidence supporting it, inferred from whole genome
 # alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr)
 #
-# Optionally it can also suggest fixes to the gene models based on the 
+# Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
 
 # Copyright [2022]
@@ -41,6 +41,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_outdir) = (0,0, '');
+my ($INP_lift_refgenome) = ('');
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -57,7 +58,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-c print credits and checks installation\n";
   print "-d directory produced by get_pangenes.pl        (example: -d /path/data_pangenes/..._algMmap_,\n";
   print "                                                 genomic sequences usually one folder up)\n";
-  print "-i cdna cluster as shown in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
+  print "-i cdna/cds .fna file as in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-n do not print raw evidence                    (optional)\n";
   print "-f fix gene models and produce GFF              (optional, GFF printed to stdout by default)\n";
   print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
@@ -85,11 +86,12 @@ else{ die "# EXIT : need a -d directory\n" }
 
 if(defined($opts{'i'})){  
   $INP_clusterfile = $opts{'i'};
-  if($INP_clusterfile !~ /\.cdna\.fna$/) {
-    die "# EXIT : need a .cdna.fna cluster filename with parameter -i\n"
+  if($INP_clusterfile !~ /\.cdna\.fna$/ && $INP_clusterfile !~ /\.cds\.fna$/) {
+    die "# EXIT : need a .fna cluster filename with parameter -i\n"
   } else {
     $gdna_clusterfile = $INP_clusterfile;
     $gdna_clusterfile =~ s/\.cdna\.fna/.gdna.fna/;
+    $gdna_clusterfile =~ s/\.cds\.fna/.gdna.fna/;
   }
 }
 else{ die "# EXIT : need parameter -i\n" }

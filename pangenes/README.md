@@ -30,7 +30,7 @@ and produces different types of output:
 	- [Parameters](#parameters)
 	- [Dependencies](#dependencies)
 	- [Command-line options](#command-line-options)
-- [Example 1](#example-1-default-pan-gene-analysis)
+- [Example 1: default pan-gene analysis](#example-1-default-pan-gene-analysis)
 - [Example 2: splitting genome in chromosomes](#example-2-splitting-genome-in-chromosomes)
 - [Example 3: using GSAlign instead of minimap2](#example-3-using-GSAlign-instead-of-minimap2)
 - [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)

@@ -44,7 +44,7 @@ my ($INP_verbose,$INP_appendGFF,$INP_outdir) = (0,0, '');
 my ($INP_lift_refgenome) = ('');
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
-my ($overlap, $coords, $hom_coords, $full_id, $hom_full_id);
+my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length, %genome_coords);
@@ -159,14 +159,46 @@ if($clusternameOK == 0) {
   die "# ERROR: cannot find $INP_clusterfile in $INP_dir/$cluster_list_file, please correct\n";
 }
 
-# 2) parse FASTA headers of input cluster to extract gene names
+# 2) parse FASTA headers of input cluster to extract gene names and check sequence lengths
+#    (note that chr coords are parsed only for 1st isoform)
+my ( $seq, %seq_length, @len);
 my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
 
 foreach $gene_id (sort @$ref_geneid) {
+
+  # sorted gene ids
   $cluster_gene_id{$gene_id} = 1;
   push(@sorted_ids, $gene_id);
+
+  # length stats
+  foreach $seq (split(/\n/,$ref_fasta->{$gene_id})) {
+    if($seq =~ /^>(\S+)/) {
+      $isof_id = $1;
+      next;
+    }
+    $seq_length{$gene_id}{$isof_id} += length($seq);
+  }
+  push(@len, $seq_length{$gene_id}{$isof_id});
+}
+
+my ($median_length, $cutoff_low_length, $cutoff_high_length) =
+  get_outlier_cutoffs( \@len , $INP_verbose );
+
+printf("# isoform length in cluster: median=%1.1f\n\n",$median_length);
+
+foreach $gene_id (sort @$ref_geneid) {
+  foreach $isof_id (keys(%{$seq_length{$gene_id}})) {
+    if($seq_length{$gene_id}{$isof_id} < $cutoff_low_length) {
+      print "# short isoform: $isof_id $gene_id [$ref_taxon->{$gene_id}] ".
+        "length=$seq_length{$gene_id}{$isof_id}\n";
+    } if($seq_length{$gene_id}{$isof_id} > $cutoff_high_length) {
+      print "# long isoform: $isof_id $gene_id [$ref_taxon->{$gene_id}] ".
+       "length=$seq_length{$gene_id}{$isof_id}\n";
+    }
+  }
 } 
+
 
 # 2.1) parse segment gDNA file if required (1-based coordinates)
 my ($ref_geneid_seg,$ref_fasta_seg,$ref_coords_seg,$ref_taxon_seg);
@@ -374,7 +406,7 @@ if(!$INP_fix) {
 }
 
 # 7) suggest fixes for poor gene models based on pan-gene consensus
-
+#    (based on chr coords of 1st isoform of each gene)
 my $non_outlier_pairs = 0;
 my ($chr,$start,$end,$strand,$isof,$ref_lifted_model,$GFF);
 my (@long_models, @split_models, @non_outliers, %seen_outlier_taxon);

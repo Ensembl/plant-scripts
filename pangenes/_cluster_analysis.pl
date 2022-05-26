@@ -1002,13 +1002,14 @@ if($chregex) {
                 if($gene_stable_id ne 'dummy' ) {
 
                     ( $start, $end, $strand ) =
-                        @{$id2coords{$species}{$gene_stable_id}}[1,2,3];
+                        @{$id2coords{$ref_genome}{$gene_stable_id}}[1,2,3];
 
-                        printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
-                            $chr,$start,$end,$filename,$occup,$strand,$gene_stable_id);
+                    printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
+                        $chr,$start,$end,$filename,$occup,$strand,$gene_stable_id);
  
-                } else {
-                    ( $start, $end, $strand ) = ( "#$chr", 0, 0 );
+                } else { # gene absent in reference genome annotation
+
+                    $strand = 0; # missing for strand
 
                     printf(PANGEMATRIBED "#%s\tNA\tNA\t%s\t%d\t%s\tNA",
                         $chr,$filename,$occup,$strand);
@@ -1024,6 +1025,7 @@ if($chregex) {
 
                         printf(PANGEMATRIBED "\t%s",
                             join( ',', @{ $cluster{$cluster_id}{$species} } ));
+
                     } else {    # absent genes
                         print PANGEMATRIBED "\tNA";
                     }
@@ -1257,7 +1259,7 @@ sub sort_clusters_by_position {
 
     my $species_seen = 0;
     my ($species, $sp, $gene, $last_gene, $gene_id, $chr, $cluster_id);
-    my ($cluster_idx, $cluster_id2, $chr_name, $sortable_chr);
+    my ($cluster_idx, $cluster_id2, $chr_name, $sortable_chr, $prev_chr);
     my ($chr2, $gene_id2, $gene2, $last_gene2, $next_cluster_id);
     my $prev_cluster_idx; # index of cluster where previous clustered gene sits
     my $next_cluster_idx; # index of cluster where next clustered gene sits
@@ -1267,11 +1269,12 @@ sub sort_clusters_by_position {
 
         $species_seen++;
         $prev_cluster_idx = -1;
+        $prev_chr = '';
         $last_gene = scalar(@{ $ref_sorted_ids->{$species} }) - 1;
 
         foreach $gene (0 .. $last_gene) {
 
-            # initialize this gene
+            ## initialize this gene
             $sortable_chr = 0;
             ($chr_name, $cluster_id) = ('unplaced', '');
 
@@ -1284,24 +1287,31 @@ sub sort_clusters_by_position {
                 $sortable_chr = 1; 
                 $chr_name = $chr; 
             }
+            
+            # new chr
+            if($prev_chr ne '' && $chr_name ne $prev_chr) {
+                $prev_cluster_idx = -1;
+            }
 
-            # find out which cluster contains this gene
+
+            ## find out which cluster contains this gene
             if(!defined($ref_incluster->{$gene_id})){
                 print "# WARNING(sort_clusters_by_position): skip unclustered $gene_id\n" 
                     if($verbose);
-                    next;
+                next;
             } else {
                 $cluster_id = $ref_incluster->{$gene_id};
             }  
 
-            # first time this cluster was seen (a cluster can only be added once)
+            ## 1st time this cluster was seen (a cluster can only be added to sorted list once)
             if(!$cluster_seen{$cluster_id}) {
 				
                 # non-reference species, find out where to insert this cluster 
                 if($species_seen > 1 && $sortable_chr == 1) {
 
-                    ## 1) get index of cluster harboring next clustered gene
-                    $next_cluster_idx = -1;
+                    ## 1) index of cluster with next clustered gene on same chr,
+                    ##    might be the same for consecutive PAV clusters
+                    ($next_cluster_id,$next_cluster_idx) = ('',-1);
                     foreach $gene2 ($gene .. $last_gene) {
                             
                         $gene_id2 = $ref_sorted_ids->{$species}[$gene2];
@@ -1322,7 +1332,7 @@ sub sort_clusters_by_position {
                     }
 
                     print "$species $gene_id $cluster_id $chr $prev_cluster_idx ".
-                        "$next_cluster_idx $next_cluster_id\n" if($verbose); 
+                        "$next_cluster_idx $next_cluster_id $species_seen\n" if($verbose); 
 
                     # 2) actually insert cluster in list 
 
@@ -1346,7 +1356,7 @@ sub sort_clusters_by_position {
                         # inserted amid previous clusters
                         # prev: [0..N]----->cluster
                         # next: cluster-----> [N+1..$#sorted_cluster_ids]
-					
+
                         splice( @{ $sorted_cluster_ids{$chr_name} }, 
                             $prev_cluster_idx+1, 0, $cluster_id );
                         $cluster_idx = $prev_cluster_idx+1
@@ -1360,12 +1370,14 @@ sub sort_clusters_by_position {
                     push(@{ $sorted_cluster_ids{$chr_name} }, $cluster_id);
                     $cluster_seen{$cluster_id}++;
 
-                    printf("> %s %d\n",
-                        $cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name} })) 
+                    # debugging info, cluster_id comes from 1st cluster where this
+                    # sequence was grouped, which might not be the reference
+                    printf("> %s %d %d\n",
+                        $cluster_id,scalar(@{ $sorted_cluster_ids{$chr_name} }),$species_seen) 
                         if($verbose);
                 }
-            } else {
-                # cluster already sorted, can only happen with non-ref species
+            } else { # cluster already sorted, can only happen with non-ref species
+
                 if($sortable_chr == 1) {
                     $cluster_idx =
                         _get_element_index( $sorted_cluster_ids{$chr_name}, $cluster_id);
@@ -1374,6 +1386,7 @@ sub sort_clusters_by_position {
 
             # save this cluster as previous for next iteration
             $prev_cluster_idx = $cluster_idx;
+            $prev_chr = $chr_name;
         }
     }
 

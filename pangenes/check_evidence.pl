@@ -39,13 +39,13 @@ my $BEDTOOLSBIN = $ENV{'EXE_BEDTOOLS'} || 'bedtools';
 my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
 $GMAPBIN .= " $GMAPARAMS ";
 
-
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
+my ($seq, %isof_len, %isof_seq, %isof_header, %taxa, @len);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length, %genome_coords);
 
@@ -174,7 +174,6 @@ if($clusternameOK == 0) {
 
 # 2) parse FASTA headers of input cluster to extract gene names and check sequence lengths
 #    (note that chr coords are parsed only for 1st isoform)
-my ( $seq, %isof_len, %isof_seq, %isof_header, @len);
 
 my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
@@ -196,6 +195,9 @@ foreach $gene_id (sort @$ref_geneid) {
     $isof_seq{$gene_id}{$isof_id} .= $seq;
   }
   push(@len, $isof_len{$gene_id}{$isof_id});
+
+  # taxa stats
+  $taxa{ $ref_taxon->{$gene_id} }++;
 }
 
 my ($median_length, $cutoff_low_length, $cutoff_high_length) =
@@ -261,14 +263,14 @@ if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
     $INP_clusterfile,
     scalar(keys(%cluster_gene_id)),
     scalar(@$ref_geneid_seg),
-    scalar(keys(%$ref_taxon)));
+    scalar(keys(%taxa)));
 
 } else {
 
   printf("\n# cluster %s genes = %d (%d taxa)\n",
     $INP_clusterfile,
     scalar(keys(%cluster_gene_id)),
-    scalar(keys(%$ref_taxon)));
+    scalar(keys(%taxa)));
 }
 
 

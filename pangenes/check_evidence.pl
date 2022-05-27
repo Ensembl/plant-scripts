@@ -257,16 +257,18 @@ if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
   ( $ref_geneid_seg, $ref_fasta_seg, $ref_coords_seg, $ref_taxon_seg ) =
     parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$gdna_clusterfile" , 1);
 
-  printf("\n# cluster %s genes = %d genomic segments = %d\n",
+  printf("\n# cluster %s genes = %d genomic segments = %d (%d taxa)\n",
     $INP_clusterfile,
     scalar(keys(%cluster_gene_id)),
-    scalar(@$ref_geneid_seg));
+    scalar(@$ref_geneid_seg),
+    scalar(keys(%$ref_taxon)));
 
 } else {
 
-  printf("\n# cluster %s genes = %d\n",
+  printf("\n# cluster %s genes = %d (%d taxa)\n",
     $INP_clusterfile,
-    scalar(keys(%cluster_gene_id)));
+    scalar(keys(%cluster_gene_id)),
+    scalar(keys(%$ref_taxon)));
 }
 
 

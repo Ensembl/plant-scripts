@@ -27,3 +27,4 @@
 11052022: check_evidence.pl -f tested for split and missing gene models, premature stop codons tracked
 11052022: GFF patches, maybe created with check_evidence.pl, can now be used with get_pangenes.pl -p, existing WGAs reused
 20052022: prints WGA stats summary
+27052022: check_evidence.pl -s -r oryza_sativa_RAPDB,oryza_sativa_MSU appends to file mode isoform sequence, preferring refs

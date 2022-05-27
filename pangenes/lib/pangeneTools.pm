@@ -408,12 +408,13 @@ sub calc_median {
     }
 }
 
-# Takes ref to list of numbers and returns the mode
+# Takes ref to list of numbers and returns a list with mode(s)
 sub calc_mode {
 
     my ($dataref) = @_;
 
-    my ($mode, $max, $elem, %obs) = ('',0);
+    my ($max, $elem, @modes, %obs) = (0);
+
     foreach $elem (@$dataref) {
         $obs{$elem}++;
         if($obs{$elem} > $max) { 
@@ -421,13 +422,13 @@ sub calc_mode {
         }
     }
 
-    foreach $elem (keys(%obs)) {
+    foreach $elem (sort {$b<=>$a} keys(%obs)) {
         if($obs{$elem} == $max) {
-            $mode .= "$elem ";
+            push(@modes, $elem);
         }
     }    
 
-    return $mode;
+    return @modes;
 }
 
 

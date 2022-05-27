@@ -2,7 +2,8 @@
 
 # This script takes a cDNA cluster produced by get_pangenes.pl and retrieves
 # the collinearity data evidence supporting it, inferred from whole genome
-# alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr)
+# alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr).
+# It can print a representative cluster sequence with longest mode length (-s).
 #
 # Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
@@ -40,16 +41,15 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
-my ($INP_verbose,$INP_appendGFF,$INP_outdir) = (0,0, '');
-#my ($INP_lift_refgenome) = ('dna'); #pep,user);
+my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
-my (%opts,%TSVdb, @sorted_ids, @pairs, @segments);
+my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length, %genome_coords);
 
-getopts('hvacfno:d:i:', \%opts);
+getopts('hvacfnr:s:o:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -59,6 +59,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-d directory produced by get_pangenes.pl        (example: -d /path/data_pangenes/..._algMmap_,\n";
   print "                                                 genomic sequences usually one folder up)\n";
   print "-i cdna/cds .fna file as in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
+  print "-s append mode isoform sequence to file         (optional, example: -s isoforms.fna)\n";
+  print "-r comma-sep string with reference taxa         (optional, requires -s)\n";
   print "-n do not print raw evidence                    (optional)\n";
   print "-f fix gene models and produce GFF              (optional, GFF printed to stdout by default)\n";
   print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
@@ -78,7 +80,6 @@ if(defined($opts{'c'})) {
   exit(0);
 }
 
-
 if(defined($opts{'d'})) { 
   $INP_dir = $opts{'d'} 
 }
@@ -95,6 +96,18 @@ if(defined($opts{'i'})){
   }
 }
 else{ die "# EXIT : need parameter -i\n" }
+
+if(defined($opts{'s'})){
+  $INP_modeseq = $opts{'s'};
+ 
+  if(defined($opts{'r'})) {
+    @ref_names = split(/,/,$opts{'r'}); 
+    if(!@ref_names) {
+      die "# EXIT: cannot parse reference names (-r), " .
+        "make sure they have no blanks and are comma-separated\n";
+    }
+  }
+}
 
 if(defined($opts{'n'})){ 
   $INP_noraw = 1 
@@ -161,7 +174,8 @@ if($clusternameOK == 0) {
 
 # 2) parse FASTA headers of input cluster to extract gene names and check sequence lengths
 #    (note that chr coords are parsed only for 1st isoform)
-my ( $seq, %seq_length, @len);
+my ( $seq, %isof_len, %isof_seq, %isof_header, @len);
+
 my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
 
@@ -175,29 +189,59 @@ foreach $gene_id (sort @$ref_geneid) {
   foreach $seq (split(/\n/,$ref_fasta->{$gene_id})) {
     if($seq =~ /^>(\S+)/) {
       $isof_id = $1;
+      $isof_header{$gene_id}{$isof_id} = $seq;
       next;
     }
-    $seq_length{$gene_id}{$isof_id} += length($seq);
+    $isof_len{$gene_id}{$isof_id} += length($seq);
+    $isof_seq{$gene_id}{$isof_id} .= $seq;
   }
-  push(@len, $seq_length{$gene_id}{$isof_id});
+  push(@len, $isof_len{$gene_id}{$isof_id});
 }
 
 my ($median_length, $cutoff_low_length, $cutoff_high_length) =
   get_outlier_cutoffs( \@len , $INP_verbose );
 
-my $mode_length = calc_mode( \@len );
+# note: might be "mode2 mode1" for bimodal data
+my @modes_length = calc_mode( \@len );
 
-printf("# isoform length in cluster: median=%1.0f mode:%s\n\n",
-  $median_length, $mode_length);
+printf("# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
+  $median_length, join(',',@modes_length));
+
+if($INP_modeseq) {
+
+  my ($mode_gene_id, $mode_isof_id);
+
+  foreach $gene_id (sort @$ref_geneid) {
+    foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
+ 
+      next if($isof_len{$gene_id}{$isof_id} != $modes_length[0]);
+ 
+      if(!$mode_isof_id || grep(/$ref_taxon->{$gene_id}/,@ref_names)) {
+        ($mode_gene_id, $mode_isof_id) = ($gene_id, $isof_id);
+      }    
+    }    
+  }
+
+  open(ISOSEQ,">>",$INP_modeseq) ||
+    die "# EXIT: cannot write to $INP_modeseq\n";
+  print ISOSEQ "$isof_header{$mode_gene_id}{$mode_isof_id}\n$isof_seq{$mode_gene_id}{$mode_isof_id}\n";
+  close(ISOSEQ);
+
+  print "# mode isoform: $mode_gene_id $mode_isof_id [$ref_taxon->{$mode_gene_id}]".
+    " (appended to $INP_modeseq)\n";
+}
 
 foreach $gene_id (sort @$ref_geneid) {
-  foreach $isof_id (keys(%{$seq_length{$gene_id}})) {
-    if($seq_length{$gene_id}{$isof_id} < $cutoff_low_length) {
+  foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
+    if($isof_len{$gene_id}{$isof_id} < $cutoff_low_length) {
+
       print "# short isoform: $isof_id $gene_id [$ref_taxon->{$gene_id}] ".
-        "length=$seq_length{$gene_id}{$isof_id}\n";
-    } if($seq_length{$gene_id}{$isof_id} > $cutoff_high_length) {
+        "length=$isof_len{$gene_id}{$isof_id}\n";
+
+    } if($isof_len{$gene_id}{$isof_id} > $cutoff_high_length) {
+
       print "# long isoform: $isof_id $gene_id [$ref_taxon->{$gene_id}] ".
-       "length=$seq_length{$gene_id}{$isof_id}\n";
+       "length=$isof_len{$gene_id}{$isof_id}\n";
     }
   }
 } 
@@ -372,10 +416,11 @@ if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
   print @pairs;
 }
 
-# 6) print summary stats
+# 6) print gene-level summary stats
 my (%scores, %taxon_genes);
 
-print "\n#length\tpairs\tgene_overlap\tgene\tspecies\n";
+print "\n# gene-level stats\n";
+print "#len\tpairs\toverlap\tgene_name\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   $gene_id = $fullid2id{$full_id};

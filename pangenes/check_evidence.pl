@@ -230,7 +230,7 @@ if($INP_modeseq) {
   close(ISOSEQ);
 
   print "# mode isoform: $mode_gene_id $mode_isof_id [$ref_taxon->{$mode_gene_id}]".
-    " (appended to $INP_modeseq)\n";
+    " (append to $INP_modeseq)\n";
 }
 
 foreach $gene_id (sort @$ref_geneid) {

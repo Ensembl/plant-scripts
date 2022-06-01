@@ -45,7 +45,7 @@ my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
-my ($seq, %isof_len, %isof_seq, %isof_header, %taxa, @len);
+my ($seq, %isof_len, %isof_seq, %isof_header, %taxa, %taxa_seg, @len);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length, %genome_coords);
 
@@ -397,9 +397,11 @@ foreach $gene_id (@sorted_ids) {
       #$cluster_gene_id{$gene_id}++; #segment-gene pairs not considered for stats
 
       if($segment eq 'segment') {
-        push(@segments,$gene_id)
+        push(@segments,$gene_id);
+        $taxa_seg{ $species }++;
       } elsif($hom_segment eq 'segment') {
-        push(@segments,$hom_gene_id)
+        push(@segments,$hom_gene_id);
+        $taxa_seg{ $hom_species }++;
       } 
 
       push(@pairs, "$line\n");
@@ -528,7 +530,10 @@ if(!@non_outliers) {
 # open output GFF files if requested
 my ($gfffh, %outfhandles);
 if($INP_outdir) {
-  foreach $species (keys(%taxon_genes)) {
+  foreach $species (keys(%taxon_genes), keys(%taxa_seg)) {
+
+    next if($outfhandles{$species});
+
     if($INP_appendGFF) {
       open(my $fh,'>>',"$INP_outdir/$species.patch.gff");
       $outfhandles{$species} = $fh;
@@ -833,7 +838,7 @@ if(@long_models &&
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 
       # actually print GFF and log
-      $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
+      $gfffh = $outfhandles{ $ref_taxon_seg->{$segment_id} } || *STDOUT;
 
       print "# missing gene model: corrected $segment_id [$ref_taxon_seg->{$segment_id}]\n";
 

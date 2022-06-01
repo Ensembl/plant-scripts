@@ -696,7 +696,7 @@ if(@long_models &&
 
     $segment = cut_genomic_segment_bedtools(
       "$segment_data{'chr'}:$segment_data{'start'}-$segment_data{'end'}($segment_data{'strand'})",
-      $genome_file,$BEDTOOLSBIN ); 
+      $genome_file, $BEDTOOLSBIN ); 
 
     # lift-over consensus models
     my %lifted;
@@ -750,7 +750,7 @@ if(@long_models &&
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 
       # actually print GFF and log
-      $gfffh = $outfhandles{$ref_taxon->{$gene_id}} || *STDOUT;
+      $gfffh = $outfhandles{ $species } || *STDOUT;
 
       print "# split gene model: corrected $segment_data{'genes'} [$species]\n";
 
@@ -906,7 +906,7 @@ sub cut_genomic_segment_bedtools {
 }
 
 
-# Lifts over a gene model upon gmap mapping of a cDNA.
+# Lifts over a gene model upon gmap mapping of a query (cDNA) sequence.
 # Takes 5+1 params:
 # i)   original gene_ids (comma separated strings)
 # ii)  FASTA string of genomic sequence (target)
@@ -981,6 +981,9 @@ sub liftover_gmap {
     last if(/^###/);
 
     if($gffOK) {
+
+      #print if($verbose);
+
       my @GFF = split(/\t/);
 
       # add original chr name

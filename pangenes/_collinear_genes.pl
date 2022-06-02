@@ -510,7 +510,7 @@ else {
                 my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);
                 if($num_align) { 
                     push(@WGAoutfiles, $splitPAF);
-                    system("$GZIPBIN $splitMAF");
+                    system("$GZIPBIN -f $splitMAF");
                 } else {
                     die "# ERROR: failed converting $splitMAF file\n"; 
                 }

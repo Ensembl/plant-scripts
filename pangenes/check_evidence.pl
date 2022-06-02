@@ -1,9 +1,10 @@
 #!/usr/bin/env perl
 
-# This script takes a cDNA cluster produced by get_pangenes.pl and retrieves
+# This script takes a cDNA/CDS cluster produced by get_pangenes.pl and retrieves
 # the collinearity data evidence supporting it, inferred from whole genome
 # alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr).
 # It can print a representative cluster sequence with longest mode length (-s).
+# If a CDS cluster is analyzed a check for internal stop codons is carried out.
 #
 # Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
@@ -24,6 +25,8 @@ use pangeneTools qw( check_installed_features
                      parse_sequence_FASTA_file extract_isoforms_FASTA
                      calc_median calc_mode get_outlier_cutoffs );
 
+my @standard_stop_codons = qw( TAG TAA TGA );
+
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 95.0;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
@@ -41,6 +44,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
+my ($isCDS,$CDSok,$codon,%badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -93,6 +97,10 @@ if(defined($opts{'i'})){
     $gdna_clusterfile = $INP_clusterfile;
     $gdna_clusterfile =~ s/\.cdna\.fna/.gdna.fna/;
     $gdna_clusterfile =~ s/\.cds\.fna/.gdna.fna/;
+
+    if($INP_clusterfile =~ /\.cds\.fna/) { 
+      $isCDS = 1
+    }
   }
 }
 else{ die "# EXIT : need parameter -i\n" }
@@ -194,7 +202,28 @@ foreach $gene_id (sort @$ref_geneid) {
     $isof_len{$gene_id}{$isof_id} += length($seq);
     $isof_seq{$gene_id}{$isof_id} .= $seq;
   }
-  push(@len, $isof_len{$gene_id}{$isof_id});
+
+  # check for internal stop codons
+  $CDSok = 1; 
+  if($isCDS) {
+    CODON: while($isof_seq{$gene_id}{$isof_id} =~ /(\w{3})/g) {
+      foreach $codon (@standard_stop_codons) {  
+        if($1 eq $codon && $+[0] < $isof_len{$gene_id}{$isof_id}) { 
+          $CDSok = 0; #print "$1 $+[0]\n";
+          last CODON;
+        }
+      }
+    }
+  } 
+
+  if($CDSok == 1) {
+    push(@len, $isof_len{$gene_id}{$isof_id});
+  } else {
+    print "# WARN: $gene_id $isof_id contains internal stop codons, skip it\n";
+
+   $full_id = $ref_taxon->{$gene_id}.$gene_id;
+   $badCDS{$full_id} = 1;
+  }
 
   # taxa stats
   $taxa{ $ref_taxon->{$gene_id} }++;
@@ -206,7 +235,7 @@ my ($median_length, $cutoff_low_length, $cutoff_high_length) =
 # note: might be "mode2 mode1" for bimodal data
 my @modes_length = calc_mode( \@len );
 
-printf("# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
+printf("\n# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
   $median_length, join(',',@modes_length));
 
 if($INP_modeseq) {
@@ -471,9 +500,12 @@ my ($median_pairs, $cutoff_low_pairs, $cutoff_high_pairs) =
 my ($median_len, $cutoff_low_len, $cutoff_high_len) = 
   get_outlier_cutoffs( $scores{'length'} , $INP_verbose );
 
-# 7.2) identify outlier gene models
+# 7.2) identify outlier and non-outlier/consensus gene models
 my %split_seen;
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
+
+  # skip genes with internal stop codons in CDS sequences
+  next if($badCDS{$full_id});
 
   $gene_id = $fullid2id{$full_id};
 
@@ -579,7 +611,7 @@ if(@long_models &&
       my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id}); 
       
       foreach $isof (@isofs) { 
-        $cDNA = $isof; # leave gene name as only FASTA header of cDNA
+        $cDNA = $isof; # gene name only in FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;  
 
         $ref_lifted_model = liftover_gmap( "$gene_id,", 
@@ -614,7 +646,7 @@ if(@long_models &&
         $lifted{$a}{'indels'} <=> $lifted{$b}{'indels'}
       } keys(%lifted)) {
 
-      # at least from same species needed
+      # at least 2 from same species needed
       next if($lifted{ $species }{ 'total' } < 2);
  
       # sort GFF features and make sure they don't overlap
@@ -710,7 +742,7 @@ if(@long_models &&
       my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id});
 
       foreach $isof (@isofs) {
-        $cDNA = $isof; # leave gene name as only FASTA header of cDNA
+        $cDNA = $isof; # gene name only in FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
         $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, 
@@ -744,8 +776,8 @@ if(@long_models &&
       } keys(%lifted)) {
 
       # skip genes with multiple mappings
-      next if(!$lifted{ $species }{ 'total' } ||
-        $lifted{ $species }{ 'total' } > 1);
+      next if(!$lifted{ $hom_species }{ 'total' } ||
+        $lifted{ $hom_species }{ 'total' } > 1);
 
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 
@@ -798,7 +830,7 @@ if(@long_models &&
       my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id});
 
       foreach $isof (@isofs) {
-        $cDNA = $isof; # leave gene name as only FASTA header of cDNA
+        $cDNA = $isof; # gene name only in FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
         $ref_lifted_model = liftover_gmap( 'missing', 
@@ -820,7 +852,7 @@ if(@long_models &&
           $best_isof_model->{'indels'};
 
         push(@{ $lifted{ $ref_taxon->{$hom_gene_id} }{ 'GFF' } },
-          $best_isof_model->{'GFF'} );
+          $best_isof_model->{'GFF'} ); #print "$best_isof_model->{'GFF'}\n";
       }
     }
 
@@ -832,8 +864,8 @@ if(@long_models &&
       } keys(%lifted)) {
 
       # skip genes with multiple mappings
-      next if(!$lifted{ $species }{ 'total' } || 
-        $lifted{ $species }{ 'total' } > 1);
+      next if(!$lifted{ $hom_species }{ 'total' } || 
+        $lifted{ $hom_species }{ 'total' } > 1);
 
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 
@@ -854,8 +886,6 @@ if(@long_models &&
 
       last; # take only best
     }
-
-
   }
 }
 

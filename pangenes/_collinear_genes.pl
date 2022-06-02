@@ -508,7 +508,8 @@ else {
 
                 # convert MAF to PAF alignment format
                 my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);
-                if($num_align) { 
+                if($num_align) {
+                    print "# simpleMAF2PAF : %d alignments\n"; 
                     push(@WGAoutfiles, $splitPAF);
                     system("$GZIPBIN -f $splitMAF");
                 } else {
@@ -1850,7 +1851,7 @@ sub simpleMAF2PAF {
             ($isQuery, $aligned, $indels) = (0,0,0);
             $total_alignments++;
 
-        } elsif(/^s \w{3}\.(\S+) (\d+) (\d+) (\S) (\d+) (\S+)/) {
+        } elsif(/^s \w{3}\.(\S+)\s+(\d+)\s+(\d+)\s+(\S)\s+(\d+)\s+(\S+)/) {
             
             if($isQuery) { # query
                 $isQuery++;

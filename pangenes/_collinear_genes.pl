@@ -622,7 +622,7 @@ close(PAF);
 
 push(@tmpBEDfiles, $wgaBEDfile, $wgaBEDfilerev);
 
-printf("# WGA blocks: N50 %d median %1.1f\n",
+printf("# WGA blocks: N50 %d median %1.0f\n",
     N50(\@block_length),
     calc_median(\@block_length));
 @block_length = ();

@@ -312,12 +312,16 @@ if(!-s $TSVdb_file) {
 
   print "\n# creating database (only first time)\n";
 
+  if(!-s $mergedTSV) {
+    die "# ERROR: cannot find file $mergedTSV, please check -d argument\n";
+  }
+
   tie(%TSVdb, 'DB_File', $TSVdb_file, 
     O_RDWR|O_CREAT, 0666, $DB_BTREE) ||
     die "# ERROR: cannot create file $TSVdb_file: $!\n";
 
   open(TSV, "$GZIPBIN -dc $mergedTSV |") ||
-    die "# ERROR: cannot find file $mergedTSV, please check -d argument\n";
+    die "# ERROR: cannot uncompress $mergedTSV\n";
 
   my ($block, $prev_gene_id) = ('', '');
   while(<TSV>) {

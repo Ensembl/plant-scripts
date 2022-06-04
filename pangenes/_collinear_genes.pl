@@ -744,10 +744,10 @@ elsif ( !-s $gene_intersectBEDfile ) {
 # now add collinear gene-genomic segments pairs
 # Note: genes in such pairs can actually be $hom_gene_id
 my $num_segments2 = genes_mapped2segments( $geneBEDfile2, $geneBEDfile2mapped, 
-	$gene_intersectBEDfile, $segment_intersectBEDfile );
+	$gene_intersectBEDfile, $segment_intersectBEDfile, 1 );
 
 my $num_segments1 = genes_mapped2segments( $geneBEDfile1, $geneBEDfile1mapped,
-        $gene_intersectBEDfile, $segment_intersectBEDfile1 );
+        $gene_intersectBEDfile, $segment_intersectBEDfile1, 1 );
 
 $cmd = "$SORTBIN $SORTPARS -k1,1 -k2,2n $gene_intersectBEDfile $segment_intersectBEDfile ".
            "$segment_intersectBEDfile1 > $intersectBEDfile_sorted";

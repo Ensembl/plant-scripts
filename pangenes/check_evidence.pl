@@ -2,9 +2,11 @@
 
 # This script takes a cDNA/CDS cluster produced by get_pangenes.pl and retrieves
 # the collinearity data evidence supporting it, inferred from whole genome
-# alignments, contained in mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr).
-# It can print a representative cluster sequence with longest mode length (-s).
-# If a CDS cluster is analyzed a check for internal stop codons is carried out.
+# alignments, often including cases with low coverage and thus not in cluster. 
+# Evidence is contained in file mergedpairs.tsv.gz (presorted with -k1,1 -k4,4nr).
+#
+# It can output a representative cluster sequence with mode length (-s).
+# When CDS clusters are analyzed a check for internal stop codons is carried out.
 #
 # Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
@@ -44,14 +46,15 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
-my ($isCDS,$CDSok,$codon,%badCDS) = ( 0 );
+my ($isCDS, $seq, $gfffh, $CDSok, $codon, %badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
-my ($seq, %isof_len, %isof_seq, %isof_header, %taxa, %taxa_seg, @len);
+my (%isof_len, %isof_seq, %isof_header, %taxa, %outfhandles, @len);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
-my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length, %genome_coords);
+my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
+my (%genome_coords, %scores, %taxon_genes, %taxon_segments);
 
 getopts('hvacfnr:s:o:d:i:', \%opts);
 
@@ -278,7 +281,8 @@ foreach $gene_id (sort @$ref_geneid) {
 } 
 
 
-# 2.1) parse segment gDNA file if required (1-based coordinates)
+# 2.1) parse segment gDNA cluster file if available (1-based coordinates),
+#      might contain sequences with low coverage in input TSV
 my ($ref_geneid_seg,$ref_fasta_seg,$ref_coords_seg,$ref_taxon_seg);
 
 if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
@@ -287,6 +291,10 @@ if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
 
   ( $ref_geneid_seg, $ref_fasta_seg, $ref_coords_seg, $ref_taxon_seg ) =
     parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$gdna_clusterfile" , 1);
+
+  foreach $gene_id (@$ref_geneid_seg) {
+    $taxon_segments{ $ref_taxon_seg->{$gene_id} } = 1;
+  }
 
   printf("\n# cluster %s genes = %d genomic segments = %d (%d taxa)\n",
     $INP_clusterfile,
@@ -365,7 +373,7 @@ foreach $gene_id (@sorted_ids) {
 
   next if(!$TSVdb{$gene_id}); 
 
-  $TSVdata = uncompress($TSVdb{$gene_id}); #die ">> $TSVdata\n\n";
+  $TSVdata = uncompress($TSVdb{$gene_id}); #print ">> $TSVdata\n\n";
  
   foreach $line (split(/\n/,$TSVdata)) { 
 
@@ -380,7 +388,8 @@ foreach $gene_id (@sorted_ids) {
  
     if($homology_type eq 'ortholog_collinear') {
 
-      # skip sequences from other clusters
+      # skip sequences not included in cluster,
+      # note these might be collinear with not enough overlap
       next if(!$cluster_gene_id{$gene_id} || 
         !$cluster_gene_id{$hom_gene_id});
       next if($ref_taxon->{$gene_id} ne $species || 
@@ -429,16 +438,7 @@ foreach $gene_id (@sorted_ids) {
       next if($cluster_gene_id{$gene_id} && $ref_taxon->{$gene_id} ne $species);
       next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
 
-      #$cluster_gene_id{$gene_id}++; #segment-gene pairs not considered for stats
-      
-      if($segment eq 'segment') {
-        push(@segments,$gene_id);
-        $taxa_seg{ $species }++; 
-      } elsif($hom_segment eq 'segment') {
-        push(@segments,$hom_gene_id);
-        $taxa_seg{ $hom_species }++;
-      } 
-
+      # gather segment evidence as well (to be printed)
       push(@pairs, "$line\n");
     }
   }
@@ -458,7 +458,6 @@ if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
 }
 
 # 6) print gene-level summary stats
-my (%scores, %taxon_genes);
 
 print "\n# gene-level stats\n";
 print "#len\tpairs\toverlap\tgene_name\tspecies\n";
@@ -490,6 +489,7 @@ printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
 
 if(!$INP_fix) {
   exit(0);
+
 } else {
   print "\n";
 }
@@ -535,15 +535,14 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
       scalar(@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) > 1 &&
       !defined($split_seen{$ref_taxon->{$gene_id}})) {
 
-        $split_seen{$ref_taxon->{$gene_id}} = 1;
-        foreach my $id (@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) {
-          if($gene_length{$id} < $median_len) {
-            push(@split_models, $id);
-            print "# split $id\n" if($INP_verbose);
-          }
+      $split_seen{$ref_taxon->{$gene_id}} = 1;
+      foreach my $id (@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) {
+        if($gene_length{$id} < $median_len) {
+          push(@split_models, $id);
+          print "# split $id\n" if($INP_verbose);
         }
-
-  } else { # non-outlier/consensus models
+      }
+    } else { # non-outlier/consensus models
 
     # record taxa with 2+ non-outlier genes, 
     # these might be used to fix long genes (if there are enough) 
@@ -566,11 +565,10 @@ if(!@non_outliers) {
 }
 
 # open output GFF files if requested
-my ($gfffh, %outfhandles);
 if($INP_outdir) {
-  foreach $species (keys(%taxon_genes), keys(%taxa_seg)) {
+  foreach $species (keys(%taxon_genes), keys(%taxon_segments)) {
 
-    next if($outfhandles{$species}); # print ">> $species\n";
+    next if($outfhandles{$species}); #print ">> $species\n";
 
     if($INP_appendGFF) {
       open(my $fh,'>>',"$INP_outdir/$species.patch.gff");
@@ -808,7 +806,7 @@ if(@long_models &&
     # TODO: are there intervening TEs?
   }
 
-} elsif(@segments) {
+} elsif(@$ref_geneid_seg) {
 
   # hypothesis: model exists but failed to be annotated
   # proposed fix: liftover consensus models over matching genomic segment
@@ -816,7 +814,7 @@ if(@long_models &&
   foreach my $segment_id (@$ref_geneid_seg){
 
     # skip if genes were parsed for this species/taxon
-    next if($taxon_genes{ $ref_taxon_seg->{$segment_id} });
+    next if($taxon_genes{ $ref_taxon_seg->{$segment_id} }); 
 
     # obtain DNA sequence of segment in plus strand
     $segment = $ref_fasta_seg->{$segment_id};

@@ -806,7 +806,7 @@ if(@long_models &&
     # TODO: are there intervening TEs?
   }
 
-} elsif(@$ref_geneid_seg) {
+} elsif($ref_geneid_seg && scalar(@$ref_geneid_seg)) {
 
   # hypothesis: model exists but failed to be annotated
   # proposed fix: liftover consensus models over matching genomic segment

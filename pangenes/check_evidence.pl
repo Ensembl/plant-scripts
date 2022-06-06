@@ -74,7 +74,6 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
 }
 
 if(defined($opts{'c'})) {
-
   print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " gmap https://doi.org/10.1093/bioinformatics/bti310\n";
@@ -93,6 +92,7 @@ if(defined($opts{'i'})){
   $INP_clusterfile = $opts{'i'};
   if($INP_clusterfile !~ /\.cdna\.fna$/ && $INP_clusterfile !~ /\.cds\.fna$/) {
     die "# EXIT : need a .fna cluster filename with parameter -i\n"
+
   } else {
     $gdna_clusterfile = $INP_clusterfile;
     $gdna_clusterfile =~ s/\.cdna\.fna/.gdna.fna/;
@@ -189,7 +189,7 @@ my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) =
 foreach $gene_id (sort @$ref_geneid) {
 
   # sorted gene ids
-  $cluster_gene_id{$gene_id} = 1;
+  $cluster_gene_id{$gene_id} = 1; 
   push(@sorted_ids, $gene_id);
 
   # length stats
@@ -303,25 +303,26 @@ if(-e "$INP_dir/$cluster_folder/$gdna_clusterfile") {
 }
 
 
-# 3) parse compressed merged TSV file and feed Berkeley DB
-my $mergedTSV = "$INP_dir/mergedpairs.tsv.gz";
-my $TSVdb_file = "$INP_dir/mergedpairs.tsv.bdb";
+# 3) parse compressed merged TSV file and feed Berkeley DB, 
+#    only 1st time this script is called
+my $mergedTSVgz  = "$INP_dir/mergedpairs.tsv.gz";
+my $TSVdb_file   = "$INP_dir/mergedpairs.tsv.bdb";
 
 # only first time
 if(!-s $TSVdb_file) {
 
-  print "\n# creating database (only first time)\n";
+  print "\n# creating database (might take long, first time)\n";
 
-  if(!-s $mergedTSV) {
-    die "# ERROR: cannot find file $mergedTSV, please check -d argument\n";
-  }
+  if(!-s $mergedTSVgz) {
+    die "# ERROR: cannot find $mergedTSVgz, please check -d argument\n";
+  } 
 
   tie(%TSVdb, 'DB_File', $TSVdb_file, 
     O_RDWR|O_CREAT, 0666, $DB_BTREE) ||
     die "# ERROR: cannot create file $TSVdb_file: $!\n";
 
-  open(TSV, "$GZIPBIN -dc $mergedTSV |") ||
-    die "# ERROR: cannot uncompress $mergedTSV\n";
+  open(TSV, "$GZIPBIN -dc $mergedTSVgz |") ||
+    die "# ERROR: cannot uncompress $mergedTSVgz\n";
 
   my ($block, $prev_gene_id) = ('', '');
   while(<TSV>) {
@@ -333,7 +334,8 @@ if(!-s $TSVdb_file) {
         if($block) {
           $TSVdb{$prev_gene_id} = compress($block);
         }
-        
+       
+        # start new block 
         $block = $_;
         $prev_gene_id = $gene_id;
 
@@ -345,7 +347,7 @@ if(!-s $TSVdb_file) {
 
   $TSVdb{$gene_id} = compress($block);
 
-  close(TSV);
+  close(TSV); 
 
   print "# done\n";  
 
@@ -361,9 +363,9 @@ if(!-s $TSVdb_file) {
 # 4) parse TSV blocks for selected genes  
 foreach $gene_id (@sorted_ids) {
 
-  next if(!$TSVdb{$gene_id});
+  next if(!$TSVdb{$gene_id}); 
 
-  $TSVdata = uncompress($TSVdb{$gene_id});
+  $TSVdata = uncompress($TSVdb{$gene_id}); #die ">> $TSVdata\n\n";
  
   foreach $line (split(/\n/,$TSVdata)) { 
 
@@ -428,10 +430,10 @@ foreach $gene_id (@sorted_ids) {
       next if($cluster_gene_id{$hom_gene_id} && $ref_taxon->{$hom_gene_id} ne $hom_species);
 
       #$cluster_gene_id{$gene_id}++; #segment-gene pairs not considered for stats
-
+      
       if($segment eq 'segment') {
         push(@segments,$gene_id);
-        $taxa_seg{ $species }++;
+        $taxa_seg{ $species }++; 
       } elsif($hom_segment eq 'segment') {
         push(@segments,$hom_gene_id);
         $taxa_seg{ $hom_species }++;
@@ -568,7 +570,7 @@ my ($gfffh, %outfhandles);
 if($INP_outdir) {
   foreach $species (keys(%taxon_genes), keys(%taxa_seg)) {
 
-    next if($outfhandles{$species});
+    next if($outfhandles{$species}); # print ">> $species\n";
 
     if($INP_appendGFF) {
       open(my $fh,'>>',"$INP_outdir/$species.patch.gff");
@@ -578,7 +580,7 @@ if($INP_outdir) {
       $outfhandles{$species} = $fh;
     }
   }
-}
+} 
 
 if($INP_verbose) {
   printf("# long model candidates %d\n", scalar(@long_models));

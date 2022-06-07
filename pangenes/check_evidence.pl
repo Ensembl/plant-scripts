@@ -46,7 +46,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
-my ($isCDS, $seq, $gfffh, $CDSok, $codon, %badCDS) = ( 0 );
+my ($isCDS, $seq, $gfffh, $CDSok, $codon, $stop, %badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -189,7 +189,9 @@ if($clusternameOK == 0) {
 my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
 
-foreach $gene_id (sort @$ref_geneid) {
+print "\n# sequence-level stats\n\n";
+
+foreach $gene_id (@$ref_geneid) {
 
   # sorted gene ids
   $cluster_gene_id{$gene_id} = 1; 
@@ -210,8 +212,9 @@ foreach $gene_id (sort @$ref_geneid) {
   $CDSok = 1; 
   if($isCDS) {
     CODON: while($isof_seq{$gene_id}{$isof_id} =~ /(\w{3})/g) {
-      foreach $codon (@standard_stop_codons) {  
-        if($1 eq $codon && $+[0] < $isof_len{$gene_id}{$isof_id}) { 
+      $codon = uc($1);
+      foreach $stop (@standard_stop_codons) {  
+        if($stop eq $codon && $+[0] < $isof_len{$gene_id}{$isof_id}) { 
           $CDSok = 0; #print "$1 $+[0]\n";
           last CODON;
         }
@@ -221,11 +224,13 @@ foreach $gene_id (sort @$ref_geneid) {
 
   if($CDSok == 1) {
     push(@len, $isof_len{$gene_id}{$isof_id});
-  } else {
-    print "# WARN: $gene_id $isof_id contains internal stop codons, skip it\n";
 
-   $full_id = $ref_taxon->{$gene_id}.$gene_id;
-   $badCDS{$full_id} = 1;
+  } else {
+    print "# WARN: $gene_id $isof_id [$ref_taxon->{$gene_id}] ".
+      "contains internal stop codons, skip it\n";
+
+    $full_id = $ref_taxon->{$gene_id}.$gene_id;
+    $badCDS{$full_id} = 1;
   }
 
   # taxa stats
@@ -235,20 +240,20 @@ foreach $gene_id (sort @$ref_geneid) {
 my ($median_length, $cutoff_low_length, $cutoff_high_length) =
   get_outlier_cutoffs( \@len , $INP_verbose );
 
-# note: might be "mode2 mode1" for bimodal data
+# note: if length distribution is bimodal there will be 2 modes
 my @modes_length = calc_mode( \@len );
 
 printf("\n# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
   $median_length, join(',',@modes_length));
 
 if($INP_modeseq) {
-
   my ($mode_gene_id, $mode_isof_id);
 
-  foreach $gene_id (sort @$ref_geneid) {
+  foreach $gene_id (@$ref_geneid) {
     foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
  
-      next if($isof_len{$gene_id}{$isof_id} != $modes_length[0]);
+      next if($badCDS{ $ref_taxon->{$gene_id}.$gene_id } || 
+        $isof_len{$gene_id}{$isof_id} != $modes_length[0]);
  
       if(!$mode_isof_id || grep(/$ref_taxon->{$gene_id}/,@ref_names)) {
         ($mode_gene_id, $mode_isof_id) = ($gene_id, $isof_id);
@@ -265,7 +270,7 @@ if($INP_modeseq) {
     " (append to $INP_modeseq)\n";
 }
 
-foreach $gene_id (sort @$ref_geneid) {
+foreach $gene_id (@$ref_geneid) {
   foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
     if($isof_len{$gene_id}{$isof_id} < $cutoff_low_length) {
 

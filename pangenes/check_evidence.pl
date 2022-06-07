@@ -605,8 +605,18 @@ if(@long_models &&
 
     $gene_id = $fullid2id{$full_id};
 
+    # check segment size
+    if($genome_coords{$full_id} =~ m/^(\S+?):(\d+)-(\d+)\(([+-])\)/) {
+      ($chr,$start,$end,$strand) = ($1, $2, $3, $4);
+      if($end - $start > $MAXSEGMENTSIZE ) {
+        print "# skip segment $chr:$start-$end($strand) [$species] (long gene, too long)\n";
+        next;
+      }  
+    }
+
     # cut genomic segment harboring this (long) gene
     $genome_file = "$INP_dir/../_$ref_taxon->{$gene_id}.fna";
+
     $segment = cut_genomic_segment_bedtools(
       $genome_coords{$full_id},$genome_file,$BEDTOOLSBIN ); 
 
@@ -740,9 +750,9 @@ if(@long_models &&
 
     if($segment_data{'end'}-$segment_data{'start'} > $MAXSEGMENTSIZE ) {
 
-      print "# skip long split segment " . 
+      print "# skip segment " . 
         "$segment_data{'chr'}:$segment_data{'start'}-$segment_data{'end'}($segment_data{'strand'}) " .
-        "[$species]\n";
+        "[$species] (split gene, too long)\n";
       next;
     }
 

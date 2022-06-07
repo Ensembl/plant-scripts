@@ -31,7 +31,7 @@ my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 95.0;
-my $MAXSEGMENTSIZE = 100000;
+my $MAXSEGMENTSIZE = 100_000;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
 
 my @FEATURES2CHECK = (

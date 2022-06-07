@@ -280,7 +280,7 @@ sub get_string_with_previous_genomes {
 # >chr01:11217-12435(+) [oryza_sativa_RAPDB]
 # and thus supports the same gene having several associated sequences.
 # Returns:
-# i)   ref to list with coord-sorted gene ids
+# i)   ref to list with gene ids (usually coord-sorted if parsed from GFF)
 # ii)  ref to hash with FASTA strings with genes as keys,
 #       might contain 2+ seqs for the same gene id
 # iii) ref to hash mapping gene ids to chr coordinates

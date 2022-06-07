@@ -31,6 +31,7 @@ my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 95.0;
+my $MAXSEGMENTSIZE = 100000;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
 
 my @FEATURES2CHECK = (
@@ -189,7 +190,7 @@ if($clusternameOK == 0) {
 my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
 
-print "\n# sequence-level stats\n\n";
+print "\n# sequence-level stats\n";
 
 foreach $gene_id (@$ref_geneid) {
 
@@ -700,7 +701,7 @@ if(@long_models &&
 
       $gene_id = $fullid2id{$full_id}; 
 
-      next if($ref_taxon->{$gene_id} ne $species);
+      next if($ref_taxon->{$gene_id} ne $species); 
 
       if($genome_coords{$full_id} =~ m/^(\S+?):(\d+)-(\d+)\(([+-])\)/) {
         ($chr,$start,$end,$strand) = ($1, $2, $3, $4)
@@ -718,7 +719,8 @@ if(@long_models &&
 
       } else {
 
-        next if($chr ne $segment_data{'chr'} || $strand ne $segment_data{'strand'});
+        next if($chr ne $segment_data{'chr'} || 
+          $strand ne $segment_data{'strand'});
 
         if($start < $segment_data{'start'}) {
           $segment_data{'start'} = $start;
@@ -733,7 +735,16 @@ if(@long_models &&
       }
     }
    
-    next if(!$segment_data{'models'} || $segment_data{'models'} < 2);
+    next if( !$segment_data{'models'} || 
+      $segment_data{'models'} < 2);
+
+    if($segment_data{'end'}-$segment_data{'start'} > $MAXSEGMENTSIZE ) {
+
+      print "# skip long split segment " . 
+        "$segment_data{'chr'}:$segment_data{'start'}-$segment_data{'end'}($segment_data{'strand'}) " .
+        "[$species]\n";
+      next;
+    }
 
     $segment = cut_genomic_segment_bedtools(
       "$segment_data{'chr'}:$segment_data{'start'}-$segment_data{'end'}($segment_data{'strand'})",
@@ -974,7 +985,7 @@ sub liftover_gmap {
   } else {
     die "# ERROR(liftover_gmap): cannot parse target coords ($target_fna)\n";
   }
-
+  
   # 1st run: get alignment summary to parse scores
   # Note: discard stderr as it gets in teh way while parsing stdout
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A"; 

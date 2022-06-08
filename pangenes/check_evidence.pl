@@ -967,6 +967,7 @@ sub cut_genomic_segment_bedtools {
 
 
 # Lifts over a gene model upon gmap mapping of a query (cDNA) sequence.
+# Note: requires a full (Met2stop) CDS as long as that in the cDNA
 # Takes 5+1 params:
 # i)   original gene_ids (comma separated strings)
 # ii)  FASTA string of genomic sequence (target)
@@ -998,7 +999,7 @@ sub liftover_gmap {
   
   # 1st run: get alignment summary to parse scores
   # Note: discard stderr as it gets in teh way while parsing stdout
-  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A"; 
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A";  
   open(GMAP, "$cmd 2>/dev/null |") ||
     die "# ERROR(liftover_gmap): cannot run $cmd\n"; 
   while(<GMAP>) { 
@@ -1020,12 +1021,20 @@ sub liftover_gmap {
   my ($stoposg, $stoposc) = (-1,-1);
   if($aaseq{'g'} && $aaseq{'g'} =~ m/\*/) { $stoposg = $-[0] }
   if($aaseq{'c'} && $aaseq{'c'} =~ m/\*/) { $stoposc = $-[0] }
-  if($stoposg < $stoposc) {
+
+  if(length($aaseq{'g'}) < length($aaseq{'c'})) {
+    # incomplete peptide, in this case cDNA sequence might not reach stop codon
+    $match = 0;
+    if($verbose){
+      printf("# WARN(liftover_gmap): short peptide sequence (%d < %d)\n",
+        length($aaseq{'g'}), length($aaseq{'c'}));
+    }
+  } elsif($stoposg < $stoposc) { 
     $match = 0;
     if($verbose){
       print "# WARN(liftover_gmap): premature stop codon ($stoposg < $stoposc)\n";
     }
-  }
+  } #else { print "$match\n$aaseq{'g'}\n$aaseq{'c'}\n" } 
 
   if($match == 0) { 
     return \%lifted_model

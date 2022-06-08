@@ -30,3 +30,4 @@
 27052022: check_evidence.pl -s -r oryza_sativa_RAPDB,oryza_sativa_MSU appends to file mode isoform sequence, preferring refs
 02052022: check_evidence.pl locates internal stop codons in CDS sequences, those cannot be used to fix gene models
 07062022: check_evidence.pl skip long segments with candidate long/split genes, uses $MAXSEGMENTSIZE
+08062022: check_evidence.pl sub liftover_gmap does not accept shorter peptides

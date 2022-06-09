@@ -47,7 +47,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
-my ($isCDS, $seq, $gfffh, $CDSok, %badCDS) = ( 0 );
+my ($isCDS, $seq, $gfffh, $CDSok, $outputGFF, %badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -673,15 +673,19 @@ if(@long_models &&
 
       print "# long gene model: corrected $gene_id [$ref_taxon->{$gene_id}]\n";
 
-      printf($gfffh "## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
-        $gene_id,
-        $ref_taxon->{$gene_id},
-        $species,
-        $lifted{$species}{'matches'},
-        $lifted{$species}{'mismatches'},
-        $lifted{$species}{'indels'});
+      $outputGFF = 
+        sprintf("## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+          $gene_id,
+          $ref_taxon->{$gene_id},
+          $species,
+          $lifted{$species}{'matches'},
+          $lifted{$species}{'mismatches'},
+          $lifted{$species}{'indels'});
 
-      print $gfffh "$GFF\n";
+      $outputGFF .= "$GFF\n";
+
+      # print to GFF in one operation
+      print $gfffh $outputGFF;
 
       last; # take only best
     }
@@ -811,15 +815,18 @@ if(@long_models &&
 
       print "# split gene model: corrected $segment_data{'genes'} [$species]\n";
 
-      printf($gfffh "## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
-        $segment_data{'genes'},
-        $species,
-        $hom_species,
-        $lifted{$hom_species}{'matches'},
-        $lifted{$hom_species}{'mismatches'},
-        $lifted{$hom_species}{'indels'});
+      $outputGFF =
+        sprintf("## replaces %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+          $segment_data{'genes'},
+          $species,
+          $hom_species,
+          $lifted{$hom_species}{'matches'},
+          $lifted{$hom_species}{'mismatches'},
+          $lifted{$hom_species}{'indels'});
 
-      print $gfffh "$GFF\n";
+      $outputGFF .= "$GFF\n";
+
+      print $gfffh $outputGFF;
 
       last; # take only best
     }
@@ -900,15 +907,18 @@ if(@long_models &&
 
       print "# missing gene model: corrected $segment_id [$ref_taxon_seg->{$segment_id}]\n";
 
-      printf($gfffh "## adds %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
-        $segment_id,
-        $ref_taxon_seg->{$segment_id},
-        $hom_species,
-        $lifted{$hom_species}{'matches'},
-        $lifted{$hom_species}{'mismatches'},
-        $lifted{$hom_species}{'indels'});
+      $outputGFF = 
+        sprintf("## adds %s [%s] source=%s matches=%d mismatches=%d indels=%d\n",
+          $segment_id,
+          $ref_taxon_seg->{$segment_id},
+          $hom_species,
+          $lifted{$hom_species}{'matches'},
+          $lifted{$hom_species}{'mismatches'},
+          $lifted{$hom_species}{'indels'});
 
-      print $gfffh "$GFF\n";
+      $outputGFF .= "$GFF\n";
+   
+      print $gfffh $outputGFF;
 
       last; # take only best
     }

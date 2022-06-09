@@ -733,7 +733,7 @@ $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
          "$BEDINTSCPAR -s > $gene_intersectBEDfile";
 
 system($cmd);
-sleep(2);
+sleep(5);
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (genes, $cmd)\n";
 }

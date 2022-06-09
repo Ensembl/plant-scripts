@@ -241,8 +241,8 @@ if ($dowfmash) {
     }
 } elsif($dogsalign) {
 
-     $GSAINDXEXE = "$gsalign_path/$GSAINDXEXE";
-     $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
+    $GSAINDXEXE = "$gsalign_path/$GSAINDXEXE";
+    $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
     
     if(`$GSALIGNEXE 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $GSALIGNEXE , exit\n";
@@ -274,21 +274,34 @@ if($patch) {
     $geneBEDfile2 = $tmpdir . "_$sp2.gene.patch.bed";
 }
 
-if($reuse && !$patch && -s $geneBEDfile1 && check_BED_format($geneBEDfile1)) {
+if($reuse && -s $geneBEDfile1 && check_BED_format($geneBEDfile1) && 
+    (!$patch || !$indexonly) ) {
     print "# re-using $geneBEDfile1\n";
 } else {
     my ( $num_genes1, $mean_gene_len1 ) = parse_genes_GFF( $gff1, $geneBEDfile1 );
-    printf( "# %d genes parsed in %s mean length=%d\n",
-        $num_genes1, $gff1, $mean_gene_len1 );
+    if(check_BED_format($geneBEDfile1)) {
+        printf( "# %d genes parsed in %s mean length=%d\n",
+            $num_genes1, $gff1, $mean_gene_len1 );
+    } else {
+        die "# ERROR: failed parsing genes from $gff1\n";    
+    }
 }
 
 if(!$indexonly) {
-    if($reuse && !$patch && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
+ 
+    # $geneBEDfile2 will be re-used if possible even with $patch if !$indexonly,
+    # as patched BED files are generated earlier with $indexonly
+
+    if($reuse && -s $geneBEDfile2 && check_BED_format($geneBEDfile2)) {
         print "# re-using $geneBEDfile2\n";
     } else {
         my ( $num_genes2, $mean_gene_len2 ) = parse_genes_GFF( $gff2, $geneBEDfile2 );
-        printf( "# %d genes parsed in %s mean length=%d\n",
-            $num_genes2, $gff2, $mean_gene_len2 );
+        if(check_BED_format($geneBEDfile2)) {
+            printf( "# %d genes parsed in %s mean length=%d\n",
+                $num_genes2, $gff2, $mean_gene_len2 );
+        } else {
+            die "# ERROR: failed parsing genes from $gff2\n";
+        }
     }
 }
 
@@ -733,7 +746,7 @@ $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
          "$BEDINTSCPAR -s > $gene_intersectBEDfile";
 
 system($cmd);
-sleep(5);
+sleep(2);
 if ( $? != 0 ) {
     die "# ERROR: failed running bedtools (genes, $cmd)\n";
 }

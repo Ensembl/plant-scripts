@@ -213,7 +213,7 @@ foreach $gene_id (@$ref_geneid) {
   $CDSok = 1; # default (cDNA)
   if($isCDS) {
     $CDSok = no_premature_stops( $isof_seq{$gene_id}{$isof_id}, 
-      \@standard_stop_codons, $INP_verbose); 
+      \@standard_stop_codons, $isCDS, $INP_verbose); 
   }
 
   if($CDSok == 1) {
@@ -1047,7 +1047,7 @@ sub liftover_gmap {
       if(/^(\S+)/) {
         $CDSseq = $1;
 
-        if(no_premature_stops( $CDSseq, $ref_stop_codons, $verbose) != 1) {
+        if(no_premature_stops( $CDSseq, $ref_stop_codons, $isCDS, $verbose) != 1) {
           return \%lifted_model;
         }
       }
@@ -1161,22 +1161,23 @@ sub revcomp_fasta {
 }
 
 # Takes:
-# i)  string with CDS nucleotide sequence string
-# ii) ref to list with stop codons
-# iii) optional, boolean to request verbose output
+# i)   string with CDS nucleotide sequence string
+# ii)  ref to list with stop codons
+# iii) optional, boolean to check sequence length is multiple of 3
+# iv)  optional, boolean to request verbose output
 # Returns:
 # 1: if no internal stop codons found and CDS length is multiple of 3,
-# 3: if CDS length is NOT multiple of 3
-# 0: when internal stop codons found
+# 3: if CDS length is NOT multiple of 3 (only if param iii == 1)
+# 0: rest of cases
 sub no_premature_stops {
-  my ($seq, $ref_stop_codons, $verbose) = @_;
+  my ($seq, $ref_stop_codons, $check_length, $verbose) = @_;
   my ($edseq, $codon, $stop);
 
   # edit/prepare sequence for codon scanning
   $edseq = $seq;
   $edseq =~ s/\.//g; # gmap introns
   $edseq = uc($edseq);
-  if(length($edseq) % 3) {
+  if(defined($check_length) && $check_length == 1 && length($edseq) % 3) {
     printf("# WARN(no_premature_stops): CDS length (%d) not multiple of 3\n",
       length($edseq)) if($verbose);
     return 3

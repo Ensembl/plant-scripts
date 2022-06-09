@@ -47,7 +47,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
-my ($isCDS, $seq, $gfffh, $CDSok, $codon, $stop, %badCDS) = ( 0 );
+my ($isCDS, $seq, $gfffh, $CDSok, %badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -210,18 +210,11 @@ foreach $gene_id (@$ref_geneid) {
   }
 
   # check for internal stop codons
-  $CDSok = 1; 
+  $CDSok = 1; # default (cDNA)
   if($isCDS) {
-    CODON: while($isof_seq{$gene_id}{$isof_id} =~ /(\w{3})/g) {
-      $codon = uc($1);
-      foreach $stop (@standard_stop_codons) {  
-        if($stop eq $codon && $+[0] < $isof_len{$gene_id}{$isof_id}) { 
-          $CDSok = 0; #print "$1 $+[0]\n";
-          last CODON;
-        }
-      }
-    }
-  } 
+    $CDSok = no_premature_stops( $isof_seq{$gene_id}{$isof_id}, 
+      \@standard_stop_codons); 
+  }
 
   if($CDSok == 1) {
     push(@len, $isof_len{$gene_id}{$isof_id});
@@ -635,7 +628,8 @@ if(@long_models &&
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;  
 
         $ref_lifted_model = liftover_gmap( "$gene_id,", 
-          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, $INP_verbose ); 
+          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, 
+          \@standard_stop_codons, $INP_verbose ); 
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model || 
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -776,7 +770,8 @@ if(@long_models &&
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
         $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, 
-          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, $INP_verbose );
+          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, 
+          \@standard_stop_codons, $INP_verbose );
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -864,7 +859,8 @@ if(@long_models &&
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
         $ref_lifted_model = liftover_gmap( 'missing', 
-          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, $INP_verbose );
+          $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, 
+          \@standard_stop_codons, $INP_verbose );
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -974,17 +970,17 @@ sub cut_genomic_segment_bedtools {
 # iii) FASTA string of cDNA sequence (query)
 # iv)  path to gmap
 # v)   min identity percentage (float)
-# vi)  verbose boolean, optional
+# vi)  ref to list with stop codon strings
+# vii) verbose boolean, optional
 # Returns ref to hash with model features, including 'GFF' and
 # several scores such as 'matches', 'mismatches' or 'indels'
 # Note: gene_id of lifted models if that of source cDNA
 # Note: original gene_id annotated as old_locus_tag in GFF's attributes column
 sub liftover_gmap {
   my ($old_gene_ids, $target_fna, $query_cdna, 
-      $gmap_path, $min_identity, $verbose) = @_;
+      $gmap_path, $min_identity, $ref_stop_codons, $verbose) = @_;
 
-  my ($chr,$start,$end,$offset,$cmd);  
-  my ($seqname,$aa, %aaseq);
+  my ($chr,$start,$end,$offset,$cmd,$CDSseq);  
   my ($identity, $match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0, 0);
   my (%lifted_model);
 
@@ -997,9 +993,9 @@ sub liftover_gmap {
     die "# ERROR(liftover_gmap): cannot parse target coords ($target_fna)\n";
   }
   
-  # 1st run: get alignment summary to parse scores
-  # Note: discard stderr as it gets in teh way while parsing stdout
-  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A";  
+  # 1st run: get alignment summary to parse scores, prints pretty alignment if verbose
+  # Note: discard stderr as it gets in the way while parsing stdout
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -A"; 
   open(GMAP, "$cmd 2>/dev/null |") ||
     die "# ERROR(liftover_gmap): cannot run $cmd\n"; 
   while(<GMAP>) { 
@@ -1008,39 +1004,43 @@ sub liftover_gmap {
       if($identity < $min_identity) {
         ($match, $mismatch, $indel) = (0, 0, 0);
       }
-    } elsif(/^aa\.([cg])\s+\d+\s(.*)/) {
-      #aa.g        48  N  N  P  S  S  Q  I  T  Y  G  L  T  I  H  H  A  V 
-      ($seqname,$aa) = ($1,$2);
-      $aaseq{$seqname} .= $aa;
     }
+
+    # fails is there are large indels
+    #elsif(/^aa\.([cg])\s+\d+\s(.*)/) {
+    #  #aa.g        48  N  N  P  S  S  Q  I  T  Y  G  L  T  I  H  H  A  V 
+    #  ($seqname,$aa) = ($1,$2);
+    #  $aaseq{$seqname} .= $aa }
+
     print if($verbose);
   }
   close(GMAP);
 
-  # are there premature stop codons in the genomic sequence?
-  my ($stoposg, $stoposc) = (-1,-1);
-  if($aaseq{'g'} && $aaseq{'g'} =~ m/\*/) { $stoposg = $-[0] }
-  if($aaseq{'c'} && $aaseq{'c'} =~ m/\*/) { $stoposc = $-[0] }
-
-  if(length($aaseq{'g'}) < length($aaseq{'c'})) {
-    # incomplete peptide, in this case cDNA sequence might not reach stop codon
-    $match = 0;
-    if($verbose){
-      printf("# WARN(liftover_gmap): short peptide sequence (%d < %d)\n",
-        length($aaseq{'g'}), length($aaseq{'c'}));
-    }
-  } elsif($stoposg < $stoposc) { 
-    $match = 0;
-    if($verbose){
-      print "# WARN(liftover_gmap): premature stop codon ($stoposg < $stoposc)\n";
-    }
-  } #else { print "$match\n$aaseq{'g'}\n$aaseq{'c'}\n" } 
-
-  if($match == 0) { 
+  if($match == 0) {
     return \%lifted_model
-  } 
+  }
+ 
+  # 2nd run: are there premature stop codons in the genomic sequence?
+  # Note: this causes problems as CDS coords in GFF go until the last aligned base
+  $cmd = "echo '$target_fna$query_cdna' | $gmap_path -3";
+  open(GMAP, "$cmd 2>/dev/null |") ||
+    die "# ERROR(liftover_gmap): cannot run $cmd\n";
+  while(<GMAP>) {
+    if($. == 2) {
+      chomp;
+      if(/^(\S+)/) {
+        $CDSseq = $1;
 
-  # 2nd run: map query cDNA on genomic target, parse GFF and apply coord offset
+        if(!no_premature_stops( $CDSseq, $ref_stop_codons)) {
+          print "# WARN(liftover_gmap): CDS contains premature stop codon\n";
+          return \%lifted_model;
+        }
+      }
+    }
+  }
+  close(GMAP); 
+
+  # 3nd run: map query cDNA on genomic target, parse GFF and apply coord offset
   $cmd = "echo '$target_fna$query_cdna' | $gmap_path -f 2";
   
   open(GMAP, "$cmd 2>/dev/null |") || 
@@ -1144,3 +1144,33 @@ sub revcomp_fasta {
 
   return $revcomp;
 }
+
+# Takes:
+# i)  string with CDS nucleotide sequence string
+# ii) ref to list with stop codons
+# Returns 1 if no internal stop codons found, else 0
+sub no_premature_stops {
+  my ($seq, $ref_stop_codons) = @_;
+  my ($codon, $stop);
+
+  # prepare sequence for codon scanning
+  $seq =~ s/\.//g; # gmap introns
+  $seq = uc($seq);
+  if(length($seq) % 3) {
+    print "# WARN(no_premature_stops): CDS length not multiple of 3\n";
+    return 0
+  }
+  
+  while($seq =~ /(\w{3})/g) {
+    $codon = $1;
+    foreach $stop (@$ref_stop_codons) {
+      if($stop eq $codon && $+[0] < length($seq)) {
+        return 0; 
+      }
+    }
+  }
+
+  return 1
+}
+
+

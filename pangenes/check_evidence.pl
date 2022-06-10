@@ -1171,19 +1171,19 @@ sub revcomp_fasta {
 # 0: rest of cases
 sub no_premature_stops {
   my ($seq, $ref_stop_codons, $check_length, $verbose) = @_;
-  my ($edseq, $codon, $stop);
+  my ($codon, $stop);
 
-  if(defined($check_length) && $check_length == 1 && length($edseq) % 3) {
+  if(defined($check_length) && $check_length == 1 && length($seq) % 3) {
     printf("# WARN(no_premature_stops): CDS length (%d) not multiple of 3\n",
-      length($edseq)) if($verbose);
+      length($seq)) if($verbose);
     return 3
   }
   
-  while($edseq =~ /(\w{3})/g) {
+  while($seq =~ /(\w{3})/g) {
     $codon = $1;
     foreach $stop (@$ref_stop_codons) {
-      if($stop eq $codon && $+[0] < length($edseq)) {
-        print "# WARN(no_premature_stops): premature stop codon $+[0] < ".length($edseq)."\n" if($verbose);
+      if($stop eq $codon && $+[0] < length($seq)) {
+        print "# WARN(no_premature_stops): premature stop codon $+[0] < ".length($seq)."\n" if($verbose);
         return 0; 
       }
     }

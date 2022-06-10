@@ -1044,9 +1044,9 @@ sub liftover_gmap {
   while(<GMAP>) {
     if($. == 2) {
       chomp;
-      if(/^(\S+)/) {
-        $CDSseq = $1;
-
+      if(/^(.+)/) {
+        $CDSseq = uc($1); # might contain ... and spaces
+        $CDSseq =~ s/[^a-zA-Z]//g;
         if(no_premature_stops( $CDSseq, $ref_stop_codons, $isCDS, $verbose) != 1) {
           return \%lifted_model;
         }
@@ -1173,10 +1173,6 @@ sub no_premature_stops {
   my ($seq, $ref_stop_codons, $check_length, $verbose) = @_;
   my ($edseq, $codon, $stop);
 
-  # edit/prepare sequence for codon scanning
-  $edseq = $seq;
-  $edseq =~ s/\.//g; # gmap introns
-  $edseq = uc($edseq);
   if(defined($check_length) && $check_length == 1 && length($edseq) % 3) {
     printf("# WARN(no_premature_stops): CDS length (%d) not multiple of 3\n",
       length($edseq)) if($verbose);

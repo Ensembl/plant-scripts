@@ -1183,7 +1183,8 @@ sub no_premature_stops {
     $codon = $1;
     foreach $stop (@$ref_stop_codons) {
       if($stop eq $codon && $+[0] < length($seq)) {
-        print "# WARN(no_premature_stops): premature stop codon $+[0] < ".length($seq)."\n" if($verbose);
+        print "# WARN(no_premature_stops): premature stop codon $+[0] < ".
+          length($seq)."\n" if($verbose);
         return 0; 
       }
     }

@@ -503,7 +503,8 @@ if(!$INP_fix) {
 #    (based on chr coords of 1st isoform of each gene)
 my $non_outlier_pairs = 0;
 my ($chr,$start,$end,$strand,$isof,$ref_lifted_model,$GFF);
-my (@long_models, @split_models, @non_outliers, %seen_outlier_taxon);
+my (@long_models, @split_models, @non_outliers);
+my (@candidate_nonoutliers, %split_seen, %seen_nonoutlier_taxon);
 
 # 7.1) get outlier cutfoff values 
 my ($median_pairs, $cutoff_low_pairs, $cutoff_high_pairs) = 
@@ -511,14 +512,13 @@ my ($median_pairs, $cutoff_low_pairs, $cutoff_high_pairs) =
 my ($median_len, $cutoff_low_len, $cutoff_high_len) = 
   get_outlier_cutoffs( $scores{'length'} , $INP_verbose );
 
-# 7.2) identify outlier and non-outlier/consensus gene models
-my %split_seen;
+# 7.2) identify outlier (long/split) models and non-outlier/consensus ones
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   # skip genes with internal stop codons in CDS sequences
   next if($badCDS{$full_id});
 
-  $gene_id = $fullid2id{$full_id};
+  $gene_id = $fullid2id{$full_id}; 
 
   $genome_file = "$INP_dir/../_$ref_taxon->{$gene_id}.fna";
   if(!-e $genome_file) {
@@ -534,33 +534,51 @@ foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
       print "# long $gene_id\n" if($INP_verbose); 
   
   } elsif( # short models from same species with few collinear pairs
-    $seen{$full_id} < $cutoff_low_pairs &&
-    ($gene_length{$full_id} < $cutoff_low_len ||
-       $gene_length{$full_id} < $median_len) &&
+
+      $seen{$full_id} < $cutoff_low_pairs &&
+      ($gene_length{$full_id} < $cutoff_low_len ||
+      $gene_length{$full_id} < $median_len) &&
       scalar(@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) > 1 &&
       !defined($split_seen{$ref_taxon->{$gene_id}})) {
 
       $split_seen{$ref_taxon->{$gene_id}} = 1;
+
+      # Note: ids might include other genes from same taxon 
+      # that might have ~consensus length
       foreach my $id (@{ $taxon_genes{ $ref_taxon->{$gene_id} }}) {
         if($gene_length{$id} < $median_len) {
+
+          # only taxa with 2+ split models actually considered, see below
           push(@split_models, $id);
           print "# split $id\n" if($INP_verbose);
         }
       }
-    } else { # non-outlier/consensus models
 
-    # record taxa with 2+ non-outlier genes, 
-    # these might be used to fix long genes (if there are enough) 
-    if(!$seen_outlier_taxon{ $ref_taxon->{$gene_id} }) {
-      $seen_outlier_taxon{ $ref_taxon->{$gene_id} } = 1;
-      if( scalar(@{$taxon_genes{ $ref_taxon->{$gene_id} }}) > 1) {
-        $non_outlier_pairs++;
-      }
-    }
-
-    push(@non_outliers, $full_id);
+  } else { 
+    push(@candidate_nonoutliers, $full_id);
   }
 }
+
+# taxa with 2+ non-outlier genes might be used to fix long genes,
+# others can still be used to fix split genes
+foreach $full_id (@candidate_nonoutliers) {
+
+  # this solves the problem of genes parsed in order 
+  # in the previous loop, a gene in a pair of split models
+  # might initially be a non-outlier candidate
+  next if(grep(/^$full_id$/, @split_models));
+
+  $seen_nonoutlier_taxon{ $ref_taxon->{ $fullid2id{$full_id} } }++;
+
+  push(@non_outliers, $full_id);
+} 
+
+foreach $species (keys(%seen_nonoutlier_taxon)) {
+  if($seen_nonoutlier_taxon{ $species } > 1) {
+    $non_outlier_pairs++;
+  }
+}
+
 
 
 # 7.3) suggest model fixes in GFF format, order of priority: long > split > missing

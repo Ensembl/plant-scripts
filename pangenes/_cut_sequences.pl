@@ -222,7 +222,9 @@ sub parse_genes {
 
 # Takes two GFF files (original and patch) and produces a new GFF file
 # that includes patched gene models. Patched models match the original
-# ones by means of 'old_locus_tag' tags in gene features. Two params:
+# ones by means of 'old_locus_tag' tags in gene features. 
+# Patched GFF files might be concatenated; this means latter models
+# can replaced models declared earlier in the same file. Two params:
 # i)   GFF filename
 # ii)  GFF filename with selected gene model patches
 # iii) output patched GFF filename 
@@ -231,26 +233,75 @@ sub patch_gff {
 
   my ($gff_file, $patchfile, $patched_gff_filename) = @_;
 
-  my ($total_patched,$patch, $gene_id) = (0);
-  my (%depr_gene_id);
+  my ($patch,$gene_id,$old_gene_id,$comment);
+  my ($chr, $start);
+  my (%depr_gene_id, %new2old, %patched_model, %coords);
 
-  # read in GFF patches
+  # read in GFF patches, possible concatenated
   open(PATCH,'<',$patchfile) ||
     die "# ERROR(patch_gff): cannot read $patchfile\n";
   while(<PATCH>) {
-    $patch .= $_;
 
-    my @gffdata = split(/\t/,$_);
-    if($gffdata[2] && $gffdata[2] eq 'gene') {
-      $total_patched++;
-      while($gffdata[8] =~ m/old_locus_tag=([^;]+)/g) {
-        $gene_id = $1;
-        $depr_gene_id{ $gene_id } = 1;
+    if(/^$/){ 
+      next 
+    } elsif(/^#/) {
+      $comment = $_;
+    } else {
+      my @gffdata = split(/\t/,$_);
+
+      #chr01 gmap gene 411 776 . - . ID=Os121164;..old_locus_tag=missing;
+      #chr01 gmap gene 411 776 . - . ID=gene:Os127564;..old_locus_tag=Os121164;
+      #chr01 gmap gene 411 800 . - . ID=Os22222;..old_locus_tag=Os127564;
+
+      if($gffdata[2] && $gffdata[2] eq 'gene') {
+
+        $chr = $gffdata[0];
+        $start = $gffdata[3];
+
+        if($gffdata[8] =~ m/ID=([^;]+)/) {
+          $gene_id = $1;
+        }
+
+        while($gffdata[8] =~ m/old_locus_tag=([^;]+)/g) {
+          $old_gene_id = $1;
+
+          # if gene replaces a previous patched model,
+          # correct old_locus_tag to point to original
+          if($new2old{ $old_gene_id }) {
+            $depr_gene_id{ $old_gene_id } = $gene_id;
+            $old_gene_id = $new2old{ $old_gene_id };
+          } 
+
+          $new2old{ $gene_id } = $old_gene_id;
+          $depr_gene_id{ $old_gene_id } = $gene_id;
+        }
+
+        $patched_model{ $gene_id } = $_;
+        $coords{ $chr }{ $start } = $gene_id;
+
+      } else {
+        $patched_model{ $gene_id } .= $_
       }
     }
   }
   close(PATCH);
 
+  # find non-redundant patches, sort and concat them
+  my $total_patched = 0;
+  foreach $chr (sort {$a cmp $b} keys(%coords)) {
+    foreach $start (sort {$a <=> $b} keys(%{ $coords{$chr} })) {
+
+      if($depr_gene_id{ $gene_id }) {
+        print "# skip old patched $gene_id\n";
+        next;
+      }
+
+      $gene_id = $coords{ $chr }{ $start };
+      $patch .= $patched_model{ $gene_id };
+      $total_patched++;
+    } 
+  }
+  
   printf("# total patched: %d deprecated: %d\n\n",
     $total_patched,scalar(keys(%depr_gene_id)));
 

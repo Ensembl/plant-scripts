@@ -139,6 +139,7 @@ Here I list the most important ones, they can be changed by editing the script f
 |check_evidence.pl|$MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
 |check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
 |check_evidence.pl|$MINLIFTIDENTITY|95.0|min % of identity of gmap cDNA to genome alignments to be considered|
+|check_evidence.pl|$MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
 
 ### Dependencies
 
@@ -592,21 +593,37 @@ For each get_pangenes.pl run these files are merged and sorted in a compressed T
 It is possible to extract the collinearity evidence supporting selected clusters as follows:
 
     $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
-    # cluster genes = 4
 
-    #gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlapdn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
-    Oryza_indica.ASM465v1.chr1:1:46475865-46476413(-)	segment	Oryza_indica.ASM465v1.chr1	548	segment_collinear	gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	548	NULL	NULL	NULL	100.00	1	1:46475865-46476413(-);1:42033863-42034305(-)
-    gene:BGIOSGA000064	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1	4598	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4598	NULL	NULL	NULL	100.00	1	1:46471290-46475888(-);1:42393585-42401178(-)
-    gene:BGIOSGA000064	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1	4538	ortholog_collinear	gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4538	NULL	NULL	NULL	100.00	1	1:46471290-46475888(-);1:42029287-42033826(-)
-    gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4539	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4539	NULL	NULL	NULL	100.00	1	1:42029287-42033826(-);1:42393585-42401178(-)
-    gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	442	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	442	NULL	NULL	NULL	100.00	1	1:42033863-42034305(-);1:42393585-42401178(-)
+    # sequence-level stats
 
-    #length	pairs	gene_overlap	gene	species
-    7594	3	9579	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1
-    4540	2	9077	gene:ONIVA01G50850	Oryza_nivara_v1.chr1
-    4599	2	9136	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1
-    443	1	442	gene:ONIVA01G50860	Oryza_nivara_v1.chr1
-    4570	2	9106	median	values
+    # isoform length in cluster: median=834 mode(s): 1632,846,834,342,205
+
+    # long isoform: transcript:ONIVA01G50800.3 gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] length=1833
+    # long isoform: transcript:ONIVA01G50800.1 gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] length=2014
+    # long isoform: transcript:ONIVA01G50800.2 gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] length=1884
+    # long isoform: transcript:BGIOSGA000067-TA gene:BGIOSGA000067 [Oryza_indica.ASM465v1.chr1] length=1632
+
+    # cluster gene:ONIVA01G50800.cdna.fna genes = 5 (3 taxa)
+
+    # creating database (might take long, first time)
+    # done
+
+    #gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlap	dn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
+    gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	2241	ortholog_collinear	gene:Os01g0960800	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1	2241	NULL	NULL	NULL	100.00	1	1:41995665-42001336(-);1:42361400-42363627(-)
+    gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	834	ortholog_collinear	gene:Os01g0960900	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1	834	NULL	NULL	NULL	100.00	1	1:41995665-42001336(-);1:42364071-42364905(-)
+    gene:BGIOSGA000068	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1	1723	ortholog_collinear	gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	1723	NULL	NULL	NULL	100.00	1	1:46437509-46439232(-);1:41995665-42001336(-)
+    gene:BGIOSGA000068	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1	1723	ortholog_collinear	gene:Os01g0960800	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1	1723	NULL	NULL	NULL	100.00	1	1:46437509-46439232(-);1:42361400-42363627(-)
+    gene:BGIOSGA000067	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1	2735	ortholog_collinear	gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	2735	NULL	NULL	NULL	100.00	1	1:46439948-46442683(-);1:41995665-42001336(-)
+    gene:BGIOSGA000067	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1	834	ortholog_collinear	gene:Os01g0960900	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1	834	NULL	NULL	NULL	100.00	1	1:46439948-46442683(-);1:42364071-42364905(-)
+    
+    # gene-level stats
+    #len	pairs	overlap	gene_name	species
+    5672	4	7533	gene:ONIVA01G50800	Oryza_nivara_v1.chr1
+    2736	2	3569	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1
+    2228	2	3964	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1
+    835	2	1668	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1
+    1724	2	3446	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1
+    2228	2	3569	median	values
 
 Note this script builds a local BerkeleyDB database the first time is run, which takes a minute, so that subsequent calls run efficiently.
 

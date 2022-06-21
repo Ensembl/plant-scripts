@@ -31,7 +31,7 @@ my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 95.0;
-my $MINLONGOVERLAP = 0.75; # min overlap of mapped gene pairs to correct long models
+my $MINFIXOVERLAP = 0.75; # min overlap of mapped genes to correct long/split models
 my $MAXSEGMENTSIZE = 100_000;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
 
@@ -694,7 +694,7 @@ if(@long_models &&
       
       # check overlap of lifted gene pair
       ($GFFstart, $GFFend) = get_gene_coords_GFF( $GFF );
-      if($GFFend-$GFFstart < ($end-$start) * $MINLONGOVERLAP) {
+      if($GFFend-$GFFstart < ($end-$start) * $MINFIXOVERLAP) {
         printf("# gene pair overlap with long not enough: %s,%s (%d) %s,%s (%d)\n",
           $start,$end,$end-$start,
           $GFFstart,$GFFend,$GFFend-$GFFstart) if($INP_verbose);
@@ -843,10 +843,16 @@ if(@long_models &&
       next if(!$lifted{ $hom_species }{ 'total' } ||
         $lifted{ $hom_species }{ 'total' } > 1);
 
-      # TODO: check overlap is enough
-      # print "$segment_data{'start'} $segment_data{'start'} $lifted{$hom_species}{'matches'}\n";
-
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
+
+      # check overlap of lifted gene is enough
+      ($GFFstart, $GFFend) = get_gene_coords_GFF( $GFF );
+      if($GFFend-$GFFstart < ($segment_data{'end'}-$segment_data{'start'}) * $MINFIXOVERLAP) {
+        printf("# consensus gene overlap with split segment not enough: %s,%s (%d) %s,%s (%d)\n",
+          $segment_data{'start'},$segment_data{'end'},$segment_data{'end'}-$segment_data{'start'},
+          $GFFstart,$GFFend,$GFFend-$GFFstart) if($INP_verbose);
+        next;
+      }
 
       # actually print GFF and log
       $gfffh = $outfhandles{ $species } || *STDOUT;

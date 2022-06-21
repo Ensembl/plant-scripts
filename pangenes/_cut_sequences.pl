@@ -234,20 +234,21 @@ sub patch_gff {
   my ($gff_file, $patchfile, $patched_gff_filename) = @_;
 
   my ($patch,$gene_id,$old_gene_id,$comment);
-  my ($chr, $start);
+  my ($chr,$start,$line);
   my (%depr_gene_id, %new2old, %patched_model, %coords);
 
   # read in GFF patches, possible concatenated
   open(PATCH,'<',$patchfile) ||
     die "# ERROR(patch_gff): cannot read $patchfile\n";
-  while(<PATCH>) {
+  while($line = <PATCH>) {
 
-    if(/^$/){ 
+    if($line =~ /^$/){ 
       next 
-    } elsif(/^#/) {
-      $comment = $_;
+    } elsif($line =~ /^#/) {
+      $comment = $line;
     } else {
-      my @gffdata = split(/\t/,$_);
+      chomp($line);
+      my @gffdata = split(/\t/,$line);
 
       #chr01 gmap gene 411 776 . - . ID=Os121164;..old_locus_tag=missing;
       #chr01 gmap gene 411 776 . - . ID=gene:Os127564;..old_locus_tag=Os121164;
@@ -268,6 +269,12 @@ sub patch_gff {
           # if gene replaces a previous patched model,
           # correct old_locus_tag to point to original
           if($new2old{ $old_gene_id }) {
+
+            # add original old locus tag
+            if($line !~ /$new2old{$old_gene_id}/) {
+              $line .= "old_locus_tag=$new2old{$old_gene_id};";
+            }
+
             $depr_gene_id{ $old_gene_id } = $gene_id;
             $old_gene_id = $new2old{ $old_gene_id };
           } 
@@ -276,11 +283,11 @@ sub patch_gff {
           $depr_gene_id{ $old_gene_id } = $gene_id;
         }
 
-        $patched_model{ $gene_id } = $_;
+        $patched_model{ $gene_id } = "$line\n";
         $coords{ $chr }{ $start } = $gene_id;
 
       } else {
-        $patched_model{ $gene_id } .= $_
+        $patched_model{ $gene_id } .= "$line\n"
       }
     }
   }
@@ -291,12 +298,14 @@ sub patch_gff {
   foreach $chr (sort {$a cmp $b} keys(%coords)) {
     foreach $start (sort {$a <=> $b} keys(%{ $coords{$chr} })) {
 
+      $gene_id = $coords{ $chr }{ $start };
+
       if($depr_gene_id{ $gene_id }) {
         print "# skip old patched $gene_id\n";
         next;
       }
 
-      $gene_id = $coords{ $chr }{ $start };
+      #if($gene_id eq 'gene:Os06g0705350.path1') { print "mira\n" }
       $patch .= $patched_model{ $gene_id };
       $total_patched++;
     } 

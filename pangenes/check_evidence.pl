@@ -31,6 +31,7 @@ my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 95.0;
+my $MINLONGOVERLAP = 0.75; # min overlap of mapped gene pairs to correct long models
 my $MAXSEGMENTSIZE = 100_000;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
 
@@ -693,7 +694,12 @@ if(@long_models &&
       
       # check overlap of lifted gene pair
       ($GFFstart, $GFFend) = get_gene_coords_GFF( $GFF );
-      print "$start,$end $GFFstart,$GFFend\n";
+      if($GFFend-$GFFstart < ($end-$start) * $MINLONGOVERLAP) {
+        printf("# gene pair overlap with long not enough: %s,%s (%d) %s,%s (%d)\n",
+          $start,$end,$end-$start,
+          $GFFstart,$GFFend,$GFFend-$GFFstart) if($INP_verbose);
+        next;
+      }
 
       next if(!$GFF); # mapped models actually overlap
 

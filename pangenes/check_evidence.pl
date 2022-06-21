@@ -502,7 +502,8 @@ if(!$INP_fix) {
 # 7) suggest fixes for poor gene models based on pan-gene consensus
 #    (based on chr coords of 1st isoform of each gene)
 my $non_outlier_pairs = 0;
-my ($chr,$start,$end,$strand,$isof,$ref_lifted_model,$GFF);
+my ($chr,$start,$end,$strand,$isof,$ref_lifted_model);
+my ($GFF, $GFFstart, $GFFend);
 my (@long_models, @split_models, @non_outliers);
 my (@candidate_nonoutliers, %split_seen, %seen_nonoutlier_taxon);
 
@@ -614,7 +615,7 @@ if(@long_models &&
   $non_outlier_pairs/scalar(@non_outliers) >= $MINPAIRPECNONOUTLIERS) {
 
   # hypothesis: a long model actually merges two single genes by mistake
-  # proposed fix: liftover individual consensus models against genomic segment containing long gene, 
+  # proposed fix: liftover individual consensus models on genomic segment of long gene, 
   # expect 2+ hits from same species on same strand
   foreach $full_id (@long_models) {
 
@@ -686,9 +687,13 @@ if(@long_models &&
 
       # at least 2 from same species needed
       next if($lifted{ $species }{ 'total' } < 2);
- 
+
       # sort GFF features and make sure they don't overlap
       $GFF = sort_check_overlap_genes_GFF( @{ $lifted{ $species }{'GFF'} } );
+      
+      # check overlap of lifted gene pair
+      ($GFFstart, $GFFend) = get_gene_coords_GFF( $GFF );
+      print "$start,$end $GFFstart,$GFFend\n";
 
       next if(!$GFF); # mapped models actually overlap
 
@@ -821,7 +826,7 @@ if(@long_models &&
       }
     }
 
-    # choose best (long) model to replace split ones
+    # choose best (consensus) model to replace split ones
     foreach $hom_species (sort {
         $lifted{$b}{'matches'} <=> $lifted{$a}{'matches'} ||
         $lifted{$a}{'mismatches'} <=> $lifted{$b}{'mismatches'} ||
@@ -831,6 +836,9 @@ if(@long_models &&
       # skip genes with multiple mappings
       next if(!$lifted{ $hom_species }{ 'total' } ||
         $lifted{ $hom_species }{ 'total' } > 1);
+
+      # TODO: check overlap is enough
+      # print "$segment_data{'start'} $segment_data{'start'} $lifted{$hom_species}{'matches'}\n";
 
       $GFF = $lifted{ $hom_species }{'GFF'}->[0];
 
@@ -1125,7 +1133,7 @@ sub liftover_gmap {
 
 # Takes array with GFF string blocks, one per gene, sorts them,
 # makes sure they don't overlap and return sorted GFF string.
-# If two block overlap and empty string is returned
+# If two blocks overlap an empty string is returned
 sub sort_check_overlap_genes_GFF {
   my @unsortedGFF = @_;
 
@@ -1157,6 +1165,29 @@ sub sort_check_overlap_genes_GFF {
   } 
 
   return $GFFstring
+}
+
+# Takes sorted GFF string and parses gene features.
+# If there are several genes takes start from 1st and end from last.
+# Returns:
+# i)  start coord (integer)
+# ii) end coord (integer)
+sub get_gene_coords_GFF {
+  my ($GFFstring) = @_;
+
+  my ($gffstart, $gffend, $start, $end) = (-1, -1);
+  
+  foreach my $line (split(/\n/, $GFFstring)) {
+    if($line =~ m/^[^\t]+\t[^\t]+\tgene\t(\d+)\t(\d+)\t/) { 
+      ($start, $end) = ($1, $2);  
+      if($gffstart == -1){ $gffstart = $start }
+      if($end > $gffend) {
+        $gffend = $end
+      }
+    }
+  }
+  
+  return ($gffstart, $gffend);
 }
 
 # Takes a DNA sequence FASTA string and returns its reverse complemente string

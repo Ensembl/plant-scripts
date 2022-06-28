@@ -46,8 +46,8 @@ my $BEDTOOLSBIN = $ENV{'EXE_BEDTOOLS'} || 'bedtools';
 my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
 $GMAPBIN .= " $GMAPARAMS ";
 
-my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix) = ( '', '', 0 , 0 );
-my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0, '', '');
+my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix,$INP_mode_stats) = ('','',0,0,0);
+my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0,'','');
 my ($isCDS, $seq, $gfffh, $CDSok, $outputGFF, %badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
@@ -58,7 +58,7 @@ my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 my (%genome_coords, %scores, %taxon_genes, %taxon_segments);
 
-getopts('hvacfnr:s:o:d:i:', \%opts);
+getopts('hvacfnmr:s:o:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -69,7 +69,9 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "                                                 genomic sequences usually one folder up)\n";
   print "-i cdna/cds .fna file as in .cluster_list file  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-s append mode isoform sequence to file         (optional, example: -s isoforms.fna)\n";
-  print "-r comma-sep string with reference taxa         (optional, requires -s)\n";
+  print "-r CSV string with reference taxa for mode      (optional, prefers mode from ref, requires -s,\n";
+  print "                                                 example: oryza_sativa1,oryza_sativa2)\n";
+  print "-m print all sequences that match mode          (optional, overriden with -s -r)\n"; 
   print "-n do not print raw evidence                    (optional)\n";
   print "-f fix gene models and produce GFF              (optional, GFF printed to stdout by default)\n";
   print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
@@ -114,12 +116,14 @@ if(defined($opts{'s'})){
   $INP_modeseq = $opts{'s'};
  
   if(defined($opts{'r'})) {
-    @ref_names = split(/,/,$opts{'r'}); 
+    @ref_names = split(/[,;]/,$opts{'r'}); 
     if(!@ref_names) {
       die "# EXIT: cannot parse reference names (-r), " .
         "make sure they have no blanks and are comma-separated\n";
     }
   }
+} elsif(defined($opts{'m'})){
+  $INP_mode_stats = 1
 }
 
 if(defined($opts{'n'})){ 
@@ -269,6 +273,18 @@ if($INP_modeseq) {
 
   print "# mode isoform: $mode_gene_id $mode_isof_id [$ref_taxon->{$mode_gene_id}]".
     " (append to $INP_modeseq)\n";
+
+} elsif($INP_mode_stats) {
+  foreach $gene_id (@$ref_geneid) {
+    foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
+
+      next if($badCDS{ $ref_taxon->{$gene_id}.$gene_id } ||
+        $isof_len{$gene_id}{$isof_id} != $modes_length[0]);
+
+      print "# mode isoform: $gene_id $isof_id [$ref_taxon->{$gene_id}]\n";
+    }
+  }
+  print "\n";
 }
 
 foreach $gene_id (@$ref_geneid) {

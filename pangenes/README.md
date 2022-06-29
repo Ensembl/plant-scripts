@@ -39,6 +39,7 @@ and produces different types of output:
 - [Evidence supporting clusters](#evidence-supporting-clusters)
 - [Remediating pan-gene models with check_evidence-pl](#remediating-pan-gene-models-with-check_evidencepl)
 - [Pan-gene analysis with GFF patches](#pan-gene-analysis-with-GFF-patches)
+- [Dotplots of gene-based whole-genome alignments](#dotplots)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -140,6 +141,7 @@ Here I list the most important ones, they can be changed by editing the script f
 |check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
 |check_evidence.pl|$MINLIFTIDENTITY|95.0|min % of identity of gmap cDNA to genome alignments to be considered|
 |check_evidence.pl|$MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
+|_dotplot.pl|$MINCONTIGSIZE|100000|min length of chrs/contigs to be considered for dotplot|
 
 ### Dependencies
 
@@ -716,9 +718,54 @@ argument -v can be added to increase verbosity and see the raw gmap alignments u
     >transcript:Os01t0958400-03 gene:Os01g0958400 1:42240858-42245248(+) [Oryza_sativa.IRGSP-1.0.chr1]
     >transcript:BGIOSGA005214-TA gene:BGIOSGA005214 1:46296594-46299549(+) [Oryza_indica.ASM465v1.chr1]
 
+## Dotplots
+
+The *_dotplot.pl* script can be used to make a genone-wide dotplot of collinear gene models
+resulting from a pairwise WGA, which are stored in TSV format. For instance, let's inspect one such
+file, in this case produced with teh GSal algorithm:
+
+    head test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv
+
+    gene:Os01g0100466	gene:Os01g0100466	Oryza_nivara_v1.chr1	1173	segment_collinear	Oryza_sativa.IRGSP-1.0.chr1:1:116866-118039(-)	segment	Oryza_sativa.IRGSP-1.0.chr1	1173	NULL	NULL	NULL	100.00	1	NA;1:116866-118039(-)
+    gene:Os01g0100650	gene:Os01g0100650	Oryza_nivara_v1.chr1	562	segment_collinear	Oryza_sativa.IRGSP-1.0.chr1:1:129920-130482(-)	segment	Oryza_sativa.IRGSP-1.0.chr1	562	NULL	NULL	NULL	100.00	1	NA;1:129920-130482(-)
+    gene:ONIVA01G00020	gene:ONIVA01G00020	Oryza_nivara_v1.chr1	209	segment_collinear	Oryza_sativa.IRGSP-1.0.chr1:1:14792580-14792789(+)	segment	Oryza_sativa.IRGSP-1.0.chr1	209	NULL	NULL	NULL	100.00	1	1:43370-62621(+);1:14792580-14792789(+)
+    gene:ONIVA01G00100	gene:ONIVA01G00100	Oryza_nivara_v1.chr1	7827	ortholog_collinear	gene:Os01g0100100	gene:Os01g0100100	Oryza_sativa.IRGSP-1.0.chr1	7827	NULL	NULL	NULL	100.00	1	1:104920-116326(+);1:2982-10815(+)
+    gene:ONIVA01G00120	gene:ONIVA01G00120	Oryza_nivara_v1.chr1	2956	ortholog_collinear	gene:Os01g0100400	gene:Os01g0100400	Oryza_sativa.IRGSP-1.0.chr1	2956	NULL	NULL	NULL	100.00	1	1:116435-120177(+);1:12720-15685(+)
+    gene:ONIVA01G00130	gene:ONIVA01G00130	Oryza_nivara_v1.chr1	2415	ortholog_collinear	gene:Os01g0100500	gene:Os01g0100500	Oryza_sativa.IRGSP-1.0.chr1	2415	NULL	NULL	NULL	100.00	1	1:121778-124616(+);1:16398-20144(+)
+    gene:ONIVA01G00140	gene:ONIVA01G00140	Oryza_nivara_v1.chr1	4052	ortholog_collinear	gene:Os01g0100600	gene:Os01g0100600	Oryza_sativa.IRGSP-1.0.chr1	4052	NULL	NULL	NULL	100.00	1	1:125929-131075(+);1:22840-26892(+)
+    gene:ONIVA01G00150	gene:ONIVA01G00150	Oryza_nivara_v1.chr1	1501	ortholog_collinear	gene:Os01g0100700	gene:Os01g0100700	Oryza_sativa.IRGSP-1.0.chr1	1501	NULL	NULL	NULL	100.00	1	1:131192-132981(+);1:27142-28644(+)
+    gene:ONIVA01G00160	gene:ONIVA01G00160	Oryza_nivara_v1.chr1	4626	ortholog_collinear	gene:Os01g0100800	gene:Os01g0100800	Oryza_sativa.IRGSP-1.0.chr1	4626	NULL	NULL	NULL	100.00	1	1:134781-139734(+);1:29817-34453(+)
+    gene:ONIVA01G00170	gene:ONIVA01G00170	Oryza_nivara_v1.chr1	5525	ortholog_collinear	gene:Os01g0100900	gene:Os01g0100900	Oryza_sativa.IRGSP-1.0.chr1	5525	NULL	NULL	NULL	100.00	1	1:140596-146446(+);1:35622-41136(+)
+
+This file can be converted to a PAF file as follows:
+
+    perl _dotplot.pl test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv
+  
+The printed output includes a few R lines that must be run in order to actually produce the plot below.
+Note that this required installing the [pafr](https://cran.r-project.org/package=pafr) R package:
+
+    # $MINCONTIGSIZE = 100000
+
+    # PAF file: test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.genes.paf
+
+    # Make a dotplot of aligned models coords with the following R script:
+
+      #https://dwinter.github.io/pafr/articles/Introduction_to_pafr.html
+      #install.packages(devtools)
+      #devtools::install_github("dwinter/pafr")
+
+      library(pafr, quietly=TRUE)
+
+      pafile = "test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.genes.paf"
+      ali <- read_paf(pafile)
+
+      dotplot(ali, label_seqs = TRUE, xlab='Oryza_nivara_v1.chr1', ylab='Oryza_sativa.IRGSP-1.0.chr1')
+
+![Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0](plots/dotplot.png)
 
 
 ## Troubleshooting
+
 
 If you encounter an error, or the program stops, it is useful to look for error messages in the logfiles.
 As get_pangenes-pl includes 3 other scripts, logs are split in independent files:

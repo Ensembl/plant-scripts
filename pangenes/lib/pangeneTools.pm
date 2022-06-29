@@ -384,80 +384,80 @@ sub extract_isoforms_FASTA {
 # Takes ref to list of numbers and returns the median
 sub calc_median {
 
-    my ($dataref) = @_;
+  my ($dataref) = @_;
 
-    my $mid = int(scalar(@$dataref)/2);
-    my @sorted = sort {$a<=>$b} (@$dataref);
+  my $mid = int(scalar(@$dataref)/2);
+  my @sorted = sort {$a<=>$b} (@$dataref);
 
-    if(scalar(@sorted) % 2) {
-        return $sorted[ $mid ]
-    }
-    else {
-        return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
-    }
+  if(scalar(@sorted) % 2) {
+    return $sorted[ $mid ]
+  }
+  else {
+    return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
+  }
 }
 
 # Takes ref to list of numbers and returns the median
 sub calc_median {
 
-    my ($dataref) = @_;
+  my ($dataref) = @_;
 
-    my $mid = int(scalar(@$dataref)/2);
-    my @sorted = sort {$a<=>$b} (@$dataref);
+  my $mid = int(scalar(@$dataref)/2);
+  my @sorted = sort {$a<=>$b} (@$dataref);
 
-    if(scalar(@sorted) % 2) {
-        return $sorted[ $mid ]
-    }
-    else {
-        return sprintf("%1.1f",($sorted[$mid-1] + $sorted[$mid])/2)
-    }
+  if(scalar(@sorted) % 2) {
+    return $sorted[ $mid ]
+  }
+  else {
+    return sprintf("%1.1f",($sorted[$mid-1] + $sorted[$mid])/2)
+  }
 }
 
 # Takes ref to list of numbers and returns a list with mode(s)
 sub calc_mode {
 
-    my ($dataref) = @_;
+  my ($dataref) = @_;
 
-    my ($max, $elem, @modes, %obs) = (0);
+  my ($max, $elem, @modes, %obs) = (0);
 
-    foreach $elem (@$dataref) {
-        $obs{$elem}++;
-        if($obs{$elem} > $max) { 
-            $max = $obs{$elem}
-        }
+  foreach $elem (@$dataref) {
+    $obs{$elem}++;
+    if($obs{$elem} > $max) { 
+      $max = $obs{$elem}
     }
+  }
 
-    foreach $elem (sort {$b<=>$a} keys(%obs)) {
-        if($obs{$elem} == $max) {
-            push(@modes, $elem);
-        }
-    }    
+  foreach $elem (sort {$b<=>$a} keys(%obs)) {
+    if($obs{$elem} == $max) {
+      push(@modes, $elem);
+    }
+  }    
 
-    return @modes;
+  return @modes;
 }
 
 
 # Takes ref to list of numbers and returns N50
 sub N50 {
 
-    my ($dataref) = @_;
+  my ($dataref) = @_;
 
-    my ($total_len,$cumul_len,$N50,$seqlen) = (0,0,-1);
-    my @sorted = sort {$b<=>$a} (@$dataref);
+  my ($total_len,$cumul_len,$N50,$seqlen) = (0,0,-1);
+  my @sorted = sort {$b<=>$a} (@$dataref);
 
-    foreach $seqlen (@sorted) {
-        $total_len += $seqlen
+  foreach $seqlen (@sorted) {
+    $total_len += $seqlen
+  }
+
+  foreach $seqlen (@sorted) {
+    $cumul_len += $seqlen;
+    if($cumul_len>$total_len/2){ 
+      $N50 = $seqlen;
+      last 
     }
-
-    foreach $seqlen (@sorted) {
-        $cumul_len += $seqlen;
-        if($cumul_len>$total_len/2){ 
-            $N50 = $seqlen;
-            last 
-        }
-    }
+  }
     
-    return $N50;
+  return $N50;
 }
 
 
@@ -468,59 +468,60 @@ sub N50 {
 # iii) Q3 + 1.5 IQR
 sub get_outlier_cutoffs {
 
-    my ($dataref, $verbose) = @_;
+  my ($dataref, $verbose) = @_;
 
-    my @values = sort {$a<=>$b} (@$dataref);
+  my @values = sort {$a<=>$b} (@$dataref);
 
-    # 25% percentile (Q1)
-    my $Q1 = $values[sprintf("%.0f",(0.25*($#values)))];
+  # 25% percentile (Q1)
+  my $Q1 = $values[sprintf("%.0f",(0.25*($#values)))];
 
-    # 50% median
-    my $median = $values[sprintf("%.0f",(0.5*($#values)))];
+  # 50% median
+  my $median = $values[sprintf("%.0f",(0.5*($#values)))];
 
-    # 75% percentile (Q3)
-    my $Q3 = $values[sprintf("%.0f",(0.75*($#values)))];
+  # 75% percentile (Q3)
+  my $Q3 = $values[sprintf("%.0f",(0.75*($#values)))];
 
-    my $IQR = $Q3-$Q1; 
+  my $IQR = $Q3-$Q1; 
 
-    print "# Q1 $Q1 Q3 $Q3 IQR $IQR\n" if($verbose);
+  print "# Q1 $Q1 Q3 $Q3 IQR $IQR\n" if($verbose);
 
-    return (
-        $median,
-        sprintf("%1.1f", $Q1 - (1.5 * $IQR)),
-        sprintf("%1.1f", $Q3 + (1.5 * $IQR)),
-    )
+  return (
+    $median,
+    sprintf("%1.1f", $Q1 - (1.5 * $IQR)),
+    sprintf("%1.1f", $Q3 + (1.5 * $IQR)),
+  )
 }
 
 # Takes 2 strings:
 # 1) name of FASTA .fai index file
-# 2) regex to match chromosome names, applied to 1st column
+# 2) (optional) regex to match chromosome names, applied to 1st column
 # Returns ref to hash with chr and/or 'unplaced' as keys and BED strings as value
 sub read_FAI_regex2hash {
-    my ($faifile,$regex) = @_;
 
-    my ($seqname,$size);
-    my %bed;
+  my ($faifile,$regex) = @_;
 
-    open(FAI,"<$faifile") ||
-        die "# ERROR(read_FAI_regex2hash): cannot read $faifile $!\n";
+  my ($seqname,$size);
+  my %bed;
 
-    while (<FAI>) {
-        #1A      602900890       60      60      61
-        #1B      697493198       612949359       60      61
-        if(/^(\S+)\t(\d+)/) {
-            ($seqname, $size) = ($1, $2);
-            if($seqname !~ m/^$regex$/) {
-                $bed{'unplaced'} .= "$seqname\t0\t$size\n";
-            } else {
-                $bed{$seqname} = "$seqname\t0\t$size\n";
-            }
-        }
+  open(FAI,"<$faifile") ||
+    die "# ERROR(read_FAI_regex2hash): cannot read $faifile $!\n";
+
+  while (<FAI>) {
+    #1A      602900890       60      60      61
+    #1B      697493198       612949359       60      61
+    if(/^(\S+)\t(\d+)/) {
+      ($seqname, $size) = ($1, $2);
+      if($regex && $seqname !~ m/^$regex$/) {
+        $bed{'unplaced'} .= "$seqname\t0\t$size\n";
+      } else {
+        $bed{$seqname} = "$seqname\t0\t$size\n";
+      }
     }
+  }
 
-    close(FAI);
+  close(FAI);
 
-    return \%bed;
+  return \%bed;
 }
 
 1;

@@ -100,7 +100,7 @@ close(PAF);
 print "\n# \$MINCONTIGSIZE = $MINCONTIGSIZE\n";
 print "\n# PAF file: $outPAFfile\n\n";
 
-print "# You can make a dotplot of aligned models with the following R script:\n";
+print "# Make a dotplot of aligned models coords with the following R script:\n";
 
 print<<EOF;
 
@@ -109,9 +109,14 @@ print<<EOF;
   #devtools::install_github("dwinter/pafr")
 
   library(pafr, quietly=TRUE)
+
   pafile = "$outPAFfile"
   ali <- read_paf(pafile)
+
   dotplot(ali, label_seqs = TRUE, xlab='$sp1', ylab='$sp2')
+
+  #if chr/contig coverage wanted instead
+  #plot_coverage(ali) + scale_fill_brewer()
 
 EOF
 

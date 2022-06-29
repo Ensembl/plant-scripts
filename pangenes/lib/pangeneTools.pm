@@ -13,6 +13,7 @@ require Exporter;
   parse_GFF_regex
   get_string_with_previous_genomes
   parse_sequence_FASTA_file
+  read_FAI_regex2hash
   extract_isoforms_FASTA
   calc_median
   calc_mode
@@ -487,5 +488,35 @@ sub get_outlier_cutoffs {
     )
 }
 
+# Takes 2 strings:
+# 1) name of FASTA .fai index file
+# 2) regex to match chromosome names, applied to 1st column
+# Returns ref to hash with chr and/or 'unplaced' as keys and BED strings as value
+sub read_FAI_regex2hash {
+    my ($faifile,$regex) = @_;
+
+    my ($seqname,$size);
+    my %bed;
+
+    open(FAI,"<$faifile") ||
+        die "# ERROR(read_FAI_regex2hash): cannot read $faifile $!\n";
+
+    while (<FAI>) {
+        #1A      602900890       60      60      61
+        #1B      697493198       612949359       60      61
+        if(/^(\S+)\t(\d+)/) {
+            ($seqname, $size) = ($1, $2);
+            if($seqname !~ m/^$regex$/) {
+                $bed{'unplaced'} .= "$seqname\t0\t$size\n";
+            } else {
+                $bed{$seqname} = "$seqname\t0\t$size\n";
+            }
+        }
+    }
+
+    close(FAI);
+
+    return \%bed;
+}
 
 1;

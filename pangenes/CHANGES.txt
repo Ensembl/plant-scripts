@@ -33,3 +33,4 @@
 09062022: check_evidence.pl sub liftover_gmap calls validates lifted CDS sequences with sub no_premature_stops
 21062022: check_evidence.pl split models only fixed if mapped gene overlaps >= MINFIXOVERLAP=0.75
 21062022: check_evidence.pl long models only fixed if mapped gene pair overlaps >= MINFIXOVERLAP=0.75
+29062022: added _dotplot.pl

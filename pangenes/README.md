@@ -522,7 +522,7 @@ The resulting pan and core gene files look like this:
 In addition to the result files described in [Example 1](#example-1-default-pan-gene-analysis),
 there are different types of intermediate result files produced by the pipeline.
 Probably the most valuable files are those containing collinear gene models
-resulting from a pairwise WGA, which are stored in TSV format (see also this [section](#inspection-of-result-files)).
+resulting from a pairwise WGA, which are stored in TSV format (see also [Dotplots](#dotplots)).
 For instance, let's inspect one such file, in this case produced with the GSal algorithm:
 
     head test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv
@@ -549,10 +549,12 @@ These files also contain useful:
     # 29008 genes mapped (76.1% in 3+blocks) ... (reverse, 4 unmapped)
     # 26241 collinear gene pairs , 6561 collinear segments, 1.031 hits/gene
 
-The first line summarizes the length of the blocks that make up the WGA, which will be shorter for poor assemblies.
-The 2nd and 3rd line indicate how many of the gene models from the two compared taxa/annotations were actually mapped in the WGA,
-in both directions (A->B and B->A).
-The 4th line reports how many collinear gene pairs and segments where found, and how many hits in the WGA were found on average per gene.
+The first line summarizes the length of the blocks that make up the WGA, 
+which will be shorter for poor assemblies.
+The 2nd and 3rd line indicate how many of the gene models from the two compared 
+taxa/annotations were actually mapped in the WGA, in both directions (A->B and B->A).
+The 4th line reports how many collinear gene pairs and segments where found, 
+and how many hits in the WGA were found on average per gene.
 
 These files can be analyzed in bulk in the terminal for quality control, for instance with:
 

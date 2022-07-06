@@ -460,7 +460,7 @@ else {
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
-                die "# ERROR: failed running wfmash (probably ran out of memory, $cmd)\n";
+                die "# ERROR: failed running wfmash (probably ran out of memory, $cmd , $?)\n";
             } elsif ( !-e $splitPAF ) {
                 die "# ERROR: failed generating $splitPAF file ($cmd)\n";
             } else {
@@ -483,7 +483,7 @@ else {
                 $cmd = "$GSAINDXEXE $chrfasta1 $preffix 2>&1";
                 system($cmd);
                 if ( $? != 0 ) {
-                    die "# ERROR: failed running bwt_index ($cmd)\n";
+                    die "# ERROR: failed running bwt_index ($cmd, $?)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
                     die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";
@@ -498,7 +498,7 @@ else {
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
-                die "# ERROR: failed running GSAlign (probably ran out of memory, $cmd)\n";
+                die "# ERROR: failed running GSAlign (probably ran out of memory, $cmd, $?)\n";
             } elsif ( !-e $splitMAF ) {
                 die "# ERROR: failed generating $splitMAF file ($cmd)\n";
             } else {
@@ -548,7 +548,7 @@ else {
                 print "# $cmd\n";
                 system($cmd);
                 if ( $? != 0 ) {
-                    die "# ERROR: failed running minimap2 (probably ran out of memory, $cmd)\n";
+                    die "# ERROR: failed running minimap2 (probably ran out of memory, $cmd, $?)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
                     die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";
@@ -561,7 +561,7 @@ else {
             system($cmd);
             sleep(2);
             if ( $? != 0 ) {
-                die "# ERROR: failed running minimap2 (probably ran out of memory)\n";
+                die "# ERROR: failed running minimap2 (probably ran out of memory, $cmd, $?)\n";
             }
             elsif ( !-e $splitPAF ) {
                 die "# ERROR: failed generating $splitPAF file ($cmd)\n";

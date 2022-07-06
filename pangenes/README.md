@@ -34,6 +34,7 @@ and produces different types of output:
 - [Example 2: splitting genome in chromosomes](#example-2-splitting-genome-in-chromosomes)
 - [Example 3: using GSAlign instead of minimap2](#example-3-using-GSAlign-instead-of-minimap2)
 - [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)
+- [Inspection of result files](#inspection-of-result-files)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
@@ -515,6 +516,49 @@ The resulting pan and core gene files look like this:
     5057	6652	7860	
     5057	6818	7860	
 
+
+## Inspection of result files
+
+In addition to the result files described in [Example 1](#example-1-default-pan-gene-analysis),
+there are different types of intermediate result files produced by the pipeline.
+Probably the most valuable files are those containing collinear gene models
+resulting from a pairwise WGA, which are stored in TSV format (see also this [section](#inspection-of-result-files)).
+For instance, let's inspect one such file, in this case produced with the GSal algorithm:
+
+    head test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv
+
+    gene:Os01g0100466   gene:Os01g0100466   Oryza_nivara_v1.chr1    1173    segment_collinear   Oryza_sativa.IRGSP-1.0.chr1:1:116866-118039(-)  segment Oryza_sativa.IRGSP-1.0.chr1 1173    NULL    NULL    NULL    100.00  1   NA;1:116866-118039(-)
+    ...
+    gene:ONIVA01G00100  gene:ONIVA01G00100  Oryza_nivara_v1.chr1    7827    ortholog_collinear  gene:Os01g0100100   gene:Os01g0100100   Oryza_sativa.IRGSP-1.0.chr1 7827    NULL    NULL    NULL    100.00  1   1:104920-116326(+);1:2982-10815(+)
+    ...
+
+Note that there are two types of rows: ortholog_collinear and segment_collinear. 
+The first type describe a pair of collinear genes from two input taxa, their respective genomic coordinates 
+and the length of their overlap in the underlying WGA. 
+The second type indicate cases where a gene model in a taxon overlaps a genomic segment in another.
+
+In addition, each of these TSV files have a matching logfile with extension .queue. In our example,
+that would be:
+
+    test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv.queue
+
+These files also contain useful:
+
+    # WGA blocks: N50 28614 median 2731
+    # 28644 genes mapped (75.4% in 3+blocks) ... (2 unmapped)
+    # 29008 genes mapped (76.1% in 3+blocks) ... (reverse, 4 unmapped)
+    # 26241 collinear gene pairs , 6561 collinear segments, 1.031 hits/gene
+
+The first line summarizes the length of the blocks that make up the WGA, which will be shorter for poor assemblies.
+The 2nd and 3rd line indicate how many of the gene models from the two compared taxa/annotations were actually mapped in the WGA,
+in both directions (A->B and B->A).
+The 4th line reports how many collinear gene pairs and segments where found, and how many hits in the WGA were found on average per gene.
+
+These files can be analyzed in bulk in the terminal for quality control, for instance with:
+
+    grep "collinear gene pairs" *Mmap.overlap0.5.tsv.queue | perl -lane 'print $F[1]' | sort -r
+
+
 ## Plotting the results
 
 Data files produced can be plotted in many ways, for instance in Rstudio,
@@ -720,29 +764,14 @@ argument -v can be added to increase verbosity and see the raw gmap alignments u
 
 ## Dotplots
 
-The *_dotplot.pl* script can be used to make a genone-wide dotplot of collinear gene models
-resulting from a pairwise WGA, which are stored in TSV format. For instance, let's inspect one such
-file, in this case produced with teh GSal algorithm:
-
-    head test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv
-
-    gene:Os01g0100466	gene:Os01g0100466	Oryza_nivara_v1.chr1	1173	segment_collinear	Oryza_sativa.IRGSP-1.0.chr1:1:116866-118039(-)	segment	Oryza_sativa.IRGSP-1.0.chr1	1173	NULL	NULL	NULL	100.00	1	NA;1:116866-118039(-)
-    gene:Os01g0100650	gene:Os01g0100650	Oryza_nivara_v1.chr1	562	segment_collinear	Oryza_sativa.IRGSP-1.0.chr1:1:129920-130482(-)	segment	Oryza_sativa.IRGSP-1.0.chr1	562	NULL	NULL	NULL	100.00	1	NA;1:129920-130482(-)
-    gene:ONIVA01G00020	gene:ONIVA01G00020	Oryza_nivara_v1.chr1	209	segment_collinear	Oryza_sativa.IRGSP-1.0.chr1:1:14792580-14792789(+)	segment	Oryza_sativa.IRGSP-1.0.chr1	209	NULL	NULL	NULL	100.00	1	1:43370-62621(+);1:14792580-14792789(+)
-    gene:ONIVA01G00100	gene:ONIVA01G00100	Oryza_nivara_v1.chr1	7827	ortholog_collinear	gene:Os01g0100100	gene:Os01g0100100	Oryza_sativa.IRGSP-1.0.chr1	7827	NULL	NULL	NULL	100.00	1	1:104920-116326(+);1:2982-10815(+)
-    gene:ONIVA01G00120	gene:ONIVA01G00120	Oryza_nivara_v1.chr1	2956	ortholog_collinear	gene:Os01g0100400	gene:Os01g0100400	Oryza_sativa.IRGSP-1.0.chr1	2956	NULL	NULL	NULL	100.00	1	1:116435-120177(+);1:12720-15685(+)
-    gene:ONIVA01G00130	gene:ONIVA01G00130	Oryza_nivara_v1.chr1	2415	ortholog_collinear	gene:Os01g0100500	gene:Os01g0100500	Oryza_sativa.IRGSP-1.0.chr1	2415	NULL	NULL	NULL	100.00	1	1:121778-124616(+);1:16398-20144(+)
-    gene:ONIVA01G00140	gene:ONIVA01G00140	Oryza_nivara_v1.chr1	4052	ortholog_collinear	gene:Os01g0100600	gene:Os01g0100600	Oryza_sativa.IRGSP-1.0.chr1	4052	NULL	NULL	NULL	100.00	1	1:125929-131075(+);1:22840-26892(+)
-    gene:ONIVA01G00150	gene:ONIVA01G00150	Oryza_nivara_v1.chr1	1501	ortholog_collinear	gene:Os01g0100700	gene:Os01g0100700	Oryza_sativa.IRGSP-1.0.chr1	1501	NULL	NULL	NULL	100.00	1	1:131192-132981(+);1:27142-28644(+)
-    gene:ONIVA01G00160	gene:ONIVA01G00160	Oryza_nivara_v1.chr1	4626	ortholog_collinear	gene:Os01g0100800	gene:Os01g0100800	Oryza_sativa.IRGSP-1.0.chr1	4626	NULL	NULL	NULL	100.00	1	1:134781-139734(+);1:29817-34453(+)
-    gene:ONIVA01G00170	gene:ONIVA01G00170	Oryza_nivara_v1.chr1	5525	ortholog_collinear	gene:Os01g0100900	gene:Os01g0100900	Oryza_sativa.IRGSP-1.0.chr1	5525	NULL	NULL	NULL	100.00	1	1:140596-146446(+);1:35622-41136(+)
-
-This file can be converted to a PAF file as follows:
+The *_dotplot.pl* script can be used to make a genome-wide dotplot of collinear gene models
+resulting from a pairwise WGA, which are stored in TSV format (see relevant [section](#inspection-of-result-files)). 
+This can be done in two steps- First, the TSV file must be converted to a PAF file as follows:
 
     perl _dotplot.pl test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv
   
-The printed output includes a few R lines that must be run in order to actually produce the plot below.
-Note that this required installing the [pafr](https://cran.r-project.org/package=pafr) R package:
+The second step involves executing a few output R lines in order to actually produce the plot below;
+note that this requires installing the [pafr](https://cran.r-project.org/package=pafr) R package:
 
     # $MINCONTIGSIZE = 100000
 

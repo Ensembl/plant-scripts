@@ -256,6 +256,10 @@ if ($dowfmash) {
 }
 
 print "# mapping parameters:\n";
+if($repetitive) {
+  print "# \$MINMASKLEN: $MINMASKLEN\n";
+}
+
 if ($dowfmash) {
     print "# \$WFMASHPARS: $WFMASHPARS\n\n";
 } elsif ($dogsalign) {

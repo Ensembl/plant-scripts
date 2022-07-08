@@ -118,7 +118,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     ' ie: -s \'^\d+$\' , remove tmp/ if new regex used)'."\n";
  
   print   "-H genome is highly repetitive                              ".
-    "(optional, <minimap RAM, masks intergenes)\n"; 
+    "(optional, <minimap RAM, masks long intergenes)\n"; 
   print   "\nOptions that control clustering:\n";
   print   "-t report sequence clusters including at least t taxa       ".
     "(default: t=numberOfTaxa,\n".

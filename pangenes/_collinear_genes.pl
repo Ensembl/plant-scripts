@@ -68,7 +68,7 @@ $ENV{'LC_ALL'}   = 'POSIX';
 my $GZIPBIN      = $ENV{'EXE_GZIP'} || 'gzip';
 my $BZIP2BIN     = $ENV{'EXE_BZIP2'} ||'bzip2';
 
-my $MINMASKLEN   = 100_000;   # mask longer (intergenic, repetitive) fragments with -H
+my $MINMASKLEN   = 1000_000;  # mask longer (intergenic, repetitive) fragments with -H
 my $GENEMARGIN   = 5000;      # do not mask gene margins 
 my $DUMMYSCORE   = 9999;
 
@@ -548,7 +548,9 @@ else {
                 print "# $cmd\n";
                 system($cmd);
                 if ( $? != 0 ) {
-                    die "# ERROR: failed running minimap2 (probably ran out of memory, $cmd, $?)\n";
+                    # see https://github.com/lh3/minimap2/issues/755
+                    die "# ERROR: failed running minimap2 (probably ran out of memory, ".
+                        "or chr too large, $cmd, $?)\n";
                 }
                 elsif ( !-s $index_fasta1 ) {
                     die "# ERROR: failed generating $index_fasta1 file ($cmd)\n";

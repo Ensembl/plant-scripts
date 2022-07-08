@@ -235,7 +235,7 @@ sub count_GFF_genes {
 # 1) string with name of GFF file 
 # 2) regular expression
 # 3) 0-based column of GFF to be parsed
-# Returns hash refeference with number of occurrences of unique matching strings 
+# Returns hash reference with number of occurrences of unique matching strings 
 sub parse_GFF_regex {
 
   my ($gffile, $regex, $column) = @_;

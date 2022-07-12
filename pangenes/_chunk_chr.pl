@@ -63,30 +63,57 @@ if($outpath) {
   $chunkgfffile = "$outpath/$chunkgfffile";
 }
 
-my ($ref_chunk_genes, $ref_chunk) = chunk_GFF($gff1, $maxdist);
+my ($ref_chrs, $ref_chunk_genes, $ref_chunks) = chunk_GFF($gff1, $maxdist);
+
+if(scalar(keys(%$ref_chunks)) == 0) {
+  die "# ERROR: cannot chunk GFF file ($gff1)\n";
+}
+
+open(GFFCHUNK,">",$chunkgfffile) ||
+  die "# ERROR: cannot open chunk GFF file ($chunkgfffile)\n";
+
+open(FNACHUNK,">",$chunkfnafile) ||
+  die "# ERROR: cannot open chunk FASTA file ($chunkfnafile)\n";
+
+my $total_chunks = 0;
+foreach my $chr (@$ref_chrs) {
+  foreach my $chunk (sort {$a<=>$b} keys(%{$ref_chunks->{$chr}})) {
 
 
-#if(scalar(keys(%$ref_names)) == 0) {
-#  die "# ERROR: cannot parse Parent IDs of mRNA/transcripts, please check GFF format ($gff1)\n";	
-#}
+    # print transformed gene models to chunked GFF file
+    print GFFCHUNK $ref_chunk_genes->{$chr}{$chunk};
 
+    # print sequence to chunked FASTA file
 
-#print "# $pepfile n=$num_pep\n";
+    $total_chunks++ 
+  }
+}
+
+close(FNACHUNK);
+close(GFFCHUNK);
+
+print "# chunked GFF file: $chunkgfffile\n";
+print "# chunked FASTA file: $chunkfnafile\n";
+
+printf("\n# total chr/contigs=%d total chunks=%d\n",
+  scalar(@$ref_chrs), 
+  $total_chunks);
 
 
 ###############################
 
 # Parses GFF file and finds chunks of contiguous genes.
 # Returns: 
-# i) ref to hash mapping chunk ID to translated gene models in chunks
-# ii)ref to hash mapping chunk ID to chunk 1-based coordinates in original FASTA
+# i)   ref to hash mapping chunk ID to translated gene models in chunks
+# ii)  ref to hash mapping chunk ID to chunk 1-based coordinates in original FASTA
+# iii) ref to list with chr names in same order as input
 sub chunk_GFF {
 
   my ($gff_file, $maxdist) = @_;
 
   my ($chr, $start, $end, $chunk_start, $chunk_end, $gff_line);
   my ($num_chunk, $dist, $offset, $prev_end) = (1, 0, 0, 0);
-  my (%chunk_genes, %chunk);
+  my (%chunk_genes, %chunk, @chrs);
 
   open(GFF,"<",$gff_file) || 
     die "# ERROR(chunk_GFF): cannot read $gff_file\n";
@@ -95,6 +122,8 @@ sub chunk_GFF {
     ($chr, $start, $end) = @gff[0,3,4];
 
     next if($gff[2] eq 'chromosome');
+
+    push(@chrs, $chr) if not grep(/^$chr$/,@chrs);;
 
     if($gff[2] eq 'gene') {
 
@@ -130,12 +159,13 @@ sub chunk_GFF {
     $gff[3] -= $chunk{$chr}{$num_chunk}{'offset'};
     $gff[4] -= $chunk{$chr}{$num_chunk}{'offset'};
     $gff_line = join("\t",@gff); 
-    #print $gff_line if($gff[2] eq 'gene');
+    
+    #print "$num_chunk $gff_line" if($gff[2] eq 'gene');
 
     $chunk_genes{$chr}{$num_chunk} .= $gff_line;
   }
   close(GFF);
 
-  return (\%chunk_genes, \%chunk);
+  return (\@chrs, \%chunk_genes, \%chunk);
 }
 

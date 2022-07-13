@@ -26,6 +26,7 @@ my %main_gff_feats = (
 
 my %skip_gff_feats = (
   'chromosome' => 1,
+  'scaffold' => 1
 );
 
 my ( $help, $sp1, $fasta1, $bedtools_path, $cmd, $bed) = (0, 0);

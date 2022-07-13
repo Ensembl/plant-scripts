@@ -15,9 +15,18 @@ use Getopt::Long qw(:config no_ignore_case);
 # perl _chunk_chr.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
 #   -gf Oryza_sativa.IRGSP-1.0.51.gff3 
 
-
 my $BEDTOOLSEXE = 'bedtools';
+
 my $MAXGENEDIST = 500_000; 
+
+my %main_gff_feats = (
+  'gene' => 1,
+  'ncRNA_gene' => 1
+);
+
+my %skip_gff_feats = (
+  'chromosome' => 1,
+);
 
 my ( $help, $sp1, $fasta1, $bedtools_path, $cmd, $bed) = (0, 0);
 my ( $maxdist, $gff1, $outpath ) = ($MAXGENEDIST, '', '');
@@ -80,7 +89,8 @@ if(-e $outpath) {
   $chunkbedfile = "$outpath/$chunkbedfile";
 }
 
-my ($ref_chrs, $ref_chunk_genes, $ref_chunks) = chunk_GFF($gff1, $maxdist);
+my ($ref_chrs, $ref_chunk_genes, $ref_chunks) = 
+  chunk_GFF($gff1, $maxdist, \%main_gff_feats, \%skip_gff_feats);
 
 if(scalar(keys(%$ref_chunks)) == 0) {
   die "# ERROR: cannot chunk GFF file ($gff1)\n";
@@ -150,7 +160,7 @@ printf("\n# total chr/contigs=%d total chunks=%d\n",
 # iii) ref to list with chr names in same order as input
 sub chunk_GFF {
 
-  my ($gff_file, $maxdist) = @_;
+  my ($gff_file, $maxdist, $ref_main_gff, $ref_skip_gff) = @_;
 
   my ($chr, $start, $end, $chunk_start, $chunk_end, $gff_line);
   my ($num_chunk, $dist, $offset, $prev_end) = (1, 0, 0, 0);
@@ -165,11 +175,16 @@ sub chunk_GFF {
     my @gff = split(/\t/,$_);
     ($chr, $start, $end) = @gff[0,3,4];
 
-    next if($gff[2] eq 'chromosome');
+    next if($ref_skip_gff->{ $gff[2] });
 
-    push(@chrs, $chr) if not grep(/^$chr$/,@chrs);;
+    # new chr
+    if(!grep(/^$chr$/,@chrs) && $num_chunk > 0) {
+      push(@chrs, $chr);
+      $prev_end = 0;
+      $num_chunk++;
+    }
 
-    if($gff[2] eq 'gene') {
+    if($ref_main_gff->{ $gff[2] }) {
 
       # start new chunk if previous gene too far
       if($prev_end > 0) {

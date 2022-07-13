@@ -159,6 +159,9 @@ sub chunk_GFF {
   open(GFF,"<",$gff_file) || 
     die "# ERROR(chunk_GFF): cannot read $gff_file\n";
   while(<GFF>){
+
+    next if(/^#/ || /^$/);
+
     my @gff = split(/\t/,$_);
     ($chr, $start, $end) = @gff[0,3,4];
 

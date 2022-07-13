@@ -100,7 +100,7 @@ foreach my $chr (@$ref_chrs) {
     # print sequence to chunked FASTA file
     $bed = sprintf("%s\t%d\t%d", 
       $chr,
-      $ref_chunks->{$chr}{$chunk}{'start'}-1,
+      $ref_chunks->{$chr}{$chunk}{'start'}-1, #0-based
       $ref_chunks->{$chr}{$chunk}{'end'});
 
     $cmd = "echo '$bed' | $bedtools_path getfasta -fi $fasta1 -bed stdin";

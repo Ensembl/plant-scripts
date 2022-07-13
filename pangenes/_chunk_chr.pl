@@ -2,22 +2,24 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
-use File::Copy qw(cp);
 
-# Takes a GFF & FASTA pair of files and produces a pair of files with 
+# Takes a GFF & FASTA pair of files and produces a new pair of files with 
 # the original chromosomes/contigs split in chunks of contiguous genes.
 # A new chunk is created when the next gene on the current chr is further 
-# than MAXGENEDIST
+# than MAXGENEDIST bp. A chunk is a genomic block containing at least one gene,
+# usually also ending with a gene.
 
 # Copyright [2022] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
-# perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
+# perl _chunk_chr.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
 #   -gf Oryza_sativa.IRGSP-1.0.51.gff3 
 
+
+my $BEDTOOLSEXE = 'bedtools';
 my $MAXGENEDIST = 500_000; 
 
-my ( $help, $sp1, $fasta1) = (0, 0);
+my ( $help, $sp1, $fasta1, $bedtools_path, $cmd, $bed) = (0, 0);
 my ( $maxdist, $gff1, $outpath ) = ($MAXGENEDIST, '', '');
 
 GetOptions(
@@ -26,7 +28,8 @@ GetOptions(
   "fa|fasta=s"   => \$fasta1,
   "gf|gff=s"     => \$gff1,
   "d|maxdist=i"  => \$maxdist,
-  "o|outpath=s"  => \$outpath
+  "o|outpath=s"  => \$outpath,
+  "B|bedtools=s"  => \$bedtools_path
 ) || help_message();
 
 sub help_message {
@@ -35,7 +38,8 @@ sub help_message {
     . "-fa genome FASTA filename           (required, example: -fa oryza_sativa.fna)\n"
     . "-gf GFF filename                    (required, example: -gf oryza_sativa.RAPDB.gff)\n"
     . "-d  max distance (bp) tp next gene  (optional, example: -d $MAXGENEDIST)\n"
-    . "-o  path to output folder           (optional, default current folder)\n\n"
+    . "-o  path to output folder           (optional, default current folder)\n"
+    . "-B  path to bedtools binary          (optional, default: -B bedtools)\n\n"
 }
 
 if($help || (!$sp1 || !$fasta1 || !$gff1)){ 
@@ -53,12 +57,23 @@ if($maxdist < 1){
   exit(-1);
 }
 
-print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -d $maxdist -o $outpath\n\n";
+# check binaries
+if(!$bedtools_path) {
+  $bedtools_path = $BEDTOOLSEXE
+}
+if(`$bedtools_path` !~ 'sage') {
+  print "# ERROR: cannot find binary file $bedtools_path , exit\n";
+  exit(-1)
+}
+
+print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -d $maxdist -o $outpath -B $bedtools_path\n\n";
+
+
 
 # set output filenames
 my $chunkfnafile = "$sp1.chunk$maxdist.fna";
 my $chunkgfffile = "$sp1.chunk$maxdist.gff";
-if($outpath) {
+if(-e $outpath) {
   $chunkfnafile = "$outpath/$chunkfnafile";
   $chunkgfffile = "$outpath/$chunkgfffile";
 }
@@ -79,11 +94,26 @@ my $total_chunks = 0;
 foreach my $chr (@$ref_chrs) {
   foreach my $chunk (sort {$a<=>$b} keys(%{$ref_chunks->{$chr}})) {
 
-
     # print transformed gene models to chunked GFF file
     print GFFCHUNK $ref_chunk_genes->{$chr}{$chunk};
 
     # print sequence to chunked FASTA file
+    $bed = sprintf("%s\t%d\t%d", 
+      $chr,
+      $ref_chunks->{$chr}{$chunk}{'start'}-1,
+      $ref_chunks->{$chr}{$chunk}{'end'});
+
+    $cmd = "echo '$bed' | $bedtools_path getfasta -fi $fasta1 -bed stdin";
+    open(BEDTOOLS,"$cmd |") ||
+      die "# ERROR: cannot run bedtools ($cmd)\n";
+    while(<BEDTOOLS>) {
+      if(/^>/) { 
+        print FNACHUNK ">$chr\.chunk$chunk\n";
+      } else {
+        print FNACHUNK;
+      }
+    }
+    close(BEDTOOLS);
 
     $total_chunks++ 
   }
@@ -145,22 +175,15 @@ sub chunk_GFF {
       # update chunk last coord with every new gene
       $chunk{$chr}{$num_chunk}{'end'} = $end;
 
-      #$chr .= ".chunk$num_chunk";
-      #print "$chr|$chunk{$chr}{$num_chunk}{'start'} $_\n";
-
       # save end coord for next iteration
       $prev_end = $end; 
     } 
 
     # transform coords relative to current chunk
-    #print "# $chr $num_chunk $chunk{$chr}{$num_chunk}{'offset'}\n";  
-      
     $gff[0] = "$chr.chunk$num_chunk";
     $gff[3] -= $chunk{$chr}{$num_chunk}{'offset'};
     $gff[4] -= $chunk{$chr}{$num_chunk}{'offset'};
     $gff_line = join("\t",@gff); 
-    
-    #print "$num_chunk $gff_line" if($gff[2] eq 'gene');
 
     $chunk_genes{$chr}{$num_chunk} .= $gff_line;
   }

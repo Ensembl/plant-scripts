@@ -178,7 +178,7 @@ sub chunk_GFF {
     next if($ref_skip_gff->{ $gff[2] });
 
     # new chr
-    if(!grep(/^$chr$/,@chrs) && $num_chunk > 0) {
+    if(!grep(/^$chr$/,@chrs) && $num_chunk > 1) {
       push(@chrs, $chr);
       $prev_end = 0;
       $num_chunk++;

@@ -73,9 +73,11 @@ print "\n# $0 -sp $sp1 -fa $fasta1 -gf $gff1 -d $maxdist -o $outpath -B $bedtool
 # set output filenames
 my $chunkfnafile = "$sp1.chunk$maxdist.fna";
 my $chunkgfffile = "$sp1.chunk$maxdist.gff";
+my $chunkbedfile = "$sp1.chunk$maxdist.bed";
 if(-e $outpath) {
   $chunkfnafile = "$outpath/$chunkfnafile";
   $chunkgfffile = "$outpath/$chunkgfffile";
+  $chunkbedfile = "$outpath/$chunkbedfile";
 }
 
 my ($ref_chrs, $ref_chunk_genes, $ref_chunks) = chunk_GFF($gff1, $maxdist);
@@ -89,6 +91,9 @@ open(GFFCHUNK,">",$chunkgfffile) ||
 
 open(FNACHUNK,">",$chunkfnafile) ||
   die "# ERROR: cannot open chunk FASTA file ($chunkfnafile)\n";
+
+open(BEDCHUNK,">",$chunkbedfile) ||
+  die "# ERROR: cannot open chunk BED file ($chunkbedfile)\n";
 
 my $total_chunks = 0;
 foreach my $chr (@$ref_chrs) {
@@ -115,15 +120,21 @@ foreach my $chr (@$ref_chrs) {
     }
     close(BEDTOOLS);
 
+    # log
+    print BEDCHUNK "$bed\t$chr\.chunk$chunk\n";
+
     $total_chunks++ 
   }
 }
 
+close(BEDCHUNK);
 close(FNACHUNK);
 close(GFFCHUNK);
 
 print "# chunked GFF file: $chunkgfffile\n";
 print "# chunked FASTA file: $chunkfnafile\n";
+print "# chunked BED file: $chunkbedfile\n";
+
 
 printf("\n# total chr/contigs=%d total chunks=%d\n",
   scalar(@$ref_chrs), 

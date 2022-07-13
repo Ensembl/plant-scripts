@@ -177,17 +177,16 @@ sub chunk_GFF {
 
     next if($ref_skip_gff->{ $gff[2] });
 
-    # new chr
-    if(!grep(/^$chr$/,@chrs) && $num_chunk > 1) {
-      push(@chrs, $chr);
-      $prev_end = 0;
-      $num_chunk++;
-    }
+    if($ref_main_gff->{ $gff[2] }) { 
 
-    if($ref_main_gff->{ $gff[2] }) {
+      # new chunk with new chr
+      if($num_chunk > 1 && !grep(/^$chr$/,@chrs)) {
+        push(@chrs, $chr);
+        $prev_end = 0;
+        $num_chunk++;
 
-      # start new chunk if previous gene too far
-      if($prev_end > 0) {
+      } elsif($prev_end > 0) { # new chunk if previous gene too far
+
         $dist = $start-$prev_end;
         if($dist > $maxdist) {
           $num_chunk++;
@@ -209,7 +208,7 @@ sub chunk_GFF {
     } 
 
     # transform coords relative to current chunk
-    $gff[0] = "$chr.chunk$num_chunk";
+    $gff[0] = "$chr.chunk$num_chunk"; 
     $gff[3] -= $chunk{$chr}{$num_chunk}{'offset'};
     $gff[4] -= $chunk{$chr}{$num_chunk}{'offset'};
     $gff_line = join("\t",@gff); 

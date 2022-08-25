@@ -20,6 +20,7 @@ $|=1;
 
 my $MINCONTIGSIZE = 100_000;
 my $DUMMYQUAL = 60;
+my $VERBOSE = 0;
 
 my $TSVfile = $ARGV[0] || die "# usage: $0 <TSVfile>\n";
 
@@ -57,6 +58,7 @@ if($sp1 eq '' || $sp2 eq '') {
     foreach $chr (keys(%$ref_bed)) {
       $len = (split(/\t/,$ref_bed->{$chr}))[2];
       $size{$species}{$chr} = $len;
+	  print "# $species $chr $len\n" if($VERBOSE);
     }
   }
 }
@@ -81,6 +83,9 @@ while(<TSV>) {
     $sp1 = $data[2];
     $sp2 = $data[7];
     ($chr1,$start1,$end1,$chr2,$start2,$end2) = ($1,$2,$3,$4,$5,$6);
+
+    # skip unknown contigs ie unplaced_chrUn, might occur with -s
+    next if(!$size{$sp1}{$chr1} || !$size{$sp2}{$chr2});
 
     next if($size{$sp1}{$chr1} < $MINCONTIGSIZE || 
       $size{$sp2}{$chr2} < $MINCONTIGSIZE);

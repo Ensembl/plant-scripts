@@ -409,7 +409,7 @@ foreach $species (@supported_species) {
         }
     }
 
-    print "# $outFASTAfile : $num_segments genomic segments\n";
+    print "# $outFASTAfile : $num_segments genomic segments\n"; 
 
     $filename = "$seqfolder$species$SEQEXT{'gdna'}";
     if(!-s $filename){
@@ -471,7 +471,6 @@ foreach $species (@supported_species) {
         }
     }
 }
-
 
 # 2.3) quality control of clusters, criteria: 
 # i)  genes from same species should be neighbors, else should be removed
@@ -1001,11 +1000,20 @@ if($chregex) {
                 # print each reference gene in a new BED line
                 if($gene_stable_id ne 'dummy' ) {
 
-                    ( $start, $end, $strand ) =
-                        @{$id2coords{$ref_genome}{$gene_stable_id}}[1,2,3];
+                    if($id2coords{$ref_genome}{$gene_stable_id}) {
 
-                    printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
-                        $chr,$start,$end,$filename,$occup,$strand,$gene_stable_id);
+                        ( $start, $end, $strand ) =
+                            @{$id2coords{$ref_genome}{$gene_stable_id}}[1,2,3];
+
+                        printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
+                            $chr,$start,$end,$filename,$occup,$strand,$gene_stable_id);
+
+                    } else { # short reference genes lack coords, cannot be parsed
+
+                        $strand = 0; 
+                        printf(PANGEMATRIBED "#%s\tnocoords\tnocoords\t%s\t%d\t%s\t%s",
+                            $chr,$filename,$occup,$strand,$gene_stable_id);    
+                    }
  
                 } else { # gene absent in reference genome annotation
 

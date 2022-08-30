@@ -35,3 +35,4 @@
 21062022: check_evidence.pl long models only fixed if mapped gene pair overlaps >= MINFIXOVERLAP=0.75
 29062022: added _dotplot.pl to produce dotplot figures with R package pafr
 14072022: added _chunk_chr.pl to break long chromosomes in chunks separated by geneless stretches (testing only)
+30082022: tested get_pangenes.pl with rice, barley and wheat

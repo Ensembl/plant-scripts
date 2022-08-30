@@ -1698,7 +1698,7 @@ sub bed2compara {
     my ( $gene1, $gene2, $coords1, $coords2, $coords, $homoltype );
     my ($num_pairs, $num_segments) = (0, 0);
     my ($num_matched_genes, $num_hits_genes, %hit) = (0, 0);
-    my ($ref_orig_coords1,$ref_orig_coords2);
+    my ($ref_orig_coords1,$ref_orig_coords2, $realsp1, $realsp2);
 
     # read gene model coordinates 
     $ref_orig_coords1 = _BED2hash($geneBEDfile1);
@@ -1732,15 +1732,18 @@ sub bed2compara {
         #0 invert false
         #1  4843    11631   segment 6789    -   6   26022262    26029047    gene:Os06g0639700   9999    -   6788
 		# ->
-        #Oryza_nivara:1:4843-11631(-)   segment Oryza_nivara    6788    segment_collinear   gene:Os06g0639700   gene:Os06g0639700   Oryza_sativa    6788    NULL    NULL    NULL    100.00  1   1:4843-11631(-);6:26022262-26029047(-)
+        #Oryza_nivara:1:4843-11631(-)   segment Oryza_nivara    6788    segment_collinear   gene:Os06g0639700   \
+        #  gene:Os06g0639700   Oryza_sativa    6788    NULL    NULL    NULL    100.00  1   1:4843-11631(-);6:26022262-26029047(-)
 
         #1 invert true 
         #6  26022262    26029047    gene:Os06g0639700   9999    -   1   4843    11631   segment 6789    -   6788
         # ->
-        #gene:Os06g0639700  gene:Os06g0639700   Oryza_nivara    6788    segment_collinear   Oryza_sativa:1:4843-11631(-)    segment Oryza_sativa    6788    NULL    NULL    NULL    100.00  1   NA;1:4843-11631(-)
+        #gene:Os06g0639700  gene:Os06g0639700   Oryza_nivara    6788    segment_collinear   Oryza_sativa:1:4843-11631(-) \
+        #  segment Oryza_sativa    6788    NULL    NULL    NULL    100.00  1   NA;1:4843-11631(-)
 
-        # new:
-		#
+        # behavior after setting invert true in all cases:
+		#gene:Os06g0639700	gene:Os06g0639700	Oryza_sativa	6788	segment_collinear	Oryza_nivara:1:4843-11631(-) \
+        #  segment	Oryza_nivara	6788	NULL	NULL	NULL	100.00	1	6:26022262-26029047(-);1:4843-11631(-)
 
         my @data = split( /\t/, $_ );
 
@@ -1752,15 +1755,24 @@ sub bed2compara {
         # format gene names
         $gene1 = $data[3];
         $gene2 = $data[9];
+
+        # init species names		
+        $realsp1 = $sp1;
+        $realsp2 = $sp2;		
   
         # workout genomic coordinates (1-based)
         if($data[3] ne 'segment') {
             if( $ref_orig_coords1->{$gene1} &&
                 $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
                 $coords1 = "$1:$2-$3($4)"
-            } elsif( $ref_orig_coords2->{$gene1} && # gene1 might actually be from sp2 (segments)
+            } elsif( $ref_orig_coords2->{$gene1} &&
                 $ref_orig_coords2->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
-                $coords1 = "$1:$2-$3($4)"
+        
+                # new behavior, gene1 might actually be from sp2 (segments)   				
+                $coords1 = "$1:$2-$3($4)";
+                $realsp1 = $sp2;
+                $realsp2 = $sp1;
+
             } else { $coords1 = 'NA' }
         } else {
             $coords1 = "$data[0]:$data[1]-$data[2]($data[5])";
@@ -1769,9 +1781,6 @@ sub bed2compara {
         if($data[9] ne 'segment') { 
             if( $ref_orig_coords2->{$gene2} &&
                 $ref_orig_coords2->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
-                $coords2 = "$1:$2-$3($4)"
-            } elsif( $ref_orig_coords1->{$gene2} &&
-                $ref_orig_coords1->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
                 $coords2 = "$1:$2-$3($4)"
             } else { $coords2 = 'NA' }
         } else {
@@ -1783,11 +1792,11 @@ sub bed2compara {
         # check homology type and work out genomic coordinates
         if($data[3] eq 'segment') {
             $homoltype = 'segment_collinear';
-            $gene1 = "$sp1:$coords1";
+            $gene1 = "$realsp1:$coords1";
             $num_segments++;
         } elsif($data[9] eq 'segment') {
             $homoltype = 'segment_collinear';
-            $gene2 = "$sp2:$coords2";
+            $gene2 = "$realsp2:$coords2";
             $num_segments++;
         } else {
             $homoltype = 'ortholog_collinear';
@@ -1798,12 +1807,12 @@ sub bed2compara {
             "%s\t%s\t%s\t%d\t%s\t%s\t%s\t%s\t%d\tNULL\tNULL\tNULL\t%1.2f\t%d\t%s\n",
             $gene1,
             $data[3],
-            $sp1,
+            $realsp1,
             $data[12],
             $homoltype,
             $gene2,
             $data[9],
-            $sp2,
+            $realsp2,
             $data[12],
             100,    # max WGA score
             1,      # high confidence

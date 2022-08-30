@@ -1727,6 +1727,21 @@ sub bed2compara {
         #1 116866  118035  segment 1170 -  1 12807   13978   gene:Os01g0100466       9999    - 1169
         #1 160018  166571  ..00200 9999 -  1 191201  197773  segment                 6573    - 6572
 
+        # old behavior:
+		#
+        #0 invert false
+        #1  4843    11631   segment 6789    -   6   26022262    26029047    gene:Os06g0639700   9999    -   6788
+		# ->
+        #Oryza_nivara:1:4843-11631(-)   segment Oryza_nivara    6788    segment_collinear   gene:Os06g0639700   gene:Os06g0639700   Oryza_sativa    6788    NULL    NULL    NULL    100.00  1   1:4843-11631(-);6:26022262-26029047(-)
+
+        #1 invert true 
+        #6  26022262    26029047    gene:Os06g0639700   9999    -   1   4843    11631   segment 6789    -   6788
+        # ->
+        #gene:Os06g0639700  gene:Os06g0639700   Oryza_nivara    6788    segment_collinear   Oryza_sativa:1:4843-11631(-)    segment Oryza_sativa    6788    NULL    NULL    NULL    100.00  1   NA;1:4843-11631(-)
+
+        # new:
+		#
+
         my @data = split( /\t/, $_ );
 
         if(scalar(@data) < 13) {
@@ -1743,6 +1758,9 @@ sub bed2compara {
             if( $ref_orig_coords1->{$gene1} &&
                 $ref_orig_coords1->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
                 $coords1 = "$1:$2-$3($4)"
+            } elsif( $ref_orig_coords2->{$gene1} && # gene1 might actually be from sp2 (segments)
+                $ref_orig_coords2->{$gene1} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
+                $coords1 = "$1:$2-$3($4)"
             } else { $coords1 = 'NA' }
         } else {
             $coords1 = "$data[0]:$data[1]-$data[2]($data[5])";
@@ -1751,6 +1769,9 @@ sub bed2compara {
         if($data[9] ne 'segment') { 
             if( $ref_orig_coords2->{$gene2} &&
                 $ref_orig_coords2->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
+                $coords2 = "$1:$2-$3($4)"
+            } elsif( $ref_orig_coords1->{$gene2} &&
+                $ref_orig_coords1->{$gene2} =~ m/^(\S+)\t(\d+)\t(\d+)\t\S+\t\S+\t(\S+)/) {
                 $coords2 = "$1:$2-$3($4)"
             } else { $coords2 = 'NA' }
         } else {

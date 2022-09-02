@@ -248,8 +248,12 @@ my ($median_length, $cutoff_low_length, $cutoff_high_length) =
 # note: if length distribution is bimodal there will be 2 modes
 my @modes_length = calc_mode( \@len );
 
-printf("\n# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
-  $median_length, join(',',@modes_length));
+if(@modes_length) {
+  printf("\n# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
+    $median_length, join(',',@modes_length));
+} else {
+  print "\n# isoform length in cluster: median=NA mode(s): NA\n\n";
+}
 
 if($INP_modeseq) {
   my ($mode_gene_id, $mode_isof_id);

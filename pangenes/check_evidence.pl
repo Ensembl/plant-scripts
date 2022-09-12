@@ -23,7 +23,7 @@ use DB_File;
 use Compress::Zlib qw(compress uncompress);
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw( check_installed_features 
+use pangeneTools qw( check_installed_features feature_is_installed 
                      parse_sequence_FASTA_file extract_isoforms_FASTA
                      calc_median calc_mode get_outlier_cutoffs );
 
@@ -75,7 +75,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-n do not print raw evidence                    (optional)\n";
   print "-f fix gene models and produce GFF              (optional, GFF printed to stdout by default)\n";
   print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
-  print "-a append GFF output                            (optional, requires -f -o)\n";  
+  print "-a append GFF output                            (optional, requires -f -o)\n"; 
+  print "-v verbose                                      (optional, prints data used in calculations)\n";
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
@@ -133,6 +134,12 @@ if(defined($opts{'n'})){
 if(defined($opts{'f'})){
   $INP_fix = 1;
 
+  check_installed_features('EXE_GMAP');
+  if(!feature_is_installed('EXE_GMAP')) {
+    die "# EXIT : cannot find gmap binary, ".
+      "see dependency instructions, can be installed with make install_gmap\n";
+  }
+
   if(defined($opts{'o'})){
     $INP_outdir = $opts{'o'};
     if(!-e $INP_outdir) {
@@ -157,7 +164,6 @@ if(defined($opts{'f'})){
 if(defined($opts{'v'})){
   $INP_verbose = 1
 }
-
 
 
 # 1) locate .cluster_list file to check clusterfile is there

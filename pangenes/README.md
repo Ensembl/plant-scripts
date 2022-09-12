@@ -722,7 +722,8 @@ The following call shows an example cluster analyzed with argument -f (option -n
     1	gmap	CDS	41998576	41999409	99	-	0	ID=gene:Os01g0960900.mrna1.cds1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
 
 Arguments -o and -a can be used to append any GFF output to a patch GFF file which can be used downstream (see next section).
-argument -v can be added to increase verbosity and see the raw gmap alignments used while lifting-over features.
+Argument -v can be added to increase verbosity and see the raw GMAP alignments used while lifting-over features.
+Argument -p might be used to allow partial (not multiple of 3) CDS lifted-over by GMAP.
 
 
 ## Pan-gene analysis with GFF patches

@@ -30,7 +30,7 @@ use pangeneTools qw( check_installed_features feature_is_installed
 my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
-my $MINLIFTIDENTITY = 95.0;
+my $MINLIFTIDENTITY = 90.0;
 my $MINFIXOVERLAP = 0.75; # min overlap of mapped genes to correct long/split models
 my $MAXSEGMENTSIZE = 100_000;
 my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
@@ -47,7 +47,7 @@ my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
 $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix,$INP_mode_stats) = ('','',0,0,0);
-my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir) = (0,0,'','');
+my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir,$INP_partial) = (0,0,'','',0);
 my ($isCDS, $seq, $gfffh, $CDSok, $outputGFF, %badCDS) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
@@ -58,7 +58,7 @@ my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 my (%genome_coords, %scores, %taxon_genes, %taxon_segments);
 
-getopts('hvacfnmr:s:o:d:i:', \%opts);
+getopts('hvpacfnmr:s:o:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -74,9 +74,10 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-m print all sequences that match mode          (optional, overriden with -s -r)\n"; 
   print "-n do not print raw evidence                    (optional)\n";
   print "-f fix gene models and produce GFF              (optional, GFF printed to stdout by default)\n";
+  print "-p allow partial lifted-over CDSs               (optional, by default only multiples of 3)\n";  
   print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
   print "-a append GFF output                            (optional, requires -f -o)\n"; 
-  print "-v verbose                                      (optional, prints data used in calculations)\n";
+  print "-v verbose, prints intermediate results         (optional, useful to see GMAP alignments)\n";
   print "Note: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
@@ -138,6 +139,10 @@ if(defined($opts{'f'})){
   if(!feature_is_installed('EXE_GMAP')) {
     die "# EXIT : cannot find gmap binary, ".
       "see dependency instructions, can be installed with make install_gmap\n";
+  }
+
+  if(defined($opts{'p'})){
+    $INP_partial = 1
   }
 
   if(defined($opts{'o'})){
@@ -526,6 +531,10 @@ if(!$INP_fix) {
   print "\n";
 }
 
+print "# FIX PARAMETERS:\n# -p $INP_partial " .
+  "\$MINPAIRPECNONOUTLIERS=$MINPAIRPECNONOUTLIERS \$MINLIFTIDENTITY=$MINLIFTIDENTITY " .
+  "\$MINFIXOVERLAP=$MINFIXOVERLAP \$MAXSEGMENTSIZE=$MAXSEGMENTSIZE\n\n";
+
 # 7) suggest fixes for poor gene models based on pan-gene consensus
 #    (based on chr coords of 1st isoform of each gene)
 my $non_outlier_pairs = 0;
@@ -681,7 +690,7 @@ if(@long_models &&
 
         $ref_lifted_model = liftover_gmap( "$gene_id,", 
           $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, 
-          \@standard_stop_codons, $INP_verbose ); 
+          \@standard_stop_codons, $INP_partial, $INP_verbose ); 
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model || 
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -836,7 +845,7 @@ if(@long_models &&
 
         $ref_lifted_model = liftover_gmap( $segment_data{'genes'}, 
           $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, 
-          \@standard_stop_codons, $INP_verbose );
+          \@standard_stop_codons, $INP_partial, $INP_verbose );
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -937,7 +946,7 @@ if(@long_models &&
 
         $ref_lifted_model = liftover_gmap( 'missing', 
           $segment, $cDNA, $GMAPBIN, $MINLIFTIDENTITY, 
-          \@standard_stop_codons, $INP_verbose );
+          \@standard_stop_codons, $INP_partial, $INP_verbose ); 
 
         if($ref_lifted_model->{'matches'} && (!$best_isof_model ||
             $ref_lifted_model->{'matches'} > $best_isof_model->{'matches'})) {
@@ -1044,23 +1053,24 @@ sub cut_genomic_segment_bedtools {
 
 # Lifts over a gene model upon gmap mapping of a query (cDNA) sequence.
 # Note: requires a full (Met2stop) CDS as long as that in the cDNA
-# Takes 5+1 params:
-# i)   original gene_ids (comma separated strings)
-# ii)  FASTA string of genomic sequence (target)
-# iii) FASTA string of cDNA sequence (query)
-# iv)  path to gmap
-# v)   min identity percentage (float)
-# vi)  ref to list with stop codon strings
-# vii) verbose boolean, optional
+# Takes 7+1 params:
+# i)    original gene_ids (comma separated strings)
+# ii)   FASTA string of genomic sequence (target)
+# iii)  FASTA string of cDNA sequence (query)
+# iv)   path to gmap
+# v)    min identity percentage (float)
+# vi)   ref to list with stop codon strings
+# vii)  allow partial CDS boolean
+# viii) verbose boolean, optional
 # Returns ref to hash with model features, including 'GFF' and
 # several scores such as 'matches', 'mismatches' or 'indels'
 # Note: gene_id of lifted models if that of source cDNA
 # Note: original gene_id annotated as old_locus_tag in GFF's attributes column
 sub liftover_gmap {
   my ($old_gene_ids, $target_fna, $query_cdna, 
-      $gmap_path, $min_identity, $ref_stop_codons, $verbose) = @_;
+      $gmap_path, $min_identity, $ref_stop_codons, $partialCDSOK, $verbose) = @_;
 
-  my ($chr,$start,$end,$offset,$cmd,$CDSseq);  
+  my ($chr,$start,$end,$offset,$cmd,$CDSseq,$CDScheck);  
   my ($identity, $match, $mismatch, $indel, $gffOK) = (0, 0, 0, 0, 0);
   my (%lifted_model);
 
@@ -1094,7 +1104,7 @@ sub liftover_gmap {
 
     print if($verbose);
   }
-  close(GMAP);
+  close(GMAP); 
 
   if($match == 0) {
     return \%lifted_model
@@ -1111,7 +1121,10 @@ sub liftover_gmap {
       if(/^(.+)/) {
         $CDSseq = uc($1); # might contain ... and spaces
         $CDSseq =~ s/[^a-zA-Z]//g;
-        if(no_premature_stops( $CDSseq, $ref_stop_codons, $isCDS, $verbose) != 1) {
+      
+        $CDScheck = no_premature_stops( $CDSseq, $ref_stop_codons, $isCDS, $verbose);
+        if($partialCDSOK == 0 && $CDScheck != 1 ||
+          $partialCDSOK == 1 && $CDScheck < 0){
           return \%lifted_model;
         }
       }
@@ -1164,7 +1177,7 @@ sub liftover_gmap {
   $lifted_model{'identity'} = $identity;
   $lifted_model{'matches'} = $match;
   $lifted_model{'mismatches'} = $mismatch;
-  $lifted_model{'indels'} = $indel;
+  $lifted_model{'indels'} = $indel; 
 
   return \%lifted_model;
 }

@@ -37,3 +37,4 @@
 14072022: added _chunk_chr.pl to break long chromosomes in chunks separated by geneless stretches (testing only)
 30082022: tested get_pangenes.pl with rice, barley and wheat
 12092022: check_evidence.pl -f -v prints out GMAP alignments, -p allows for partial CDS lift-over
+13092022: check_evidence.pl -f does not use long/short isoforms for lift-over

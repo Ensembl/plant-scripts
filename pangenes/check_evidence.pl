@@ -48,7 +48,7 @@ $GMAPBIN .= " $GMAPARAMS ";
 
 my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix,$INP_mode_stats) = ('','',0,0,0);
 my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir,$INP_partial) = (0,0,'','',0);
-my ($isCDS, $seq, $gfffh, $CDSok, $outputGFF, %badCDS) = ( 0 );
+my ($isCDS, $seq, $gfffh, $CDSok, $outputGFF, %badCDS, %outlier_isoform) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
@@ -309,10 +309,15 @@ foreach $gene_id (@$ref_geneid) {
       print "# short isoform: $isof_id $gene_id [$ref_taxon->{$gene_id}] ".
         "length=$isof_len{$gene_id}{$isof_id}\n";
 
-    } if($isof_len{$gene_id}{$isof_id} > $cutoff_high_length) {
+      # this isoform should not be used for lifting-over
+      $outlier_isoform{$ref_taxon->{$gene_id}}{$isof_id} = 1;
+
+    } elsif($isof_len{$gene_id}{$isof_id} > $cutoff_high_length) {
 
       print "# long isoform: $isof_id $gene_id [$ref_taxon->{$gene_id}] ".
        "length=$isof_len{$gene_id}{$isof_id}\n";
+
+      $outlier_isoform{$ref_taxon->{$gene_id}}{$isof_id} = 1;	   
     }
   }
 } 
@@ -538,7 +543,7 @@ print "# FIX PARAMETERS:\n# -p $INP_partial " .
 # 7) suggest fixes for poor gene models based on pan-gene consensus
 #    (based on chr coords of 1st isoform of each gene)
 my $non_outlier_pairs = 0;
-my ($chr,$start,$end,$strand,$isof,$ref_lifted_model);
+my ($chr,$start,$end,$strand,$isof,$outisof,$ref_lifted_model);
 my ($GFF, $GFFstart, $GFFend);
 my (@long_models, @split_models, @non_outliers);
 my (@candidate_nonoutliers, %split_seen, %seen_nonoutlier_taxon);
@@ -616,8 +621,6 @@ foreach $species (keys(%seen_nonoutlier_taxon)) {
   }
 }
 
-
-
 # 7.3) suggest model fixes in GFF format, order of priority: long > split > missing
 
 if(!@non_outliers) {
@@ -684,7 +687,13 @@ if(@long_models &&
       my $best_isof_model;
       my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id}); 
       
-      foreach $isof (@isofs) { 
+      ISOF: foreach $isof (@isofs) { 
+
+        # skip long/short isoforms, outliers are computed from gene intervals
+        foreach $outisof (keys(%{ $outlier_isoform{$ref_taxon->{$hom_gene_id}} })) {
+          next ISOF if($isof =~ /$outisof/);
+        }
+
         $cDNA = $isof; # gene name only in FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;  
 
@@ -839,7 +848,13 @@ if(@long_models &&
       my $best_isof_model;
       my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id});
 
-      foreach $isof (@isofs) {
+      ISOF: foreach $isof (@isofs) {
+
+        # skip long/short isoforms, outliers are computed from gene intervals
+        foreach $outisof (keys(%{ $outlier_isoform{$ref_taxon->{$hom_gene_id}} })) {
+          next ISOF if($isof =~ /$outisof/);
+        }
+
         $cDNA = $isof; # gene name only in FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 
@@ -915,8 +930,8 @@ if(@long_models &&
 
 } elsif($ref_geneid_seg && scalar(@$ref_geneid_seg)) {
 
-  # hypothesis: model exists but failed to be annotated
-  # proposed fix: liftover consensus models over matching genomic segment
+  # hypothesis: model potentially exists but failed to be annotated
+  # proposed fix: liftover consensus models (isoforms) over matching genomic segment
 
   foreach my $segment_id (@$ref_geneid_seg){
 
@@ -940,7 +955,13 @@ if(@long_models &&
       my $best_isof_model;
       my @isofs = extract_isoforms_FASTA($ref_fasta->{$hom_gene_id});
 
-      foreach $isof (@isofs) {
+      ISOF: foreach $isof (@isofs) {
+
+        # skip long/short isoforms, outliers are computed from gene intervals
+        foreach $outisof (keys(%{ $outlier_isoform{$ref_taxon->{$hom_gene_id}} })) {
+          next ISOF if($isof =~ /$outisof/);
+        }
+
         $cDNA = $isof; # gene name only in FASTA header of cDNA
         $cDNA =~ s/^>.*\n/>$hom_gene_id\n/;
 

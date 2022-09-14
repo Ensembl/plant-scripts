@@ -140,7 +140,7 @@ Here I list the most important ones, they can be changed by editing the script f
 |check_evidence.pl|$GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
 |check_evidence.pl|$MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
 |check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
-|check_evidence.pl|$MINLIFTIDENTITY|95.0|min % of identity of gmap cDNA to genome alignments to be considered|
+|check_evidence.pl|$MINLIFTIDENTITY|90.0|min % of identity of gmap CDS/cDNA to genome alignments to be considered|
 |check_evidence.pl|$MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
 |_dotplot.pl|$MINCONTIGSIZE|100000|min length of chrs/contigs to be considered for dotplot|
 

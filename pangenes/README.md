@@ -690,6 +690,8 @@ Currently, the following fixes have been tested:
 |split gene model|the real gene is long and was split in 2+ partial genes|liftover consensus (longer) models on genomic segment containing both split models|
 |missing gene model|gene model exists but failed to be annotated|liftover consensus models over matching genomic segment, used precomputed clusters with genomic segments, with extension .gdna.fna|
 
+![check_evidence.pl flowchart](pics/flow-check-evidence.png)
+
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
 
     perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna -f   

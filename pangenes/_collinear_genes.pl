@@ -194,6 +194,9 @@ if ($dowfmash) {
 } elsif($repetitive) {
     #see https://github.com/lh3/minimap2/issues/813
     $MINIMAPPARS .= " -f100 ";
+
+    # see also ideas in
+    # https://github.com/lh3/minimap2/issues/354
 }
 
 if(!$dogsalign){ 

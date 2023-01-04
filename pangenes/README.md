@@ -42,7 +42,7 @@ and produces different types of output:
 - [Pan-gene analysis with GFF patches](#pan-gene-analysis-with-GFF-patches)
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
 - [Troubleshooting](#troubleshooting)
-
+- [Funding](#funding)
 
 
 ## Objective
@@ -828,3 +828,6 @@ The log of _cluster_analysis.pl might contain warnings like these:
 
 * WARN: remove gene:Os01g0531000 from cluster gene:BGIOSGA001469 (46). This happens when a non-neighbor gene is removed from a cluster for having too many intervening genes in between.
 
+## Funding 
+
+This prototype was produced as part of the project "PanOryza: globally coordinated genomes, proteomes and pathways for rice", funded by [BBSRC.NSF/BIO](https://gtr.ukri.org/projects?ref=BB%2FT015691%2F1).

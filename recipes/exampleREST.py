@@ -28,8 +28,8 @@ def get_json(ext):
     r = requests.get(url, headers={ "Content-Type" : "application/json"})
     
     if not r.ok:
-        r.raise_for_status()
-        sys.exit()
+        #r.raise_for_status()
+        return []
     
     decoded = r.json()
     return decoded

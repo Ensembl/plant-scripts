@@ -345,19 +345,19 @@ if(defined($map_cds->{mappings}->[0]->{seq_region_name})){
 
 	my $conseq = call_endpoint($http,$url);
 
-	if(defined($conseq->[0]->{allele_string})){
+	if(defined($conseq->[0]->{most_severe_consequence})){
 		
-		foreach my $tcons ($conseq->[0]->{transcript_consequences}){
+		foreach my $tcons (@{ $conseq->[0]->{transcript_consequences} }){
 			
 			printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 				$transcript_id,
 				$SNPCDScoord,
 				$conseq->[0]->{allele_string},
-				$tcons->[0]->{biotype},
-				$tcons->[0]->{codons} || 'NA',
-				$tcons->[0]->{amino_acids} || 'NA',
-				$tcons->[0]->{protein_start} || 'NA',
-				$tcons->[0]->{impact},
+				$tcons->{consequence_terms}->[0],
+				$tcons->{codons} || 'NA',
+				$tcons->{amino_acids} || 'NA',
+				$tcons->{protein_start} || 'NA',
+				$tcons->{impact},
 				# not all variants have SIFT scores precomputed
 				$tcons->[0]->{sift_prediction} || 'NA',
 				$tcons->[0]->{sift_score} || 'NA' 

@@ -25,7 +25,11 @@ args = commandArgs(trailingOnly=TRUE)
 call_endpoint <- function(url, content_type) {
 
 	result = GET(url, accept(content_type))
-	stop_for_status(result)
+
+	if(result$status == 400) {
+		warn_for_status(result)
+		return ()
+	}
 
 	if(content_type == 'application/json'){
 		return (fromJSON(content(result, "text", encoding="UTF-8")))
@@ -206,7 +210,7 @@ for (hom in 1:nrow(filt_homol)) {
 	target_id = filt_homol[ hom,'target']$id
 	target_prot_id = filt_homol[ hom,'target']$protein_id
 
-    cat(paste(gene, species, target_id, target_species, "\n", sep="\t"))
+	cat(paste(gene, species, target_id, target_species, "\n", sep="\t"))
 
 	# GO annotation (protein)
 	url = paste(
@@ -215,6 +219,7 @@ for (hom in 1:nrow(filt_homol)) {
 			sep="?")
 
 	go_data = call_endpoint(url, "application/json");
+	print(go_data)
 	if(length(go_data) > 0){
 		print(subset(as.data.frame(go_data), select=c( 'dbname','display_id',
 							'description','linkage_types')))

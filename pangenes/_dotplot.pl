@@ -13,7 +13,7 @@ $|=1;
 # models with R package pafr [https://cran.r-project.org/package=pafr]
 # Note: contigs < $MINCONTIGSIZE are ignored for clarity
 
-# Copyright [2022] 
+# Copyright [2022-23] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # perl _dotplot.pl _Oryza_nivara_v1.Oryza_sativa.IRGSP-1.0.algMmap.overlap0.5.tsv 
@@ -26,6 +26,7 @@ my $TSVfile = $ARGV[0] || die "# usage: $0 <TSVfile>\n";
 
 my $resultsDIR = dirname($TSVfile);
 
+my ($sp1filename, $sp2filename) = ('', '');
 my ($faifile, $sp1, $sp2, $species, $chr, $len) = ('','','');
 my (%file,%size);
 
@@ -42,9 +43,11 @@ foreach $faifile (@faifiles) {
 
   if($TSVfile =~ m/_$species\./) {
     $sp1 = $species;
+    $sp1filename = $sp1;
     $file{ $sp1 } = "$resultsDIR/$faifile";
   } elsif($TSVfile =~ m/\.$species\./) {
     $sp2 = $species;
+    $sp2filename = $sp2;
     $file{ $sp2 } = "$resultsDIR/$faifile";
   }
 } 
@@ -77,7 +80,12 @@ while(<TSV>) {
  
   @data = split(/\t/,$_);
 
-  # 1:73629-75670(+);6:26090409-26091184(+)
+  # OsMH63_01G000010 OsMH63_01G000010 oryza_sativa_mh63 .. ortholog_collinear .. oryza_sativa .. 1:7538-15379(+);1:2902-10817(+)
+  # Note that after
+  # https://github.com/Ensembl/plant-scripts/blob/f9c9e4e71fbb8e46f84b0609a6dfc1dd5930bacf/pangenes/_collinear_genes.pl#L1774
+  # in segments species order might change
+  # Os01g0100466 Os01g0100466 oryza_sativa .. segment_collinear .. oryza_sativa_mh63:1:17370-18541(-) .. 1:12807-13978(-);1:17370-18541(-)
+
   if($data[14] =~ m/(\S+)?:(\d+)-(\d+)\([+-]\);(\S+)?:(\d+)-(\d+)\([+-]\)/) {
    
     $sp1 = $data[2];
@@ -90,12 +98,21 @@ while(<TSV>) {
     next if($size{$sp1}{$chr1} < $MINCONTIGSIZE || 
       $size{$sp2}{$chr2} < $MINCONTIGSIZE);
 
-    printf( PAF "%s\t%d\t%d\t%d\t+\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
-      $chr1,$size{$sp1}{$chr1},$start1-1,$end1,
-      $chr2,$size{$sp2}{$chr2},$start2-1,$end2,
-      $data[3], # overlap instead of matching bases in the mapping
-      $data[3], # overlap instead of bases, including gaps, in the mapping
-      $DUMMYQUAL);
+    if($sp1 eq $sp1filename) {
+      printf( PAF "%s\t%d\t%d\t%d\t+\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
+        $chr1,$size{$sp1}{$chr1},$start1-1,$end1,
+        $chr2,$size{$sp2}{$chr2},$start2-1,$end2,
+        $data[3], # overlap instead of matching bases in the mapping
+        $data[3], # overlap instead of bases, including gaps, in the mapping
+        $DUMMYQUAL);
+	} else {
+      printf( PAF "%s\t%d\t%d\t%d\t+\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
+	    $chr2,$size{$sp2}{$chr2},$start2-1,$end2,
+        $chr1,$size{$sp1}{$chr1},$start1-1,$end1,
+        $data[3], # overlap instead of matching bases in the mapping
+        $data[3], # overlap instead of bases, including gaps, in the mapping
+        $DUMMYQUAL);
+	}
   }
 }
 close(TSV);

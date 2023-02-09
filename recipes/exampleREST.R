@@ -259,9 +259,9 @@ for (hom in 1:nrow(filt_homol)) {
 species = 'oryza_sativa';
 
 url = paste(
-		paste(server, 'vep', species, 'id', sep="/"),
-			"content-type=application/json",
-			sep="?")
+	paste(server, 'vep', species, 'id', sep="/"),
+	"content-type=application/json",
+	sep="?")
 
 # max one thousand ids are allowed, the example posts one
 variants = '{ "ids" : [ "10522356134" ] }'
@@ -302,7 +302,7 @@ if(length(map_cds) > 0) {
 	# ii) fetch VEP consequences for this region
 	url = paste(
 	        paste(server, 'vep', species, 'region', 
-					SNPgenome_coord, SNPbase,sep="/"),
+			SNPgenome_coord, SNPbase,sep="/"),
 			"content-type=application/json",
 			sep="?")
 

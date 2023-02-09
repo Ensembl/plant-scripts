@@ -260,7 +260,7 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
     conseq = get_json(ext)
  
     ##Print all the relevant info for the given variant
-    if conseq[0]['allele_string']:
+    if conseq[0]['most_severe_consequence']:
         for tcons in conseq[0]['transcript_consequences']:
             
             ##Making sure NA is default in void parameters
@@ -272,7 +272,7 @@ def check_snp_consequences(species,transcript_id,SNPCDScoord,SNPbase):
             
             ##Values to print for the given variant
             values = (transcript_id,SNPCDScoord,conseq[0]['allele_string'],
-                      tcons['biotype'],tcons['codons'],tcons['amino_acids'],
+                      tcons['consequence_terms'],tcons['codons'],tcons['amino_acids'],
                       tcons['protein_start'],tcons['impact'],tcons['sift_prediction'],
                       tcons['sift_score'])
             for val in values:

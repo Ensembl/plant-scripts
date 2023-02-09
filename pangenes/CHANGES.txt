@@ -38,3 +38,4 @@
 30082022: tested get_pangenes.pl with rice, barley and wheat
 12092022: check_evidence.pl -f -v prints out GMAP alignments, -p allows for partial CDS lift-over
 13092022: check_evidence.pl -f does not use long/short isoforms for lift-over
+09022023: fixed segments with flipped species while producing PAF in _dotplot.pl

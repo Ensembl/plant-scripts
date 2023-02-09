@@ -37,8 +37,11 @@ sub call_endpoint {
 	my $response = $http->get($url, {
 		headers => 
 			{'Content-type' => 'application/json'} });
-	
-	die "# Failed GET request $url\n" unless $response->{success};
+
+	if(!$response->{success}) {
+		warn "# Failed GET request $url\n";
+		return [];
+	}
 
 	return decode_json($response->{content});
 }
@@ -239,7 +242,7 @@ if(defined($homoltype)){
 # using the xrefs/id endpoint
 # https://rest.ensembl.org/documentation/info/xref_id
 
-my $total_annots = 0;
+my $total_annots = 0; 
 
 for my $homolog (@homologies) {
 
@@ -359,8 +362,8 @@ if(defined($map_cds->{mappings}->[0]->{seq_region_name})){
 				$tcons->{protein_start} || 'NA',
 				$tcons->{impact},
 				# not all variants have SIFT scores precomputed
-				$tcons->[0]->{sift_prediction} || 'NA',
-				$tcons->[0]->{sift_score} || 'NA' 
+				$tcons->{sift_prediction} || 'NA',
+				$tcons->{sift_score} || 'NA' 
 			);
 		}
 	} 

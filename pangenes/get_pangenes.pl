@@ -15,7 +15,7 @@
 # 3) matrix of % conserved sequences summarizing cDNA shared clusters across genomes
 # 4) optionally (-c) matrices with core- and pangene set growth simulations
 
-# Copyright [2021-22] 
+# Copyright [2021-23] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -74,7 +74,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print   "\nusage: $0 [options]\n\n";
   print   "-h this message\n";
   print   "-v print version, credits and checks installation\n";
-  print   "-d directory with input files (.fna & .gff pairs)        ";
+  print   "-d directory with input files (.fna & .gff [.gz] pairs)  ";
   print   "   (new files can be added later, creates \n".
     "                                                           ".
     "  output dir named 'directory_pangenes')\n";

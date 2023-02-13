@@ -801,9 +801,14 @@ note that this requires installing the [pafr](https://cran.r-project.org/package
 
 ## Troubleshooting
 
+The standard output of get_pangenes.pl can inform you about potential errors. For instance, please 
+pay attention to the number of genes parsed from each input GFF file. If one of them yields 0 genes,
+it might be due to a lack of 'gene' records. This can be fixed with 
+
+    plant-scripts/pangenes/bin/gffread/gffread --keep-genes geneless.gff > genes.gff 
 
 If you encounter an error, or the program stops, it is useful to look for error messages in the logfiles.
-As get_pangenes-pl includes 3 other scripts, logs are split in independent files:
+As get_pangenes.pl includes 3 other scripts, logs are split in independent files:
 
 |script|example logfile|
 |:-----|:-------|
@@ -812,6 +817,7 @@ As get_pangenes-pl includes 3 other scripts, logs are split in independent files
 |_cluster_analysis.pl|test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_.queue|
 
 The main log of get_pangenes.pl might contain error messages such as:
+ 1125  /homes/bcontreras/panoryza/plant-scripts/pangenes/bin/gffread/gffread --keep-genes BarkeBaRT2v18.gff |less
 
 * EXIT, folder_pangenes/_oryza_sativa_arc.oryza_sativa_chaomeo.algMmap.overlap0.5.patch.tsv does not exist, WGA might have failed or hard drive is still writing it (please re-run). This can happen in HPC cluster jobs due to drive latency issues. The fix is to open the relevant specific log (_collinear_genes.pl in this case) and look for the failing command, which in this example looks like:
 
@@ -820,8 +826,6 @@ The main log of get_pangenes.pl might contain error messages such as:
 Then, the failing command should be run locally as follows:
 
     $ plant-scripts/pangenes/_collinear_genes.pl -sp1 oryza_sativa_arc -fa1 folder_pangenes/_oryza_sativa_arc.fna -gf1 folder_pangenes/_oryza_sativa_arc.patched.gff -sp2 oryza_sativa_chaomeo -fa2 folder_pangenes/_oryza_sativa_chaomeo.fna -gf2 folder_pangenes/_oryza_sativa_chaomeo.patched.gff -out folder_pangenes/_oryza_sativa_arc.oryza_sativa_chaomeo.algMmap.overlap0.5.patch.tsv -p -a -M plant-scripts/pangenes/../lib/minimap2/minimap2 -B bedtools -T folder_pangenes/tmp/ -r
-
-
 
 The log of _cluster_analysis.pl might contain warnings like these:
 

@@ -11,7 +11,7 @@ use pangeneTools qw(parse_sequence_FASTA_file);
 # _collinear_genes.pl
 # Adapted from https://github.com/eead-csic-compbio/get_homologues
 
-# Copyright [2021-22]
+# Copyright [2021-23]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 # ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f folder \
@@ -399,8 +399,9 @@ foreach $species (@supported_species) {
     my $outFASTAfile = "$seqfolder$species.gdna.fna";
 
     if($num_segments) {
-        my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile"; 
+        my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile";
         system("$cmd");
+        sleep(2);
         if ( $? != 0 ) {
             die "# ERROR: failed running bedtools ($cmd)\n";
         }
@@ -537,7 +538,8 @@ foreach $cluster_id (@cluster_ids) {
                             push(@{ $cluster{$cluster_id}{$species}}, $gene_stable_id); 
 
                             if($verbose) {
-                                print "# WARN: remove $gene_stable_id from cluster $cluster_id -> $main_cluster_id ($index_dist)\n";
+                                print "# WARN: remove $gene_stable_id from cluster $cluster_id -> ".
+                                    "$main_cluster_id ($index_dist)\n";
                             }
  
                         } else { # new cluster with new cluster_id

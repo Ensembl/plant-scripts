@@ -558,6 +558,11 @@ foreach $infile (@inputfiles) {
       $num_genes);
   }
 
+  if($num_genes < 1) {
+    print "# EXIT: cannot parse any genes in $plain_gffile,".
+      " please make sure GFF format is correct and re-run\n";
+  }
+
   # extract cDNA and CDS sequences, with patches if required
   # Note: this also creates a FASTA index file that can be used to split assemblies in chrs
 

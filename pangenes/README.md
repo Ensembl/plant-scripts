@@ -679,11 +679,10 @@ Note this script builds a local BerkeleyDB database the first time is run, which
 So far we have described the evidence for pairs of overlapping gene models.
 The primary evidence though are pairs of aligned genomic segments, which are stored in [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md) format. The following line, taken from file *_Oryza_sativa.IRGSP-1.0.chr1.Oryza_indica.ASM465v1.chr1.minimap2.paf*,
 shows a segment from chr1 in Oryza_sativa.IRGSP-1.0 aligned to a collinear segment in Oryza_indica.ASM465v1. 
-The segments have coordinates 1:5902373-6068137 and 1:6345936-6511263, respectively:
-as this (from ):
+The segments have coordinates 1:5902373-6068137 and 1:6345936-6511263, respectively. 
+The last column is a CIGAR string that summarizes the actual alignment:
 
-    1       43270923        5902373 6068137 +       1       47283185        6345936 6511263 164108  166011  60      NM:i:2054       ms:i:157821
-AS:i:158450     nn:i:151        tp:A:P  cm:i:27339      s1:i:157194     s2:i:1845       de:f:0.0050     zd:i:2  rl:i:279032     cs:Z::5*ca:...
+    1 43270923 5902373 6068137 + 1 47283185 6345936 6511263 164108 166011 60 NM:i:2054  ms:i:157821 AS:i:158450 nn:i:151 tp:A:P cm:i:27339 s1:i:157194 s2:i:1845 de:f:0.0050 zd:i:2 rl:i:279032 cs:Z::5*ca:...
 
 
 ## Remediating pan-gene models with check_evidence.pl

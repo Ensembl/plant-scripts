@@ -633,7 +633,7 @@ get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_
 ## Evidence supporting clusters
 
 In sections [Pairwise genome comparisons](#pairwise-genome-comparisons) and 
-[Example 1](#example-1) we saw that collinear gene pairs are stored in TSV files. 
+[Example 1](#example-1-default-pan-gene-analysis) we saw that collinear gene pairs are stored in TSV files. 
 These files summarize the **collinearity evidence** supporting the produced clusters.
 For each get_pangenes.pl run these files are merged and sorted in a compressed TSV file such as 
 

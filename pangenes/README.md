@@ -333,7 +333,7 @@ the gdna FASTA files contain genomic segments from assemblies matching gene mode
 genomes. The latter files are good starting points for lifting over genes, as explained in section
 [Lifting over gene models in genomic segment clusters](#lifting-over-gene-models-in-genomic-segment-clusters).
 
-The **collinearity evidence** supporting the clusters is summarized in a compressed file
+The **gene collinearity evidence** supporting the clusters is summarized in a compressed file
 which is added to the output folder of each run of the script. In this example this is:
 
     test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/mergedpairs.tsv.gz
@@ -634,7 +634,7 @@ get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_
 
 In sections [Pairwise genome comparisons](#pairwise-genome-comparisons) and 
 [Example 1](#example-1-default-pan-gene-analysis) we saw that collinear gene pairs are stored in TSV files. 
-These files summarize the **collinearity evidence** supporting the produced clusters.
+These files summarize the **collinearity evidence** supporting the produced gene clusters.
 For each get_pangenes.pl run these files are merged and sorted in a compressed TSV file such as 
 
     test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/mergedpairs.tsv.gz
@@ -675,6 +675,15 @@ It is possible to extract the collinearity evidence supporting selected clusters
     2228	2	3569	median	values
 
 Note this script builds a local BerkeleyDB database the first time is run, which takes a minute, so that subsequent calls run efficiently.
+
+So far we have described the evidence for pairs of overlapping gene models.
+The primary evidence though are pairs of aligned genomic segments, which are stored in [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md) format. The following line, taken from file *_Oryza_sativa.IRGSP-1.0.chr1.Oryza_indica.ASM465v1.chr1.minimap2.paf*,
+shows a segment from chr1 in Oryza_sativa.IRGSP-1.0 aligned to a collinear segment in Oryza_indica.ASM465v1. 
+The segments have coordinates 1:5902373-6068137 and 1:6345936-6511263, respectively:
+as this (from ):
+
+    1       43270923        5902373 6068137 +       1       47283185        6345936 6511263 164108  166011  60      NM:i:2054       ms:i:157821
+AS:i:158450     nn:i:151        tp:A:P  cm:i:27339      s1:i:157194     s2:i:1845       de:f:0.0050     zd:i:2  rl:i:279032     cs:Z::5*ca:...
 
 
 ## Remediating pan-gene models with check_evidence.pl

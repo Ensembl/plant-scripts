@@ -14,7 +14,7 @@ $|=1;
 # Produces a TSV file with pairs of collinear genes in a format similar to
 # Ensembl Compara's, genomic coordinates are 1-based
 
-# Copyright [2021-22] 
+# Copyright [2021-23] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # Uses external software:

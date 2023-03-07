@@ -710,7 +710,7 @@ my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
-  query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
+  query2ref_coords( $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n\n",
@@ -729,7 +729,7 @@ if ( scalar(@$ref_matched) == 0 ) {
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
 my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
-  query2ref_coords( $sp1wgaBEDfile, $geneBEDfile1mapped,
+  query2ref_coords( $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
     $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n\n",

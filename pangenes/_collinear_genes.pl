@@ -77,7 +77,7 @@ my $MINQUAL    = 50;          # works well with minimap2
 my $MINALNLEN  = 100;         # min alignment length when transforming gene coords on WGA
 my $SAMESTRAND = 1;
 my $MINOVERLAP = 0.50;
-my $VERBOSE    = 0;           # values > 1
+my $VERBOSE    = 1;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
 my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = ( 0, 0, 0, '', '' );
@@ -395,8 +395,8 @@ if ( $reuse && -s $PAFfile ) {
 }
 else {
 
-    unlink($PAFfile);
-    unlink($outANIfile) if($dogsalign && $outANIfile);
+    #unlink($PAFfile);
+    #unlink($outANIfile) if($dogsalign && $outANIfile);
 
     my (@sorted_chrs,@WGAoutfiles);
 
@@ -594,7 +594,7 @@ else {
             die "# ERROR: failed merging split PAF files ($cmd)\n";
         } else {
             print("# WGA finished\n\n");
-            unlink(@WGAoutfiles);
+            #unlink(@WGAoutfiles);
         }
     }
 }
@@ -719,7 +719,11 @@ printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n",
 
 if ( scalar(@$ref_matched) == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
-} 
+} elsif($VERBOSE) {
+    print "# unmapped gene models: ".
+        join('',@$ref_unmatched) . "\n"
+}
+
 
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
@@ -733,7 +737,10 @@ printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n"
 
 if ( scalar(@$ref_matched1) == 0 ) {
     die "# ERROR: failed mapping $sp1 genes in WGA alignment";
-}
+} elsif($VERBOSE) {
+    print "# unmapped gene models, reverse: ".
+        join('',@$ref_unmatched1) . "\n"
+} 
 
 ## 5) produce list of pairs of collinear genes & genomic segments
 
@@ -749,7 +756,7 @@ my $segment_intersectBEDfile1 =
 my $intersectBEDfile_sorted =
   $tmpdir . "_$sp1.$sp2.$alg.intersect.overlap$minoverlap.sort.bed";
 
-unlink($intersectBEDfile_sorted) if(-e $intersectBEDfile_sorted);
+#unlink($intersectBEDfile_sorted) if(-e $intersectBEDfile_sorted);
 
 $cmd = "$bedtools_path intersect -a $geneBEDfile1 -b $geneBEDfile2mapped " .
          "$BEDINTSCPAR -s > $gene_intersectBEDfile";
@@ -795,7 +802,7 @@ printf( "# %d collinear gene pairs , %d collinear segments, %1.3f hits/gene\n",
 if($num_pairs > 0 && -s $outfilename) {
     print "# TSV file: $outfilename\n";
 
-    unlink(@tmpBEDfiles);
+    #unlink(@tmpBEDfiles);
 } 
 
 
@@ -1196,7 +1203,14 @@ sub mask_intergenic_regions {
     return ($total_masked, calc_median(\@intergenes));
 }
 
-# Takes i) input BED intersect filename ii) output BED filename.
+# Takes 
+# i) input BED intersect filename (string)
+# ii) output BED filename (string)
+# iii) min quality score (real)
+# iv) min alignment length (natural)
+# v) same strand only (boolean) 
+# vi) verbose, optional (boolean)
+#
 # Parses sorted BED intersect -wo output and writes to BED file
 # features (cDNA/transcripts) mapped on reference genome. Note:
 # features might be unsorted.

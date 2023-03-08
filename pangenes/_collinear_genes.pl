@@ -1440,7 +1440,7 @@ sub query2ref_coords {
             print "$bedline\n" if($verbose > 1)
         }
         else {
-            # store also short segments, useful to call unmapped regions
+            # skip gene models with short overlap with WGA segments
             $unmatched{$cname} = "[overlap $overlap < $minalnlen] $bedline";
         }
     }

@@ -38,6 +38,7 @@ and produces different types of output:
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
+- [Whole genome alignment evidence](#whole-genome-alignment-evidence)
 - [Remediating pan-gene models with check_evidence-pl](#remediating-pan-gene-models-with-check_evidencepl)
 - [Pan-gene analysis with GFF patches](#pan-gene-analysis-with-GFF-patches)
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
@@ -676,14 +677,35 @@ It is possible to extract the collinearity evidence supporting selected clusters
 
 Note this script builds a local BerkeleyDB database the first time is run, which takes a minute, so that subsequent calls run efficiently.
 
-So far we have described the evidence for pairs of overlapping gene models.
-The primary evidence though are pairs of aligned genomic segments, which are stored in [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md) format. The following line, taken from file *_Oryza_sativa.IRGSP-1.0.chr1.Oryza_indica.ASM465v1.chr1.minimap2.paf*,
+## Whole genome alignment evidence 
+
+While in the previous section we described the evidence for pairs of overlapping gene models,
+the primary evidence of this algorithm are actually pairs of aligned genomic segments, 
+which are stored in [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md) format. 
+
+The following line, taken from file *_Oryza_sativa.IRGSP-1.0.chr1.Oryza_indica.ASM465v1.chr1.minimap2.paf*,
 shows a segment from chr1 in Oryza_sativa.IRGSP-1.0 aligned to a collinear segment in Oryza_indica.ASM465v1. 
 The segments have coordinates 1:5902373-6068137 and 1:6345936-6511263, respectively. 
 The last column is a CIGAR string that summarizes the actual alignment:
 
     1 43270923 5902373 6068137 + 1 47283185 6345936 6511263 164108 166011 60 NM:i:2054  ms:i:157821 AS:i:158450 nn:i:151 tp:A:P cm:i:27339 s1:i:157194 s2:i:1845 de:f:0.0050 zd:i:2 rl:i:279032 cs:Z::5*ca:...
 
+As depicted on Figure 3, gene models are placed within aligned collinear genomic segments to
+check whether they overlap across. During this process some genes might fail to be mapped.
+It is possible to see exactly which genes failed and the actual reason by inspecting the logs.
+The following lines, taken from log file *_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algMmap.overlap0.5.tsv.queue*,
+indicate that 166 genes could not be mapped, and the list below shows some examples:
+
+    # 4568 genes mapped (84.8% in 3+blocks) in _Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (166 unmapped)
+
+    # unmapped: [different strand] 1	36942999	36945124	gene:Os01g0855700	9999	+	1	36926844	36962742-	135880947	35916798	35425	60	2125
+    # unmapped: [overlap 54 < 100] 1	30059934	30059987	gene:Os01g0742150	54	+
+    # unmapped: [quality 7 < 50] 1	12745558	12747074	gene:Os01g0330200	9999	-	1	12745756	12746807	+114175357	14176363	907	7	1051
+
+This happens in function *query2ref_coords* within _collinear_genes.pl. 
+Note that gene models might fail to map for being on different strands, 
+for having less than $MINALNLEN = 100 aligned nucleotides or for mapping 
+genomic regions aligned with poor quality (parameter -q).
 
 ## Remediating pan-gene models with check_evidence.pl
 

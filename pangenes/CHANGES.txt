@@ -41,3 +41,4 @@
 09022023: fixed segments with flipped species while producing PAF in _dotplot.pl
 20022023: get_pangenes.pl stops if 0 genes parsed from GFF
 07032023: _collinear_genes.pl prints out all unmapped genes and the underlying cause
+09032023: _collinear_genes.pl now maps genes in WGAs in both strands, added optional -n

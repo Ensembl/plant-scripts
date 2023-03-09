@@ -138,7 +138,7 @@ Here I list the most important ones, they can be changed by editing the script f
 |_collinear_genes.pl|$BEDINTSCPAR|-wo -f XXX -F XXX -e|bedtools intersect parameters, XXX replaced with user selected overlap [0-1]|
 |_collinear_genes.pl|$MINMASKLEN|1000000|mask longer (intergenic, repetitive) fragments with -H|
 |_collinear_genes.pl|$GENEMARGIN|5000|do not mask gene margins|
-|_collinear_genes.pl|$MINALNLEN|100|min alignment length when transforming gene coords on WGA|
+|_collinear_genes.pl|$MINALNLEN|100|min alignment length when mapping & transforming gene coords on WGA|
 |check_evidence.pl|$GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
 |check_evidence.pl|$MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
 |check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
@@ -538,6 +538,7 @@ Note that there are two types of rows: ortholog_collinear and segment_collinear.
 The first type describe a pair of collinear genes from two input taxa, their respective genomic coordinates 
 and the length of their overlap in the underlying WGA. 
 The second type indicate cases where a gene model in a taxon overlaps a genomic segment in another.
+Note also that the strand of each region is indicated, which might be useful to spot genes that are inverted/translocated genomic fragments. 
 
 In addition, each of these TSV files have a matching logfile with extension .queue. In our example,
 that would be:
@@ -692,20 +693,18 @@ The last column is a CIGAR string that summarizes the actual alignment:
 
 As depicted on Figure 3, gene models are placed within aligned collinear genomic segments to
 check whether they overlap across. During this process some genes might fail to be mapped.
-It is possible to see exactly which genes failed and the actual reason by inspecting the logs.
+It is possible to see exactly which ones failed and the actual reason by inspecting the logs.
 The following lines, taken from log file *_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algMmap.overlap0.5.tsv.queue*,
-indicate that 166 genes could not be mapped, and the list below shows some examples:
+indicate that 69 genes could not be mapped, and the list below shows some examples:
 
-    # 4568 genes mapped (84.8% in 3+blocks) in _Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (166 unmapped)
+    # 4665 genes mapped (83.9% in 3+blocks) in _Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (69 unmapped)
 
-    # unmapped: [different strand] 1	36942999	36945124	gene:Os01g0855700	9999	+	1	36926844	36962742-	135880947	35916798	35425	60	2125
     # unmapped: [overlap 54 < 100] 1	30059934	30059987	gene:Os01g0742150	54	+
     # unmapped: [quality 7 < 50] 1	12745558	12747074	gene:Os01g0330200	9999	-	1	12745756	12746807	+114175357	14176363	907	7	1051
 
 This happens in function *query2ref_coords* within _collinear_genes.pl. 
-Note that gene models might fail to map for being on different strands, 
-for having less than $MINALNLEN = 100 aligned nucleotides or for mapping 
-genomic regions aligned with poor quality (parameter -q).
+Note that gene models might fail to map for having less than $MINALNLEN = 100 aligned nucleotides 
+or for mapping genomic regions aligned with poor quality (parameter -q).
 
 ## Remediating pan-gene models with check_evidence.pl
 

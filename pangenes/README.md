@@ -538,7 +538,7 @@ Note that there are two types of rows: ortholog_collinear and segment_collinear.
 The first type describe a pair of collinear genes from two input taxa, their respective genomic coordinates 
 and the length of their overlap in the underlying WGA. 
 The second type indicate cases where a gene model in a taxon overlaps a genomic segment in another.
-Note also that the strand of each region is indicated, which might be useful to spot genes that are inverted/translocated genomic fragments. 
+Note also that the **strand of each region** is indicated, which might be useful to spot genes that are inverted/translocated genomic fragments. 
 
 In addition, each of these TSV files have a matching logfile with extension .queue. In our example,
 that would be:

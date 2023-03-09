@@ -127,7 +127,7 @@ Option -N controls the max distance (in genes) among sequences of same species i
 ### Parameters
 
 A few parameters are encoded as variables in the scripts and their values printed to log files.
-Here I list the most important ones, they can be changed by editing the script file:
+Here I list the most important ones, they can be changed by editing the script source if needed:
 
 |script|variable|value|meaning|
 |:-----|:-------|:----|:------|
@@ -184,8 +184,8 @@ In addition to minimap2, two other genome aligners have been integrated:
 
 |software|flag|source|installation instructions|notes|
 |:-------|:---|:-----|:------------------------|-----|
-|GSAlign| -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make [install_gsalign](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L75) | requires gcc compiler |
-|Wfmash (experimental)| -w | https://github.com/ekg/wfmash | cd ../.. && make [install_wfmash](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L71) | requires sudo & g++ compiler |
+|GSAlign (benchmarked) | -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make [install_gsalign](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L75) | requires gcc compiler |
+|Wfmash (experimental) | -w | https://github.com/ekg/wfmash | cd ../.. && make [install_wfmash](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L71) | requires sudo & g++ compiler |
 
 ### Command-line options
 
@@ -231,7 +231,7 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # get_pangenes.pl -d ../files/test_rice -o 0 -r 0 -t all -c 0 -z 0 -I 0 -m local -w 0 -g 0 -O 0.5 -Q 50 -N 5 -s '' -H 0 -W '' -G '' -B '' -S '' -n 4 -R 0
 
-# version 24032022
+# version 09032023
 # results_directory=pangenes/test_rice_pangenes
 # parameters: MINGFFLEN=100
 
@@ -267,14 +267,14 @@ $ perl get_pangenes.pl -d ../files/test_rice
 # sorting collinearity results...
 
 # WGA summary (N50, %mapped genes in blocks of 3+)
-39394.0 84.0 Oryza_indica.ASM465v1.chr1
-41044.0 84.0 Oryza_nivara_v1.chr1
-42940.0 86.0 Oryza_sativa.IRGSP-1.0.chr1
+31792.0 79.7 Oryza_indica.ASM465v1.chr1
+33230.0 80.3 Oryza_nivara_v1.chr1
+34983.0 83.2 Oryza_sativa.IRGSP-1.0.chr1
 
 # clustering sequences ...
 # done
 
-# number of clusters = 7891 (core = 2951)
+# number of clusters = 7804 (core = 3008)
 
 # cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 # cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
@@ -346,10 +346,10 @@ The script also produces % of Conserved Sequence (POCS) and pangene matrices,
 which look like this:
  
     $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
-    genomes	Oryza_nivara_v1.chr1	Oryza_indica.ASM465v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
-    Oryza_nivara_v1.chr1	100.00	59.41	60.55
-    Oryza_indica.ASM465v1.chr1	59.41	100.00	61.34
-    Oryza_sativa.IRGSP-1.0.chr1	60.55	61.34	100.00
+    genomes	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1
+    Oryza_nivara_v1.chr1	100.00	61.79	60.59
+    Oryza_sativa.IRGSP-1.0.chr1	61.79	100.00	62.62
+    Oryza_indica.ASM465v1.chr1	60.59	62.62	100.00
 
 And 
 
@@ -365,7 +365,7 @@ And
     gene:ONIVA01G52060	1	1	1	
     gene:ONIVA01G52030	1	1	1	
 
-    $ head  test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
+    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
     source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
     chr:unsorted	NA	NA	NA	
     gene:ONIVA01G52180	gene:ONIVA01G52180	gene:Os01g0978100	gene:BGIOSGA000001	
@@ -479,29 +479,30 @@ named core_gene.tab and pan_gene.tab
 ```
 # genome composition report (samples=6,seed=12345)
 ## sample 0 (Oryza_nivara_v1.chr1 | 0,1,2,)
-# adding Oryza_nivara_v1.chr1: core=5057 pan=5057
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3133 pan=6818
-# adding Oryza_indica.ASM465v1.chr1: core=2953 pan=7860
-## sample 1 (Oryza_sativa.IRGSP-1.0.chr1 | 1,0,2,)
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=4894 pan=4894
-# adding Oryza_nivara_v1.chr1: core=3133 pan=6818
-# adding Oryza_indica.ASM465v1.chr1: core=2953 pan=7860
-## sample 2 (Oryza_indica.ASM465v1.chr1 | 2,0,1,)
-# adding Oryza_indica.ASM465v1.chr1: core=5011 pan=5011
-# adding Oryza_nivara_v1.chr1: core=3416 pan=6652
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=2953 pan=7860
+# adding Oryza_nivara_v1.chr1: core=5061 pan=5061
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3151 pan=6801
+# adding Oryza_indica.ASM465v1.chr1: core=2971 pan=7846
+## sample 1 (Oryza_nivara_v1.chr1 | 0,1,2,)
+# adding Oryza_nivara_v1.chr1: core=5061 pan=5061
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3151 pan=6801
+# adding Oryza_indica.ASM465v1.chr1: core=2971 pan=7846
+## sample 2 (Oryza_sativa.IRGSP-1.0.chr1 | 1,2,0,)
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=4891 pan=4891
+# adding Oryza_indica.ASM465v1.chr1: core=3509 pan=6392
+# adding Oryza_nivara_v1.chr1: core=2971 pan=7846
 ## sample 3 (Oryza_indica.ASM465v1.chr1 | 2,1,0,)
-# adding Oryza_indica.ASM465v1.chr1: core=5011 pan=5011
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3506 pan=6399
-# adding Oryza_nivara_v1.chr1: core=2953 pan=7860
-## sample 4 (Oryza_nivara_v1.chr1 | 0,2,1,)
-# adding Oryza_nivara_v1.chr1: core=5057 pan=5057
-# adding Oryza_indica.ASM465v1.chr1: core=3416 pan=6652
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=2953 pan=7860
-## sample 5 (Oryza_nivara_v1.chr1 | 0,1,2,)
-# adding Oryza_nivara_v1.chr1: core=5057 pan=5057
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3133 pan=6818
-# adding Oryza_indica.ASM465v1.chr1: core=2953 pan=7860
+# adding Oryza_indica.ASM465v1.chr1: core=5010 pan=5010
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3509 pan=6392
+# adding Oryza_nivara_v1.chr1: core=2971 pan=7846
+## sample 4 (Oryza_indica.ASM465v1.chr1 | 2,0,1,)
+# adding Oryza_indica.ASM465v1.chr1: core=5010 pan=5010
+# adding Oryza_nivara_v1.chr1: core=3427 pan=6644
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=2971 pan=7846
+## sample 5 (Oryza_sativa.IRGSP-1.0.chr1 | 1,0,2,)
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=4891 pan=4891
+# adding Oryza_nivara_v1.chr1: core=3151 pan=6801
+# adding Oryza_indica.ASM465v1.chr1: core=2971 pan=7846
+
 
 # pan-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
 # core-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/core_gene.tab
@@ -511,12 +512,12 @@ The resulting pan and core gene files look like this:
 
     $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
     g1	g2	g3	
-    5057	6818	7860	
-    4894	6818	7860	
-    5011	6652	7860	
-    5011	6399	7860	
-    5057	6652	7860	
-    5057	6818	7860	
+    5061	6801	7846	
+    5061	6801	7846	
+    4891	6392	7846	
+    5010	6392	7846	
+    5010	6644	7846	
+    4891	6801	7846	
 
 
 ## Inspection of result files
@@ -549,6 +550,7 @@ These files also contain useful:
 
     # WGA blocks: N50 28614 median 2731
     # 28644 genes mapped (75.4% in 3+blocks) ... (2 unmapped)
+    ...
     # 29008 genes mapped (76.1% in 3+blocks) ... (reverse, 4 unmapped)
     # 26241 collinear gene pairs , 6561 collinear segments, 1.031 hits/gene
 

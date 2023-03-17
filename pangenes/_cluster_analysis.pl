@@ -239,7 +239,8 @@ if($show_supported) {
 }
 
 print "\n# clustering parameters:\n";
-print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n\n";
+print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n";
+print "# \$MINEDGESTOMERGE: $MINEDGESTOMERGE\n\n";
 
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";

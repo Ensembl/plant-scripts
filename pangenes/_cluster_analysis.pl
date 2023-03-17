@@ -374,8 +374,8 @@ foreach $infile (@infiles) {
     close(TSV);
 } print "\n";  
 
-# see if disjoint clusters can be merged, 
-# can happen if long genes overlap shorther ones
+
+# 2.0) see if disjoint clusters can be merged, can happen if long genes overlap shorther ones
 my ($c1, $c2, $size1, $size2, $speciesOK);
 foreach $c1 (0 .. $#tmp_cluster_ids-1) {
 	$cluster_id = $tmp_cluster_ids[$c1];

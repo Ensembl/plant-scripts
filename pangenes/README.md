@@ -139,6 +139,7 @@ Here I list the most important ones, they can be changed by editing the script s
 |_collinear_genes.pl|$MINMASKLEN|1000000|mask longer (intergenic, repetitive) fragments with -H|
 |_collinear_genes.pl|$GENEMARGIN|5000|do not mask gene margins|
 |_collinear_genes.pl|$MINALNLEN|100|min alignment length when mapping & transforming gene coords on WGA|
+|_cluster_analysis.pl|$MINEDGESTOMERGE|0.75|ratio of edges connecting two clusters so they can be merged|
 |check_evidence.pl|$GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
 |check_evidence.pl|$MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
 |check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
@@ -860,7 +861,11 @@ Then, the failing command should be run locally as follows:
 
 The log of _cluster_analysis.pl might contain warnings like these:
 
-* WARN: possibly conflicting clusters for gene:BGIOSGA000012 & gene:BGIOSGA000011. This happens when a sequence can belong to two different clusters.
+* WARN: merged clusters Horvu_10350_3H01G330600 & Horvu_AKASHIN_3H01G332600 (40,10,4). Explanation: two clusters containing 10 and 4 sequences from different species (disjoint) were merged. A total of 40 collinear gene pairs are supported by WGA evidence. See global variable $MINEDGESTOMERGE above.
+
+* WARN: partially overlapping clusters Horvu_AKASHIN_6H01G414400 & Horvu_MOREX_6H01G446100 (2,3,2): Explanation: two clusters containing 3 and 2 sequences from different species (disjoint) were not merged as only 2 collinear gene pairs are supported by WGA evidence. See global variable $MINEDGESTOMERGE above.
+
+* WARN: conflicting clusters gene:BGIOSGA000012 & gene:BGIOSGA000011 (Oryza_indica). Explanation: two individual clusters have WGA evidence connecting their genes but each have 1+ sequences from the same species, preventing the merge.
 
 * WARN: remove gene:Os01g0531000 from cluster gene:BGIOSGA001469 (46). This happens when a non-neighbor gene is removed from a cluster for having too many intervening genes in between.
 

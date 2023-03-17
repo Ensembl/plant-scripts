@@ -381,6 +381,8 @@ my ($c1, $c2, $size1, $size2, $speciesOK);
 foreach $c1 (0 .. $#tmp_cluster_ids-1) {
 	$cluster_id = $tmp_cluster_ids[$c1];
 
+    next if(defined($toremove{ $cluster_id }));
+
     foreach $c2 ($c1+1 .. $#tmp_cluster_ids) {	
         $cluster_id2 = $tmp_cluster_ids[$c2];
          

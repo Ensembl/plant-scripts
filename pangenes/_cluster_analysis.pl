@@ -33,7 +33,7 @@ my %SEQEXT = (
 
 # cluster quality control
 my $MAXDISTNEIGHBORS = 5;   # neighbor genes in a cluster cannot be more than N genes away
-my $MINEDGESTOMERGE  = 0.75;# perc of edges connecting two clusters so they can be merged
+my $MINEDGESTOMERGE  = 0.75;# ratio of edges connecting two clusters so they can be merged
 
 # genome composition report
 my $RNDSEED          = 12345;

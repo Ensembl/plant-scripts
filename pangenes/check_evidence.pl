@@ -182,11 +182,11 @@ if(defined($opts{'f'})){
 
   # check required files are in place 	
   if(!-s "$INP_dir/$BED_matrix_file") {
-    warn "# WARN: cannot find $INP_dir/$BED_matrix_file; ".
+    die "# WARN: cannot find $INP_dir/$BED_matrix_file; ".
       "please re-run get_pangenes.pl with option -s\n";
 
   } if(!-s "$INP_dir/$TAB_matrix_file") {
-    warn "# WARN: cannot find $INP_dir/$TAB_matrix_file; ".
+    die "# WARN: cannot find $INP_dir/$TAB_matrix_file; ".
       "please re-run get_pangenes.pl with option -s\n";
 
   }else {

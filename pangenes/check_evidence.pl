@@ -559,16 +559,17 @@ printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
 #    and up to $PLOTNEIGH neighbors
 if($INP_plot_code) {
 
-  print "\n# write code for plotting cluster genomic context sketch\n";
+  print "\n# write code for plotting cluster genomic context\n";
 
-  my ($l, $up, $dw, $col, $totalup, $totaldw, $taxon);
-  my ($clname, $region_size, $gene_size, $color);
+  my ($l, $up, $dw, $cl, $col, $totalup, $totaldw, $taxon);
+  my ($clname, $region_size, $gene_size, $color, $clslot);
   my ($total_slots, $slot, $total_genes, $gene_in_slot);
   my (@BED, @plot_clusters_BED, @tabtaxa);
   my (%plot_coords, %plot_blocks, %plot_tracks);
   my $plot_scriptfile = $INP_clusterfile .'plot.py';
-  my $plot_file = $INP_clusterfile .'plot.png';
-
+  my $plot_file       = $INP_clusterfile .'plot.png';
+  my $plot_logfile    = $INP_clusterfile .'plot.log.tsv';
+ 
   # 7.1) get taxa order
   open(TABMAT,"<","$INP_dir/$TAB_matrix_file") ||
     die "# ERROR: cannot read $INP_dir/$TAB_matrix_file\n";
@@ -600,6 +601,9 @@ if($INP_plot_code) {
     # find cluster of interest, cluster name matches 1st gene name in $ref_geneid
     if($data[3] eq $ref_geneid->[0]){
 
+      # recall line of input cluster
+      $cl = $l;	    
+
       # get upstream clusters
       $up = $l;
       $totalup = 0;
@@ -624,16 +628,22 @@ if($INP_plot_code) {
         }
       }
 
-      print "# neighbor indexes: $up $l $dw\n" if($INP_verbose);
+      print "# neighbor/slot indexes: $up < $l < $dw\n" if($INP_verbose);
       foreach $l ($up .. $dw) {
         push(@plot_clusters_BED,$BED[$l]);
+        if($l == $cl) {
+          $clslot = scalar(@plot_clusters_BED)
+        }
+
         print "# $BED[$l]\n" if($INP_verbose);	
       }
+
+      last;
     }
   }
   @BED=();
 
-  # 7.3) parse BED line, FASTA clusters and extract coordinates
+  # 7.3) parse BED line, FASTA clusters and extract coords
   $total_slots = 0; 
   foreach $l (@plot_clusters_BED) {
 
@@ -653,22 +663,24 @@ if($INP_plot_code) {
       # Note: there might 1+ genes on same slot 
     }
 
-    # work out cluster name and parse genomic coordinates of genes 
+    # work out cluster name and parse genomic coords & strand of genes 
     $clname = $data[3] . '.cdna.fna'; # should always exist
     my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) =
       parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$clname" , 1);
    
-    # save coordinates of all genes
     foreach $gene_id (@$ref_geneid) {
         $taxon = $ref_taxon->{$gene_id};
         $plot_coords{$taxon}{$gene_id} = $ref_isof_coords->{$gene_id};
     }
   }
 
-  # 7.4) write plotting script, track by track
+  # 7.4) write plotting script, track by track, and log
   open(PLOTSCRIPT,">",$plot_scriptfile) ||
     die "# ERROR: cannot create $plot_scriptfile\n";
 
+  open(PLOTLOG,">",$plot_logfile) ||
+    die "# ERROR: cannot create $plot_logfile\n";
+    
   # add script headers
   print PLOTSCRIPT "from pygenomeviz import GenomeViz\n\n";
   print PLOTSCRIPT "genome_list = (\n";
@@ -679,10 +691,11 @@ if($INP_plot_code) {
   foreach $taxon (@tabtaxa) {
 
     my $total_genes_track = 0;
-    my $gene_coords = '';
+    my ($gene_coords, $gene_coords_log) = ('', '');
 
-    #format inspired on https://pypi.org/project/pygenomeviz
     print PLOTSCRIPT '{"name": "'. $taxon .'", "size":' . $region_size . ', "gene_list": (';
+    
+    print PLOTLOG "$taxon";
 
     # add genes for this taxon, slot by slot
     foreach $slot (1 .. $total_slots) {
@@ -709,13 +722,31 @@ if($INP_plot_code) {
            $strand = -1;
 	 }	 
 
-         $color = 'tab:gray';
+         # choose color 	 
+         $color = 'white';
+	 if($slot == $clslot) {
+           $color = 'tab:green'
+         }
 
-	 #print "( $start, $end, $strand, '$gene_id' )\n";
-	 $gene_coords .= "( $start, $end, $strand, '$gene_id', '$color' ), ";
+         # assign label
+         $l = '';
+         if($slot == $clslot) {
+           $l = $gene_id;
+         }	 
+
+	 printf(PLOTLOG "\t%s:%s:%d-%d(%s)",
+           $gene_id,
+           $plot_coords{$taxon}{$gene_id}[0],
+           $plot_coords{$taxon}{$gene_id}[1],
+           $plot_coords{$taxon}{$gene_id}[2],
+           $plot_coords{$taxon}{$gene_id}[3]);
+
+	 $gene_coords .= "( $start, $end, $strand, '$l', '$color' ), ";
          $gene_in_slot++; 	   
        } 
     } 
+
+    print PLOTLOG "\n";
 
     print PLOTSCRIPT $gene_coords;
 
@@ -730,11 +761,21 @@ for genome in genome_list:
   track = gv.add_feature_track(name, size)
   for idx, gene in enumerate(gene_list, 1):
     start, end, strand, genelabel, color = gene 
-    track.add_feature(start, end, strand, label=genelabel, linewidth=1, labelrotation=15, labelsize=10, facecolor=color)
+    track.add_feature(start, end, strand, label=genelabel, linewidth=1, labelrotation=0, facecolor=color)
 ENDOFCODE
 
   print PLOTSCRIPT 'gv.savefig(savefile="'.$plot_file.'",dpi='.$PLOTDPI. ')'."\n"; 
 
+  close(PLOTSCRIPT);
+  close(PLOTLOG);
+
+  print "# log file: $plot_logfile\n\n";
+  print "# plotting script file: $plot_scriptfile\n\n";
+
+  print "# install if required: pip install pygenomeviz\n"; 
+  print "# see other installation options at https://pypi.org/project/pygenomeviz\n\n";
+  print "# run it as: python3 $plot_scriptfile\n\n"; 
+  print "# will produce: $plot_file\n";
 } ## done plotting
 
 

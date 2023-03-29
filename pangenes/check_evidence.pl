@@ -755,13 +755,18 @@ if($INP_plot_code) {
   print PLOTSCRIPT ")\n";
 
   print PLOTSCRIPT <<"ENDOFCODE";
-gv = GenomeViz()
+gv = GenomeViz(fig_track_height=0.3, feature_track_ratio=1.0)
+ngenomes=0
 for genome in genome_list:
   name, size, gene_list = genome["name"], genome["size"], genome["gene_list"]
-  track = gv.add_feature_track(name, size)
+  if(ngenomes == 0):
+    track = gv.add_feature_track(name, size)
+  else:
+    track = gv.add_feature_track(name, size, linewidth=0)
+  ngenomes = ngenomes + 1
   for idx, gene in enumerate(gene_list, 1):
     start, end, strand, genelabel, color = gene 
-    track.add_feature(start, end, strand, label=genelabel, linewidth=1, labelrotation=0, facecolor=color)
+    track.add_feature(start, end, strand, label=genelabel, linewidth=1, labelrotation=0, facecolor=color, labelsize=10)
 ENDOFCODE
 
   print PLOTSCRIPT 'gv.savefig(savefile="'.$plot_file.'",dpi='.$PLOTDPI. ')'."\n"; 

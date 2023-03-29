@@ -8,10 +8,12 @@
 # It can output a representative cluster sequence with mode length (-s).
 # When CDS clusters are analyzed a check for internal stop codons is carried out.
 #
+# It can produce code to plot a genomic context sketch of a cluster (-P).
+#
 # Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
 
-# Copyright [2022]
+# Copyright [2022-23]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -31,9 +33,16 @@ my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
 my $MINLIFTIDENTITY = 90.0;
-my $MINFIXOVERLAP = 0.75; # min overlap of mapped genes to correct long/split models
-my $MAXSEGMENTSIZE = 100_000;
-my $GMAPARAMS = '-t 1 -2 -z sense_force -n 1 -F ';
+my $MINFIXOVERLAP   = 0.75; # min overlap of mapped genes to correct long/split models
+my $MAXSEGMENTSIZE  = 100_000;
+my $GMAPARAMS       = '-t 1 -2 -z sense_force -n 1 -F ';
+
+# plotting global settings
+my $PLOTDPI         = 300;
+my $PLOTFLANKING    = 100; 
+my $PLOTGENEWIDTH   = 500; 
+my $PLOTNEIGH       = 1; # number of neighbors each side for -P, 
+                         # must contain reference genome/annotation
 
 my @FEATURES2CHECK = (
   'EXE_BEDTOOLS', 'EXE_GMAP', 'EXE_GZIP'
@@ -46,19 +55,23 @@ my $BEDTOOLSBIN = $ENV{'EXE_BEDTOOLS'} || 'bedtools';
 my $GMAPBIN = $ENV{'EXE_GMAP'} || 'gmap';
 $GMAPBIN .= " $GMAPARAMS ";
 
-my ($INP_dir,$INP_clusterfile,$INP_noraw,$INP_fix,$INP_mode_stats) = ('','',0,0,0);
-my ($INP_verbose,$INP_appendGFF,$INP_modeseq,$INP_outdir,$INP_partial) = (0,0,'','',0);
+my ($INP_dir, $INP_clusterfile, $INP_noraw, $INP_fix) = ('','',0,0);
+my ($INP_verbose, $INP_appendGFF, $INP_modeseq, $INP_outdir) = (0,0,'','');
+my ($INP_partial, $INP_plot_code, $INP_mode_stats) = (0, 0, 0);
 my ($isCDS, $seq, $gfffh, $CDSok, $outputGFF, %badCDS, %outlier_isoform) = ( 0 );
 my ($cluster_list_file,$cluster_folder,$gdna_clusterfile, $genome_file);
 my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
 my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
 my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
+my ($chr, $start, $end, $strand, $len);
 my (%isof_len, %isof_seq, %isof_header, %taxa, %outfhandles, @len);
 my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
 my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
 my (%genome_coords, %scores, %taxon_genes, %taxon_segments);
+my $TAB_matrix_file = 'pangene_matrix_genes.tr.tab';
+my $BED_matrix_file = 'pangene_matrix.tr.bed';
 
-getopts('hvpacfnmr:s:o:d:i:', \%opts);
+getopts('hPvpacfnmr:s:o:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -77,8 +90,9 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-p allow partial lifted-over CDSs               (optional, by default only multiples of 3)\n";  
   print "-o folder to write GFF output                   (optional, requires -f, 1 file/species)\n";
   print "-a append GFF output                            (optional, requires -f -o)\n"; 
+  print "-P make python code to plot cluster context     (optional, requires _split_ results dir, overriden with -f)\n";
   print "-v verbose, prints intermediate results         (optional, useful to see GMAP alignments)\n";
-  print "Note: reads the compressed merged TSV file in -d\n"; 
+  print "\nNote: reads the compressed merged TSV file in -d\n"; 
   exit(0);
 }
 
@@ -163,6 +177,18 @@ if(defined($opts{'f'})){
         warn "# WARN: appending to GFF files in folder $INP_outdir/\n";
       }
     }
+  }
+} elsif(defined($opts{'P'})) {
+  if(!-s "$INP_dir/$BED_matrix_file") {
+    warn "# WARN: cannot find $INP_dir/$BED_matrix_file; ".
+      "please re-run get_pangenes.pl with option -s\n";
+
+  } if(!-s "$INP_dir/$TAB_matrix_file") {
+    warn "# WARN: cannot find $INP_dir/$TAB_matrix_file; ".
+      "please re-run get_pangenes.pl with option -s\n";
+
+  }else {
+    $INP_plot_code = 1    
   }
 }
 
@@ -500,7 +526,6 @@ if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
 }
 
 # 6) print gene-level summary stats
-
 print "\n# gene-level stats\n";
 print "#len\tpairs\toverlap\tgene_name\tspecies\n";
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
@@ -529,6 +554,190 @@ printf("%d\t%d\t%1.0f\tmedian\tvalues\n",
   calc_median($scores{'overlap'}),
 );
 
+
+# 7) produce python code to plot cluster of interest 
+#    and up to $PLOTNEIGH neighbors
+if($INP_plot_code) {
+
+  print "\n# write code for plotting cluster genomic context sketch\n";
+
+  my ($l, $up, $dw, $col, $totalup, $totaldw, $taxon);
+  my ($clname, $region_size, $gene_size, $color);
+  my ($total_slots, $slot, $total_genes, $gene_in_slot);
+  my (@BED, @plot_clusters_BED, @tabtaxa);
+  my (%plot_coords, %plot_blocks, %plot_tracks);
+  my $plot_scriptfile = $INP_clusterfile .'plot.py';
+  my $plot_file = $INP_clusterfile .'plot.png';
+
+  # 7.1) get taxa order
+  open(TABMAT,"<","$INP_dir/$TAB_matrix_file") ||
+    die "# ERROR: cannot read $INP_dir/$TAB_matrix_file\n";
+  while(<TABMAT>) {
+    # source:...algMmap_/MorexV3 MorexV3 Morex HOR10350 .. BarkeBaRT2v18
+    if(/^source:/) {
+      my @data = split(/\t/,$_);
+      shift(@data);
+      pop(@data);
+      push(@tabtaxa, @data);
+      last;
+    }
+  }
+  close(TABMAT);
+
+  printf("# taxon order (%d): %s\n\n",
+    scalar(@tabtaxa),
+    join(',',@tabtaxa)) if($INP_verbose);
+
+  # 7.2) find neighbor clusters
+  open(BEDMAT,"<","$INP_dir/$BED_matrix_file") ||
+    die "# ERROR: cannot read $INP_dir/$BED_matrix_file\n";
+  @BED = <BEDMAT>;
+  close(BEDMAT); 
+
+  foreach $l (0 .. $#BED) {
+    my @data = split(/\t/,$BED[$l]);
+
+    # find cluster of interest, cluster name matches 1st gene name in $ref_geneid
+    if($data[3] eq $ref_geneid->[0]){
+
+      # get upstream clusters
+      $up = $l;
+      $totalup = 0;
+      while($up >= 0 && $totalup < $PLOTNEIGH){ 
+        $up--;
+        if($BED[$up] =~ m/^#/){ # non-reference cluster
+          next;
+	} else {
+          $totalup++;
+	}	
+      }
+
+      # get downstream clusters
+      $dw = $l;
+      $totaldw = 0;
+      while($dw <= $#BED && $totaldw < $PLOTNEIGH){
+        $dw++;
+        if($BED[$dw] =~ m/^#/){ # non-reference cluster
+          next;
+        } else {
+          $totaldw++;
+        }
+      }
+
+      print "# neighbor indexes: $up $l $dw\n" if($INP_verbose);
+      foreach $l ($up .. $dw) {
+        push(@plot_clusters_BED,$BED[$l]);
+        print "# $BED[$l]\n" if($INP_verbose);	
+      }
+    }
+  }
+  @BED=();
+
+  # 7.3) parse BED line, FASTA clusters and extract coordinates
+  $total_slots = 0; 
+  foreach $l (@plot_clusters_BED) {
+
+    #chr2H NA NA Horvu_MOREX_2H01G436800 1 0 NA Horvu_MOREX_2H01G436800 NA ...
+    #chr2H  4 12 gene:HORVU.MOREX.r3.2HG0166240 22 + gene:HORVU.MOREX.r3.2HG0166240 ...
+
+    $total_slots++;
+    my @data = split(/\s/,$l);
+
+    # queue genes from each species to track list
+    foreach $col (6 .. $#data) {
+      $taxon = $tabtaxa[$col-6];
+      push(@{ $plot_tracks{ $taxon }{ $total_slots } }, $data[$col]);
+   
+      # track1/taxon1: slot1, slot2, .. total_slots
+      # track2/taxon2: slot1, slot2, .. total_slots      
+      # Note: there might 1+ genes on same slot 
+    }
+
+    # work out cluster name and parse genomic coordinates of genes 
+    $clname = $data[3] . '.cdna.fna'; # should always exist
+    my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) =
+      parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$clname" , 1);
+   
+    # save coordinates of all genes
+    foreach $gene_id (@$ref_geneid) {
+        $taxon = $ref_taxon->{$gene_id};
+        $plot_coords{$taxon}{$gene_id} = $ref_isof_coords->{$gene_id};
+    }
+  }
+
+  # 7.4) write plotting script, track by track
+  open(PLOTSCRIPT,">",$plot_scriptfile) ||
+    die "# ERROR: cannot create $plot_scriptfile\n";
+
+  # add script headers
+  print PLOTSCRIPT "from pygenomeviz import GenomeViz\n\n";
+  print PLOTSCRIPT "genome_list = (\n";
+
+  # compute plot dimensions
+  $region_size = (2 * $PLOTFLANKING) + ($PLOTGENEWIDTH * $total_slots);
+
+  foreach $taxon (@tabtaxa) {
+
+    my $total_genes_track = 0;
+    my $gene_coords = '';
+
+    #format inspired on https://pypi.org/project/pygenomeviz
+    print PLOTSCRIPT '{"name": "'. $taxon .'", "size":' . $region_size . ', "gene_list": (';
+
+    # add genes for this taxon, slot by slot
+    foreach $slot (1 .. $total_slots) {
+	   
+       # will be used to shrink genes in the same slot	    
+       $total_genes = scalar(@{ $plot_tracks{ $taxon }{ $slot } }); 
+
+       $gene_in_slot = 0; 
+       foreach $gene_id (@{ $plot_tracks{ $taxon }{ $slot } }) {
+         next if($gene_id eq 'NA');
+	 
+	 # compute length of genes in this slot
+         $len = int($PLOTGENEWIDTH / $total_genes); 	 
+
+	 # compute gene start
+	 $start = 1 + $PLOTFLANKING + (($slot-1) * $PLOTGENEWIDTH) + ($gene_in_slot * $len); 
+
+	 # compute gene end
+	 $end = $start + ($len - 1);
+
+	 # get gene strands
+         $strand = 1;
+         if($plot_coords{$taxon}{$gene_id}[3] eq '-') {
+           $strand = -1;
+	 }	 
+
+         $color = 'tab:gray';
+
+	 #print "( $start, $end, $strand, '$gene_id' )\n";
+	 $gene_coords .= "( $start, $end, $strand, '$gene_id', '$color' ), ";
+         $gene_in_slot++; 	   
+       } 
+    } 
+
+    print PLOTSCRIPT $gene_coords;
+
+    print PLOTSCRIPT " )},\n";
+  }
+  print PLOTSCRIPT ")\n";
+
+  print PLOTSCRIPT <<"ENDOFCODE";
+gv = GenomeViz()
+for genome in genome_list:
+  name, size, gene_list = genome["name"], genome["size"], genome["gene_list"]
+  track = gv.add_feature_track(name, size)
+  for idx, gene in enumerate(gene_list, 1):
+    start, end, strand, genelabel, color = gene 
+    track.add_feature(start, end, strand, label=genelabel, linewidth=1, labelrotation=15, labelsize=10, facecolor=color)
+ENDOFCODE
+
+  print PLOTSCRIPT 'gv.savefig(savefile="'.$plot_file.'",dpi='.$PLOTDPI. ')'."\n"; 
+
+} ## done plotting
+
+
 if(!$INP_fix) {
   exit(0);
 
@@ -536,25 +745,28 @@ if(!$INP_fix) {
   print "\n";
 }
 
+
+
+
 print "# FIX PARAMETERS:\n# -p $INP_partial " .
   "\$MINPAIRPECNONOUTLIERS=$MINPAIRPECNONOUTLIERS \$MINLIFTIDENTITY=$MINLIFTIDENTITY " .
   "\$MINFIXOVERLAP=$MINFIXOVERLAP \$MAXSEGMENTSIZE=$MAXSEGMENTSIZE\n\n";
 
-# 7) suggest fixes for poor gene models based on pan-gene consensus
+# 8) suggest fixes for poor gene models based on pan-gene consensus
 #    (based on chr coords of 1st isoform of each gene)
 my $non_outlier_pairs = 0;
-my ($chr,$start,$end,$strand,$isof,$outisof,$ref_lifted_model);
+my ($isof,$outisof,$ref_lifted_model);
 my ($GFF, $GFFstart, $GFFend);
 my (@long_models, @split_models, @non_outliers);
 my (@candidate_nonoutliers, %split_seen, %seen_nonoutlier_taxon);
 
-# 7.1) get outlier cutfoff values 
+# 8.1) get outlier cutfoff values 
 my ($median_pairs, $cutoff_low_pairs, $cutoff_high_pairs) = 
   get_outlier_cutoffs( $scores{'pairs'} , $INP_verbose );
 my ($median_len, $cutoff_low_len, $cutoff_high_len) = 
   get_outlier_cutoffs( $scores{'length'} , $INP_verbose );
 
-# 7.2) identify outlier (long/split) models and non-outlier/consensus ones
+# 8.2) identify outlier (long/split) models and non-outlier/consensus ones
 foreach $full_id (sort {$seen{$b} <=> $seen{$a}} (keys(%seen))){
 
   # skip genes with internal stop codons in CDS sequences
@@ -621,7 +833,7 @@ foreach $species (keys(%seen_nonoutlier_taxon)) {
   }
 }
 
-# 7.3) suggest model fixes in GFF format, order of priority: long > split > missing
+# 8.3) suggest model fixes in GFF format, order of priority: long > split > missing
 
 if(!@non_outliers) {
   die "# ERROR: need non-outliers/consensus gene models to fix cluster, exit\n";

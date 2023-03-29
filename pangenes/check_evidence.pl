@@ -666,8 +666,10 @@ if($INP_plot_code) {
     # queue genes from each species to track list
     foreach $col (6 .. $#data) {
       $taxon = $tabtaxa[$col-6];
-      if(!grep(/^$data[$col]$/,@{ $plot_tracks{ $taxon }{ $total_slots } })) {
-        push(@{ $plot_tracks{ $taxon }{ $total_slots } }, $data[$col]);
+      foreach $gene_id (split(/,/,$data[$col])) {     
+        if(!grep(/^$gene_id$/,@{ $plot_tracks{ $taxon }{ $total_slots } })) {
+          push(@{ $plot_tracks{ $taxon }{ $total_slots } }, $gene_id);
+        }
       }
    
       # track1/taxon1: slot1, slot2, .. total_slots
@@ -730,6 +732,7 @@ if($INP_plot_code) {
 	 $end = $start + ($len - 1);
 
 	 # get gene strands
+	 # if(!$plot_coords{$taxon}{$gene_id}[3]) { die "$slot $taxon $total_genes |$gene_id|\n" } #debug 
          $strand = 1;
          if($plot_coords{$taxon}{$gene_id}[3] eq '-') {
            $strand = -1;

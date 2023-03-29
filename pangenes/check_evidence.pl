@@ -720,7 +720,11 @@ if($INP_plot_code) {
        $gene_in_slot = 0;
        my @gene_coords_log;      
        foreach $gene_id (@{ $plot_tracks{ $taxon }{ $slot } }) {
-         next if($gene_id eq 'NA');
+         
+         if($gene_id eq 'NA') {
+           push(@gene_coords_log,'NA');
+           next; 
+         }
 	 
 	 # compute length of genes in this slot
          $len = int($PLOTGENEWIDTH / $total_genes); 	 

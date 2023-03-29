@@ -563,12 +563,12 @@ if($INP_plot_code) {
 
   my ($l, $up, $dw, $cl, $col, $totalup, $totaldw, $taxon);
   my ($clname, $region_size, $gene_size, $color, $clslot);
-  my ($total_slots, $slot, $total_genes, $gene_in_slot);
+  my ($total_slots, $slot, $total_genes, $gene_in_slot, $clusterOK);
   my (@BED, @plot_clusters_BED, @tabtaxa);
   my (%plot_coords, %plot_blocks, %plot_tracks);
-  my $plot_scriptfile = $INP_clusterfile .'plot.py';
-  my $plot_file       = $INP_clusterfile .'plot.png';
-  my $plot_logfile    = $INP_clusterfile .'plot.log.tsv';
+  my $plot_scriptfile = $INP_clusterfile .'.plot.py';
+  my $plot_file       = $INP_clusterfile .'.plot.png';
+  my $plot_logfile    = $INP_clusterfile .'.plot.log.tsv';
  
   # 7.1) get taxa order
   open(TABMAT,"<","$INP_dir/$TAB_matrix_file") ||
@@ -595,25 +595,33 @@ if($INP_plot_code) {
   @BED = <BEDMAT>;
   close(BEDMAT); 
 
+  $clusterOK = 0;
   foreach $l (0 .. $#BED) {
     my @data = split(/\t/,$BED[$l]);
 
-    # find cluster of interest, cluster name matches 1st gene name in $ref_geneid
+    # find cluster of interest, cluster name matches 1st gene name in $ref_geneid,
+    # this might happen twice if cluster split in reference annotation/genome
     if($data[3] eq $ref_geneid->[0]){
 
+      $clusterOK++;
+
       # recall line of input cluster
-      $cl = $l;	    
+      if($clusterOK == 1) {
+        $cl = $l
+      }	
 
       # get upstream clusters
-      $up = $l;
-      $totalup = 0;
-      while($up >= 0 && $totalup < $PLOTNEIGH){ 
-        $up--;
-        if($BED[$up] =~ m/^#/){ # non-reference cluster
-          next;
-	} else {
-          $totalup++;
-	}	
+      if($clusterOK == 1) {
+        $up = $l;
+        $totalup = 0;
+        while($up >= 0 && $totalup < $PLOTNEIGH){ 
+          $up--;
+          if($BED[$up] =~ m/^#/){ # non-reference cluster
+            next;
+	  } else {
+            $totalup++;
+	  }	
+        }
       }
 
       # get downstream clusters
@@ -627,19 +635,16 @@ if($INP_plot_code) {
           $totaldw++;
         }
       }
-
-      print "# neighbor/slot indexes: $up < $l < $dw\n" if($INP_verbose);
-      foreach $l ($up .. $dw) {
-        push(@plot_clusters_BED,$BED[$l]);
-        if($l == $cl) {
-          $clslot = scalar(@plot_clusters_BED)
-        }
-
-        print "# $BED[$l]\n" if($INP_verbose);	
-      }
-
-      last;
     }
+  }
+
+  print "# neighbor/slot indexes: $up < $cl < $dw\n" if($INP_verbose);
+  foreach $l ($up .. $dw) {
+    push(@plot_clusters_BED,$BED[$l]);
+    if($l == $cl) {
+      $clslot = scalar(@plot_clusters_BED)
+    }
+    print "# $BED[$l]\n" if($INP_verbose);
   }
   @BED=();
 
@@ -650,13 +655,20 @@ if($INP_plot_code) {
     #chr2H NA NA Horvu_MOREX_2H01G436800 1 0 NA Horvu_MOREX_2H01G436800 NA ...
     #chr2H  4 12 gene:HORVU.MOREX.r3.2HG0166240 22 + gene:HORVU.MOREX.r3.2HG0166240 ...
 
-    $total_slots++;
-    my @data = split(/\s/,$l);
+    if($clusterOK > 1 && $total_slots == $clslot) {
+      $clusterOK-- # merge slots only as many times
+    } else {	    
+      $total_slots++;  
+    } 
+
+    my @data = split(/\s/,$l); 
 
     # queue genes from each species to track list
     foreach $col (6 .. $#data) {
       $taxon = $tabtaxa[$col-6];
-      push(@{ $plot_tracks{ $taxon }{ $total_slots } }, $data[$col]);
+      if(!grep(/^$data[$col]$/,@{ $plot_tracks{ $taxon }{ $total_slots } })) {
+        push(@{ $plot_tracks{ $taxon }{ $total_slots } }, $data[$col]);
+      }
    
       # track1/taxon1: slot1, slot2, .. total_slots
       # track2/taxon2: slot1, slot2, .. total_slots      
@@ -672,7 +684,7 @@ if($INP_plot_code) {
         $taxon = $ref_taxon->{$gene_id};
         $plot_coords{$taxon}{$gene_id} = $ref_isof_coords->{$gene_id};
     }
-  }
+  } #die $total_slots . " " . scalar(@plot_clusters_BED);
 
   # 7.4) write plotting script, track by track, and log
   open(PLOTSCRIPT,">",$plot_scriptfile) ||
@@ -691,7 +703,7 @@ if($INP_plot_code) {
   foreach $taxon (@tabtaxa) {
 
     my $total_genes_track = 0;
-    my ($gene_coords, $gene_coords_log) = ('', '');
+    my $gene_coords = '';
 
     print PLOTSCRIPT '{"name": "'. $taxon .'", "size":' . $region_size . ', "gene_list": (';
     
@@ -700,10 +712,11 @@ if($INP_plot_code) {
     # add genes for this taxon, slot by slot
     foreach $slot (1 .. $total_slots) {
 	   
-       # will be used to shrink genes in the same slot	    
+       # will be used to shrink gene arrows in the same slot	    
        $total_genes = scalar(@{ $plot_tracks{ $taxon }{ $slot } }); 
 
-       $gene_in_slot = 0; 
+       $gene_in_slot = 0;
+       my @gene_coords_log;      
        foreach $gene_id (@{ $plot_tracks{ $taxon }{ $slot } }) {
          next if($gene_id eq 'NA');
 	 
@@ -734,16 +747,19 @@ if($INP_plot_code) {
            $l = $gene_id;
          }	 
 
-	 printf(PLOTLOG "\t%s:%s:%d-%d(%s)",
+	 push(@gene_coords_log, 
+           sprintf( "%s:%s:%d-%d(%s)",
            $gene_id,
            $plot_coords{$taxon}{$gene_id}[0],
            $plot_coords{$taxon}{$gene_id}[1],
            $plot_coords{$taxon}{$gene_id}[2],
-           $plot_coords{$taxon}{$gene_id}[3]);
+           $plot_coords{$taxon}{$gene_id}[3]));
 
 	 $gene_coords .= "( $start, $end, $strand, '$l', '$color' ), ";
          $gene_in_slot++; 	   
-       } 
+       }
+
+       print PLOTLOG "\t".join(',',@gene_coords_log);
     } 
 
     print PLOTLOG "\n";

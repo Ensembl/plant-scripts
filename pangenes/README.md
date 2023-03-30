@@ -444,6 +444,10 @@ The BED file contents should be like this, with genome occupancy in column 5:
     1	98770	99876	gene:ONIVA01G00080	1	-	gene:ONIVA01G00080	NA	NA
     1	100726	101071	gene:ONIVA01G00090	1	-	gene:ONIVA01G00090	NA	NA
 
+As opposed to the other types of matrices (ie pangene_matrix.tab, pangene_matrix_genes.tab,
+pangene_matrix.fasta, pangene_matrix.tr.tab, pangene_matrix_genes.tr.tab), which contain only clusters 
+of the selected occupancy class ([alltaxa] by default), the **BED-like matrix is complete** as it contains all
+clusters, even those not included in the cluster folder for being of less occupancy.
 
 ## Example 3: using GSAlign instead of minimap2
 

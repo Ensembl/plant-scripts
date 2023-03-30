@@ -742,7 +742,8 @@ After adding option -P the output now include:
 
 ![Pangene cluster context plot](./plots/pangene_context.png)
 
-*Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script check_evidence.pl*
+*Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script check_evidence.pl.
+Note that several genes might fit in the same slot, due to split gene models or to tandem copies.*
 
 
 ## Remediating pan-gene models with check_evidence.pl

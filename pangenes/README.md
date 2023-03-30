@@ -38,6 +38,7 @@ and produces different types of output:
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
+- [Plotting the genome context of a pangene cluster](#plotting-the-genome-context-of-a-pangene-cluster)
 - [Remediating pan-gene models with check_evidence-pl](#remediating-pan-gene-models-with-check_evidencepl)
 - [Pan-gene analysis with GFF patches](#pan-gene-analysis-with-GFF-patches)
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
@@ -679,6 +680,35 @@ It is possible to extract the collinearity evidence supporting selected clusters
     2228	2	3569	median	values
 
 Note this script builds a local BerkeleyDB database the first time is run, which takes a minute, so that subsequent calls run efficiently.
+
+## Plotting the genome context of a pangene cluster 
+
+It is often useful to check visually the genomic context of the genes in a pangene cluster.
+The script introduced in the previous section can be used for that. 
+Note that it requires the BED-like pangene matrix obtained as explained in 
+[Example 2](#example-2-splitting-genome-in-chromosomes) and also the installation of 
+[pyGenomeViz](https://pypi.org/project/pygenomeviz). This is how you can run it:
+
+    perl check_evidence.pl -d Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n
+
+After adding option -P the output now include:
+
+    # write code for plotting cluster genomic context
+    # WARN: Cannot get strand of gene:ONIVA01G52010 , will plot as box, re-run get_pangenes.pl with options -t 0 -s
+    # log file: gene:ONIVA01G52020.cds.fna.plot.log.tsv
+
+    # plotting script file: gene:ONIVA01G52020.cds.fna.plot.py
+
+    # install if required: pip install pygenomeviz
+    # see other installation options at https://pypi.org/project/pygenomeviz
+
+    # run it as: python3 gene:ONIVA01G52020.cds.fna.plot.py
+
+    # will produce: gene:ONIVA01G52020.cds.fna.plot.png
+
+![Pangene cluster context plot](./plots/pangene_context.png)
+
+*Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script *check_evidence.pl*
 
 
 ## Remediating pan-gene models with check_evidence.pl

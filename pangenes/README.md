@@ -725,7 +725,7 @@ Note that it requires the BED-like pangene matrix obtained as explained in
 
     perl check_evidence.pl -d Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n
 
-After adding option -P the output now include:
+After adding option -P the output should now include:
 
     # write code for plotting cluster genomic context
     # WARN: Cannot get strand of gene:ONIVA01G52010 , will plot as box, re-run get_pangenes.pl with options -t 0 -s

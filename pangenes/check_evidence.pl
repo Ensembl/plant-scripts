@@ -514,8 +514,6 @@ foreach $gene_id (@sorted_ids) {
   }
 }
 
-untie(%TSVdb);
-
 # 5) print raw collinear TSV evidence
 if(!%seen) { #scalar(keys(%seen)) != scalar(keys(%cluster_gene_id))) {
   die "# ERROR: cannot find collinear evidence for cluster $INP_clusterfile\n";
@@ -563,9 +561,10 @@ if($INP_plot_code) {
 
   print "\n# write code for plotting cluster genomic context\n";
 
-  my ($l, $up, $dw, $cl, $col, $totalup, $totaldw, $taxon);
-  my ($clname, $region_size, $gene_size, $color, $clslot);
-  my ($total_slots, $slot, $total_genes, $gene_in_slot, $clusterOK);
+  my ($l, $up, $dw, $cl, $col, $totalup, $totaldw);
+  my ($region_size, $gene_size, $color, $taxon);
+  my ($total_slots, $slot, $total_genes, $clusterOK);
+  my ($clname, $shape, $clslot, $gene_in_slot);
   my (@BED, @plot_clusters_BED, @tabtaxa);
   my (%plot_coords, %plot_blocks, %plot_tracks);
   my $plot_scriptfile = $INP_clusterfile .'.plot.py';
@@ -605,7 +604,7 @@ if($INP_plot_code) {
     # this might happen twice if cluster split in reference annotation/genome
     if($data[3] eq $ref_geneid->[0]){
 
-      $clusterOK++;
+      $clusterOK++; # > 1 for split ref genes, these appease in consecutive rows  
 
       # recall line of input cluster
       if($clusterOK == 1) {
@@ -667,28 +666,51 @@ if($INP_plot_code) {
 
     # queue genes from each species to track list
     foreach $col (6 .. $#data) {
+
+      # track1/taxon1: slot1, slot2, .. total_slots
+      # track2/taxon2: slot1, slot2, .. total_slots
+      # Note: there might 1+ genes on same slot
+	    
+      my @slot_genes;	    
       $taxon = $tabtaxa[$col-6];
-      foreach $gene_id (split(/,/,$data[$col])) {     
+
+      # actually add genes to this slot  
+      foreach $gene_id (split(/,/,$data[$col])) { 	      
         if(!grep(/^$gene_id$/,@{ $plot_tracks{ $taxon }{ $total_slots } })) {
           push(@{ $plot_tracks{ $taxon }{ $total_slots } }, $gene_id);
+          push(@slot_genes, $gene_id);  
         }
       }
    
-      # track1/taxon1: slot1, slot2, .. total_slots
-      # track2/taxon2: slot1, slot2, .. total_slots      
-      # Note: there might 1+ genes on same slot 
+      # get coordinates of these genes from TSV (some genes lack WGA evidence though) 
+      #foreach $gene_id (@slot_genes) {
+      #  next if(!$TSVdb{$gene_id});
+      #  $TSVdata = uncompress($TSVdb{$gene_id}); 
+      #  foreach $line (split(/\n/,$TSVdata)) {
+      #    ( $gene_id, $segment, $species, $overlap, $homology_type,
+      #      $hom_gene_id, $hom_segment, $hom_species, $dummy,
+      #      $dummy, $dummy, $dummy, $dummy, $dummy, $coords
+      #    ) = split( /\t/, $line );
+      #    if($segment ne 'segment' && $coords =~ m/^([^:]+):(\d+)-(\d+)\(([+-])\)/) {
+      #     $plot_coords{$species}{$gene_id} = [$1, $2, $3, $4];
+      #    }
+      #    if($hom_segment ne 'segment' && $coords =~ m/;([^:]+):(\d+)-(\d+)\(([+-])\)/) {
+      #      $plot_coords{$hom_species}{$hom_gene_id} = [$1, $2, $3, $4];
+      #    } } }
     }
 
     # work out cluster name and parse genomic coords & strand of genes 
-    $clname = $data[3] . '.cdna.fna'; # should always exist
-    my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) =
-      parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$clname" , 1);
+    $clname = $data[3] . '.cdna.fna'; # might not exist, particularly -t all was used
+    if(-s "$INP_dir/$cluster_folder/$clname") {
+      my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) =
+        parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$clname" , 1);
    
-    foreach $gene_id (@$ref_geneid) {
-        $taxon = $ref_taxon->{$gene_id};
-        $plot_coords{$taxon}{$gene_id} = $ref_isof_coords->{$gene_id};
+      foreach $gene_id (@$ref_geneid) {
+          $taxon = $ref_taxon->{$gene_id};
+          $plot_coords{$taxon}{$gene_id} = $ref_isof_coords->{$gene_id};
+      }
     }
-  } #die $total_slots . " " . scalar(@plot_clusters_BED);
+  } 
 
   # 7.4) write plotting script, track by track, and log
   open(PLOTSCRIPT,">",$plot_scriptfile) ||
@@ -731,7 +753,9 @@ if($INP_plot_code) {
            push(@gene_coords_log,'NA');
            next; 
          }
-	 
+	
+         $shape = 'bigarrow';
+
 	 # compute length of genes in this slot
          $len = int($PLOTGENEWIDTH / $total_genes); 	 
 
@@ -742,11 +766,26 @@ if($INP_plot_code) {
 	 $end = $start + ($len - 1);
 
 	 # get gene strands
-	 # if(!$plot_coords{$taxon}{$gene_id}[3]) { die "$slot $taxon $total_genes |$gene_id|\n" } #debug 
-         $strand = 1;
-         if($plot_coords{$taxon}{$gene_id}[3] eq '-') {
-           $strand = -1;
-	 }	 
+         if(defined($plot_coords{$taxon}{$gene_id})) { 
+           $strand = 1;
+           if($plot_coords{$taxon}{$gene_id}[3] eq '-') {
+             $strand = -1;
+	   }
+
+           $coords = sprintf( "%s:%d-%d(%s)",
+             $plot_coords{$taxon}{$gene_id}[0],
+             $plot_coords{$taxon}{$gene_id}[1],
+             $plot_coords{$taxon}{$gene_id}[2],
+             $plot_coords{$taxon}{$gene_id}[3]);
+
+         } else {
+           $shape = 'box';		 
+           $coords = 'unk:0-0(?)';
+           $strand = 1;
+
+           print "# WARN: Cannot get strand of $gene_id , " .
+             "re-run get_pangenes.pl with options -t 0 -s for that\n";
+         }		 
 
          # choose color 	 
          $color = 'white';
@@ -760,15 +799,10 @@ if($INP_plot_code) {
            $l = $gene_id;
          }	 
 
-	 push(@gene_coords_log, 
-           sprintf( "%s:%s:%d-%d(%s)",
-           $gene_id,
-           $plot_coords{$taxon}{$gene_id}[0],
-           $plot_coords{$taxon}{$gene_id}[1],
-           $plot_coords{$taxon}{$gene_id}[2],
-           $plot_coords{$taxon}{$gene_id}[3]));
+         # store and log data for this gene	 
+	 push(@gene_coords_log, "$gene_id:$coords");
+	 $gene_coords .= "( $start, $end, $strand, '$l', '$shape', '$color' ), ";
 
-	 $gene_coords .= "( $start, $end, $strand, '$l', '$color' ), ";
          $gene_in_slot++; 	   
        }
 
@@ -794,8 +828,8 @@ for genome in genome_list:
     track = gv.add_feature_track(name, size, linewidth=0)
   ngenomes = ngenomes + 1
   for idx, gene in enumerate(gene_list, 1):
-    start, end, strand, genelabel, color = gene 
-    track.add_feature(start, end, strand, label=genelabel, linewidth=1, labelrotation=0, facecolor=color, labelsize=10)
+    start, end, strand, glabel, gstyle, color = gene 
+    track.add_feature(start, end, strand, label=glabel, plotstyle=gstyle, facecolor=color, linewidth=1, labelrotation=0, labelsize=10)
 ENDOFCODE
 
   print PLOTSCRIPT 'gv.savefig(savefile="'.$plot_file.'",dpi='.$PLOTDPI. ')'."\n"; 
@@ -812,6 +846,7 @@ ENDOFCODE
   print "# will produce: $plot_file\n";
 } ## done plotting
 
+untie(%TSVdb);
 
 if(!$INP_fix) {
   exit(0);

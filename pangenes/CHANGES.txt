@@ -43,3 +43,4 @@
 07032023: _collinear_genes.pl prints out all unmapped genes and the underlying cause
 09032023: _collinear_genes.pl now maps genes in WGAs in both strands, added optional -n
 17032023: _cluster_analysis.pl now merges disjoint clusters (diff species, 75% supporting edges) caused often by split gene models
+30032023_ check_evidence.pl -P prints python code to plot genomic context of pangene cluster, requires pyGenomeViz

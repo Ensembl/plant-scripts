@@ -11,7 +11,7 @@ use pangeneTools qw(parse_sequence_FASTA_file);
 # _collinear_genes.pl
 # Adapted from https://github.com/eead-csic-compbio/get_homologues
 
-# Copyright [2021-22]
+# Copyright [2021-23]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 # ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f folder \
@@ -32,7 +32,8 @@ my %SEQEXT = (
 );
 
 # cluster quality control
-my $MAXDISTNEIGHBORS = 5; # neighbor genes in a cluster cannot be more than N genes away
+my $MAXDISTNEIGHBORS = 5;   # neighbor genes in a cluster cannot be more than N genes away
+my $MINEDGESTOMERGE  = 0.75;# ratio of edges connecting two clusters so they can be merged
 
 # genome composition report
 my $RNDSEED          = 12345;
@@ -238,20 +239,22 @@ if($show_supported) {
 }
 
 print "\n# clustering parameters:\n";
-print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n\n";
+print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n";
+print "# \$MINEDGESTOMERGE: $MINEDGESTOMERGE\n\n";
 
 $n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
 ## 2) parse pairs of collinear genes and make up clusters 
 
-my ( $cluster_id, $chr, $seqtype, $coords_id ) = ( 0, '' );
+my ( $chr, $cluster_id, $cluster_id2, $seqtype, $coords_id ) = ( '', 0 );
 my ( $line, $stable_id, $segment_species, $coords, $segment_coords );
-my ( @cluster_ids, @sorted_chrs, %sorted_cluster_ids, %segment_species );
 my ( $ref_geneid, $ref_fasta, $ref_coords, $segment_cluster, $num_segments );
+my ( @sorted_chrs, %sorted_cluster_ids, %segment_species );
 my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %totaloverlap, %POCS_matrix );
 my ( %unclustered, %sorted_ids, %id2coords );
+my ( %cluster_links, %toremove, @tmp_cluster_ids, @cluster_ids );
 
 # columns of TSV file as produced by get_collinear_genes.pl
 
@@ -273,8 +276,10 @@ my (
 
 # Iteratively get & parse TSV files that define pairs of collinear genes (made with _collinear_genes.pl) 
 # Clusters are first created as pairs and grow as new collinear genes from other species are added.
+# In some cases selected clusters will be merged on a second step.
 # Note: Assumes TSV files have been sorted by $gene_stable_id and $overlap (see get_pangenes.pl) and
-# warns (-v) about genes whose partner was previously added to a different cluster
+# warns (-v) about conflicting (with sequences from same species) or 
+# partially overlapping clusters (disjoint species, not enough links/edges to merge) 
 
 print "# parsing TSV files\n";
 foreach $infile (@infiles) {
@@ -307,7 +312,7 @@ foreach $infile (@infiles) {
 
                     # otherwise create a new one
                     $cluster_id = $gene_stable_id;
-                    push( @cluster_ids, $cluster_id );
+                    push( @tmp_cluster_ids, $cluster_id );
                 }
 
                 # record to which cluster this gene belongs
@@ -335,13 +340,15 @@ foreach $infile (@infiles) {
                 # record overlap
                 $totaloverlap{$hom_gene_stable_id} += $overlap;
 
-            } else {
-                # $hom_species gene already clustered (same or different cluster)
-                if($cluster_id ne $incluster{$hom_gene_stable_id} && $verbose) {
-                    print "# WARN: possibly conflicting clusters for $cluster_id & $incluster{$hom_gene_stable_id}\n";
-                    # Typically when a long gene model overlaps 2+ shorther ones,
-                    # not sure whether to merge clusters, would require a hash of merged cluster_ids
-                }
+            } else { # $hom_species gene already clustered 
+
+                # typically when a long gene model overlaps 2+ shorther ones
+                if($cluster_id ne $incluster{$hom_gene_stable_id}) {
+
+                    $cluster_links{ $cluster_id }{ $incluster{$hom_gene_stable_id} }++;
+                    $cluster_links{ $incluster{$hom_gene_stable_id} }{ $cluster_id }++;
+                } 
+                #else { } # do nothing, previously added to same cluster
             }
                 
         } elsif($homology_type =~ m/segment_collinear/) {
@@ -369,11 +376,92 @@ foreach $infile (@infiles) {
 } print "\n";  
 
 
+# 2.0) see if disjoint clusters can be merged, can happen if long genes overlap shorther ones
+my ($c1, $c2, $size1, $size2, $speciesOK);
+foreach $c1 (0 .. $#tmp_cluster_ids-1) {
+	$cluster_id = $tmp_cluster_ids[$c1];
+
+    next if(defined($toremove{ $cluster_id }));
+
+    foreach $c2 ($c1+1 .. $#tmp_cluster_ids) {	
+        $cluster_id2 = $tmp_cluster_ids[$c2];
+         
+        if(!defined($cluster_links{ $cluster_id }{ $cluster_id2 }) ||
+            defined($toremove{ $cluster_id2 })) {
+            next;
+        }
+
+        # check species in clusters are different (disjoint clusters)
+        ($speciesOK, $size1) = (1, 0);
+        foreach $species (keys(%{ $cluster{$cluster_id} })) {
+            if(defined($cluster{$cluster_id2}{$species})){
+                $speciesOK = 0;					
+                last;
+            }
+            # get size of cluster1 as you go  
+            $size1 += scalar(@{ $cluster{$cluster_id}{$species} });
+        }
+
+        if($speciesOK == 0){
+            print "# WARN: conflicting clusters $cluster_id & $cluster_id2 ($species)\n" if($verbose);
+            next;
+		}
+
+        # get size of cluster2
+        $size2 = 0;
+		foreach $species (keys(%{ $cluster{$cluster_id2} })) {
+            $size2 += scalar(@{ $cluster{$cluster_id2}{$species} });
+        }			
+  
+        # is there evidence to merge these clusters?
+        if($cluster_links{ $cluster_id }{ $cluster_id2 } >= $MINEDGESTOMERGE * $size1 * $size2) {
+
+            # actually merge cluster2 to cluster1, requires updating data structures 
+            foreach $species (keys(%{ $cluster{$cluster_id2} })) {
+				foreach $hom_gene_stable_id (@{ $cluster{$cluster_id2}{$species} }) {
+
+                    # copy gene ids from cluster2 to cluster, for all species
+                    push(@{ $cluster{$cluster_id}{$species} }, $hom_gene_stable_id);
+
+                    # change to which cluster_id those genes now belong
+                    $incluster{$hom_gene_stable_id} = $cluster_id;
+                }
+            }
+
+            delete($cluster{$cluster_id2});
+            $toremove{ $cluster_id2 } = 1;
+
+            print "# WARN: merged clusters $cluster_id & $cluster_id2 " .
+                "($cluster_links{ $cluster_id }{ $cluster_id2 },$size1,$size2)\n" if($verbose);
+        } else {
+            print "# WARN: partially overlapping clusters $cluster_id & $cluster_id2 " .
+                "($cluster_links{ $cluster_id }{ $cluster_id2 },$size1,$size2)\n" if($verbose);
+        }
+    }		
+} print "\n";
+
+# remove individual clusters (merged) from cluster list
+foreach $cluster_id (@tmp_cluster_ids) {
+    next if($toremove{ $cluster_id });
+    push(@cluster_ids,$cluster_id);
+}
+
+@tmp_cluster_ids=();
+undef(%toremove);
+
+#foreach $cluster_id (@cluster_ids) {
+#	next if($cluster_id !~ 'BaRT2v18chr3HG163450'); && 
+#	foreach $species (@supported_species) {
+#		foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
+#	print "$cluster_id $gene_stable_id\n"; }}}
+
+
+
 # 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
 # and store them in a hash with (species,coords) keys
 foreach $species (@supported_species) {
 
-    $num_segments = 0;
+    $num_segments = 0; 
 
     # write BED
     $filename = "$seqfolder$species.gdna.bed";
@@ -399,8 +487,9 @@ foreach $species (@supported_species) {
     my $outFASTAfile = "$seqfolder$species.gdna.fna";
 
     if($num_segments) {
-        my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile"; 
+        my $cmd = "$bedtools_path getfasta -fi $FASTAgenome_file -bed $filename -s -fo $outFASTAfile";
         system("$cmd");
+        sleep(2);
         if ( $? != 0 ) {
             die "# ERROR: failed running bedtools ($cmd)\n";
         }
@@ -481,7 +570,7 @@ my ($main_cluster_id, $new_cluster_id, $gene_id);
 
 foreach $cluster_id (@cluster_ids) {
 
-    #next if($cluster_id ne 'gene:BGIOSGA000009'); #debug
+    #next if($cluster_id !~ 'HORVU.MOREX.r3.3HG0311160'); #gene:BGIOSGA000009'); #debug
 
     # set main cluster id, note it can be updated within the loop
     $main_cluster_id = $cluster_id;
@@ -537,7 +626,8 @@ foreach $cluster_id (@cluster_ids) {
                             push(@{ $cluster{$cluster_id}{$species}}, $gene_stable_id); 
 
                             if($verbose) {
-                                print "# WARN: remove $gene_stable_id from cluster $cluster_id -> $main_cluster_id ($index_dist)\n";
+                                print "# WARN: remove $gene_stable_id from cluster $cluster_id -> ".
+                                    "$main_cluster_id ($index_dist)\n";
                             }
  
                         } else { # new cluster with new cluster_id

@@ -11,7 +11,7 @@ use File::Copy qw(cp);
 #
 # Uses external software: gffread [https://f1000research.com/articles/9-304/v2]
 
-# Copyright [2021-22] 
+# Copyright [2021-23] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # perl _cut_sequences.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \
@@ -111,7 +111,7 @@ my $num_pep  = parse_gffread($gffreadpath,$fasta1,$gff1,$pepfile,
                  'pep',$minlen,$nored,$ref_names,$ref_coords);
 
 if(scalar(keys(%$ref_names)) == 0) {
-  die "# ERROR: cannot parse Parent IDs of mRNA/transcripts, please check GFF format ($gff1)\n";	
+  die "# ERROR: cannot parse Parent IDs of mRNA/transcripts, please check GFF format ($gff1)\n";
 }
 
 if($num_cdna) {

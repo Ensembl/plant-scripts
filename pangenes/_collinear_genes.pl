@@ -14,7 +14,7 @@ $|=1;
 # Produces a TSV file with pairs of collinear genes in a format similar to
 # Ensembl Compara's, genomic coordinates are 1-based
 
-# Copyright [2021-22] 
+# Copyright [2021-23] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # Uses external software:
@@ -75,7 +75,6 @@ my $DUMMYSCORE   = 9999;
 # while parsing PAF
 my $MINQUAL    = 50;          # works well with minimap2
 my $MINALNLEN  = 100;         # min alignment length when transforming gene coords on WGA
-my $SAMESTRAND = 1;
 my $MINOVERLAP = 0.50;
 my $VERBOSE    = 0;           # values > 1
 
@@ -83,9 +82,9 @@ my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0
 my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = ( 0, 0, 0, '', '' );
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ( '', '', '', '', '', '', '');
-my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd );
-my ( $indexonly, $minoverlap, $qual, $alg, $outANIfile, $outfilename ) =
-  ( 0, $MINOVERLAP, $MINQUAL, 'minimap2', '' );
+my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd, $gene );
+my ( $indexonly, $no_inversions, $minoverlap, $qual, $alg, $outANIfile, $outfilename ) =
+  ( 0, 0, $MINOVERLAP, $MINQUAL, 'minimap2', '' );
 my ( $minimap_path, $wfmash_path, $gsalign_path, $bedtools_path, $samtools_path ) =
   ( $MINIMAP2EXE, $WFMASHEXE, $GSALIGNPATH, $BEDTOOLSEXE, $SAMTOOLSEXE );
 my $threads = $THREADS;
@@ -106,6 +105,7 @@ GetOptions(
     "c|check"        => \$do_sequence_check,
     "r|reuse"        => \$reuse,
     "i|index"        => \$indexonly,
+    "n|noinvs"       => \$no_inversions,	
     "wf|wfmash"      => \$dowfmash,
     "gs|gsalign"     => \$dogsalign,
     "M|minipath=s"   => \$minimap_path,
@@ -132,6 +132,7 @@ sub help_message {
       . "-p   use patched gene models            (optional, forces recalculation of gene overlaps)\n"
       . "-ovl min overlap of genes               (optional, default: -ovl $MINOVERLAP)\n"
       . '-s   split genome in chrs               (optional, requires regex to match chr names ie: -s \'^\d+$\')'. "\n"
+      . "-n   dont map genes in inversions       (optional, by default all genes are mapped on WGAs on both strands\n"	  
       . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
       . "-gs  use GSAlign aligner                (optional, by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
@@ -226,7 +227,7 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -p $patch -a $noheader "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -gs $dogsalign -A $outANIfile -c $do_sequence_check "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -G $gsalign_path -B $bedtools_path "
-  . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive\n\n";
+  . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive -n $no_inversions\n\n";
 
 # check binaries
 if(`$bedtools_path` !~ 'sage') {
@@ -710,30 +711,39 @@ my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
-  query2ref_coords( $sp2wgaBEDfile, $geneBEDfile2mapped,
-    $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
+  query2ref_coords( $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
+    $qual, $MINALNLEN, $no_inversions, $VERBOSE );
 
-printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n",
+printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n\n",
     scalar(@$ref_matched), $perc_blocks_3genes,
     $geneBEDfile2mapped, scalar(@$ref_unmatched) );
 
 if ( scalar(@$ref_matched) == 0 ) {
     die "# ERROR: failed mapping $sp2 genes in WGA alignment";
-} 
+} else {
+    foreach $gene (@$ref_unmatched) {
+        print "# unmapped: $gene\n"
+    }
+}
+
 
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
 my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
-  query2ref_coords( $sp1wgaBEDfile, $geneBEDfile1mapped,
-    $qual, $MINALNLEN, $SAMESTRAND, $VERBOSE );
+  query2ref_coords( $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
+    $qual, $MINALNLEN, $no_inversions, $VERBOSE );
 
-printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n",
+printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n\n",
     scalar(@$ref_matched1), $perc_blocks_3genes1,
     $geneBEDfile1mapped, scalar(@$ref_unmatched1) );
 
 if ( scalar(@$ref_matched1) == 0 ) {
     die "# ERROR: failed mapping $sp1 genes in WGA alignment";
-}
+} else {
+    foreach $gene (@$ref_unmatched1) {
+        print "# unmapped: $gene\n"
+    }
+} 
 
 ## 5) produce list of pairs of collinear genes & genomic segments
 
@@ -1196,13 +1206,20 @@ sub mask_intergenic_regions {
     return ($total_masked, calc_median(\@intergenes));
 }
 
-# Takes i) input BED intersect filename ii) output BED filename.
+# Takes 
+# i) input BED intersect filename (string)
+# ii) output BED filename (string)
+# iii) min quality score (real)
+# iv) min alignment length (natural)
+# v) same strand only (boolean) 
+# vi) verbose, optional (boolean)
+#
 # Parses sorted BED intersect -wo output and writes to BED file
 # features (cDNA/transcripts) mapped on reference genome. Note:
 # features might be unsorted.
 # Returns 
-# i) ref to list of matched genes 
-# ii) ref to list of unmatched genes
+# i) ref to list of BED-like lines of matched genes 
+# ii) ref to list of BED-like lines of unmatched genes
 # iii) % genes in WGA blocks of at least 3 genes (float)
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA/gene only
@@ -1222,11 +1239,14 @@ sub query2ref_coords {
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
     my ( $deltaq,    $deltar,    $start_deltar, $end_deltar );
-    my ( %ref_coords, %genes_per_block, @matched, @unmatched, @segments );
+    my ( %ref_coords, %genes_per_block, %matched_gene, %unmatched);
+    my ( @matched, @filt_unmatched, @segments );
 
     open( BED, "<", $infile )
       || die "# ERROR(query2ref_coords): cannot read $infile\n";
     while (<BED>) {
+
+        chomp;
 
         (
             $cchr,      $cstart, $cend,   $cname,  $cmatch,
@@ -1235,14 +1255,30 @@ sub query2ref_coords {
             $SAMPAFtag, $overlap
         ) = split( /\t/, $_ );
 
+        # take only 1st mapping passing QC
+        next if ( defined($ref_coords{$cname}) );
+
         # skip mappings where query and ref segment on different strands if required
-        next if ( $WGAstrand eq '-' && $samestrand == 1 );
+        if ( $WGAstrand eq '-' && $samestrand == 1 ) {
+            if(!$unmatched{$cname}) {
+			    $unmatched{$cname} =  
+                    "[different strand] $cchr\t$cstart\t$cend\t$cname\t$cmatch\t" .
+                    "$cstrand\t$qchr\t$qstart\t$qend\t$WGAstrand\t$rchr" .
+                    "$rstart\t$rend\t$rmatch\t$rmapqual\t$overlap";
+            }
+            next;
+        }
 
         # skip poor query-to-ref WGA scores
-        next if ( $rmapqual < $minqual );
-
-        # take 1st mapping only
-        next if ( defined( $ref_coords{$cname} ) );
+        if ( $rmapqual < $minqual ) {
+		    if(!$unmatched{$cname}) {
+                $unmatched{$cname} =
+                    "[quality $rmapqual < $minqual] $cchr\t$cstart\t$cend\t$cname\t$cmatch\t" .
+                    "$cstrand\t$qchr\t$qstart\t$qend\t$WGAstrand\t$rchr" .
+                    "$rstart\t$rend\t$rmatch\t$rmapqual\t$overlap";
+            }
+            next;
+        }
 
         #next if($cname ne 'ONIVA01G00100'); # debug
 
@@ -1279,7 +1315,7 @@ sub query2ref_coords {
         }
         else {
             print "# ERROR(query2ref_coords): unsupported CIGAR string $SAMPAFtag\n";
-            return ( \@matched, \@unmatched );
+            return ( \@matched, \@filt_unmatched );
         }
 
         # split CIGAR string into individual feature tags
@@ -1401,11 +1437,12 @@ sub query2ref_coords {
 
         if ( $overlap >= $minalnlen ) {
             push(@matched, $bedline);
+            $matched_gene{ $cname } = 1;
             print "$bedline\n" if($verbose > 1)
         }
         else {
-            # store also short segments, useful to call unmapped regions
-            push( @unmatched, $bedline );
+            # skip gene models with short overlap with WGA segments
+            $unmatched{$cname} = "[overlap $overlap < $minalnlen] $bedline";
         }
     }
 
@@ -1418,7 +1455,6 @@ sub query2ref_coords {
     foreach $feat (@matched) {
         print OUTBED $feat;
     }
-
     close(OUTBED);    
 
     # compute % matched genes in WGA blocks of at least 3 genes
@@ -1431,8 +1467,15 @@ sub query2ref_coords {
         $totgenes += $genes_per_block{$block};   
     } 
 
-    return ( \@matched, \@unmatched, 100*$totgenes / scalar(@matched) );
+    # remove matched genes from raw list of unmatched
+    foreach $cname (keys(%unmatched)) {
+        next if( $matched_gene{ $cname } ); 
+        push(@filt_unmatched, $unmatched{$cname});
+    }
+
+    return ( \@matched, \@filt_unmatched, 100*$totgenes / scalar(@matched) );
 }
+
 
 # Takes 3 scalars:
 # 1) CS/CG tag feature

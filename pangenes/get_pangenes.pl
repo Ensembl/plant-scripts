@@ -193,11 +193,11 @@ if($runmode eq 'local' && defined($opts{'n'}) && $opts{'n'} > 0) {
 }
 
 if($runmode eq 'cluster') {
-  # check whether file 'cluster.conf' exists & parse it
+  # check whether file 'HPC.conf' exists & parse it
   read_cluster_config( "$Bin/HPC.conf" );
 
   if(!cluster_is_available()) {       
-    print "# EXIT : cluster is not available, please create/edit file cluster.conf\n";
+    print "# EXIT : cluster is not available, please create/edit config file HPC.conf\n";
     print_cluster_config();
     die "# EXIT : or choose runmode -m local\n";
   }
@@ -556,6 +556,11 @@ foreach $infile (@inputfiles) {
       $dnafile,
       $Mb,
       $num_genes);
+  }
+
+  if($num_genes < 1) {
+    print "# EXIT: cannot parse any genes in $plain_gffile,".
+      " please make sure GFF format is correct and re-run\n";
   }
 
   # extract cDNA and CDS sequences, with patches if required

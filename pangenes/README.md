@@ -740,6 +740,10 @@ After adding option -P the output should now include:
 
     # will produce: gene:ONIVA01G52020.cds.fna.plot.png
 
+Please follow the instructions to produce the plot. Note that you can change the last line of the 
+generated Python script to change the default graphic format (PNG) to others such as PDF o SVG by simply 
+changing the extension of the target file from .png to .pdf or .svg .
+
 ![Pangene cluster context plot](./plots/pangene_context.png)
 
 *Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script check_evidence.pl.

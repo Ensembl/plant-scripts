@@ -783,8 +783,8 @@ if($INP_plot_code) {
            $coords = 'unk:0-0(?)';
            $strand = 1;
 
-           print "# WARN: Cannot get strand of $gene_id , " .
-             "re-run get_pangenes.pl with options -t 0 -s for that\n";
+           print "# WARN: Cannot get strand of $gene_id , will plot as box, " .
+             "re-run get_pangenes.pl with options -t 0 -s\n";
          }		 
 
          # choose color 	 

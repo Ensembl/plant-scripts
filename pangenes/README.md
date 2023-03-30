@@ -742,7 +742,7 @@ After adding option -P the output now include:
 
 ![Pangene cluster context plot](./plots/pangene_context.png)
 
-*Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script *check_evidence.pl*
+*Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script check_evidence.pl*
 
 
 ## Remediating pan-gene models with check_evidence.pl
@@ -760,6 +760,9 @@ Currently, the following fixes have been tested:
 |missing gene model|gene model exists but failed to be annotated|liftover consensus models over matching genomic segment, used precomputed clusters with genomic segments, with extension .gdna.fna|
 
 ![check_evidence.pl flowchart](pics/flow-check-evidence.png)
+
+*Figure 10. Flowchart of script check_evidence.pl -f*
+
 
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
 
@@ -866,6 +869,9 @@ note that this requires installing the [pafr](https://cran.r-project.org/package
 
 ![Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0](plots/dotplot.png)
 
+*Figure 11. Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0*
+
+check_evidence.pl check_evidence.pl check_evidence.pl 
 
 ## Troubleshooting
 

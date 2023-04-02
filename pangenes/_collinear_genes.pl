@@ -1426,6 +1426,9 @@ sub query2ref_coords {
         }
 
         # print coords in ref frame only if segment is long enough
+        if($ref_coords{$cname}{'start'} < 0) {
+            $ref_coords{$cname}{'start'} = 0
+        }
         $overlap = 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'};
         $bedline = sprintf("%s\t%d\t%d\t%s\t%d\t%s\n",
             $ref_coords{$cname}{'chr'},

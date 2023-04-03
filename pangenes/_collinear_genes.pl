@@ -711,7 +711,7 @@ my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
-  query2ref_coords( $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
+  query2ref_coords( "$fasta1.fai", $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
     $qual, $MINALNLEN, $no_inversions, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n\n",
@@ -730,7 +730,7 @@ if ( scalar(@$ref_matched) == 0 ) {
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
 my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
-  query2ref_coords( $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
+  query2ref_coords( "$fasta2.fai", $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
     $qual, $MINALNLEN, $no_inversions, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n\n",
@@ -1207,22 +1207,27 @@ sub mask_intergenic_regions {
 }
 
 # Takes 
-# i) input BED intersect filename (string)
-# ii) output BED filename (string)
-# iii) min quality score (real)
-# iv) min alignment length (natural)
-# v) same strand only (boolean) 
-# vi) verbose, optional (boolean)
+# i) reference FAI filename (string)
+# ii) input BED intersect filename (string)
+# iii) output BED filename (string)
+# iv) min quality score (real)
+# v) min alignment length (natural)
+# vi) same strand only (boolean) 
+# vii) verbose, optional (boolean)
 #
 # Parses sorted BED intersect -wo output and writes to BED file
 # features (cDNA/transcripts) mapped on reference genome. Note:
 # features might be unsorted.
+#
 # Returns 
 # i) ref to list of BED-like lines of matched genes 
 # ii) ref to list of BED-like lines of unmatched genes
 # iii) % genes in WGA blocks of at least 3 genes (float)
+#
 # Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
 # Note: takes first match of each cDNA/gene only
+# Note: discards partially mapped genes at the ends of chrs
+#
 # example input:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
 # 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:...              11405
@@ -1231,7 +1236,7 @@ sub mask_intergenic_regions {
 # <--             (c)DNA/gene       --> <- (q)uery genome -> <-- (r)eference genome                         -->  ovlp
 sub query2ref_coords {
 
-    my ( $infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose ) = @_;
+    my ( $refaifile, $infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose ) = @_;
 
     my ( $cchr, $cstart, $cend, $cname, $cmatch, $cstrand );
     my ( $qchr, $qstart, $qend, $cigartype, $bedline );
@@ -1239,9 +1244,17 @@ sub query2ref_coords {
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
     my ( $deltaq,    $deltar,    $start_deltar, $end_deltar );
-    my ( %ref_coords, %genes_per_block, %matched_gene, %unmatched);
+    my ( %ref_coords, %genes_per_block, %matched_gene, %unmatched, %ref_max_length);
     my ( @matched, @filt_unmatched, @segments );
 
+    # parse reference chr lengths
+    my $ref_chr_bed = read_FAI_regex2hash($refaifile);
+    foreach $rchr (keys(%$ref_chr_bed)){
+      chomp($ref_chr_bed->{$rchr});
+      $ref_max_length{$rchr} = (split(/\t/,$ref_chr_bed->{$rchr}))[2];	
+    }
+
+    # parse input file
     open( BED, "<", $infile )
       || die "# ERROR(query2ref_coords): cannot read $infile\n";
     while (<BED>) {
@@ -1425,11 +1438,7 @@ sub query2ref_coords {
             }
         }
 
-        # print coords in ref frame only if segment is long enough
-        if($ref_coords{$cname}{'start'} < 0) {
-            $ref_coords{$cname}{'start'} = 0
-        }
-        $overlap = 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'};
+        # put together BED line
         $bedline = sprintf("%s\t%d\t%d\t%s\t%d\t%s\n",
             $ref_coords{$cname}{'chr'},
             $ref_coords{$cname}{'start'},
@@ -1438,7 +1447,16 @@ sub query2ref_coords {
             $overlap,
             $strand);
 
-        if ( $overlap >= $minalnlen ) {
+        # actually compute overlap between cDNA/CDS and ref genome
+        $overlap = 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'};
+
+        # check match is within reference chr bounds
+        if($ref_coords{$cname}{'start'} < 0 ||
+            (defined($ref_max_length{$ref_coords{$cname}{'chr'}}) && 
+            $ref_coords{$cname}{'end'} > $ref_max_length{$ref_coords{$cname}{'chr'}})) {
+            $unmatched{$cname} = "[overlap outside chr] $bedline";
+
+        } elsif ( $overlap >= $minalnlen ) { # if overlapping segment is long enough
             push(@matched, $bedline);
             $matched_gene{ $cname } = 1;
             print "$bedline\n" if($verbose > 1)

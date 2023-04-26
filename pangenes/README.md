@@ -3,7 +3,7 @@
 
 The script *get_pangenes.pl* computes whole genome alignments (WGA) to define 
 clusters of collinear, orthologous genes/features annotated in GFF files. Such
-clusters define pan-genes across a pangenome.
+clusters define pangenes across a pangenome.
 Several WGA algorithms are available and some parameters are customizable.
 It is designed to process (in a multicore computer or HPC cluster) files
 contained in a directory (-d), so that new .fna & .gff files can be added
@@ -30,18 +30,19 @@ and produces different types of output:
 	- [Parameters](#parameters)
 	- [Dependencies](#dependencies)
 	- [Command-line options](#command-line-options)
-- [Example 1: default pan-gene analysis](#example-1-default-pan-gene-analysis)
-- [Example 2: splitting genome in chromosomes](#example-2-splitting-genome-in-chromosomes)
-- [Example 3: using GSAlign instead of minimap2](#example-3-using-GSAlign-instead-of-minimap2)
-- [Example 4: simulation of pangene set growth](#example-4-simulation-of-pangene-set-growth)
+- [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis)
+- [Example 2: pangene and Presence-Absence Variation (PAV) analysis](#example-2-pangene-and-Presence-Absence-Variation-PAV-analysis)
+- [Example 3: splitting genome in chromosomes](#example-3-splitting-genome-in-chromosomes)
+- [Example 4: using GSAlign instead of minimap2](#example-4-using-GSAlign-instead-of-minimap2)
+- [Example 5: simulation of pangene set growth](#example-5-simulation-of-pangene-set-growth)
 - [Inspection of result files](#inspection-of-result-files)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
 - [Whole genome alignment evidence](#whole-genome-alignment-evidence)
 - [Plotting the genome context of a pangene cluster](#plotting-the-genome-context-of-a-pangene-cluster)
-- [Remediating pan-gene models with check_evidence-pl](#remediating-pan-gene-models-with-check_evidencepl)
-- [Pan-gene analysis with GFF patches](#pan-gene-analysis-with-GFF-patches)
+- [Remediating pangene models with check_evidence-pl](#remediating-pangene-models-with-check_evidencepl)
+- [Pangene analysis with GFF patches](#pangene-analysis-with-GFF-patches)
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
 - [Troubleshooting](#troubleshooting)
 - [Funding](#funding)
@@ -51,7 +52,7 @@ and produces different types of output:
 ## Objective
 
 The main task of these scripts is to cluster collinear/orthologous genes 
-across a set of genomes (or pangenome) so that pan-genes can be defined:
+across a set of genomes (or pangenome) so that pangenes can be defined:
 
 ![Graphical summary of pangene set analysis](pics/pangene_set_nomenclature.png)
 
@@ -96,14 +97,15 @@ the resulting alignments to transform gene coordinates:
 
 This is how the overlap of genes is computed (with bedtools intersect) to call collinear pairs:
 
-![How gene overlaps are computed](pics/wgaoverlap.png)
+![How gene overlap is computed](pics/wgaoverlap.png)
 
 *Figure 4. How gene overlap is computed.*
 
 The overlap value is computed from WGA coordinates (subject) and gene coordinates from 
 the source GFF file (query). Note that the WGA alignment might be partial, thus the estimated
 overlap ratio could be actually smaller if the subject GFF coordinates were used.
-<!--Note also that these files also consider cases where a gene model annotated in one assembly matches a genomic segment from the other species,even when the same model was not annotated in the latter. -->
+Note that overlaps can be also computed among gene models annotated in one assembly and 
+matching genomic segments from others.
 
 ### Pairwise genome comparisons
 
@@ -160,6 +162,7 @@ Assuming *bedtools* are installed in most settings,
 and that gcc & g++ compilers are available,
 the remaining dependencies can be installed on Ubuntu/Debian in folder bin/ with:
 
+    # does not require root privileges
     cd ../..
     make install_pangenes
 
@@ -196,7 +199,7 @@ See all options with:
     perl get_pangenes.pl -h
 
 
-## Example 1: default pan-gene analysis
+## Example 1: default core pangene analysis
 
 If the installation was succesfull you should have a copy of a test dataset.
 You can browse it with:
@@ -210,7 +213,7 @@ See for example:
     Oryza_sativa.IRGSP-1.0.chr1.fa.gz
     Oryza_sativa.IRGSP-1.0.chr1.gff.gz
 
-In order to analyze these files and define a pan-gene set you can start with:
+In order to analyze these files and define a **core** pangene set you can start with:
 
     perl get_pangenes.pl -d ../files/test_rice
 
@@ -380,9 +383,60 @@ And
     gene:ONIVA01G52030	gene:ONIVA01G52030	gene:Os01g0976200	gene:BGIOSGA000008	
 
 While POCS matrices summarize the percentage of genes shared by any two annotated genomes, 
-pangenome matrices contain the composition of those clusters, named in the first columns.
+pangenome matrices contain the composition of those clusters, named in the first columns. 
 
-## Example 2: splitting genome in chromosomes
+
+## Example 2: pangene and Presence-Absence Variation (PAV) analysis
+
+As opposed to [Example 1](#example-1-default-core-pangene-analysis), 
+where only core pangenes where produced, in this example we will build a complete
+pangene set with clusters of all occupancy classes (-t 0, see [Table 1](#objective)):
+
+    perl get_pangenes.pl -d ../files/test_rice -t 0
+
+The output is similar to the previous one, 
+but saved in a different folder (*Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_*).
+The main differences are shown below, note the larger number of clusters:
+
+```
+# number of clusters = 7804 (core = 3008)
+
+# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
+# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1
+
+...
+
+# pangene_file (occup, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix.tr.tab
+...
+# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
+```
+
+The last two output files can be easily parsed to discover pangenes with Presence-Absence Variation (PAV).
+For instance, to find pangenes that contain gene models from *Oryza_indica.ASM465v1.chr1* and 
+*Oryza_sativa.IRGSP-1.0.chr1* but no models from *Oryza_nivara_v1.chr1* you could do:
+
+    perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | wc -l
+    #507
+
+    perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | head	
+    gene:BGIOSGA000032	-	gene:BGIOSGA000032	gene:Os01g0969700	
+    gene:BGIOSGA000039	-	gene:BGIOSGA000039	gene:Os01g0968200	
+    gene:BGIOSGA000074	-	gene:BGIOSGA000074	gene:Os01g0960300	
+    gene:BGIOSGA000085	-	gene:BGIOSGA000085	gene:Os01g0955550	
+    gene:BGIOSGA000116	-	gene:BGIOSGA000116	gene:Os01g0947700	
+    gene:BGIOSGA000117	-	gene:BGIOSGA000117	gene:Os01g0946800	
+    gene:BGIOSGA000118	-	gene:BGIOSGA000118	gene:Os01g0947000	
+    gene:BGIOSGA000123	-	gene:BGIOSGA000123	gene:Os01g0946850	
+    gene:BGIOSGA000126	-	gene:BGIOSGA000126	gene:Os01g0945600,gene:Os01g0945700,gene:Os01g0945800	
+    gene:BGIOSGA000127	-	gene:BGIOSGA000127	gene:Os01g0945300	
+ 	
+As explained earlier, the first column shows the actual cluster names, 
+which can be found with different extensions at
+
+    test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1
+  
+
+## Example 3: splitting genome in chromosomes
 
 In this example we will split the input genomes in chromosomes and will **limit the alignments
 to homologous chromosomes**, which might be what you expect when talking about collinear genes.
@@ -452,7 +506,7 @@ pangene_matrix.fasta, pangene_matrix.tr.tab, pangene_matrix_genes.tr.tab), which
 of the selected occupancy class ([alltaxa] by default), the **BED-like matrix is complete** as it contains all
 clusters, even those not included in the cluster folder for being of less occupancy.
 
-## Example 3: using GSAlign instead of minimap2
+## Example 4: using GSAlign instead of minimap2
 
 In our tests GSAlign produces comparable results to minimap2 but using less RAM.
 You can try it out with:
@@ -473,10 +527,10 @@ which summarizes the %identity of pairs of aligned genomes:
     Oryza_sativa.IRGSP-1.0.chr1	97.47	96.86	100.00
 
 
-## Example 4: simulation of pangene set growth
+## Example 5: simulation of pangene set growth
 
 A pangene set growth analysis can be performed by adding option -c, which will produce two files
-with random-sampling simulations on how the core- and pan-gene set grow as new genomes are added,
+with random-sampling simulations on how the core- and pangene set grow as new genomes are added,
 named core_gene.tab and pan_gene.tab
 
     perl get_pangenes.pl -d ../files/test_rice/ -s '^\d+$' -g -c
@@ -528,7 +582,7 @@ The resulting pan and core gene files look like this:
 
 ## Inspection of result files
 
-In addition to the result files described in [Example 1](#example-1-default-pan-gene-analysis),
+In addition to the result files described in [Example 1](#example-1-default-core-pangene-analysis),
 there are different types of intermediate result files produced by the pipeline.
 Probably the most valuable files are those containing collinear gene models
 resulting from a pairwise WGA, which are stored in TSV format (see also [Dotplots](#dotplots)).
@@ -597,17 +651,17 @@ Here are a few examples:
 
 These will produce figures such as these:
 
-![Pan-gene plot](./plots/pan_gene.tab_pan.png)
+![Pangene set (pan) plot](./plots/pan_gene.tab_pan.png)
 
-*Figure 6. Pan-gene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
+*Figure 6. Pangene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
 
-![Core-gene plot](./plots/core_gene.tab_core_both.png)
+![Pangene set (core) plot](./plots/core_gene.tab_core_both.png)
 
-*Figure 7. Core-gene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl.*
+*Figure 7. Core-pangene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl.*
 
-![Pan-gene occupancy barplot](./plots/pangene_matrix__shell.png)
+![Pan-geneset occupancy barplot](./plots/pangene_matrix__shell.png)
 
-*Figure 8. Occupancy of pan-gene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
+*Figure 8. Occupancy of pangene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
 
 
 ## Sequence alignments of clusters 
@@ -643,7 +697,7 @@ get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_
 ## Evidence supporting clusters
 
 In sections [Pairwise genome comparisons](#pairwise-genome-comparisons) and 
-[Example 1](#example-1-default-pan-gene-analysis) we saw that collinear gene pairs are stored in TSV files. 
+[Example 1](#example-1-default-core-pangene-analysis) we saw that collinear gene pairs are stored in TSV files. 
 These files summarize the **collinearity evidence** supporting the produced gene clusters.
 For each get_pangenes.pl run these files are merged and sorted in a compressed TSV file such as 
 
@@ -750,10 +804,10 @@ changing the extension of the target file from .png to .pdf or .svg .
 Note that several genes might fit in the same slot, due to split gene models or to tandem copies.*
 
 
-## Remediating pan-gene models with check_evidence.pl
+## Remediating pangene models with check_evidence.pl
 
 The *check_evidence.pl* script can also be used to try and fix individual gene models based
-on the evidence supporting a pan-gene cluster. This requires the software 
+on the evidence supporting a pangene cluster. This requires the software 
 [GMAP](https://doi.org/10.1093/bioinformatics/bti310),
 which is installed by default as explained in section [Dependencies](#dependencies).
 Currently, the following fixes have been tested:

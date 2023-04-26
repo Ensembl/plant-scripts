@@ -94,16 +94,16 @@ the resulting alignments to transform gene coordinates:
 
 ### Overlap calculation
 
-This is how the overlap of genes is computed (with bedtools intersect) 
-to call collinear pairs:
+This is how the overlap of genes is computed (with bedtools intersect) to call collinear pairs:
 
 ![How gene overlaps are computed](pics/wgaoverlap.png)
 
-*Figure 4. How gene overlaps are computed.*
+*Figure 4. How gene overlap is computed.*
 
-Note that the overlap value is computed from WGA alignments and that the gene coordinates from the source GFF file are used.
-Note also that these files also consider cases where a gene model annotated in one assembly matches a genomic segment from the other species,
-even when the same model was not annotated in the latter.
+The overlap value is computed from WGA coordinates (subject) and gene coordinates from 
+the source GFF file (query). Note that the WGA alignment might be partial, thus the estimated
+overlap ratio could be actually smaller if the subject GFF coordinates were used.
+<!--Note also that these files also consider cases where a gene model annotated in one assembly matches a genomic segment from the other species,even when the same model was not annotated in the latter. -->
 
 ### Pairwise genome comparisons
 

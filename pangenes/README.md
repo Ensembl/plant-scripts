@@ -774,7 +774,7 @@ or for mapping genomic regions aligned with poor quality (parameter -q).
 It is often useful to check visually the genomic context of the genes in a pangene cluster.
 The script introduced in the previous section can be used for that.
 Note that it requires the BED-like pangene matrix obtained as explained in
-[Example 2](#example-2-splitting-genome-in-chromosomes) and also the installation of
+[Example 3](#example-3-splitting-genome-in-chromosomes) and also the installation of
 [pyGenomeViz](https://pypi.org/project/pygenomeviz). This is how you can run it:
 
     perl check_evidence.pl -d Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n

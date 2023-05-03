@@ -55,6 +55,8 @@ my %feature_output = (
   'EXE_GSALIGN'=> 'Usage',
   'EXE_GFFREAD'=>'Usage',
   'EXE_GMAP' => 'Usage',
+  'EXE_CLUSTALO' => 'FATAL',
+  'EXE_ALISTAT' => 'Syntax',
   'EXE_COLLINEAR'=>'usage',
   'EXE_CUTSEQUENCES'=>'usage',
   'EXE_CLUSTANALYSIS'=>'ERROR',
@@ -96,6 +98,13 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{"EXE_GMAP"}) ){
     $ENV{"EXE_GMAP"} = $ENV{'PANGENE'}.'bin/gmap/exe/bin/gmap';
   }
+  if( ! defined($ENV{"EXE_CLUSTALO"}) ){
+    $ENV{"EXE_CLUSTALO"} = $ENV{'PANGENE'}.'bin/clustalo';
+  }
+  if( ! defined($ENV{"EXE_ALISTAT"}) ){
+    $ENV{"EXE_ALISTAT"} = $ENV{'PANGENE'}.'bin/AliStat/alistat';
+  }
+
 
   # should be pre-installed in most settings
   if( ! defined($ENV{"EXE_SAMTOOLS"}) ){ $ENV{"EXE_SAMTOOLS"} = 'samtools' }

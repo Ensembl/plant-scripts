@@ -2,6 +2,8 @@
 minimap2release = 2.24
 gffreadrelease  = 0.12.7
 gmaprelease     = 2021-12-17
+clustalorelease = 1.2.4
+alistatrelease  = 1.14
 
 test:
 	perl demo_test.t
@@ -90,8 +92,17 @@ install_wfmash:
 install_gsalign:
 	cd pangenes/bin && git clone https://github.com/hsinnan75/GSAlign.git && cd GSAlign && make
 
+install_pangenes_quality:
+	cd pangenes/bin && wget http://www.clustal.org/omega/clustalo-${clustalorelease}-Ubuntu-x86_64 && \
+	chmod +x clustalo-${clustalorelease}-Ubuntu-x86_64 && \
+	ln -fs clustalo-${clustalorelease}-Ubuntu-x86_64 clustalo && \
+	wget https://github.com/thomaskf/AliStat/archive/refs/tags/v${alistatrelease}.tar.gz && \
+	tar xfz v${alistatrelease}.tar.gz && cd AliStat-${alistatrelease} && make && cd .. && \
+	rm -f v${alistatrelease}.tar.gz && ln -s AliStat-${alistatrelease} AliStat
+
 uninstall_pangenes:
-	cd pangenes/bin && rm -rf gffread-${gffreadrelease} gmap-${gmaprelease} gffread wfmash GSAlign gmap
+	cd pangenes/bin && rm -rf gffread-${gffreadrelease} gmap-${gmaprelease} gffread wfmash GSAlign gmap \
+		clustalo-${clustalorelease}-Ubuntu-x86_64 clustalo AliStat-${alistatrelease} AliStat
 	cd lib && rm -rf minimap2-${minimap2release} minimap2
 	cd files && rm -rf test_rice
 

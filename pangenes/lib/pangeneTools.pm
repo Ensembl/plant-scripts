@@ -186,6 +186,10 @@ sub feature_is_installed {
     if($env_missing =~ /GSALIGN/){ return 0 }
   } elsif($feature eq 'GFFREAD') {
     if($env_missing =~ /GFFREAD/){ return 0 }
+  } elsif($feature eq 'CLUSTALO') {
+    if($env_missing =~ /CLUSTALO/){ return 0 }
+  } elsif($feature eq 'ALISTAT') {
+    if($env_missing =~ /ALISTAT/){ return 0 }
   } elsif($feature eq 'COLLINEAR') {
     if($env_missing =~ /COLLINEAR/){ return 0 }
   } elsif($feature eq 'CUTSEQUENCES') {

@@ -4,7 +4,7 @@ require Exporter;
 # Subroutines use by get_pangenes.pl and related scripts.
 # Some adapted from https://github.com/eead-csic-compbio/get_homologues
 #
-# Copyright [2021-22]
+# Copyright [2021-23]
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 @ISA = qw(Exporter);
@@ -21,6 +21,7 @@ require Exporter;
   extract_isoforms_FASTA
   calc_median
   calc_mode
+  calc_stdev
   N50
   get_outlier_cutoffs
 
@@ -434,6 +435,27 @@ sub calc_mode {
   }    
 
   return @modes;
+}
+
+# Takes ref to list of numbers and returns the mean
+sub calc_mean {
+
+  my ($dataref) = @_;
+
+  my $mean = 0;
+  foreach (@$dataref) { $mean += $_ }
+  return $mean / scalar(@$dataref);
+}
+
+# Takes ref to list of numbers and returns the standard deviation
+sub calc_stdev {
+
+  my ($dataref) = @_;
+  my $mean = calc_mean($dataref);
+  my @squares;
+
+  foreach (@$dataref){ push (@squares, ($_ **2)) }
+  return sqrt( calc_mean(\@squares) - ($mean ** 2));
 }
 
 

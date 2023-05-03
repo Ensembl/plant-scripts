@@ -449,10 +449,13 @@ sub calc_stdev {
 
   my ($dataref) = @_;
   my $mean = calc_mean($dataref);
-  my @squares;
+  my $sum_squares = 0;
 
-  foreach (@$dataref){ push (@squares, ($_ **2)) }
-  return sqrt( calc_mean(\@squares) - ($mean ** 2));
+  foreach (@$dataref) { 
+    $sum_squares += (($_ - $mean) **2);  
+  }
+
+  return sqrt( $sum_squares / (scalar(@$dataref)-1) );
 }
 
 

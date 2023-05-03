@@ -14,8 +14,7 @@ use Getopt::Std;
 use FindBin '$Bin';
 use lib "$Bin/lib";
 use pangeneTools qw( check_installed_features feature_is_installed 
-                     parse_sequence_FASTA_file extract_isoforms_FASTA
-                     calc_stdev );
+                     parse_sequence_FASTA_file calc_stdev );
 
 my @FEATURES2CHECK = (
   'EXE_CLUSTALO', 'EXE_ALISTAT'
@@ -23,14 +22,8 @@ my @FEATURES2CHECK = (
 
 my ($INP_dir, $INP_clusterfile, $INP_first_isof, $INP_outdir) = ('','',0,'');
 my ($isCDS, $ispep, $seq) = ( 0, 0 );
-#my ($cluster_list_file,$cluster_folder,$genome_file);
-#my ($gene_id, $hom_gene_id, $homology_type, $species, $hom_species);
-#my ($isof_id, $overlap, $coords, $hom_coords, $full_id, $hom_full_id);
-#my ($line, $segment, $hom_segment, $dummy, $TSVdata, $cmd, $cDNA);
-#my ($chr, $start, $end, $strand, $len);
-#my (%isof_len, %isof_seq, %isof_header, %taxa, %outfhandles, @len);
-#my (%opts,%TSVdb, @sorted_ids, @pairs, @segments, @ref_names);
-#my (%seen, %overlap, %cluster_gene_id, %fullid2id, %gene_length);
+my ($cluster_list_file,$cluster_folder, $gene_id, $isof_id);
+my (%opts, %isof_len, %isof_seq, %isof_header, %isof_order, @len);
 
 getopts('hIco:d:i:', \%opts);
 
@@ -65,7 +58,8 @@ else{ die "# EXIT : need a -d directory\n" }
 
 if(defined($opts{'i'})){  
   $INP_clusterfile = $opts{'i'};
-  if($INP_clusterfile !~ /\.cdna\.fna$/ && $INP_clusterfile !~ /\.cds\.fna$/ &&
+  if($INP_clusterfile !~ /\.cdna\.fna$/ && 
+    $INP_clusterfile !~ /\.cds\.fna$/ &&
     $INP_clusterfile !~ /\.cds\.faa$/) {
     die "# EXIT : need a .fna/.faa cluster filename with parameter -i\n"
 
@@ -89,6 +83,7 @@ if(defined($opts{'o'})){
   $INP_outdir = $opts{'o'};
   if(!-e $INP_outdir) {
     mkdir($INP_outdir);
+  }
 }
 
 
@@ -121,109 +116,49 @@ if($clusternameOK == 0) {
   die "# ERROR: cannot find $INP_clusterfile in $INP_dir/$cluster_list_file, please correct\n";
 }
 
-# 2) parse FASTA headers of input cluster to extract gene names and check sequence lengths
-#    (note that chr coords are parsed only for 1st isoform)
-
+# 2) parse FASTA file, extract gene names and sequence lengths
 my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
   parse_sequence_FASTA_file( "$INP_dir/$cluster_folder/$INP_clusterfile" , 1);
 
-print "\n# sequence-level stats\n";
-
 foreach $gene_id (@$ref_geneid) {
 
-  # sorted gene ids
-  $cluster_gene_id{$gene_id} = 1; 
-  push(@sorted_ids, $gene_id);
-
-  # length stats
+  my $n_isof = 0;
   foreach $seq (split(/\n/,$ref_fasta->{$gene_id})) {
+
     if($seq =~ /^>(\S+)/) {
+      $n_isof++;
       $isof_id = $1;
       $isof_header{$gene_id}{$isof_id} = $seq;
+      $isof_order{$gene_id}{$isof_id} = $n_isof;
       next;
     }
     $isof_len{$gene_id}{$isof_id} += length($seq);
     $isof_seq{$gene_id}{$isof_id} .= $seq;
+
+
+    last if($INP_first_isof == 1);
   }
-
-  # check for internal stop codons
-  $CDSok = 1; # default (cDNA)
-  if($isCDS) {
-    $CDSok = no_premature_stops( $isof_seq{$gene_id}{$isof_id}, 
-      \@standard_stop_codons, $isCDS, $INP_verbose); 
-  }
-
-  if($CDSok == 1) {
-    push(@len, $isof_len{$gene_id}{$isof_id})
-
-  } elsif($CDSok == 3) {
-    print "# WARN: $gene_id $isof_id [$ref_taxon->{$gene_id}] ".
-      "CDS length not multiple of 3, skip it\n";
-    $full_id = $ref_taxon->{$gene_id}.$gene_id;
-    $badCDS{$full_id} = 1;
-
-  } else {
-    print "# WARN: $gene_id $isof_id [$ref_taxon->{$gene_id}] ".
-      "contains internal stop codons, skip it\n";
-
-    $full_id = $ref_taxon->{$gene_id}.$gene_id;
-    $badCDS{$full_id} = 1;
-  }
-
-  # taxa stats
-  $taxa{ $ref_taxon->{$gene_id} }++;
 }
 
-my ($median_length, $cutoff_low_length, $cutoff_high_length) =
-  get_outlier_cutoffs( \@len , $INP_verbose );
+# 3) print selected isoform sequence(s) to temp file and work out basic stats 
+#  open(ISOSEQ,">>",$INP_modeseq) ||
+#    die "# EXIT: cannot write to $INP_modeseq\n";
 
-# note: if length distribution is bimodal there will be 2 modes
-my @modes_length = calc_mode( \@len );
+foreach $gene_id (@$ref_geneid) {
+  foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
 
-if(@modes_length) {
-  printf("\n# isoform length in cluster: median=%1.0f mode(s): %s\n\n",
-    $median_length, join(',',@modes_length));
-} else {
-  print "\n# isoform length in cluster: median=NA mode(s): NA\n\n";
+    next if($INP_first_isof == 1 && $isof_order{$gene_id}{$isof_id} != 1);
+    
+    print "$isof_header{$gene_id}{$isof_id}\n"; #$isof_seq{$gene_id}{$isof_id}\n";
+  }
 }
 
-if($INP_modeseq) {
-  my ($mode_gene_id, $mode_isof_id);
 
-  foreach $gene_id (@$ref_geneid) {
-    foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
- 
-      next if($badCDS{ $ref_taxon->{$gene_id}.$gene_id } || 
-        $isof_len{$gene_id}{$isof_id} != $modes_length[0]);
- 
-      if(!$mode_isof_id || grep(/$ref_taxon->{$gene_id}/,@ref_names)) {
-        ($mode_gene_id, $mode_isof_id) = ($gene_id, $isof_id);
-      }    
-    }    
-  }
+#  close(ISOSEQ);
 
-  open(ISOSEQ,">>",$INP_modeseq) ||
-    die "# EXIT: cannot write to $INP_modeseq\n";
-  print ISOSEQ "$isof_header{$mode_gene_id}{$mode_isof_id}\n$isof_seq{$mode_gene_id}{$mode_isof_id}\n";
-  close(ISOSEQ);
 
-  print "# mode isoform: $mode_gene_id $mode_isof_id [$ref_taxon->{$mode_gene_id}]".
-    " (append to $INP_modeseq)\n";
 
-} elsif($INP_mode_stats) {
-  foreach $gene_id (@$ref_geneid) {
-    foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
 
-      next if($badCDS{ $ref_taxon->{$gene_id}.$gene_id } ||
-        $isof_len{$gene_id}{$isof_id} != $modes_length[0]);
-
-      print "# mode isoform: $gene_id $isof_id [$ref_taxon->{$gene_id}]\n";
-    }
-  }
-  print "\n";
-}
-
-# TODO
 
 # read all or 1st isoform
 

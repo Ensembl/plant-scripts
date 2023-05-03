@@ -11,6 +11,7 @@ $|=1;
 use strict;
 use warnings;
 use Getopt::Std;
+use File::Temp qw/ tempfile /;
 use FindBin '$Bin';
 use lib "$Bin/lib";
 use pangeneTools qw( check_installed_features feature_is_installed 
@@ -141,30 +142,25 @@ foreach $gene_id (@$ref_geneid) {
 }
 
 # 3) print selected isoform sequence(s) to temp file and work out basic stats 
-#  open(ISOSEQ,">>",$INP_modeseq) ||
-#    die "# EXIT: cannot write to $INP_modeseq\n";
+my ($fh, $filename) = tempfile( 'tempfasXXXXX', UNLINK => 1);
 
 foreach $gene_id (@$ref_geneid) {
   foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
 
     next if($INP_first_isof == 1 && $isof_order{$gene_id}{$isof_id} != 1);
     
-    print "$isof_header{$gene_id}{$isof_id}\n"; #$isof_seq{$gene_id}{$isof_id}\n";
+    print $fh "$isof_header{$gene_id}{$isof_id}\n$isof_seq{$gene_id}{$isof_id}\n";
   }
 }
 
 
-#  close(ISOSEQ);
 
 
 
-
-
-# read all or 1st isoform
 
 # basic stats: occup, seqs, length, exons
 
-# MSA & distance
+# 4) compute multiple sequence alignment (MSA) & distance matrix
 
 
 # MSA report

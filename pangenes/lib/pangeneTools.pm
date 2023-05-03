@@ -394,22 +394,6 @@ sub calc_median {
     return $sorted[ $mid ]
   }
   else {
-    return sprintf("%1.0f",($sorted[$mid-1] + $sorted[$mid])/2)
-  }
-}
-
-# Takes ref to list of numbers and returns the median
-sub calc_median {
-
-  my ($dataref) = @_;
-
-  my $mid = int(scalar(@$dataref)/2);
-  my @sorted = sort {$a<=>$b} (@$dataref);
-
-  if(scalar(@sorted) % 2) {
-    return $sorted[ $mid ]
-  }
-  else {
     return sprintf("%1.1f",($sorted[$mid-1] + $sorted[$mid])/2)
   }
 }

@@ -15,14 +15,14 @@ use File::Temp qw/ tempfile /;
 use FindBin '$Bin';
 use lib "$Bin/lib";
 use pangeneTools qw( check_installed_features feature_is_installed 
-                     parse_sequence_FASTA_file calc_stdev );
+                     parse_sequence_FASTA_file calc_stdev calc_mode );
 
 my @FEATURES2CHECK = (
   'EXE_CLUSTALO', 'EXE_ALISTAT'
 );
 
 my ($INP_dir, $INP_clusterfile, $INP_first_isof, $INP_outdir) = ('','',0,'');
-my ($isCDS, $ispep, $seq) = ( 0, 0 );
+my ($isCDS, $ispep, $seq, $n_isof, $occup, $SE_len, $SE_exons, $mode_len, $mode_exons) = ( 0, 0 );
 my ($cluster_list_file,$cluster_folder, $gene_id, $isof_id);
 my (%opts, %isof_len, %isof_seq, %isof_header, %isof_order, @len);
 
@@ -123,7 +123,7 @@ my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) =
 
 foreach $gene_id (@$ref_geneid) {
 
-  my $n_isof = 0;
+  $n_isof = 0;
   foreach $seq (split(/\n/,$ref_fasta->{$gene_id})) {
 
     if($seq =~ /^>(\S+)/) {
@@ -135,30 +135,32 @@ foreach $gene_id (@$ref_geneid) {
     }
     $isof_len{$gene_id}{$isof_id} += length($seq);
     $isof_seq{$gene_id}{$isof_id} .= $seq;
-
-
-    last if($INP_first_isof == 1);
   }
 }
 
 # 3) print selected isoform sequence(s) to temp file and work out basic stats 
 my ($fh, $filename) = tempfile( 'tempfasXXXXX', UNLINK => 1);
 
+my (%taxa);
+
 foreach $gene_id (@$ref_geneid) {
   foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
 
     next if($INP_first_isof == 1 && $isof_order{$gene_id}{$isof_id} != 1);
     
+    $taxa{ $ref_taxon->{$gene_id} }++;
     print $fh "$isof_header{$gene_id}{$isof_id}\n$isof_seq{$gene_id}{$isof_id}\n";
+    push(@len, $isof_len{$gene_id}{$isof_id});
   }
 }
 
+$occup = scalar(keys(%taxa));
+$n_isof = scalar(@len);
+$SE_len = sprintf("%1.2f", calc_stdev( \@len ) / sqrt($n_isof));
+$mode_len = calc_mode( \@len );
 
 
-
-
-
-# basic stats: occup, seqs, length, exons
+# exons
 
 # 4) compute multiple sequence alignment (MSA) & distance matrix
 

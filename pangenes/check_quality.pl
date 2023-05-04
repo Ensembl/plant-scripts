@@ -18,13 +18,18 @@ use pangeneTools qw( check_installed_features feature_is_installed
                      parse_sequence_FASTA_file calc_stdev calc_mode );
 
 my @FEATURES2CHECK = (
-  'EXE_CLUSTALO', 'EXE_ALISTAT'
+  'EXE_CLUSTALO', 'EXE_ALISTAT', 'EXE_GREP'
 );
 
 my ($INP_dir, $INP_clusterfile, $INP_first_isof, $INP_outdir) = ('','',0,'');
-my ($isCDS, $ispep, $seq, $n_isof, $occup, $SE_len, $SE_exons, $mode_len, $mode_exons) = ( 0, 0 );
+my ($isCDS, $ispep, $seq, $n_isof, $occup, $SE_len, $SE_exons) = ( 0, 0 );
+my ($updir, $mode_len, $n_exons, $mode_exons, $gff_file);
 my ($cluster_list_file,$cluster_folder, $gene_id, $isof_id);
-my (%opts, %isof_len, %isof_seq, %isof_header, %isof_order, @len);
+my ($msa_filename, $dist_filename, $fhmsa, $fhdist, $cmd);
+my ($mode_dist, $SE_dist, $max_dist, $c);
+my ($sites, $Ca, $Cr_max, $Cr_min, $Cc_max, $Cc_min, $Cij_max, $Cij_min);
+my (%opts, %isof_len, %isof_seq, %isof_header, %isof_order);
+my (%taxa, @len, @exons, @dist);
 
 getopts('hIco:d:i:', \%opts);
 
@@ -53,7 +58,8 @@ if(defined($opts{'c'})) {
 }
 
 if(defined($opts{'d'})) { 
-  $INP_dir = $opts{'d'} 
+  $INP_dir = $opts{'d'};
+  $updir = $INP_dir . '/..'; 
 }
 else{ die "# EXIT : need a -d directory\n" }
 
@@ -141,28 +147,120 @@ foreach $gene_id (@$ref_geneid) {
 # 3) print selected isoform sequence(s) to temp file and work out basic stats 
 my ($fh, $filename) = tempfile( 'tempfasXXXXX', UNLINK => 1);
 
-my (%taxa);
-
 foreach $gene_id (@$ref_geneid) {
   foreach $isof_id (keys(%{$isof_len{$gene_id}})) {
 
     next if($INP_first_isof == 1 && $isof_order{$gene_id}{$isof_id} != 1);
     
     $taxa{ $ref_taxon->{$gene_id} }++;
-    print $fh "$isof_header{$gene_id}{$isof_id}\n$isof_seq{$gene_id}{$isof_id}\n";
     push(@len, $isof_len{$gene_id}{$isof_id});
+
+    # find GFF file & get number of exons
+    $n_exons = 0;
+    $gff_file = $updir . "/_$ref_taxon->{$gene_id}.gff";
+    open(GREP, "$ENV{'EXE_GREP'} '$isof_id;' $gff_file |");
+    while(<GREP>) {
+      #1	NAM	exon	2575663	2575953 ...
+      my @data = split(/\t/,$_);
+
+      if($isCDS == 0 && $data[2] eq 'exon') {
+        $n_exons++
+
+      } elsif($isCDS == 1 && $data[2] eq 'CDS') {
+        $n_exons++
+      }
+    }
+    close(GREP);  
+    push(@exons, $n_exons);
+
+    # actually print to temp file
+    print $fh "$isof_header{$gene_id}{$isof_id}\n$isof_seq{$gene_id}{$isof_id}\n";
   }
 }
 
 $occup = scalar(keys(%taxa));
 $n_isof = scalar(@len);
-$SE_len = sprintf("%1.2f", calc_stdev( \@len ) / sqrt($n_isof));
+$SE_len = sprintf("%1.1f", calc_stdev( \@len ) / sqrt($n_isof));
 $mode_len = calc_mode( \@len );
+$SE_exons = sprintf("%1.1f", calc_stdev( \@exons ) / sqrt($n_isof));
+$mode_exons = calc_mode( \@exons );
 
 
-# exons
+# 4) compute multiple sequence alignment (MSA), distance matrix & MSA report
 
-# 4) compute multiple sequence alignment (MSA) & distance matrix
+if($INP_outdir ne '') {
+  $msa_filename = "$INP_outdir/$INP_clusterfile";
+  $msa_filename =~ s/\.(f[na]a)$/.aln.$1/;
+  $dist_filename = "$INP_outdir/$INP_clusterfile";
+  $dist_filename =~ s/\.(f[na]a)$/.dist.$1/;
+} else {
+  ($fhmsa, $msa_filename) = tempfile( 'tempmsaXXXXX', UNLINK => 1);
+  ($fhdist, $dist_filename) = tempfile( 'tempdistXXXXX', UNLINK => 1);
+}
 
+$cmd = "$ENV{'EXE_CLUSTALO'} --force --full -i $filename -o $msa_filename --distmat-out=$dist_filename 2>&1";
+system($cmd); 
+if ( $? != 0 ) {
+  die "# ERROR: failed running clustal-omega ($cmd)\n";
+} elsif ( !-s $msa_filename ) {
+  die "# ERROR: failed generating $msa_filename file ($cmd)\n";
+}
+
+# parse MSA distances
+$max_dist = -1;
+open(DIST,"<",$dist_filename) ||
+  die "# ERROR: cannot read $dist_filename\n";
+while(<DIST>) {
+  chomp;
+  my @data = split(/\s+/,$_);
+  next if($#data < 1);
+  foreach $c (1 .. $#data) { 
+    push(@dist, $data[$c]);
+    if($data[$c] > $max_dist){ $max_dist = $data[$c] } 
+  }  
+}
+close(DIST);
+
+$SE_dist = sprintf("%1.1f", calc_stdev( \@dist ) / $n_isof);
+$mode_dist = calc_mode( \@dist );
 
 # MSA report
+$cmd = "$ENV{'EXE_ALISTAT'} $msa_filename 1 -b";
+if($ispep) {
+  $cmd = "$ENV{'EXE_ALISTAT'} $msa_filename 6 -b";
+}
+
+open(ALISTAT,"$cmd |") ||
+  die "# ERROR: cannot run $cmd\n";
+while(<ALISTAT>) {
+  #sequences, #sites, Ca, Cr_max, Cr_min, Cc_max, Cc_min, Cij_max, Cij_min
+  if(/^$msa_filename/) {
+    chomp;
+    my @data = split(/,\s+/,$_);
+    ($sites, $Ca, $Cr_max, $Cr_min, $Cc_max, $Cc_min, $Cij_max, $Cij_min) = @data[2 .. $#data];
+  }
+}
+close(ALISTAT);
+
+
+# 5) finally print summary in one line
+printf(
+  "%s\t%d\t%d\t%d\t%d\t%1.1f\t%d\t%1.1f\t%1.1f\t%1.1f\t%d\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\n",
+  $INP_clusterfile,
+  $INP_first_isof,  
+  $occup,
+  $n_isof,
+  $mode_len,
+  $SE_len,
+  $mode_exons,
+  $SE_exons,
+  $mode_dist,
+  $SE_dist,
+  $sites, 
+  $Ca, 
+  $Cr_max, 
+  $Cr_min, 
+  $Cc_max, 
+  $Cc_min, 
+  $Cij_max, 
+  $Cij_min);

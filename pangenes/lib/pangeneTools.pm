@@ -62,7 +62,8 @@ my %feature_output = (
   'EXE_CLUSTANALYSIS'=>'ERROR',
   'EXE_GZIP'=>'help',
   'EXE_BZIP2'=>'help',
-  'EXE_SORT'=>'Usage'
+  'EXE_SORT'=>'Usage',
+  'EXE_GREP'=>'Usage',
 );
 
 my %ubuntu_packages = (
@@ -112,6 +113,7 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{'EXE_GZIP'}) ){ $ENV{'EXE_GZIP'} = 'gzip' }
   if( ! defined($ENV{'EXE_BZIP2'}) ){ $ENV{'EXE_BZIP2'} = 'bzip2' }
   if( ! defined($ENV{'EXE_SORT'}) ){ $ENV{'EXE_SORT'} = 'sort' }
+  if( ! defined($ENV{'EXE_GREP'}) ){ $ENV{'EXE_GREP'} = 'grep' }
 
   # scripts from this repo
   if( ! defined($ENV{"EXE_COLLINEAR"}) ){ 
@@ -140,7 +142,7 @@ sub check_installed_features {
   foreach my $bin (@to_be_checked) {
     $check_summary .= sprintf("%18s : ",$bin);
     if($ENV{$bin}) {
-      if($bin eq 'EXE_GZIP' || $bin eq 'EXE_BZIP2'){ 
+      if($bin eq 'EXE_GZIP' || $bin eq 'EXE_BZIP2' || $bin eq 'EXE_GREP'){ 
         $output = `$ENV{$bin} -h 2>&1 ` 
       } elsif($bin eq 'EXE_SORT'){
         $output = `$ENV{$bin} --help`
@@ -200,6 +202,8 @@ sub feature_is_installed {
     if($env_missing =~ /BZIP2/){ return 0 }
   } elsif($feature eq 'SORT') {
     if($env_missing =~ /SORT/){ return 0 }
+  } elsif($feature eq 'GREP') {
+    if($env_missing =~ /GREP/){ return 0 }
   }
 
   return 1;

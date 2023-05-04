@@ -23,13 +23,12 @@ my @FEATURES2CHECK = (
 
 my ($INP_dir, $INP_clusterfile, $INP_first_isof, $INP_noheader, $INP_outdir) = ('','',0,0,'');
 my ($isCDS, $ispep, $seq, $n_isof, $occup, $SE_len, $SE_exons) = ( 0, 0 );
-my ($updir, $mode_len, $n_exons, $mode_exons, $gff_file);
+my ($updir, $n_exons, $gff_file, $SE_dist, $max_dist, $c);
 my ($cluster_list_file,$cluster_folder, $gene_id, $isof_id);
 my ($msa_filename, $dist_filename, $fhmsa, $fhdist, $cmd);
-my ($mode_dist, $SE_dist, $max_dist, $c);
 my ($sites, $Ca, $Cr_max, $Cr_min, $Cc_max, $Cc_min, $Cij_max, $Cij_min);
 my (%opts, %isof_len, %isof_seq, %isof_header, %isof_order);
-my (%taxa, @len, @exons, @dist);
+my (%taxa, @len, @exons, @dist, @mode_len, @mode_exons, @mode_dist);
 
 getopts('hnIco:d:i:', \%opts);
 
@@ -183,11 +182,12 @@ foreach $gene_id (@$ref_geneid) {
 }
 
 $occup = scalar(keys(%taxa));
-$n_isof = scalar(@len);
+$n_isof = scalar(@len); # recompute in case inly 1st isoform taken
+
 $SE_len = sprintf("%1.1f", calc_stdev( \@len ) / sqrt($n_isof));
-$mode_len = calc_mode( \@len );
+@mode_len = calc_mode( \@len ); 
 $SE_exons = sprintf("%1.1f", calc_stdev( \@exons ) / sqrt($n_isof));
-$mode_exons = calc_mode( \@exons );
+@mode_exons = calc_mode( \@exons );
 
 
 # 4) compute multiple sequence alignment (MSA), distance matrix & MSA report
@@ -226,7 +226,7 @@ while(<DIST>) {
 close(DIST);
 
 $SE_dist = sprintf("%1.1f", calc_stdev( \@dist ) / $n_isof);
-$mode_dist = calc_mode( \@dist );
+@mode_dist = calc_mode( \@dist ); 
 
 # MSA report
 $cmd = "$ENV{'EXE_ALISTAT'} $msa_filename 1 -b";
@@ -249,23 +249,29 @@ close(ALISTAT);
 
 # 5) finally print summary in one line
 if($INP_noheader == 0) {
-  print "file\t1stisof\toccup\tseqs\tmode_len\tSE_len\tmode_exons\tSE_exons" .
-    "mode_dist\tSE_dist\tsite\tCa\tCr_max\tCr_min\tCc_max\tCc_min\tCij_max\tCij_min\n";
+  print "file\t1stisof\toccup\tseqs\tmode_len\tSE_len\tmode_exons\tSE_exons\t" .
+    "mode_dist\tmax_dist\tSE_dist\tsites\tCa\tCr_max\tCr_min\tCc_max\tCc_min\tCij_max\tCij_min\n";
 }
 
 printf(
-  "%s\t%d\t%d\t%d\t%d\t%1.1f\t%d\t%1.1f\t%1.1f\t%1.1f\t%d\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\n",
+  "%s\t%d\t%d\t%d\t%d\t%1.1f\t" .
+    "%d\t%1.1f\t%1.6f\t%1.6f\t%1.6f\t%d\t" .
+    "%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\n",
+
   $INP_clusterfile,
   $INP_first_isof,  
   $occup,
   $n_isof,
-  $mode_len,
+  $mode_len[0],
   $SE_len,
-  $mode_exons,
+
+  $mode_exons[0],
   $SE_exons,
-  $mode_dist,
+  $mode_dist[0],
+  $max_dist,
   $SE_dist,
   $sites, 
+
   $Ca, 
   $Cr_max, 
   $Cr_min, 

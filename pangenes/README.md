@@ -38,6 +38,7 @@ and produces different types of output:
 - [Inspection of result files](#inspection-of-result-files)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
+- [Quality metrics of clusters](#quality-metrics-of-clusters)
 - [Evidence supporting clusters](#evidence-supporting-clusters)
 - [Whole genome alignment evidence](#whole-genome-alignment-evidence)
 - [Plotting the genome context of a pangene cluster](#plotting-the-genome-context-of-a-pangene-cluster)
@@ -693,6 +694,38 @@ in a cluster as follows:
 get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
 get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cds.faa
 ```
+
+## Quality metrics of clusters
+
+In addition to running and inspecting sequence alignments of pangene clusters,
+script check_quality.pl can produce quality reports of pangene clusters.
+Note it requires the installation of optional software, 
+[clustal-omega](http://www.clustal.org/omega)
+and [AliStat](https://github.com/thomaskf/AliStat),
+which can be done as follows:
+
+    cd ../.. && make install_pangenes_quality
+
+The automatic report includes metrics based on multiple sequence alignment and the corresponding distance matrix.
+It can be produced as follows:
+
+    $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
+
+    file	1stisof	occup	seqs	mode_len	SE_len	mode_exons	SE_exons	mode_dist	max_dist	SE_dist	sites	Ca	Cr_max	Cr_min	Cc_max	Cc_min	Cij_max	Cij_min
+    gene:ONIVA01G50850.cdna.fna	0	3	6	2067	267.9	10	1.5	0.000000	0.776042	0.000000	2069	0.609554	0.999033	0.092799	0.833333	0.166667	0.880135	0.000000
+
+The metrics Ca, Cr_max, Cr_min, Cc_max, Cc_min, Cij_max, Cij_min constitute the minimum reporting standard
+proposed by [AliStat](https://doi.org/10.1093/nargab/lqaa024), where:
+
+    Ca - Completeness score for the alignment
+    Cr - Completeness score for individual sequences
+    Cc - Completeness score for individual sites
+    Cij - Completeness score for pairs of sequences
+
+By default all isoforms are analyzed, but this can be changed with option -I, 
+which will take the first isoform found in the GFF file. 
+This choice is recorded in the second column of the output.
+Also, option -o can be used to save the multiple sequence alignment and distance matrix files in a folder.
 
 ## Evidence supporting clusters
 

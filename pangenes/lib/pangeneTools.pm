@@ -426,7 +426,7 @@ sub calc_mode {
     $obs{$elem}++;
     if($obs{$elem} > $max) { 
       $max = $obs{$elem}
-    }
+    } 
   }
 
   foreach $elem (sort {$b<=>$a} keys(%obs)) {

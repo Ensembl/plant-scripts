@@ -21,7 +21,7 @@ my @FEATURES2CHECK = (
   'EXE_CLUSTALO', 'EXE_ALISTAT', 'EXE_GREP'
 );
 
-my ($INP_dir, $INP_clusterfile, $INP_first_isof, $INP_outdir) = ('','',0,'');
+my ($INP_dir, $INP_clusterfile, $INP_first_isof, $INP_noheader, $INP_outdir) = ('','',0,0,'');
 my ($isCDS, $ispep, $seq, $n_isof, $occup, $SE_len, $SE_exons) = ( 0, 0 );
 my ($updir, $mode_len, $n_exons, $mode_exons, $gff_file);
 my ($cluster_list_file,$cluster_folder, $gene_id, $isof_id);
@@ -31,7 +31,7 @@ my ($sites, $Ca, $Cr_max, $Cr_min, $Cc_max, $Cc_min, $Cij_max, $Cij_min);
 my (%opts, %isof_len, %isof_seq, %isof_header, %isof_order);
 my (%taxa, @len, @exons, @dist);
 
-getopts('hIco:d:i:', \%opts);
+getopts('hnIco:d:i:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -43,6 +43,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-i cdna/cds .fna/.faa file as in .cluster_list  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-I take 1st isoform only                        (optional, by default takes all)\n";
   print "-o folder to write output files                 (optional, MSA files removed by default)\n";
+  print "-n do not print header in text report           (optional)\n";
   exit(0);
 }
 
@@ -93,6 +94,9 @@ if(defined($opts{'o'})){
   }
 }
 
+if(defined($opts{'n'})){
+  $INP_noheader = 1
+}
 
 # 1) locate .cluster_list file to check clusterfile is there
 opendir(INPDIR,$INP_dir) || 
@@ -244,6 +248,11 @@ close(ALISTAT);
 
 
 # 5) finally print summary in one line
+if($INP_noheader == 0) {
+  print "file\t1stisof\toccup\tseqs\tmode_len\tSE_len\tmode_exons\tSE_exons" .
+    "mode_dist\tSE_dist\tsite\tCa\tCr_max\tCr_min\tCc_max\tCc_min\tCij_max\tCij_min\n";
+}
+
 printf(
   "%s\t%d\t%d\t%d\t%d\t%1.1f\t%d\t%1.1f\t%1.1f\t%1.1f\t%d\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\t%1.6f\n",
   $INP_clusterfile,

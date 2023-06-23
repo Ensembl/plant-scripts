@@ -897,7 +897,7 @@ sub fisher_yates_shuffle {
 
 # takes 
 # i) decoded JSON->{'tree'}, as returned from 
-#          http://rest.ensembl.org/genetree/member/id/ and
+#          http://rest.ensembl.org/documentation/info/genetree_member_id
 # ii) reference to hash which gets populated with { accession, sequence } pairs
 sub transverse_tree_json {
 

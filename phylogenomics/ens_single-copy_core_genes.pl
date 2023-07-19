@@ -18,7 +18,7 @@ use PlantCompUtils qw(
 # by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
-# Copyright [2019-2021] EMBL-European Bioinformatics Institute
+# Copyright [2019-2023] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
 my $RESTURL   = 'http://rest.ensembl.org';
@@ -385,7 +385,7 @@ foreach $gene_stable_id (@sorted_ids) {
         }
 
         # make REST request and parse dumped JSON
-        $request = "$TREEPOINT$gene_stable_id?compara=$division;".
+        $request = "$TREEPOINT$ref_genome/$gene_stable_id?compara=$division;".
                     "aligned=1;sequence=$seqtype;$pruned_species";
 
         $response = perform_rest_action( $http, $request, $global_headers );

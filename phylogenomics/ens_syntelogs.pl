@@ -18,7 +18,7 @@ use PlantCompUtils qw(
 # Retrieves orthologous, syntenic genes (syntelogs) shared by (plant) species in clade
 # by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
 #
-# Copyright [2019-2021] EMBL-European Bioinformatics Institute
+# Copyright [2019-2023] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
 my $RESTURL   = 'http://rest.ensembl.org';
@@ -30,9 +30,8 @@ my $downloadir = $Bin . '/downloads';
 my $verbose    = 0;
 my $allowPAV   = 0;
 my $division   = 'Plants';
-my $taxonid =
-  '';    # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
-my $ref_genome = '';          # should be diploid and contained in $taxonid;
+my $taxonid    = '';  # NCBI Taxonomy id, Brassicaceae=3700, Asterids=71274, Poaceae=4479
+my $ref_genome = '';  # should be diploid and contained in $taxonid;
 my $seqtype    = 'protein';
 
 my ( $comparadir, $gtfdir, $outfolder, $out_genome ) = ( '', '', '', '' );
@@ -377,7 +376,7 @@ foreach $gene_stable_id (@sorted_ids) {
         }
 
         # make REST request and parse dumped JSON
-        $request = "$TREEPOINT$gene_stable_id?compara=$division;".
+        $request = "$TREEPOINT$ref_genome/$gene_stable_id?compara=$division;".
                     "aligned=1;sequence=$seqtype;$pruned_species";
         $response = perform_rest_action( $http, $request, $global_headers );
         $treedump = decode_json($response);

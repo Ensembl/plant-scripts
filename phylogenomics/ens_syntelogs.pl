@@ -296,7 +296,7 @@ my $stored_gtf_file = download_GTF_file( $gtfdir, $ref_genome, $downloadir );
 my $ref_sorted_genes = get_gene_coords_GTF_file($stored_gtf_file);
 
 foreach my $gene ( @{$ref_sorted_genes} ) {
-    $gene_stable_id = $gene->[0];
+    $gene_stable_id = $gene->[0]; 
     if ( $synt{$gene_stable_id} ) {
         push( @sorted_ids, $gene_stable_id );
         $chrcoords{$gene_stable_id} =
@@ -323,7 +323,7 @@ if ($outfolder) {
     }
 }
 
-foreach $gene_stable_id (@sorted_ids) {
+foreach $gene_stable_id (@sorted_ids) { 
 
     next if ( $allowPAV == 0
         && scalar( keys( %{ $synt{$gene_stable_id} } ) ) < $n_of_species );

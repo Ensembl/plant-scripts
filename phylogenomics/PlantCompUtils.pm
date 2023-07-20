@@ -1,7 +1,7 @@
 package PlantCompUtils;
 require Exporter;
 
-# Copyright [2019-2021] EMBL-European Bioinformatics Institute
+# Copyright [2019-2023] EMBL-European Bioinformatics Institute
 
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(
@@ -218,7 +218,10 @@ sub download_GTF_file {
         # find out which file is to be downloaded and
         # work out its final name
         foreach my $file ( $ftp->ls() ) {
-            if ( $file =~ m/gtf.gz/ && $file !~ m/.chr.gtf/ ) {
+            if ( $file =~ m/gtf.gz/ && 
+                 $file !~ m/.chr.gtf/ && 
+                 $file !~ m/.abinitio.gtf/) {
+
                 $gtf_file        = $file;
                 $stored_gtf_file = "$targetdir/$gtf_file";
                 last;

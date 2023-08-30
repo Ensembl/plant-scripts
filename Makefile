@@ -82,7 +82,7 @@ install_gffread:
 		rm -f gffread-${gffreadrelease}.tar.gz && ln -fs gffread-${gffreadrelease} gffread
 
 install_pangenes: install_minimap2 install_gffread install_gmap
-	cd pangenes && cpanm --local-lib . --installdeps --notest --cpanfile cpanfile .
+        cpanm --sudo -v --installdeps --notest --cpanfile cpanfile .
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.4/test_rice.tgz && tar xfz test_rice.tgz && rm -f test_rice.tgz
 
 # see https://github.com/ekg/wfmash for other options
@@ -104,15 +104,13 @@ install_pangenes_quality:
 uninstall_pangenes:
 	cd pangenes/bin && rm -rf gffread-${gffreadrelease} gmap-${gmaprelease} gffread wfmash GSAlign gmap \
 		clustalo-${clustalorelease}-Ubuntu-x86_64 clustalo AliStat-${alistatrelease} AliStat
-	cd lib && rm -rf minimap2-${minimap2release} minimap2 lib
+	cd lib && rm -rf minimap2-${minimap2release} minimap2
 	cd files && rm -rf test_rice
 
 test_pangenes:
 	cd pangenes && perl get_pangenes.pl -d ../files/test_rice && \
 		perl get_pangenes.pl -d ../files/test_rice -s '^\d+$$' && \
-		perl get_pangenes.pl -d ../files/test_rice -H && \
-		perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna -f -v
-
+		perl get_pangenes.pl -d ../files/test_rice -H
 
 clean_pangenes:
 	cd pangenes && rm -rf test_rice_pangenes

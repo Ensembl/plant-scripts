@@ -82,7 +82,7 @@ install_gffread:
 		rm -f gffread-${gffreadrelease}.tar.gz && ln -fs gffread-${gffreadrelease} gffread
 
 install_pangenes: install_minimap2 install_gffread install_gmap
-	cd pangenes && cpanm --local-lib lib --installdeps --notest --cpanfile cpanfile .
+	cd pangenes && cpanm --local-lib . --installdeps --notest --cpanfile cpanfile .
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.4/test_rice.tgz && tar xfz test_rice.tgz && rm -f test_rice.tgz
 
 # see https://github.com/ekg/wfmash for other options

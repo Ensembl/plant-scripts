@@ -19,7 +19,7 @@ clean:
 	rm -f oryza_sativa*
 
 install:
-	-sudo apt install -y wget mysql-client libmysqlclient-dev bedtools pip cpanminus
+	-sudo apt install -y wget mysql-client libmysqlclient-dev libdb-dev bedtools pip cpanminus
 
 install_REST:
 	cpanm --local-lib lib --installdeps --notest --cpanfile lib/cpanfileREST .

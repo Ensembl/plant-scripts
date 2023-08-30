@@ -1,0 +1,10 @@
+requires 'FindBin';
+requires 'Compress::Zlib';
+requires 'Cwd';
+requires 'Fcntl';
+requires 'File::Basename';
+requires 'File::Copy';
+requires 'File::Temp';
+requires 'Getopt::Long';
+requires 'Getopt::Std';
+requires 'DB_File';

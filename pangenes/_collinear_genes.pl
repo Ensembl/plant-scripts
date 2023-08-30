@@ -79,9 +79,10 @@ my $MINOVERLAP = 0.50;
 my $VERBOSE    = 0;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
-my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = ( 0, 0, 0, '', '' );
+my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = (0, 0, 0, '', '');
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
-  ( '', '', '', '', '', '', '');
+  ('', '', '', '', '', '', '');
+my ( $fasta1orig, $fasta2orig ) = ('', ''); 
 my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd, $gene );
 my ( $indexonly, $no_inversions, $minoverlap, $qual, $alg, $outANIfile, $outfilename ) =
   ( 0, 0, $MINOVERLAP, $MINQUAL, 'minimap2', '' );
@@ -229,6 +230,10 @@ print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -G $gsalign_path -B $bedtools_path "
   . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive -n $no_inversions\n\n";
 
+# save names of original input FASTA files as $fasta1/$fasta2 might change with -H
+$fasta1orig = $fasta1;
+$fasta2orig = $fasta2;
+
 # check binaries
 if(`$bedtools_path` !~ 'sage') {
 	print "# ERROR: cannot find binary file $bedtools_path , exit\n";	
@@ -330,7 +335,6 @@ if($repetitive) {
         printf("# %s bases masked=%d median intergene length=%d\n",
             $sp1, $total_masked1, $median_length1 );
     }
-    $fasta1 = $masked_fasta1;
 
     my $masked_fasta2 = $tmpdir . "_$sp2.mask.fna";
     my $fasta_length2 = $tmpdir . "_$sp2.tsv";
@@ -348,9 +352,11 @@ if($repetitive) {
             printf("# %s bases masked=%d median intergene=%d\n",
                 $sp1, $total_masked2, $median_length2 );
         }
+        $fasta2orig = $fasta2;	
         $fasta2 = $masked_fasta2;
     }
-}
+
+} 
 
 ## 2) align genome1 vs genome2 (WGA)
 
@@ -711,8 +717,8 @@ my $geneBEDfile2mapped = $tmpdir . "_$sp2.$sp1.$alg.gene.mapped.bed";
 my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
-  query2ref_coords( "$fasta1.fai", $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
-    $qual, $MINALNLEN, $no_inversions, $VERBOSE );
+  query2ref_coords( "$fasta1orig.fai", $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
+    $qual, $MINALNLEN, $no_inversions, $VERBOSE ); 
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n\n",
     scalar(@$ref_matched), $perc_blocks_3genes,
@@ -730,7 +736,7 @@ if ( scalar(@$ref_matched) == 0 ) {
 # now with reversed WGA alignment, to find matching sp2 segments for unpaired sp1 genes
 
 my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
-  query2ref_coords( "$fasta2.fai", $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
+  query2ref_coords( "$fasta2orig.fai", $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
     $qual, $MINALNLEN, $no_inversions, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n\n",

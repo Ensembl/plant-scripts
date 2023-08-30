@@ -107,7 +107,9 @@ uninstall_pangenes:
 	cd files && rm -rf test_rice
 
 test_pangenes:
-	cd pangenes && perl get_pangenes.pl -d ../files/test_rice
+	cd pangenes && perl get_pangenes.pl -d ../files/test_rice && \
+		perl get_pangenes.pl -d ../files/test_rice -s '^\d+$$' && \
+		perl get_pangenes.pl -d ../files/test_rice -H
 
 clean_pangenes:
 	cd pangenes && rm -rf test_rice_pangenes

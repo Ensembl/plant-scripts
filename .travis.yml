@@ -16,13 +16,14 @@ before_script:
   - "make install_REST"
   - "make install_ensembl"
   - "make install_repeats"
+  - "make install_pangenes"    
   - PERL5LIB=$PWD/lib:$PERL5LIB
+  - PERL5LIB=$PWD/pangenes/lib:$PERL5LIB    
   - export PERL5LIB
 
 script:
   - "make test_travis"
   - "make test_repeats_travis"
-  - "make install_pangenes"
   - "make test_pangenes"
 
 notifications:

@@ -47,3 +47,4 @@
 03042023: discard partially mapped genes at the ends of chrs (query2ref) in _collinear_genes.pl
 26042023: updated documentation and added Example 2: pangene and Presence-Absence Variation (PAV) analysis
 04052023: added check_quality.pl and updated documentation
+30082023: completed target test_pangenes in Makefile

@@ -82,6 +82,7 @@ install_gffread:
 		rm -f gffread-${gffreadrelease}.tar.gz && ln -fs gffread-${gffreadrelease} gffread
 
 install_pangenes: install_minimap2 install_gffread install_gmap
+	cd pangenes && cpanm --local-lib lib --installdeps --notest --cpanfile cpanfile .
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.4/test_rice.tgz && tar xfz test_rice.tgz && rm -f test_rice.tgz
 
 # see https://github.com/ekg/wfmash for other options
@@ -103,7 +104,7 @@ install_pangenes_quality:
 uninstall_pangenes:
 	cd pangenes/bin && rm -rf gffread-${gffreadrelease} gmap-${gmaprelease} gffread wfmash GSAlign gmap \
 		clustalo-${clustalorelease}-Ubuntu-x86_64 clustalo AliStat-${alistatrelease} AliStat
-	cd lib && rm -rf minimap2-${minimap2release} minimap2
+	cd lib && rm -rf minimap2-${minimap2release} minimap2 lib
 	cd files && rm -rf test_rice
 
 test_pangenes:

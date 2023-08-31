@@ -102,6 +102,7 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ### Dependencies of recipes
 
 Some of the scripts depend on additional software packages, see below to learn how to install them.
+Note that only *make install* requires **sudo**, you might need help from your sysadmin for that task.
 
 #### FTP
 
@@ -132,7 +133,7 @@ these modules can be installed with:
     make install_REST
 
 Similarly, the dependencies for the ensembl VEP ([DBI](https://metacpan.org/pod/DBI), [DBD::mysql](https://metacpan.org/pod/DBD::mysql) 
-and [Archive::Zip](https://metacpan.org/pod/Archive::Zip), together with those used by recipes using the Ensembl Perl API, 
+and [Archive::Zip](https://metacpan.org/pod/Archive::Zip)), together with those used by recipes using the Ensembl Perl API, 
 can be installed with:
 
     #make install
@@ -179,6 +180,12 @@ If you want to run any of those scripts you must first run:
 
     #make install # install required bedtools
     make install_pangenes # requires gcc & g++ compilers
+
+Optionally you might also want to try:
+
+    make install_gsalign
+    make install_pangenes_quality
+
 
 ## Phylogenomics
 

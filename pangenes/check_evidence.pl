@@ -20,11 +20,12 @@ $|=1;
 
 use strict;
 use warnings;
+use FindBin '$Bin';
+use lib "$Bin/../lib";
+use lib "$Bin/lib";
 use Getopt::Std;
 use DB_File;
 use Compress::Zlib qw(compress uncompress);
-use FindBin '$Bin';
-use lib "$Bin/lib";
 use pangeneTools qw( check_installed_features feature_is_installed 
                      parse_sequence_FASTA_file extract_isoforms_FASTA
                      calc_median calc_mode get_outlier_cutoffs );

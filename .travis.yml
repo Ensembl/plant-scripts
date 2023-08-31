@@ -7,7 +7,8 @@ perl:
 
 before_install:
   #- "sudo apt-get update"
-  - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev libdb-file-lock-perl g++-10 bedtools r-base"
+  - "sudo apt-get install -y wget python3 python3-pip python3-setuptools mysql-client libmysqlclient-dev libdb-dev g++-10 bedtools r-base"
+  - "cpanm --sudo -v --installdeps --notest DB_File"
 
 # https://travis-ci.community/t/accessing-old-versions-of-perl-in-a-c-language-build/10948/5
 install: skip 

@@ -1,8 +1,8 @@
 
 # Scripting analyses of genomes in Ensembl Plants
 
-This repo contains code examples for interrogating [Ensembl Plants](https://plants.ensembl.org/index.html) from your own scripts,
-and for masking & annotating [repeats](./repeats) in plant genomes.
+This repo contains code examples for interrogating [Ensembl Plants](https://plants.ensembl.org/index.html) from your own scripts
+and for masking & annotating [repeats](./repeats) and [calling pangenes](./pangenes) in plant genomes.
 
 [![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://app.travis-ci.com/Ensembl/plant-scripts)
 
@@ -99,9 +99,9 @@ exampleVEP.sh:## V3) Predict effect of variants
 exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 ```
 
-### Dependencies of recipes
+### Dependencies
 
-Some of the scripts depend on additional software packages, see below to learn how to install them.
+Some of the recipes and scripts depend on additional software packages, see below to learn how to install them.
 Note that only *make install* requires **sudo**, you might need help from your sysadmin for that task.
 
 #### FTP

@@ -98,6 +98,7 @@ sub set_pangeneTools_env {
   }
   if( ! defined($ENV{"EXE_GMAP"}) ){
     $ENV{"EXE_GMAP"} = $ENV{'PANGENE'}.'bin/gmap/exe/bin/gmap';
+    $ENV{"EXE_GMAP_BUILD"} = $ENV{'PANGENE'}.'bin/gmap/util/gmap_build';
   }
   if( ! defined($ENV{"EXE_CLUSTALO"}) ){
     $ENV{"EXE_CLUSTALO"} = $ENV{'PANGENE'}.'bin/clustalo';

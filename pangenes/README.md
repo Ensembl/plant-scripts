@@ -986,7 +986,7 @@ This will produce TAB-separated (TSV) output similar to this:
     TR3	890	gene:ONIVA01G42530.cdna.fna	615	2	69	87.4	1:35899105-35900529(+)
 
 The column 'matches' indicates how many individual alignments support the assignment of the input
-sequence to the same cluster, which in the last example is 2. Note than potentially a sequence
+sequence to the same cluster, which in the last example is 2. Note that potentially a sequence
 could match more than one cluster.
 
 Before you run this script it might be handy to add genomic coordinates to the headers of the input

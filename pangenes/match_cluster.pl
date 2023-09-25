@@ -253,3 +253,5 @@ foreach $seq_id (@order_geneid) {
 }
 
 close(TSV);
+
+print "# results in TSV format: $INP_outfile\n\n";

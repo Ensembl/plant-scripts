@@ -66,7 +66,13 @@ if(defined($opts{'c'})) {
 if(defined($opts{'d'})) { 
   $INP_dir = $opts{'d'};
   $gmapdb = basename($INP_dir) . '.gmap';
-  $gmapdb_path = dirname($INP_dir); 
+  $gmapdb_path = dirname($INP_dir);
+
+  if(defined($opts{'C'})){
+    $INP_isCDS = 1;
+    $cluster_regex = '.cds.fna';
+    $gmapdb = basename($INP_dir) . '.cds.gmap';
+  }
 }
 else{ die "# EXIT : need a -d directory\n" }
 
@@ -83,12 +89,6 @@ if(defined($opts{'o'})){
   $INP_outfile = $opts{'o'};
 } 
 else{ die "# EXIT : need parameter -o\n" }
-
-
-if(defined($opts{'C'})){
-  $INP_isCDS = 1;
-  $cluster_regex = '.cds.fna';
-}
 
 if(defined($opts{'I'})){ 
   $INP_idfile = $opts{'I'};  
@@ -205,6 +205,7 @@ while(<GMAP>) {
     # compile match stats
     $matches{$seq_id}{$cluster_id}{'total'}++;
 
+    # take stats from hit with best cover
     if(!defined($matches{$seq_id}{$cluster_id}{'cover'}) || 
       $cover > $matches{$seq_id}{$cluster_id}{'cover'}) {
       $matches{$seq_id}{$cluster_id}{'cover'} = $cover;
@@ -246,8 +247,7 @@ foreach $seq_id (@order_geneid) {
       $matches{$seq_id}{$cluster_id}{'total'},      
       $matches{$seq_id}{$cluster_id}{'cover'},
       $matches{$seq_id}{$cluster_id}{'identity'},
-      $matches{$seq_id}{$cluster_id}{'coords'},
-
+      $matches{$seq_id}{$cluster_id}{'coords'}
     );
   }
 }

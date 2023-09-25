@@ -985,6 +985,10 @@ This will produce TAB-separated (TSV) output similar to this:
     TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100	97.1	1:35501996-35505052(-)
     TR3	890	gene:ONIVA01G42530.cdna.fna	615	2	69	87.4	1:35899105-35900529(+)
 
+The column 'matches' indicates how many individual alignments support the assignment of the input
+sequence to the same cluster, which in the last example is 2. Note than potentially a sequence
+could match more than one cluster.
+
 Before you run this script it might be handy to add genomic coordinates to the headers of the input
 FASTA file, so that you can quickly check whether they match clusters in the same chromosome.
 

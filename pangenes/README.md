@@ -45,6 +45,7 @@ and produces different types of output:
 - [Remediating pangene models with check_evidence-pl](#remediating-pangene-models-with-check_evidencepl)
 - [Pangene analysis with GFF patches](#pangene-analysis-with-GFF-patches)
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
+- [Matching nucleotide sequences to precomputed pangene clusters](#matching-nucleotide-sequences-to-precomputed-pangene-clusters)
 - [Troubleshooting](#troubleshooting)
 - [Funding](#funding)
 - [Citation](#citation)
@@ -964,6 +965,29 @@ note that this requires installing the [pafr](https://cran.r-project.org/package
 *Figure 11. Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0*
 
 check_evidence.pl check_evidence.pl check_evidence.pl 
+
+
+## Matching nucleotide sequences to precomputed pangene clusters
+
+If you have a set of precomputed pangene clusters you might want to assign arbitrary sequences to them
+without recomputing new pangenes. For instance, these sequences could be transcripts from a new cultivar/genotype 
+not considered before. You can do this with script *match_cluster.pl*, which creates a sequence index with 
+nucleotide sequences from clusters and uses GMAP to scan them. By default it uses cDNA sequences to build 
+the index, but can also use CDS (-C). The next example shows how to do this:
+
+    perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1 -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
+
+This will produce TAB-separated (TSV) output similar to this:
+
+    #query	qlength	pangene	length	matches	perc_qcover	perc_identity	coords
+    TR2	NA	NA	NA	NA	NA	NA	NA
+    TR1	NA	NA	NA	NA	NA	NA	NA
+    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100	97.1	1:35501996-35505052(-)
+    TR3	890	gene:ONIVA01G42530.cdna.fna	615	2	69	87.4	1:35899105-35900529(+)
+
+Before you run this script it might be handy to add genomic coordinates to the headers of the input
+FASTA file, so that you can quickly check whether they match clusters in the same chromosome.
+
 
 ## Troubleshooting
 

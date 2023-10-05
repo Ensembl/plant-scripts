@@ -54,7 +54,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
 }
 
 if(defined($opts{'c'})) {
-  print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
+  print "\nPrimary citation:\n https://doi.org/10.1186/s13059-023-03071-z\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " gmap https://doi.org/10.1093/bioinformatics/bti310\n";
 

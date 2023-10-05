@@ -47,7 +47,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
 }
 
 if(defined($opts{'c'})) {
-  print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
+  print "\nPrimary citation:\n https://doi.org/10.1186/s13059-023-03071-z\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " clustal-omega https://doi.org/10.1002%2Fpro.3290\n";
   print " AliStat https://doi.org/10.1093/nargab/lqaa024\n";

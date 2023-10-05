@@ -158,7 +158,7 @@ close(CHANGES);
 if(defined($opts{'v'})) {
 
   print "\n$0 version $VERSION\n";
-  print "\nPrimary citation:\n https://github.com/Ensembl/plant-scripts/pangenes\n";
+  print "\nPrimary citation:\n https://doi.org/10.1186/s13059-023-03071-z\n";
   print "\nThis software uses external algorithms, please cite them accordingly:\n";
   print " minimap2 https://doi.org/10.1093/bioinformatics/bty191\n";
   print " wfmash   https://github.com/ekg/wfmash\n";

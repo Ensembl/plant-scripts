@@ -213,7 +213,23 @@ Methods in Molecular Biology, vol 2443. Humana, New York, NY. [10.1007/978-1-071
 
 <!--[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)-->
 
-For the scripts and data in the [repeats](./repeats/) folder please also cite:
+# pangenes
+
+For the pangene protocols the primary citation is:
+
+Contreras-Moreira, B., Saraf, S., Naamati, G. et al. GET_PANGENES: calling pangenes from plant genome alignments confirms presence-absence variation. Genome Biol 24, 223 (2023). https://doi.org/10.1186/s13059-023-03071-z
+
+Check all the references you need to cite in each script by running:
+
+    perl get_pangenes.pl -v
+    perl check_evidence.pl -c
+    perl check_quality.pl -c
+    perl match_cluster.pl -c
+
+
+# repeats
+
+For the scripts and data in the [repeats](./repeats/) folder please cite:
 
 Contreras-Moreira B, Filippi CV, Naamati G, García Girón C, Allen JE, Flicek P (2021) 
 Efficient masking of plant genomes by combining kmer counting and curated repeats Genomics. 

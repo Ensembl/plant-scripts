@@ -213,7 +213,7 @@ Methods in Molecular Biology, vol 2443. Humana, New York, NY. [10.1007/978-1-071
 
 <!--[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4121769.svg)](https://doi.org/10.5281/zenodo.4121769)-->
 
-# pangenes
+### pangenes
 
 For the pangene protocols the primary citation is:
 
@@ -229,7 +229,7 @@ Check all the references you need to cite in each script by running:
     perl match_cluster.pl -c
 
 
-# repeats
+### repeats
 
 For the scripts and data in the [repeats](./repeats/) folder please cite:
 

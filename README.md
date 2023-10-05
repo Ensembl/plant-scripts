@@ -217,7 +217,9 @@ Methods in Molecular Biology, vol 2443. Humana, New York, NY. [10.1007/978-1-071
 
 For the pangene protocols the primary citation is:
 
-Contreras-Moreira, B., Saraf, S., Naamati, G. et al. GET_PANGENES: calling pangenes from plant genome alignments confirms presence-absence variation. Genome Biol 24, 223 (2023). https://doi.org/10.1186/s13059-023-03071-z
+Contreras-Moreira B, Saraf S, Naamati G, Casas AM, Amberkar SS, Flicek P, Jones AR & Dyer S (2023)
+GET_PANGENES: calling pangenes from plant genome alignments confirms presence-absence variation. 
+Genome Biol 24, 223 (2023). https://doi.org/10.1186/s13059-023-03071-z
 
 Check all the references you need to cite in each script by running:
 

@@ -1038,4 +1038,15 @@ This prototype was produced as part of the project "PanOryza: globally coordinat
 
 ## Citation
 
-A preprint describing this protocol can be found at https://www.biorxiv.org/content/10.1101/2023.01.03.520531v1
+The paper describing this protocol is:
+
+Contreras-Moreira B, Saraf S, Naamati G, Casas AM, Amberkar SS, Flicek P, Jones AR & Dyer S (2023)
+GET_PANGENES: calling pangenes from plant genome alignments confirms presence-absence variation. 
+Genome Biol 24, 223 (2023). https://doi.org/10.1186/s13059-023-03071-z
+
+Check all the references you need to cite in each script by running:
+
+    perl get_pangenes.pl -v
+    perl check_evidence.pl -c
+    perl check_quality.pl -c
+    perl match_cluster.pl -c

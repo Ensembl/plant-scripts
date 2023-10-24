@@ -260,7 +260,7 @@ sub select_GFF_valid_genes {
   close(INFILE);
 
   if ( $gffile =~ /\.gz$/ || $magic eq "\x1f\x8b" ) {  # GZIP compressed input
-    if ( !open( GFF, "$ENV{'GZIP'} -dc $gffile |" ) ) {
+    if ( !open( GFF, "$ENV{'EXE_GZIP'} -dc $gffile |" ) ) {
             die "# ERROR(select_GFF_valid_genes): cannot read GZIP compressed $gffile $!\n"
               . "# please check gzip is installed\n";
     }
@@ -319,12 +319,15 @@ sub select_GFF_valid_genes {
 }
 
 
-# Takes string with name of GFF file and returns number of genes
+# Takes strings with name of GFF and log files and 
+# returns 
+# i) number of valid genes
+# ii) number on non-valid genes
 sub count_GFF_genes {
 
-  my ($gffile) = @_;
+  my ($gffile, $logfile) = @_;
 
-  my $num_genes = 0;
+  my ($num_genes, $num_nonvalid_genes)  = (0, 0);
   
   open(GFF, "<", $gffile) ||
     die "# ERROR(count_GFF_genes): cannot read $gffile\n";
@@ -334,7 +337,16 @@ sub count_GFF_genes {
   }
   close(GFF);
 
-  return $num_genes
+  if(-s $logfile) {
+    open(LOG, "<", $logfile) ||
+      print "# WARN(count_GFF_genes): cannot read $logfile\n";
+    while(<LOG>) {
+      if(/skip/){ $num_nonvalid_genes++ }
+    }
+    close(LOG);
+  }
+
+  return ($num_genes, $num_nonvalid_genes)
 }
 
 

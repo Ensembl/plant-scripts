@@ -43,6 +43,10 @@ my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
 my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
 my $MAXDISTNEIGHBORS = 5;  # neighbor genes in a cluster cannot be more than N genes away
 
+# features considered in GFF files, and feats required in valid genes
+my $GFFACCEPTEDFEATS  = 'gene,mRNA,transcript,exon,CDS'; 
+my $GFFVALIDGENEFEAT  = 'gene,mRNA,transcript';
+
 ## list of features/binaries required by this program (do not edit)
 my @FEATURES2CHECK = (
   'EXE_MINIMAP','EXE_BEDTOOLS','EXE_GFFREAD',
@@ -467,7 +471,8 @@ if(-s $input_order_file) {
 }
 
 # 1.3) iteratively parse input files
-my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$patch_gffile,$num_genes,$Mb);
+my ($dnafile,$gffile,$plain_dnafile,$plain_gffile,$patch_gffile);
+my ($num_genes,$num_nonvalid_genes,$Mb,$plain_gffile_log);
 my ($outcDNA,$outCDS,$outpep,$clusteroutfile,$tx1,$tx2,$patched_gffile);
 my (%cluster_PIDs,%ngenes,@gff_outfiles,@gff_logfiles,@to_be_deleted);
 
@@ -509,9 +514,10 @@ foreach $infile (@inputfiles) {
   }
 
   # make temporary copies of uncompressed FASTA & GFF files
-  $plain_dnafile  = $newDIR ."/_$taxon.fna";
-  $plain_gffile   = $newDIR ."/_$taxon.gff";
-  $clusteroutfile = $newDIR ."/_$infile.queue"; # HPC cluster log
+  $plain_dnafile    = $newDIR ."/_$taxon.fna";
+  $plain_gffile     = $newDIR ."/_$taxon.gff";
+  $plain_gffile_log = $newDIR ."/_$taxon.gff.log";
+  $clusteroutfile   = $newDIR ."/_$infile.queue"; # HPC cluster log
 
   if(!-s $plain_dnafile) {
     if($dnafile =~ m/\.gz/) {
@@ -525,19 +531,22 @@ foreach $infile (@inputfiles) {
   }
 
   if(!-s $plain_gffile) {
-    if($gffile =~ m/\.gz/) {
-      print "# uncompressing $gffile\n";
-      system("$ENV{'EXE_GZIP'} -dc $gffile > $plain_gffile")     
+    ($num_genes, $num_nonvalid_genes) = select_GFF_valid_genes( $gffile, $plain_gffile, $plain_gffile_log,
+      $GFFACCEPTEDFEATS, $GFFVALIDGENEFEAT, 2 );
+
+    if($num_genes < 1) {
+      die "ERROR: no valid genes in GFF file $gffile with > 1 $GFFVALIDGENEFEAT features\n";
     } else {
-      cp($gffile,$plain_gffile)
+      print "# non-valid genes: $num_nonvalid_genes\n";
     }
+
   } else {
-    print "# re-using $plain_gffile\n"
-  }
+    print "# re-using $plain_gffile\n";
+    $num_genes = count_GFF_genes( $plain_gffile );    
+  } 
 
   # work out sequence stats and make sure split regex works
   $Mb = (-s $plain_dnafile) / (1024 * 1024);
-  $num_genes = count_GFF_genes( $plain_gffile );
   $ngenes{$taxon} = $num_genes;
   $total_genes += $num_genes;
 

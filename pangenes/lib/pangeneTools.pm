@@ -13,6 +13,7 @@ require Exporter;
   feature_is_installed 
   check_installed_features 
   constructDirectory
+  select_GFF_valid_genes  
   count_GFF_genes
   parse_GFF_regex
   get_string_with_previous_genomes
@@ -232,6 +233,92 @@ sub constructDirectory {
   return 1
 }
 
+
+# Takes 
+# i) string with name of GFF file, possibly gzip-ed
+# ii) string with name of output GFF file
+# iii) string with name of logfile
+# iv) CSV string with accepted GFF features
+# v) CSV string with GFF features that valid genes must match
+# vi) min number of valid features for defining valid genes 
+# and returns:
+# i) number of valid genes
+# ii) string with name of new file containing only valid genes
+sub select_GFF_valid_genes {
+
+  my ($gffile, $outfilename, $logfile, $accepted_feats, $valid_feats, $min_valid_feats) = @_;
+
+  my ($magic, $feat, $attr, $geneattr);
+  my $num_genes = 0;
+  my $num_nonvalid_genes = 0;
+  my (@genes,%gene_block);
+  
+  # open input file    
+  open( INFILE, $gffile )
+      || die "# ERROR(select_GFF_valid_genes): cannot read $gffile, exit\n";
+  sysread( INFILE, $magic, 2 );
+  close(INFILE);
+
+  if ( $gffile =~ /\.gz$/ || $magic eq "\x1f\x8b" ) {  # GZIP compressed input
+    if ( !open( GFF, "$ENV{'GZIP'} -dc $gffile |" ) ) {
+            die "# ERROR(select_GFF_valid_genes): cannot read GZIP compressed $gffile $!\n"
+              . "# please check gzip is installed\n";
+    }
+  } else {
+    open( GFF, "<", $gffile )
+      || die "# ERROR(select_GFF_valid_genes): cannot read $gffile\n";
+  }
+  
+  # parse gene blocks and count valid genes, those with 2+ valid GFF features 
+  while(<GFF>) {
+    next if(/^#/);
+
+    my @data = split(/\t/,$_);
+    ($feat, $attr) = @data[2,8];
+
+    if($accepted_feats !~ $feat) {
+      #print;  #debug	    
+      next;
+    }
+
+    # conserve gene order
+    if($feat eq 'gene'){  
+       $geneattr = $attr;	    
+       push(@genes, $geneattr);
+    }
+       
+    $gene_block{$geneattr}{'GFF'} .= $_;
+    if($valid_feats =~ $feat) {
+       $gene_block{$geneattr}{'valid'}++;   
+    }
+  }
+  close(GFF);
+
+   # open output files, both GFF and logfile
+  open(OUTGFF, ">", $outfilename)
+    || die "# ERROR(select_GFF_valid_genes): cannot create $outfilename\n";
+
+  open(LOG, ">", $logfile)
+    || die "# ERROR(select_GFF_valid_genes): cannot create $logfile\n";
+
+  foreach $geneattr (@genes) {
+    if($gene_block{$geneattr}{'valid'} >= $min_valid_feats) {
+      print OUTGFF $gene_block{$geneattr}{'GFF'};
+      $num_genes++;
+
+    } else {
+      $num_nonvalid_genes++;
+      print LOG "skip $geneattr";
+    }
+  }
+
+  close(LOG);
+  close(OUTGFF);
+
+  return ($num_genes, $num_nonvalid_genes)
+}
+
+
 # Takes string with name of GFF file and returns number of genes
 sub count_GFF_genes {
 
@@ -249,6 +336,7 @@ sub count_GFF_genes {
 
   return $num_genes
 }
+
 
 # Takes two params:
 # 1) string with name of GFF file 

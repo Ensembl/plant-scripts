@@ -531,18 +531,17 @@ foreach $infile (@inputfiles) {
   }
 
   if(!-s $plain_gffile) {
-    ($num_genes, $num_nonvalid_genes) = select_GFF_valid_genes( $gffile, $plain_gffile, $plain_gffile_log,
+    ($num_genes, $num_nonvalid_genes) = select_GFF_valid_genes( 
+      $gffile, $plain_gffile, $plain_gffile_log,
       $GFFACCEPTEDFEATS, $GFFVALIDGENEFEAT, 2 );
 
     if($num_genes < 1) {
       die "ERROR: no valid genes in GFF file $gffile with > 1 $GFFVALIDGENEFEAT features\n";
-    } else {
-      print "# non-valid genes: $num_nonvalid_genes\n";
-    }
+    } 
 
   } else {
     print "# re-using $plain_gffile\n";
-    $num_genes = count_GFF_genes( $plain_gffile );    
+    ($num_genes, $num_nonvalid_genes) = count_GFF_genes( $plain_gffile, $plain_gffile_log );    
   } 
 
   # work out sequence stats and make sure split regex works
@@ -552,19 +551,21 @@ foreach $infile (@inputfiles) {
 
   if($split_chr_regex) {
     my $ref_parsed_chrs = parse_GFF_regex($plain_gffile, $split_chr_regex, 0);
-    printf("# %s %1.2fMB genes=%d chrs/contigs=%d\n",
+    printf("# %s %1.2fMB genes=%d non-valid=%d chrs/contigs=%d\n",
       $dnafile,
       $Mb,
       $num_genes,
+      $num_nonvalid_genes,
       scalar(keys(%$ref_parsed_chrs)));
     if(scalar(keys(%$ref_parsed_chrs)) < 1) {
       die "# ERROR: regex '$split_chr_regex' does not match chr names in $gffile, please edit\n"
     }
   } else {
-    printf("# %s %1.2fMB genes=%d\n",
+    printf("# %s %1.2fMB genes=%d non-valid=%d\n",
       $dnafile,
       $Mb,
-      $num_genes);
+      $num_genes,
+      $num_nonvalid_genes);
   }
 
   if($num_genes < 1) {

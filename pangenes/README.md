@@ -138,6 +138,8 @@ Here I list the most important ones, they can be changed by editing the script s
 |:-----|:-------|:----|:------|
 |get_pangenes.pl|$MINGFFLEN|100|min length of sequences of features (cdna, cds) extracted from input GFF files|
 |get_pangenes.pl|$NOFSAMPLESREPORT|20|number of samples while simulating pangene growth with -c|
+|get_pangenes.pl|$GFFACCEPTEDFEATS|gene,mRNA,transcript,exon,CDS|accepted features in input GFF files|
+|get_pangenes.pl|$GFFVALIDGENEFEAT|gene,mRNA,transcript|features used to call valid genes in input GFF files|
 |_collinear_genes.pl|MINIMAPPARS|--secondary=no --cs -x asm20 -r1k,5k|minimap2 settings|
 |_collinear_genes.pl|$GSALIGNPARS|-sen -no_vcf -fmt 1|GSAlign settings|
 |_collinear_genes.pl|$BEDINTSCPAR|-wo -f XXX -F XXX -e|bedtools intersect parameters, XXX replaced with user selected overlap [0-1]|

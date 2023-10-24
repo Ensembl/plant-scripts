@@ -51,3 +51,4 @@
 30082023: Makefile target install_pangenes now system-installs pangenes/cpanfile; these are core modules, only DB_file seems to be lacking in Travis
 25092023: added match_cluster.pl and updated documentation; uses .cdna.fna clusters by default, -C seems slower 
 24102023: added sub select_GFF_valid_genes to leave out non-coding genes; see $GFFACCEPTEDFEATS & $GFFVALIDGENEFEAT
+24102023: updated README.md

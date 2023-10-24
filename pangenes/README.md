@@ -240,20 +240,20 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # get_pangenes.pl -d ../files/test_rice -o 0 -r 0 -t all -c 0 -z 0 -I 0 -m local -w 0 -g 0 -O 0.5 -Q 50 -N 5 -s '' -H 0 -W '' -G '' -B '' -S '' -n 4 -R 0
 
-# version 09032023
-# results_directory=pangenes/test_rice_pangenes
-# parameters: MINGFFLEN=100
+# version 24102023
+# results_directory=/home/contrera/github/plant-scripts/pangenes/test_rice_pangenes
+# parameters: MINGFFLEN=100 GFFACCEPTEDFEATS=gene,mRNA,transcript,exon,CDS GFFVALIDGENEFEAT=gene,mRNA,transcript
 
 # checking input files...
-# uncompressing ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz
-# uncompressing ../files/test_rice/Oryza_indica.ASM465v1.chr1.gff3.gz
-# ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz 45.84MB genes=5292
-# uncompressing ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz
-# uncompressing ../files/test_rice/Oryza_nivara_v1.chr1.gff3.gz
-# ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz 41.54MB genes=5143
-# uncompressing ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz
-# uncompressing ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.gff.gz
-# ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
+# ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz 45.84MB genes=5292 non-valid=0
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
+# ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz 41.54MB genes=5143 non-valid=0
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
+# ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 non-valid=0
 
 # 3 genomes, 15706 genes
 
@@ -276,14 +276,14 @@ $ perl get_pangenes.pl -d ../files/test_rice
 # sorting collinearity results...
 
 # WGA summary (N50, %mapped genes in blocks of 3+)
-31792.0 79.7 Oryza_indica.ASM465v1.chr1
-33230.0 80.3 Oryza_nivara_v1.chr1
-34983.0 83.2 Oryza_sativa.IRGSP-1.0.chr1
+39394.0 84.4 Oryza_indica.ASM465v1.chr1
+41043.5 84.4 Oryza_nivara_v1.chr1
+42940.5 85.7 Oryza_sativa.IRGSP-1.0.chr1
 
 # clustering sequences ...
 # done
 
-# number of clusters = 7804 (core = 3008)
+# number of clusters = 7808 (core = 2987)
 
 # cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 # cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
@@ -332,10 +332,10 @@ $ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzan
 >transcript:ONIVA01G52180.1 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
 >transcript:ONIVA01G52180.2 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
 >transcript:ONIVA01G52180.3 gene:ONIVA01G52180 1:42818944-42824598(-) [Oryza_nivara_v1.chr1]
->transcript:BGIOSGA000001-TA gene:BGIOSGA000001 1:47275570-47278635(-) [Oryza_indica.ASM465v1.chr1]
 >transcript:Os01t0978100-01 gene:Os01g0978100 1:43232027-43238506(-) [Oryza_sativa.IRGSP-1.0.chr1]
 >transcript:Os01t0978100-02 gene:Os01g0978100 1:43232034-43238012(-) [Oryza_sativa.IRGSP-1.0.chr1]
 >transcript:Os01t0978100-03 gene:Os01g0978100 1:43232036-43237974(-) [Oryza_sativa.IRGSP-1.0.chr1]
+>transcript:BGIOSGA000001-TA gene:BGIOSGA000001 1:47275570-47278635(-) [Oryza_indica.ASM465v1.chr1]
 ```
 
 While cdna, cds and pep cluster files contain sequences annotated in the input GFF files,
@@ -356,9 +356,9 @@ which look like this:
  
     $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
     genomes	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1
-    Oryza_nivara_v1.chr1	100.00	61.79	60.59
-    Oryza_sativa.IRGSP-1.0.chr1	61.79	100.00	62.62
-    Oryza_indica.ASM465v1.chr1	60.59	62.62	100.00
+    Oryza_nivara_v1.chr1    100.00  61.40   60.31
+    Oryza_sativa.IRGSP-1.0.chr1     61.40   100.00  62.34
+    Oryza_indica.ASM465v1.chr1      60.31   62.34   100.00
 
 And 
 
@@ -403,7 +403,7 @@ but saved in a different folder (*Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_*).
 The main differences are shown below, note the larger number of clusters:
 
 ```
-# number of clusters = 7804 (core = 3008)
+# number of clusters = 7808 (core = 2987)
 
 # cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 # cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1
@@ -420,7 +420,7 @@ For instance, to find pangenes that contain gene models from *Oryza_indica.ASM46
 *Oryza_sativa.IRGSP-1.0.chr1* but no models from *Oryza_nivara_v1.chr1* you could do:
 
     perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | wc -l
-    #507
+    #510
 
     perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | head	
     gene:BGIOSGA000032	-	gene:BGIOSGA000032	gene:Os01g0969700	
@@ -475,18 +475,18 @@ When you run it you'll see a couple differences in the output:
 
 ```
 # checking input files...
-# re-using test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
-# re-using test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
-# ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz 45.84MB genes=5292 chrs/contigs=1
-# re-using test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
-# re-using test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
-# ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz 41.54MB genes=5143 chrs/contigs=1
-# re-using test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
-# re-using test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
-# ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 chrs/contigs=1
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
+# ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz 45.84MB genes=5292 non-valid=0 chrs/contigs=1
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
+# ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz 41.54MB genes=5143 non-valid=0 chrs/contigs=1
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
+# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
+# ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 non-valid=0 chrs/contigs=1
 
 ...
-# clusters sorted by position in chr 1 = 7860
+# clusters sorted by position in chr 1 = 7808
 ...
 # pangene_file (BED-like) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.bed
 ```
@@ -610,7 +610,7 @@ that would be:
 
     test_rice_pangenes/_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algGSal.overlap0.5.tsv.queue
 
-These files also contain useful:
+These files also contain useful bits of information such as:
 
     # WGA blocks: N50 28614 median 2731
     # 28644 genes mapped (75.4% in 3+blocks) ... (2 unmapped)

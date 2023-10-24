@@ -393,7 +393,7 @@ my $dryrun_file = $newDIR."/dryrun.txt";
 
 print "# version $VERSION\n";
 print "# results_directory=$newDIR\n";
-print "# parameters: MINGFFLEN=$MINGFFLEN\n";
+print "# parameters: MINGFFLEN=$MINGFFLEN GFFACCEPTEDFEATS=$GFFACCEPTEDFEATS GFFVALIDGENEFEAT=$GFFVALIDGENEFEAT\n";
 
 # 0.3) prepare dryrun file if required
 if($runmode eq 'dryrun') {

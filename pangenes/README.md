@@ -203,7 +203,7 @@ See all options with:
     perl get_pangenes.pl -h
 
 
-## Example 1: default core pangene analysis
+## Example 1: default core pangene analysis (and HPC settings)
 
 If the installation was succesfull you should have a copy of a test dataset.
 You can browse it with:

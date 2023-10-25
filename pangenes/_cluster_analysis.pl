@@ -181,6 +181,8 @@ else {
             print "-i $sp ";
         } print "\n";
     }
+
+    print "\n";
 }
 
 # check binaries
@@ -210,7 +212,8 @@ for $sp (keys(%species)) {
 
     next if( $ignore{$sp} || $sp eq 'species' || $sp eq 'homology_species');
 
-    $supported{ $sp } = 1;
+    $n_of_species++;
+    $supported{ $sp } = $n_of_species;
     if ( !$ref_genome || $sp ne $ref_genome ) {
         push( @supported_species, $sp );
     }
@@ -226,7 +229,7 @@ else {
 
     if ($verbose) {
         foreach $sp (@supported_species) {
-            print "# $sp\n";
+            print "# $sp $supported{ $sp }\n";
         }
     }
 }
@@ -242,7 +245,6 @@ print "\n# clustering parameters:\n";
 print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n";
 print "# \$MINEDGESTOMERGE: $MINEDGESTOMERGE\n\n";
 
-$n_of_species = scalar(@supported_species);
 print "# total selected species : $n_of_species\n\n";
 
 ## 2) parse pairs of collinear genes and make up clusters 
@@ -288,8 +290,7 @@ foreach $infile (@infiles) {
       || die "# ERROR: cannot open $infile\n";
     while ( $line = <TSV> ) {
 
-        (
-            $gene_stable_id,     $prot_stable_id, $species,
+        (   $gene_stable_id,     $prot_stable_id, $species,
             $overlap,            $homology_type,  $hom_gene_stable_id,
             $hom_prot_stable_id, $hom_species,    $hom_identity,
             $dn,                 $ds,             $goc_score,
@@ -302,21 +303,21 @@ foreach $infile (@infiles) {
         if ( $homology_type =~ m/ortholog/ ) {
  
             # add $species gene to cluster only if not clustered yet
-            if ( !$incluster{$gene_stable_id} ) {
+            if ( !$incluster{ $supported{$species}.':::'.$gene_stable_id } ) {
 
-                if ( $incluster{$hom_gene_stable_id} ) {
+                if ( $incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id } ) {
 
                     # use existing cluster_id from other species ortholog
-                    $cluster_id = $incluster{$hom_gene_stable_id};
+                    $cluster_id = $incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id };
                 } else {
 
                     # otherwise create a new one
-                    $cluster_id = $gene_stable_id;
+                    $cluster_id = $supported{$species}.':::'.$gene_stable_id;
                     push( @tmp_cluster_ids, $cluster_id );
                 }
 
                 # record to which cluster this gene belongs
-                $incluster{$gene_stable_id} = $cluster_id;
+                $incluster{ $supported{$species}.':::'.$gene_stable_id } = $cluster_id;
 
                 push( @{ $cluster{$cluster_id}{$species} }, $gene_stable_id );
 
@@ -325,15 +326,15 @@ foreach $infile (@infiles) {
 
             } else {
                 # set cluster for $hom_species anyway
-                $cluster_id = $incluster{$gene_stable_id};
+                $cluster_id = $incluster{ $supported{$species}.':::'.$gene_stable_id };
             } 
 
             # now add $hom_species gene 
-            if ( !$incluster{$hom_gene_stable_id} ) {
+            if ( !$incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id } ) {
 
                 # record to which cluster this gene belongs, 
                 # currently 1st pair where $hom_gene_stable_id appears (heuristic)
-                $incluster{$hom_gene_stable_id} = $cluster_id;
+                $incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id } = $cluster_id;
 
                 push( @{ $cluster{$cluster_id}{$hom_species} }, $hom_gene_stable_id);
 
@@ -343,10 +344,10 @@ foreach $infile (@infiles) {
             } else { # $hom_species gene already clustered 
 
                 # typically when a long gene model overlaps 2+ shorther ones
-                if($cluster_id ne $incluster{$hom_gene_stable_id}) {
+                if($cluster_id ne $incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id }) {
 
-                    $cluster_links{ $cluster_id }{ $incluster{$hom_gene_stable_id} }++;
-                    $cluster_links{ $incluster{$hom_gene_stable_id} }{ $cluster_id }++;
+                    $cluster_links{ $cluster_id }{ $incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id } }++;
+                    $cluster_links{ $incluster{ $supported{$hom_species}.':::'.$hom_gene_stable_id } }{ $cluster_id }++;
                 } 
                 #else { } # do nothing, previously added to same cluster
             }
@@ -378,8 +379,10 @@ foreach $infile (@infiles) {
 
 # 2.0) see if disjoint clusters can be merged, can happen if long genes overlap shorther ones
 my ($c1, $c2, $size1, $size2, $speciesOK);
+
 foreach $c1 (0 .. $#tmp_cluster_ids-1) {
-	$cluster_id = $tmp_cluster_ids[$c1];
+
+    $cluster_id = $tmp_cluster_ids[$c1];
 
     next if(defined($toremove{ $cluster_id }));
 
@@ -405,11 +408,11 @@ foreach $c1 (0 .. $#tmp_cluster_ids-1) {
         if($speciesOK == 0){
             print "# WARN: conflicting clusters $cluster_id & $cluster_id2 ($species)\n" if($verbose);
             next;
-		}
+        }
 
         # get size of cluster2
         $size2 = 0;
-		foreach $species (keys(%{ $cluster{$cluster_id2} })) {
+        foreach $species (keys(%{ $cluster{$cluster_id2} })) {
             $size2 += scalar(@{ $cluster{$cluster_id2}{$species} });
         }			
   
@@ -418,13 +421,13 @@ foreach $c1 (0 .. $#tmp_cluster_ids-1) {
 
             # actually merge cluster2 to cluster1, requires updating data structures 
             foreach $species (keys(%{ $cluster{$cluster_id2} })) {
-				foreach $hom_gene_stable_id (@{ $cluster{$cluster_id2}{$species} }) {
+                    foreach $hom_gene_stable_id (@{ $cluster{$cluster_id2}{$species} }) {
 
                     # copy gene ids from cluster2 to cluster, for all species
                     push(@{ $cluster{$cluster_id}{$species} }, $hom_gene_stable_id);
 
                     # change to which cluster_id those genes now belong
-                    $incluster{$hom_gene_stable_id} = $cluster_id;
+                    $incluster{ $supported{$species}.':::'.$hom_gene_stable_id } = $cluster_id;
                 }
             }
 
@@ -450,7 +453,7 @@ foreach $cluster_id (@tmp_cluster_ids) {
 undef(%toremove);
 
 #foreach $cluster_id (@cluster_ids) {
-#	next if($cluster_id !~ 'BaRT2v18chr3HG163450'); && 
+#	next if($cluster_id !~ '1:::BaRT2v18chr3HG163450'); && 
 #	foreach $species (@supported_species) {
 #		foreach $gene_stable_id ( @{ $cluster{$cluster_id}{$species} } ) {
 #	print "$cluster_id $gene_stable_id\n"; }}}
@@ -551,6 +554,9 @@ foreach $species (@supported_species) {
         print INLOG "$filename\n";
         close(INLOG);
 
+        # take gene coordinates only once,
+        # only genes with cDNA sequences are considered.
+        # WARNING: rRNA, tRNA genes don't have cDNA features
         if($seqtype eq 'cdna') {
             $sorted_ids{$species} = $ref_geneid;
             $id2coords{$species} = $ref_coords;
@@ -559,7 +565,9 @@ foreach $species (@supported_species) {
             $totalgenes{$species} = scalar(@$ref_geneid);
         }
     }
-}
+} 
+
+
 
 # 2.3) quality control of clusters, criteria: 
 # i)  genes from same species should be neighbors, else should be removed
@@ -570,7 +578,7 @@ my ($main_cluster_id, $new_cluster_id, $gene_id);
 
 foreach $cluster_id (@cluster_ids) {
 
-    #next if($cluster_id !~ 'HORVU.MOREX.r3.3HG0311160'); #gene:BGIOSGA000009'); #debug
+    #next if($cluster_id !~ '1:::HORVU.MOREX.r3.3HG0311160'); #gene:BGIOSGA000009'); #debug
 
     # set main cluster id, note it can be updated within the loop
     $main_cluster_id = $cluster_id;
@@ -593,6 +601,7 @@ foreach $cluster_id (@cluster_ids) {
 
             # iteratively compute index distance of remaining genes 
             foreach $gene_stable_id (@ranked_ids) {
+
                     $index = _get_element_index($sorted_ids{$species},$gene_stable_id);
                     $index_dist = abs($index - $best_index); 
 
@@ -608,12 +617,13 @@ foreach $cluster_id (@cluster_ids) {
                         if(defined($cluster{$gene_stable_id})) {
 
                             # copy original cluster to new main cluster id
-                            $new_cluster_id = $best_gene_stable_id;                            
+                            $new_cluster_id = $supported{$species}.':::'.$best_gene_stable_id;                            
+
                             foreach $sp2 (@supported_species) { 
                                 next if($sp2 eq $species);
                                 foreach $gene_id (@{ $cluster{$cluster_id}{$sp2} }) {
                                     push(@{ $cluster{$new_cluster_id}{$sp2}}, $gene_id);
-                                    $incluster{$gene_id} = $new_cluster_id;
+                                    $incluster{ $supported{$sp2}.':::'.$gene_id } = $new_cluster_id;
                                 } 
                             } 
 
@@ -632,8 +642,8 @@ foreach $cluster_id (@cluster_ids) {
  
                         } else { # new cluster with new cluster_id
 
-                            $new_cluster_id = $gene_stable_id;
-                            $incluster{$gene_stable_id} = $new_cluster_id;
+                            $new_cluster_id = $supported{$species}.':::'.$gene_stable_id;
+                            $incluster{ $supported{$species}.':::'.$gene_stable_id } = $new_cluster_id;
                             push( @{ $cluster{$new_cluster_id}{$species} }, $gene_stable_id );
                             push( @cluster_ids, $new_cluster_id );
 
@@ -648,6 +658,10 @@ foreach $cluster_id (@cluster_ids) {
                         push(@checked_ids, $gene_stable_id);
                     }
             }
+
+            foreach my $ggid (@checked_ids) {
+		die "$species $ggid" if(!defined($id2coords{$species}{$ggid}[1]));
+	    }
 
             # rank genes in terms of chr position
             @checked_ids = sort {
@@ -684,11 +698,11 @@ foreach $species (@supported_species) {
 
     foreach $gene_stable_id ( @{ $sorted_ids{$species} } ) {
         
-        next if ( $NOSINGLES || $incluster{$gene_stable_id} );
+        next if ( $NOSINGLES || $incluster{ $supported{$species}.':::'.$gene_stable_id } );
 
         # create new cluster
-        $cluster_id = $gene_stable_id;
-        $incluster{$gene_stable_id} = $cluster_id;
+        $cluster_id = $supported{$species}.':::'.$gene_stable_id;
+        $incluster{ $supported{$species}.':::'.$gene_stable_id } = $cluster_id;
 
         push( @{ $cluster{$cluster_id}{$species} }, $gene_stable_id );
         push( @cluster_ids, $cluster_id );
@@ -715,7 +729,10 @@ foreach $cluster_id (@cluster_ids) {
 
     if($cluster{$cluster_id}{$ref_genome}) {
         $filename = $cluster{$cluster_id}{$ref_genome}[0]
-    } else { $filename = $cluster_id }
+
+    } else { 
+        $filename = (split(/:::/,$cluster_id))[1];
+    }
 
     my ($new,%seen) = (0);
     $segment_cluster = '';
@@ -797,7 +814,10 @@ foreach $cluster_id (@cluster_ids) {
 
         if($cluster{$cluster_id}{$ref_genome}) {
             $filename = $cluster{$cluster_id}{$ref_genome}[0]
-        } else { $filename = $cluster_id }
+
+        } else { 
+            $filename = (split(/:::/,$cluster_id))[1];
+        }
 
         # write sequences and count sequences
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
@@ -944,8 +964,8 @@ if(!$chregex){ # unsorted clusters
 else { # ordered along homologous chromosomes matching regex
 
     %sorted_cluster_ids = sort_clusters_by_position( 
-        \@supported_species_POCS,\%sorted_ids, \%id2coords, $chregex, 
-        \%incluster, \%cluster );
+        \@supported_species_POCS, \%supported, \%sorted_ids, \%id2coords, 
+        $chregex, \%incluster, \%cluster );
 
     foreach $chr (sort keys(%sorted_cluster_ids)) {
 	    printf("# clusters sorted by position in chr %s = %d\n", 
@@ -974,8 +994,12 @@ print PANGEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (@sorted_chrs) {
     print PANGEMATRIX "\tchr$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+
         next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
-	$filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+
+	$filename = $cluster{$cluster_id}{$ref_genome}[0] || 
+          (split(/:::/,$cluster_id))[1];;
+
         print PANGEMATRIX "\t$filename"; 
     }
 }	
@@ -985,8 +1009,12 @@ print PANGENEMATRIX "source:$outfolder/$clusterdir";
 foreach $chr (@sorted_chrs) {
     print PANGENEMATRIX "\tchr:$chr";
     foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
+
         next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
-        $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+
+        $filename = $cluster{$cluster_id}{$ref_genome}[0] || 
+          (split(/:::/,$cluster_id))[1];	
+
         print PANGENEMATRIX "\t$filename"; 
     }
 }	
@@ -1064,7 +1092,8 @@ if($chregex) {
 
         foreach $cluster_id (@{ $sorted_cluster_ids{$chr} }) {
 
-            $filename = $cluster{$cluster_id}{$ref_genome}[0] || $cluster_id;
+            $filename = $cluster{$cluster_id}{$ref_genome}[0] || 
+              (split(/:::/,$cluster_id))[1];
 
             # compute occupancy (number of genomes where gene is present)
             $occup = 0;
@@ -1342,16 +1371,17 @@ sub write_boxplot_file {
 # remaining genes are added to virtual chr 'unplaced'
 # 
 # Params:
-# i)   ref to list with species, reference in 1st position
-# ii)  ref to 2-way hash with a list of chr-sorted gene_ids per species
-# iii) ref to 2-way hash mapping gene_ids to coordinates [ chr, start, end, strand ]
-# iv)  regex to match chr names; unmatched are added to 'unplaced' virtual chr
-# v)   ref to hash mapping gene_ids to clusters
-# vi)  ref to 2-way hash containing clustered gene_ids
-# vii) optional boolean flag to enable verbose output
+# i)    ref to list with species, reference in 1st position
+# ii)   ref to hash mapping species name to number
+# iii)  ref to 2-way hash with a list of chr-sorted gene_ids per species
+# iv)   ref to 2-way hash mapping gene_ids to coordinates [ chr, start, end, strand ]
+# v)    regex to match chr names; unmatched are added to 'unplaced' virtual chr
+# vi)   ref to hash mapping sp:::gene_ids to clusters
+# vii)  ref to 2-way hash containing clustered gene_ids
+# viii) optional boolean flag to enable verbose output
 sub sort_clusters_by_position {
 
-    my ($ref_species, $ref_sorted_ids, $ref_id2coords, 
+    my ($ref_species, $ref_species_num, $ref_sorted_ids, $ref_id2coords, 
         $regex, $ref_incluster, $ref_cluster, 
         $verbose) = @_;
 
@@ -1393,12 +1423,12 @@ sub sort_clusters_by_position {
 
 
             ## find out which cluster contains this gene
-            if(!defined($ref_incluster->{$gene_id})){
+            if(!defined($ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id })){
                 print "# WARNING(sort_clusters_by_position): skip unclustered $gene_id\n" 
                     if($verbose);
                 next;
             } else {
-                $cluster_id = $ref_incluster->{$gene_id};
+                $cluster_id = $ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id };
             }  
 
             ## 1st time this cluster was seen (a cluster can only be added to sorted list once)
@@ -1417,10 +1447,10 @@ sub sort_clusters_by_position {
                         last if($chr2 ne $chr);
  
                         if($ref_incluster->{$gene_id2} && 
-                            $cluster_seen{$ref_incluster->{$gene_id2}}){
+                            $cluster_seen{$ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id2 }}){
 
                             # cluster containg this sequence
-                            $next_cluster_id = $ref_incluster->{$gene_id2};
+                            $next_cluster_id = $ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id2 };
 
                             # index of this cluster in sorted list
                             $next_cluster_idx = _get_element_index( 

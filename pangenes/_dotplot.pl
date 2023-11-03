@@ -75,6 +75,7 @@ $outPAFfile =~ s/\.tsv$/.genes.paf/;
 open(PAF,">",$outPAFfile) || die "# ERROR: cannot create $outPAFfile\n";
 
 my (@data,$chr1,$start1,$end1,$chr2,$start2,$end2);
+my ($strand1,$strand2,$relstrand);
 open(TSV,"<",$TSVfile) || die "# ERROR: cannot read $TSVfile\n";
 while(<TSV>) {
  
@@ -86,11 +87,11 @@ while(<TSV>) {
   # in segments species order might change
   # Os01g0100466 Os01g0100466 oryza_sativa .. segment_collinear .. oryza_sativa_mh63:1:17370-18541(-) .. 1:12807-13978(-);1:17370-18541(-)
 
-  if($data[14] =~ m/(\S+)?:(\d+)-(\d+)\([+-]\);(\S+)?:(\d+)-(\d+)\([+-]\)/) {
+  if($data[14] =~ m/(\S+)?:(\d+)-(\d+)\(([+-])\);(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
    
     $sp1 = $data[2];
     $sp2 = $data[7];
-    ($chr1,$start1,$end1,$chr2,$start2,$end2) = ($1,$2,$3,$4,$5,$6);
+    ($chr1,$start1,$end1,$strand1,$chr2,$start2,$end2,$strand2) = ($1,$2,$3,$4,$5,$6,$7,$8);
 
     # skip unknown contigs ie unplaced_chrUn, might occur with -s
     next if(!$size{$sp1}{$chr1} || !$size{$sp2}{$chr2});
@@ -98,21 +99,29 @@ while(<TSV>) {
     next if($size{$sp1}{$chr1} < $MINCONTIGSIZE || 
       $size{$sp2}{$chr2} < $MINCONTIGSIZE);
 
+    if($strand1 eq $strand2) {
+      $relstrand = '+';
+    } else {
+      $relstrand = '-';
+    }
+
     if($sp1 eq $sp1filename) {
-      printf( PAF "%s\t%d\t%d\t%d\t+\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
+      printf( PAF "%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
         $chr1,$size{$sp1}{$chr1},$start1-1,$end1,
+        $relstrand,
         $chr2,$size{$sp2}{$chr2},$start2-1,$end2,
         $data[3], # overlap instead of matching bases in the mapping
         $data[3], # overlap instead of bases, including gaps, in the mapping
         $DUMMYQUAL);
-	} else {
-      printf( PAF "%s\t%d\t%d\t%d\t+\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
-	    $chr2,$size{$sp2}{$chr2},$start2-1,$end2,
+    } else {
+      printf( PAF "%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n",
+        $chr2,$size{$sp2}{$chr2},$start2-1,$end2,
+        $relstrand,	
         $chr1,$size{$sp1}{$chr1},$start1-1,$end1,
         $data[3], # overlap instead of matching bases in the mapping
         $data[3], # overlap instead of bases, including gaps, in the mapping
         $DUMMYQUAL);
-	}
+    }
   }
 }
 close(TSV);

@@ -1230,11 +1230,11 @@ sub mask_intergenic_regions {
 # ii) ref to list of BED-like lines of unmatched genes
 # iii) % genes in WGA blocks of at least 3 genes (float)
 #
-# Note: able to parse cs::Z (minimap2) and cg::Z (wfmash) strings
+# Note: able to parse cs::Z (minimap2) and cg::Z (CGAlign, wfmash) strings
 # Note: takes first match of each cDNA/gene only
-# Note: discards partially mapped genes at the ends of chrs
+# Note: discards partially/poorly mapped genes 
 #
-# example input:
+# example input, all coords are 0-based:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
 # 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:...              11405
 # Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 1000 10053455 + 1 1000 10053455 10052455 60 cs:Z::10052455          7914
@@ -1268,16 +1268,18 @@ sub query2ref_coords {
         chomp;
 
         (
-            $cchr,      $cstart, $cend,   $cname,  $cmatch,
-            $cstrand,   $qchr,   $qstart, $qend,   $WGAstrand,
-            $rchr,      $rstart, $rend,   $rmatch, $rmapqual,
-            $SAMPAFtag, $overlap
-        ) = split( /\t/, $_ );
+            $cchr, $cstart, $cend, $cname, $cmatch, $cstrand,   # cDNA/gene, [cstart-cend] to be found within [qstart-qend]
+			$qchr, $qstart, $qend, $WGAstrand,                  # query in WGA 
+            $rchr, $rstart, $rend, $rmatch,                     # reference in WGA
+			$rmapqual, $SAMPAFtag,                              # WGA details
+			$overlap                                            # overlap of cDNA/gene with query in WGA
+
+        ) = split( /\t/, $_ ); 
 
         # take only 1st mapping passing QC
         next if ( defined($ref_coords{$cname}) );
 
-        # skip mappings where query and ref segment on different strands if required
+        # skip mappings where query and ref segment on different strands if requested
         if ( $WGAstrand eq '-' && $samestrand == 1 ) {
             if(!$unmatched{$cname}) {
 			    $unmatched{$cname} =  
@@ -1300,6 +1302,8 @@ sub query2ref_coords {
         }
 
         #next if($cname ne 'ONIVA01G00100'); # debug
+		#next if($cname ne 'gene:OsIR64_12g0001370'); 
+		#next if($cname ne 'gene:OsIR64_05g0012650'); 
 
         # record <genes per alignment block
         $genes_per_block{"$qchr:$qstart-$qend"}++;
@@ -1312,15 +1316,22 @@ sub query2ref_coords {
         # Note: this requires parsing SAM/PAF tag
         # https://github.com/lh3/minimap2#paftools
         # cs:Z::303*ag:32*ga:27+ctattcta*ag*ca:20*ag:3*ga:18*tc*ga:76-tc
+        # or
+        # cg:Z:2310M12I805M2I225M13I895M2I3402M2I1184M1I18
 
         # default start coords (end in - strand),
-        # in case 3'cDNA not included in WGA segment
+        # in case 3'cDNA not included in WGA segment (ref_coords),
+        # scan is always qstart -> qend 
         $SAMqcoord = $qstart;
         if ( $WGAstrand eq '+' ) {
+            # q ------------>			
+            # r ------------>
             $SAMrcoord = $rstart;
             $ref_coords{$cname}{'start'} = $rstart;
         }
         else {
+            # q ------------>
+            # r <------------
             $SAMrcoord = $rend;
             $ref_coords{$cname}{'end'} = $rend;
         }
@@ -1339,11 +1350,21 @@ sub query2ref_coords {
 
         # split CIGAR string into individual feature tags
         if ( $cigartype eq 'cs' ) {
-            @segments = split( /:/, $SAMPAFtag );
+
+            if ( $WGAstrand eq '+' ) {
+                @segments = split( /:/, $SAMPAFtag )
+            } else {
+                @segments = reverse split( /:/, $SAMPAFtag )
+            }
+
         }
         else {
             while ( $SAMPAFtag =~ m/(\d+[MIDNSHP=X])/g ) {
                 push( @segments, $1 );
+            }
+
+            if ( $WGAstrand ne '+' ) {
+                @segments = reverse @segments;
             }
         }
 
@@ -1407,6 +1428,15 @@ sub query2ref_coords {
             }
 
             # update coords with deltas
+			
+            # CGATCGATAAATAGAGTAG---GAATAGCA
+            # ||||||   ||||||||||   |||| |||
+            # CGATCG---AATAGAGTAGGTCGAATtGCA
+            # ..6-ata..                       deltaq=9  deltar=6
+            #          ....10+gtc...          deltaq=10 deltar=13
+            #                       .4*at     deltaq=5  deltar=5
+            #                            ..3  deltaq=3  deltar=3
+
             $SAMqcoord += $deltaq;
 
             if ($done) {
@@ -1453,7 +1483,7 @@ sub query2ref_coords {
             $overlap,
             $strand);
 
-        # actually compute overlap between cDNA/CDS and ref genome
+        # compute actual overlap between cDNA/CDS and ref genome
         $overlap = 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'};
 
         # check match is within reference chr bounds
@@ -1471,9 +1501,9 @@ sub query2ref_coords {
             # skip gene models with short overlap with WGA segments
             $unmatched{$cname} = "[overlap $overlap < $minalnlen] $bedline";
         }
-    }
+    } 
 
-    close(BED);
+    close(BED); 
 
     # printed unsorted BED records
     open( OUTBED, ">", $outfile )
@@ -1913,8 +1943,9 @@ sub bed2compara {
 # ii)  filename of output PAF alignment
 # iii) boolean to request quality control (optional)
 # Converts MAF format (https://genome.ucsc.edu/FAQ/FAQformat.html#format5) 
-# to simplified 3-state PAF (M,D,I, http://samtools.github.io/hts-specs/SAMv1.pdf) 
-# PAF output includes 12 standard columns + cg:Z: CIGAR (13th column)
+# to simplified 3-state PAF (M,D,I, http://samtools.github.io/hts-specs/SAMv1.pdf). 
+# Coordinates of strand - alignments are reversed to match the PAF style of minimap2.
+# PAF output includes 12 standard columns + cg:Z: CIGAR (13th column).
 # Returns number of alignments parsed
 sub simpleMAF2PAF {
 
@@ -1934,9 +1965,13 @@ sub simpleMAF2PAF {
 
     while(<MAF>) {
 
-        #a score=232989
-        #s ref.1H 195452546 233059 + 528447123 TCACAAAATCCTCAAGTTAGTCAAAATCTTCA
-        #s qry.1H 193510468 233050 + 516505932 TCACAAAATCCTCAAGTTAGTCAAAATCTTCA
+        #a score=18842
+        #s ref.1 17370551 22818 + 44309235 CACGAAGTGAGTTTTTGCCATGAACG...
+        #s qry.1 27077898 22753 - 44350042 CACGAAGTGAGTTTTTGCCATGAACG...
+        #
+        #a score=18776
+        #s ref.1 35900090 18888 + 44309235 AGGTATAAATGGA--GAGAGAGAGCA...
+        #s qry.1 36094320 18894 + 44350042 AGGTATAAATGGAGAGAGAGAGAGCA...
 
         if(/^a score=(\S+)/) {
             $score = $1;
@@ -1945,13 +1980,18 @@ sub simpleMAF2PAF {
 
         } elsif(/^s \w{3}\.(\S+)\s+(\d+)\s+(\d+)\s+(\S)\s+(\d+)\s+(\S+)/) {
             
-            if($isQuery) { # query
+            if($isQuery) { # query, 2nd in pair
                 $isQuery++;
                 ($qchr, $qstart, $qlen, $qstrand, $qchrlen, $qseq) = ($1,$2,$3,$4,$5,$6);
 
-            } else { # reference, 1st in pair
-                $isQuery++;
+                # reverse alignment so that output PAF format matches that of minimap2
+                if($qstrand eq '-') {
+                    $qstart = $qchrlen - $qstart;
+                    # Note: if actual sequence wanted should be rev complemented
+                }
 
+            } else { # reference, 1st in pair, always + strand (as opposed to minimap2)
+                $isQuery++;
                 ($chr, $start, $len, $strand, $chrlen, $seq) = ($1,$2,$3,$4,$5,$6);
             } 
 
@@ -2045,9 +2085,9 @@ sub simpleMAF2PAF {
                 printf(PAF "%s\t%d\t%d\t%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
                     $qchr, 
                     $qchrlen,
-                    $qstart,
-                    $qstart+$qlen,
-                    ($qstrand eq $strand ? '+' : '-'),
+                    ($qstrand eq $strand ? $qstart       : $qstart-$qlen),
+                    ($qstrand eq $strand ? $qstart+$qlen : $qstart+1),
+                    ($qstrand eq $strand ? '+'           : '-'),
                     $chr,
                     $chrlen,
                     $start,

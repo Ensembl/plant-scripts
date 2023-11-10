@@ -14,7 +14,7 @@ This script calls [_cut_sequences.pl](./_cut_sequences.pl),
 [_cluster_analysis.pl](./_cluster_analysis.pl)
 and produces different types of output:
 
- 1) clusters of CDS (nucl & pep) and cDNA sequences of collinear genes (FASTA)
+ 1) clusters of CDS (nucl & pep), cDNA sequences and genomic segments (gdna) of collinear genes (FASTA)
  2) pangenome matrices that summarize the genome occupancy of clusters
  3) matrix of % conserved sequences that summarize shared clusters across genomes
  4) optionally (-c) matrices with core- and pangene set growth simulations
@@ -23,12 +23,13 @@ and produces different types of output:
 
 - [Objective](#objective)
 - [How it works](#how-it-works)
+    - [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
 	- [Transformation of gene coordinates](#transformation-of-gene-coordinates)
 	- [Overlap calculation](#overlap-calculation)
 	- [Pairwise genome comparisons](#pairwise-genome-comparisons)
 	- [From pairs of genes to clusters](#from-pairs-of-genes-to-clusters)
 	- [Parameters](#parameters)
-	- [Dependencies](#dependencies)
+	- [Dependencies and installation](#dependencies-and-installation)
 	- [Command-line options](#command-line-options)
 - [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis)
 - [Example 2: pangene and Presence-Absence Variation (PAV) analysis](#example-2-pangene-and-Presence-Absence-Variation-PAV-analysis)
@@ -80,12 +81,21 @@ The next flowchart shows the three main tasks of the pipeline:
 
 *Figure 2. Pipeline flowchart.*
 
-By default it performs the required tasks serially, but it 
-can also run in parallel on a cluster both with options -m cluster (see more about this below)
-and -m dryrun, if you prefer to paste your commands in batches directly.
-
 Note that each of the three scripts called by get_pangenes.pl 
 (cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl) create their own logfiles.
+
+### Runmodes and HPC configuration
+
+By default GET_PANGENES performs the required tasks serially, which equals to option `-m local`,
+but it can also run in parallel on a cluster both with options `-m cluster`
+and `-m dryrun`, if you prefer to copy and paste your commands in batches directly in the terminal.
+This is recommended for large or multiple genomes.
+
+Please read how to set up your HPC environment
+[here](http://eead-csic-compbio.github.io/get_homologues/manual-est/manual-est.html#SECTION00033000000000000000).
+A sample configuration file for a LSF cluster can be found is provided ([HPC.conf.sample](./HPC.conf.sample)),
+it should be renamed as +HPC.conf+ for it to work.
+
 
 ### Transformation of gene coordinates 
 The second block of the flow aligns genome sequences (in pairs A & B) and uses 
@@ -154,7 +164,7 @@ Here I list the most important ones, they can be changed by editing the script s
 |check_evidence.pl|$MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
 |_dotplot.pl|$MINCONTIGSIZE|100000|min length of chrs/contigs to be considered for dotplot|
 
-### Dependencies
+### Dependencies and installation
 
 In addition to Perl, these scripts require:
 
@@ -162,8 +172,7 @@ In addition to Perl, these scripts require:
 * https://github.com/gpertea/gffread
 * https://bedtools.readthedocs.io/en/latest/
 
-Assuming *bedtools* are installed in most settings,
-and that gcc & g++ compilers are available,
+Assuming *bedtools* are installed in most settings,and that gcc & g++ compilers are available,
 the remaining dependencies can be installed on Ubuntu/Debian in folder bin/ with:
 
     # does not require root privileges
@@ -221,17 +230,13 @@ In order to analyze these files and define a **core** pangene set you can start 
 
     perl get_pangenes.pl -d ../files/test_rice
 
-Note that you can use *-m cluster* or *-m dryrun* to run tasks in parallel,
-this is recommended for large or multiple genomes. 
-Please read how to set up your HPC environment 
-[here](http://eead-csic-compbio.github.io/get_homologues/manual-est/manual-est.html#SECTION00033000000000000000). 
-A sample configuration file for a LSF cluster can be found is provided ([HPC.conf.sample](./HPC.conf.sample)), 
-it should be renamed as +HPC.conf+ for it to work.
+Note that you can use `-m cluster` or `-m dryrun` to run tasks in parallel,
+section [Runmodes and HPC configuration](#runmodes-and-hpc-configuration).
 
 While computing WGA alignments you can tell the script to split each genome 
-in chromosomes and align only homologous chromosomes. Please use option *-s*
+in chromosomes and align only homologous chromosomes. Please use option `-s`
 for this, which requires a [regular expression](https://perlmaven.com/regex-cheat-sheet). 
-For instance, use *-s '\d+'* to split in chromosomes named with natural numbers. 
+For instance, use `-s '\d+'` to split in chromosomes named with natural numbers. 
 
 The output of the test looks like this:
 
@@ -240,7 +245,7 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # get_pangenes.pl -d ../files/test_rice -o 0 -r 0 -t all -c 0 -z 0 -I 0 -m local -w 0 -g 0 -O 0.5 -Q 50 -N 5 -s '' -H 0 -W '' -G '' -B '' -S '' -n 4 -R 0
 
-# version 24102023
+# version ...
 # results_directory=/home/contrera/github/plant-scripts/pangenes/test_rice_pangenes
 # parameters: MINGFFLEN=100 GFFACCEPTEDFEATS=gene,mRNA,transcript,exon,CDS GFFVALIDGENEFEAT=gene,mRNA,transcript
 
@@ -276,14 +281,14 @@ $ perl get_pangenes.pl -d ../files/test_rice
 # sorting collinearity results...
 
 # WGA summary (N50, %mapped genes in blocks of 3+)
-39394.0 84.4 Oryza_indica.ASM465v1.chr1
-41043.5 84.4 Oryza_nivara_v1.chr1
-42940.5 85.7 Oryza_sativa.IRGSP-1.0.chr1
+31792.0 79.7 Oryza_indica.ASM465v1.chr1
+33230.0 80.3 Oryza_nivara_v1.chr1
+34983.0 83.2 Oryza_sativa.IRGSP-1.0.chr1
 
 # clustering sequences ...
 # done
 
-# number of clusters = 7808 (core = 2987)
+# number of clusters = 7801 (core = 3008)
 
 # cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 # cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
@@ -356,9 +361,9 @@ which look like this:
  
     $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
     genomes	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1
-    Oryza_nivara_v1.chr1    100.00  61.40   60.31
-    Oryza_sativa.IRGSP-1.0.chr1     61.40   100.00  62.34
-    Oryza_indica.ASM465v1.chr1      60.31   62.34   100.00
+    Oryza_nivara_v1.chr1	100.00	61.81	60.62
+    Oryza_sativa.IRGSP-1.0.chr1	61.81	100.00	62.65
+    Oryza_indica.ASM465v1.chr1	60.62	62.65	100.00
 
 And 
 
@@ -403,7 +408,7 @@ but saved in a different folder (*Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_*).
 The main differences are shown below, note the larger number of clusters:
 
 ```
-# number of clusters = 7808 (core = 2987)
+# number of clusters = 7801 (core = 3008)
 
 # cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 # cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1
@@ -420,7 +425,7 @@ For instance, to find pangenes that contain gene models from *Oryza_indica.ASM46
 *Oryza_sativa.IRGSP-1.0.chr1* but no models from *Oryza_nivara_v1.chr1* you could do:
 
     perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | wc -l
-    #510
+    #508
 
     perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | head	
     gene:BGIOSGA000032	-	gene:BGIOSGA000032	gene:Os01g0969700	
@@ -543,29 +548,29 @@ named core_gene.tab and pan_gene.tab
 ```
 # genome composition report (samples=6,seed=12345)
 ## sample 0 (Oryza_nivara_v1.chr1 | 0,1,2,)
-# adding Oryza_nivara_v1.chr1: core=5061 pan=5061
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3151 pan=6801
-# adding Oryza_indica.ASM465v1.chr1: core=2971 pan=7846
-## sample 1 (Oryza_nivara_v1.chr1 | 0,1,2,)
-# adding Oryza_nivara_v1.chr1: core=5061 pan=5061
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3151 pan=6801
-# adding Oryza_indica.ASM465v1.chr1: core=2971 pan=7846
-## sample 2 (Oryza_sativa.IRGSP-1.0.chr1 | 1,2,0,)
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=4891 pan=4891
-# adding Oryza_indica.ASM465v1.chr1: core=3509 pan=6392
-# adding Oryza_nivara_v1.chr1: core=2971 pan=7846
+# adding Oryza_nivara_v1.chr1: core=5063 pan=5063
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3155 pan=6801
+# adding Oryza_indica.ASM465v1.chr1: core=2975 pan=7840
+## sample 1 (Oryza_sativa.IRGSP-1.0.chr1 | 1,2,0,)
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=4893 pan=4893
+# adding Oryza_indica.ASM465v1.chr1: core=3510 pan=6394
+# adding Oryza_nivara_v1.chr1: core=2975 pan=7840
+## sample 2 (Oryza_nivara_v1.chr1 | 0,1,2,)
+# adding Oryza_nivara_v1.chr1: core=5063 pan=5063
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3155 pan=6801
+# adding Oryza_indica.ASM465v1.chr1: core=2975 pan=7840
 ## sample 3 (Oryza_indica.ASM465v1.chr1 | 2,1,0,)
-# adding Oryza_indica.ASM465v1.chr1: core=5010 pan=5010
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=3509 pan=6392
-# adding Oryza_nivara_v1.chr1: core=2971 pan=7846
-## sample 4 (Oryza_indica.ASM465v1.chr1 | 2,0,1,)
-# adding Oryza_indica.ASM465v1.chr1: core=5010 pan=5010
-# adding Oryza_nivara_v1.chr1: core=3427 pan=6644
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=2971 pan=7846
-## sample 5 (Oryza_sativa.IRGSP-1.0.chr1 | 1,0,2,)
-# adding Oryza_sativa.IRGSP-1.0.chr1: core=4891 pan=4891
-# adding Oryza_nivara_v1.chr1: core=3151 pan=6801
-# adding Oryza_indica.ASM465v1.chr1: core=2971 pan=7846
+# adding Oryza_indica.ASM465v1.chr1: core=5011 pan=5011
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=3510 pan=6394
+# adding Oryza_nivara_v1.chr1: core=2975 pan=7840
+## sample 4 (Oryza_sativa.IRGSP-1.0.chr1 | 1,0,2,)
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=4893 pan=4893
+# adding Oryza_nivara_v1.chr1: core=3155 pan=6801
+# adding Oryza_indica.ASM465v1.chr1: core=2975 pan=7840
+## sample 5 (Oryza_nivara_v1.chr1 | 0,2,1,)
+# adding Oryza_nivara_v1.chr1: core=5063 pan=5063
+# adding Oryza_indica.ASM465v1.chr1: core=3437 pan=6637
+# adding Oryza_sativa.IRGSP-1.0.chr1: core=2975 pan=7840
 
 
 # pan-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
@@ -576,13 +581,12 @@ The resulting pan and core gene files look like this:
 
     $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
     g1	g2	g3	
-    5061	6801	7846	
-    5061	6801	7846	
-    4891	6392	7846	
-    5010	6392	7846	
-    5010	6644	7846	
-    4891	6801	7846	
-
+    5063	6801	7840	
+    4893	6394	7840	
+    5063	6801	7840	
+    5011	6394	7840	
+    4893	6801	7840	
+    5063	6637	7840
 
 ## Inspection of result files
 
@@ -603,7 +607,8 @@ Note that there are two types of rows: ortholog_collinear and segment_collinear.
 The first type describe a pair of collinear genes from two input taxa, their respective genomic coordinates 
 and the length of their overlap in the underlying WGA. 
 The second type indicate cases where a gene model in a taxon overlaps a genomic segment in another.
-Note also that the **strand of each region** is indicated, which might be useful to spot genes that are inverted/translocated genomic fragments. 
+Note also that the **strand of each region** is indicated, 
+which might be useful to spot genes that are inverted/translocated genomic fragments. 
 
 In addition, each of these TSV files have a matching logfile with extension .queue. In our example,
 that would be:
@@ -612,11 +617,12 @@ that would be:
 
 These files also contain useful bits of information such as:
 
-    # WGA blocks: N50 28614 median 2731
-    # 28644 genes mapped (75.4% in 3+blocks) ... (2 unmapped)
+    # WGA blocks: N50 18935 median 3055
+    # 4557 genes mapped (68.2% in 3+blocks) ... (19 unmapped)
     ...
-    # 29008 genes mapped (76.1% in 3+blocks) ... (reverse, 4 unmapped)
-    # 26241 collinear gene pairs , 6561 collinear segments, 1.031 hits/gene
+    # 4243 genes mapped (60.1% in 3+blocks) ... (reverse, 4 unmapped)
+    # 3596 collinear gene pairs , 2057 collinear segments, 1.121 hits/gene
+
 
 The first line summarizes the length of the blocks that make up the WGA, 
 which will be shorter for poor assemblies.
@@ -627,7 +633,7 @@ and how many hits in the WGA were found on average per gene.
 
 These files can be analyzed in bulk in the terminal for quality control, for instance with:
 
-    grep "collinear gene pairs" *Mmap.overlap0.5.tsv.queue | perl -lane 'print $F[1]' | sort -r
+    grep "collinear gene pairs" test_rice_pangenes/*Mmap.overlap0.5.tsv.queue | perl -lane 'print $F[1]' | sort -r
 
 
 ## Plotting the results
@@ -745,34 +751,30 @@ It is possible to extract the collinearity evidence supporting selected clusters
 
     # sequence-level stats
 
-    # isoform length in cluster: median=834 mode(s): 1632,846,834,342,205
+    # isoform length in cluster: median=1239 mode(s): 1823,1239,1179,192
 
-    # long isoform: transcript:ONIVA01G50800.3 gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] length=1833
-    # long isoform: transcript:ONIVA01G50800.1 gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] length=2014
-    # long isoform: transcript:ONIVA01G50800.2 gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] length=1884
-    # long isoform: transcript:BGIOSGA000067-TA gene:BGIOSGA000067 [Oryza_indica.ASM465v1.chr1] length=1632
+    # short isoform: transcript:ONIVA01G50850.2 gene:ONIVA01G50850 [Oryza_nivara_v1.chr1] length=1067
+    # short isoform: transcript:ONIVA01G50860.1 gene:ONIVA01G50860 [Oryza_nivara_v1.chr1] length=192
+    # long isoform: transcript:Os01t0961600-01 gene:Os01g0961600 [Oryza_sativa.IRGSP-1.0.chr1] length=2067
+    # long isoform: transcript:Os01t0961600-02 gene:Os01g0961600 [Oryza_sativa.IRGSP-1.0.chr1] length=1823
 
-    # cluster gene:ONIVA01G50800.cdna.fna genes = 5 (3 taxa)
-
-    # creating database (might take long, first time)
-    # done
+    # cluster gene:ONIVA01G50850.cdna.fna genes = 4 (3 taxa)
+    # re-using database
 
     #gene_stable_id	protein_stable_id	species	overlap	homology_type	homology_gene_stable_id	homology_protein_stable_id	homology_species	overlap	dn	ds	goc_score	wga_coverage	is_high_confidence	coordinates
-    gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	2241	ortholog_collinear	gene:Os01g0960800	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1	2241	NULL	NULL	NULL	100.00	1	1:41995665-42001336(-);1:42361400-42363627(-)
-    gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	834	ortholog_collinear	gene:Os01g0960900	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1	834	NULL	NULL	NULL	100.00	1	1:41995665-42001336(-);1:42364071-42364905(-)
-    gene:BGIOSGA000068	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1	1723	ortholog_collinear	gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	1723	NULL	NULL	NULL	100.00	1	1:46437509-46439232(-);1:41995665-42001336(-)
-    gene:BGIOSGA000068	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1	1723	ortholog_collinear	gene:Os01g0960800	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1	1723	NULL	NULL	NULL	100.00	1	1:46437509-46439232(-);1:42361400-42363627(-)
-    gene:BGIOSGA000067	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1	2735	ortholog_collinear	gene:ONIVA01G50800	gene:ONIVA01G50800	Oryza_nivara_v1.chr1	2735	NULL	NULL	NULL	100.00	1	1:46439948-46442683(-);1:41995665-42001336(-)
-    gene:BGIOSGA000067	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1	834	ortholog_collinear	gene:Os01g0960900	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1	834	NULL	NULL	NULL	100.00	1	1:46439948-46442683(-);1:42364071-42364905(-)
-    
+    gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4539	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4539	NULL	NULL	NULL	100.00	1	1:42029287-42033826(-);1:42393585-42401178(-)
+    gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	548	segment_collinear	Oryza_indica.ASM465v1.chr1:1:46475865-46476413(-)	segment	Oryza_indica.ASM465v1.chr1	548	NULL	NULL	NULL	100.00	1	1:42033863-42034305(-);1:46475865-46476413(-)
+    gene:ONIVA01G50860	gene:ONIVA01G50860	Oryza_nivara_v1.chr1	442	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	442	NULL	NULL	NULL	100.00	1	1:42033863-42034305(-);1:42393585-42401178(-)
+    gene:BGIOSGA000064	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1	4598	ortholog_collinear	gene:Os01g0961600	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1	4598	NULL	NULL	NULL	100.00	1	1:46471290-46475888(-);1:42393585-42401178(-)
+    gene:BGIOSGA000064	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1	4538	ortholog_collinear	gene:ONIVA01G50850	gene:ONIVA01G50850	Oryza_nivara_v1.chr1	4538	NULL	NULL	NULL	100.00	1	1:46471290-46475888(-);1:42029287-42033826(-)
+
     # gene-level stats
     #len	pairs	overlap	gene_name	species
-    5672	4	7533	gene:ONIVA01G50800	Oryza_nivara_v1.chr1
-    2736	2	3569	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1
-    2228	2	3964	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1
-    835	2	1668	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1
-    1724	2	3446	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1
-    2228	2	3569	median	values
+    7594	3	9579	gene:Os01g0961600	Oryza_sativa.IRGSP-1.0.chr1
+    4599	2	9136	gene:BGIOSGA000064	Oryza_indica.ASM465v1.chr1
+    4540	2	9077	gene:ONIVA01G50850	Oryza_nivara_v1.chr1
+    443	1	442	gene:ONIVA01G50860	Oryza_nivara_v1.chr1
+    4569	2	9106	median	values
 
 Note this script builds a local BerkeleyDB database the first time is run, which takes a minute, so that subsequent calls run efficiently.
 
@@ -794,12 +796,12 @@ As depicted on Figure 3, gene models are placed within aligned collinear genomic
 check whether they overlap across. During this process some genes might fail to be mapped.
 It is possible to see exactly which ones failed and the actual reason by inspecting the logs.
 The following lines, taken from log file *_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algMmap.overlap0.5.tsv.queue*,
-indicate that 69 genes could not be mapped, and the list below shows some examples:
+indicate that 70 genes could not be mapped, and the list below shows some examples:
 
-    # 4665 genes mapped (83.9% in 3+blocks) in _Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (69 unmapped)
+    # 4664 genes mapped (83.9% in 3+blocks) in _Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (70 unmapped)
 
-    # unmapped: [overlap 54 < 100] 1	30059934	30059987	gene:Os01g0742150	54	+
-    # unmapped: [quality 7 < 50] 1	12745558	12747074	gene:Os01g0330200	9999	-	1	12745756	12746807	+114175357	14176363	907	7	1051
+    # unmapped: [quality 37 < 50] 1 34167935 34171573 gene:Os01g0805900 9999 + 1 34170717 34171348 - 111145515 11146146 560 37 631
+    # unmapped: [overlap 54 < 100] 1 30059934 30059987 gene:Os01g0742150 53 +
 
 This happens in function *query2ref_coords* within _collinear_genes.pl. 
 Note that gene models might fail to map for having less than $MINALNLEN = 100 aligned nucleotides 
@@ -813,7 +815,7 @@ Note that it requires the BED-like pangene matrix obtained as explained in
 [Example 3](#example-3-splitting-genome-in-chromosomes) and also the installation of
 [pyGenomeViz](https://pypi.org/project/pygenomeviz). This is how you can run it:
 
-    perl check_evidence.pl -d Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n
+    perl check_evidence.pl -d Otest_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n
 
 After adding option -P the output should now include:
 
@@ -845,7 +847,7 @@ Note that several genes might fit in the same slot, due to split gene models or 
 The *check_evidence.pl* script can also be used to try and fix individual gene models based
 on the evidence supporting a pangene cluster. This requires the software 
 [GMAP](https://doi.org/10.1093/bioinformatics/bti310),
-which is installed by default as explained in section [Dependencies](#dependencies).
+which is installed by default as explained in section [Dependencies and installation](#dependencies-and-installation).
 Currently, the following fixes have been tested:
 
 |problem|hypothesis|proposed solution|
@@ -861,34 +863,43 @@ Currently, the following fixes have been tested:
 
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
 
-    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna -f   
+    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -f -i gene:ONIVA01G25360.cds.fna
 
-    # cluster gene:ONIVA01G50800.cdna.fna genes = 5
+    # sequence-level stats
 
-    #length	pairs	gene_overlap	gene	species
-    5672	4	7533	gene:ONIVA01G50800	Oryza_nivara_v1.chr1
-    2228	2	3964	gene:Os01g0960800	Oryza_sativa.IRGSP-1.0.chr1
-    1724	2	3446	gene:BGIOSGA000068	Oryza_indica.ASM465v1.chr1
-    835	2	1668	gene:Os01g0960900	Oryza_sativa.IRGSP-1.0.chr1
-    2736	2	3569	gene:BGIOSGA000067	Oryza_indica.ASM465v1.chr1
-    2228	2	3569	median	values
+    # isoform length in cluster: median=297 mode(s): 297
 
-    # long gene model: corrected gene:ONIVA01G50800 [Oryza_nivara_v1.chr1]
-    ## replaces gene:ONIVA01G50800 [Oryza_nivara_v1.chr1] source=Oryza_sativa.IRGSP-1.0.chr1 matches=1671 mismatches=9 indels=14
-    1	gmap	gene	41995890	41998130	.	-	.	ID=gene:Os01g0960800.path1;Name=gene:Os01g0960800;Dir=sense;old_locus_tag=gene:ONIVA01G50800;
-    1	gmap	mRNA	41995890	41998130	.	-	.	ID=gene:Os01g0960800.mrna1;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.path1;Dir=sense;coverage=100.0;identity=97.9;matches=842;mismatches=4;indels=14;unknowns=0
-    1	gmap	exon	41997843	41998130	94	-	.	ID=gene:Os01g0960800.mrna1.exon1;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 1 274 +
-    1	gmap	exon	41997615	41997702	100	-	.	ID=gene:Os01g0960800.mrna1.exon2;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 275 362 +
-    1	gmap	exon	41996386	41996516	100	-	.	ID=gene:Os01g0960800.mrna1.exon3;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 363 493 +
-    1	gmap	exon	41995890	41996242	99	-	.	ID=gene:Os01g0960800.mrna1.exon4;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 494 846 +
-    1	gmap	CDS	41997843	41997845	100	-	0	ID=gene:Os01g0960800.mrna1.cds1;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 272 274 +
-    1	gmap	CDS	41997615	41997702	100	-	0	ID=gene:Os01g0960800.mrna1.cds2;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 275 362 +
-    1	gmap	CDS	41996386	41996516	100	-	1	ID=gene:Os01g0960800.mrna1.cds3;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 363 493 +
-    1	gmap	CDS	41996123	41996242	100	-	0	ID=gene:Os01g0960800.mrna1.cds4;Name=gene:Os01g0960800;Parent=gene:Os01g0960800.mrna1;Target=gene:Os01g0960800 494 613 +
-    1	gmap	gene	41998576	41999409	.	-	.	ID=gene:Os01g0960900.path1;Name=gene:Os01g0960900;Dir=indeterminate;old_locus_tag=gene:ONIVA01G50800;
-    1	gmap	mRNA	41998576	41999409	.	-	.	ID=gene:Os01g0960900.mrna1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.path1;Dir=indeterminate;coverage=100.0;identity=99.4;matches=829;mismatches=5;indels=0;unknowns=0
-    1	gmap	exon	41998576	41999409	99	-	.	ID=gene:Os01g0960900.mrna1.exon1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
-    1	gmap	CDS	41998576	41999409	99	-	0	ID=gene:Os01g0960900.mrna1.cds1;Name=gene:Os01g0960900;Parent=gene:Os01g0960900.mrna1;Target=gene:Os01g0960900 834 1 .
+    # long isoform: transcript:ONIVA01G25360.2 gene:ONIVA01G25360 [Oryza_nivara_v1.chr1] length=408
+
+    # cluster gene:ONIVA01G25360.cds.fna genes = 5 (3 taxa)
+
+    # gene-level stats
+    #len	pairs	overlap	gene_name	species
+    7935	4	1678	gene:ONIVA01G25360	Oryza_nivara_v1.chr1
+    412	2	832	gene:Os01g0606200	Oryza_sativa.IRGSP-1.0.chr1
+    422	2	842	gene:BGIOSGA001248	Oryza_indica.ASM465v1.chr1
+    436	1	435	gene:BGIOSGA001246	Oryza_indica.ASM465v1.chr1
+    412	1	411	gene:BGIOSGA001247	Oryza_indica.ASM465v1.chr1
+    422	2	832	median	values
+
+    # FIX PARAMETERS:
+    # -p 0 $MINPAIRPECNONOUTLIERS=0.25 $MINLIFTIDENTITY=90 $MINFIXOVERLAP=0.75 $MAXSEGMENTSIZE=100000
+
+    # long gene model: corrected gene:ONIVA01G25360 [Oryza_nivara_v1.chr1]
+    ## replaces gene:ONIVA01G25360 [Oryza_nivara_v1.chr1] source=Oryza_indica.ASM465v1.chr1 matches=855 mismatches=18 indels=9
+    1	gmap	gene	22440345	22440755	.	-	.	ID=gene:BGIOSGA001247.path1;Name=gene:BGIOSGA001247;Dir=sense;old_locus_tag=gene:ONIVA01G25360;
+    1	gmap	mRNA	22440345	22440755	.	-	.	ID=gene:BGIOSGA001247.mrna1;Name=gene:BGIOSGA001247;Parent=gene:BGIOSGA001247.path1;Dir=sense;coverage=100.0;identity=99.0;matches=285;mismatches=3;indels=0;unknowns=0
+    1	gmap	exon	22440692	22440755	98	-	.	ID=gene:BGIOSGA001247.mrna1.exon1;Name=gene:BGIOSGA001247;Parent=gene:BGIOSGA001247.mrna1;Target=gene:BGIOSGA001247 1 64 +
+    1	gmap	exon	22440345	22440568	99	-	.	ID=gene:BGIOSGA001247.mrna1.exon2;Name=gene:BGIOSGA001247;Parent=gene:BGIOSGA001247.mrna1;Target=gene:BGIOSGA001247 65 288 +
+    1	gmap	CDS	22440692	22440755	98	-	0	ID=gene:BGIOSGA001247.mrna1.cds1;Name=gene:BGIOSGA001247;Parent=gene:BGIOSGA001247.mrna1;Target=gene:BGIOSGA001247 1 64 +
+    1	gmap	CDS	22440345	22440568	99	-	1	ID=gene:BGIOSGA001247.mrna1.cds2;Name=gene:BGIOSGA001247;Parent=gene:BGIOSGA001247.mrna1;Target=gene:BGIOSGA001247 65 288 +
+    1	gmap	gene	22447844	22448278	.	-	.	ID=gene:BGIOSGA001246.path1;Name=gene:BGIOSGA001246;Dir=sense;old_locus_tag=gene:ONIVA01G25360;
+    1	gmap	mRNA	22447844	22448278	.	-	.	ID=gene:BGIOSGA001246.mrna1;Name=gene:BGIOSGA001246;Parent=gene:BGIOSGA001246.path1;Dir=sense;coverage=100.0;identity=98.3;matches=292;mismatches=5;indels=0;unknowns=0
+    1	gmap	exon	22448215	22448278	100	-	.	ID=gene:BGIOSGA001246.mrna1.exon1;Name=gene:BGIOSGA001246;Parent=gene:BGIOSGA001246.mrna1;Target=gene:BGIOSGA001246 1 64 +
+    1	gmap	exon	22447844	22448076	97	-	.	ID=gene:BGIOSGA001246.mrna1.exon2;Name=gene:BGIOSGA001246;Parent=gene:BGIOSGA001246.mrna1;Target=gene:BGIOSGA001246 65 297 +
+    1	gmap	CDS	22448215	22448278	100	-	0	ID=gene:BGIOSGA001246.mrna1.cds1;Name=gene:BGIOSGA001246;Parent=gene:BGIOSGA001246.mrna1;Target=gene:BGIOSGA001246 1 64 +
+    1	gmap	CDS	22447844	22448076	97	-	1	ID=gene:BGIOSGA001246.mrna1.cds2;Name=gene:BGIOSGA001246;Parent=gene:BGIOSGA001246.mrna1;Target=gene:BGIOSGA001246 65 297 +
+
 
 Arguments -o and -a can be used to append any GFF output to a patch GFF file which can be used downstream (see next section).
 Argument -v can be added to increase verbosity and see the raw GMAP alignments used while lifting-over features.
@@ -919,16 +930,16 @@ Argument -p might be used to allow partial (not multiple of 3) CDS lifted-over b
     cp patch/*.patch.gff ../files/test_rice/
 
     # re-run pan-gene analysis using GFF patches
-    perl get_pangenes.pl -d ../files/test_rice/ -p -m cluster
+    perl get_pangenes.pl -d ../files/test_rice/ -p -m
 
     # check how the updated clusters look like
-    grep "^>" Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:Os01g0958200.path1.cdna.fna
-    >gene:Os01g0958200.mrna1 gene:Os01g0958200.path1 1:41880969-41882234(+) [Oryza_nivara_v1.chr1]
+    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA005213.path1.cdna.fna
+    >gene:BGIOSGA005213.mrna1 gene:BGIOSGA005213.path1 1:41880970-41882361(+) [Oryza_nivara_v1.chr1]
     >transcript:Os01t0958200-01 gene:Os01g0958200 1:42238811-42240420(+) [Oryza_sativa.IRGSP-1.0.chr1]
     >transcript:BGIOSGA005213-TA gene:BGIOSGA005213 1:46293601-46294992(+) [Oryza_indica.ASM465v1.chr1]
 
-    grep "^>" Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:Os01g0958400.path1.cdna.fna
-    >gene:Os01g0958400.mrna1 gene:Os01g0958400.path1 1:41882957-41886772(+) [Oryza_nivara_v1.chr1]
+    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA005214.path1.cdna.fna
+    >gene:BGIOSGA005214.mrna1 gene:BGIOSGA005214.path1 1:41883977-41886935(+) [Oryza_nivara_v1.chr1]
     >transcript:Os01t0958400-01 gene:Os01g0958400 1:42240825-42244043(+) [Oryza_sativa.IRGSP-1.0.chr1]
     >transcript:Os01t0958400-02 gene:Os01g0958400 1:42240837-42244651(+) [Oryza_sativa.IRGSP-1.0.chr1]
     >transcript:Os01t0958400-03 gene:Os01g0958400 1:42240858-42245248(+) [Oryza_sativa.IRGSP-1.0.chr1]
@@ -985,7 +996,7 @@ This will produce TAB-separated (TSV) output similar to this:
     TR2	NA	NA	NA	NA	NA	NA	NA
     TR1	NA	NA	NA	NA	NA	NA	NA
     TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100	97.1	1:35501996-35505052(-)
-    TR3	890	gene:ONIVA01G42530.cdna.fna	615	2	69	87.4	1:35899105-35900529(+)
+    TR3	890	gene:ONIVA01G42530.cdna.fna	617	2	69	87.4	1:35899105-35900529(+)
 
 The column 'matches' indicates how many individual alignments support the assignment of the input
 sequence to the same cluster, which in the last example is 2. Note that potentially a sequence
@@ -1035,7 +1046,8 @@ The log of _cluster_analysis.pl might contain warnings like these:
 
 ## Funding 
 
-This prototype was produced as part of the project "PanOryza: globally coordinated genomes, proteomes and pathways for rice", funded by [BBSRC.NSF/BIO](https://gtr.ukri.org/projects?ref=BB%2FT015691%2F1).
+This prototype was produced as part of the project "PanOryza: globally coordinated genomes, proteomes and pathways for rice", 
+funded by [BBSRC.NSF/BIO](https://gtr.ukri.org/projects?ref=BB%2FT015691%2F1).
 
 
 ## Citation

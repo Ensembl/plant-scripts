@@ -536,7 +536,7 @@ else {
                 # convert MAF to PAF alignment format
                 my $num_align = simpleMAF2PAF($splitMAF,$splitPAF);
                 if($num_align) {
-                    print "# simpleMAF2PAF : %d alignments\n"; 
+                    print("# simpleMAF2PAF : %d alignments\n",$num_align); 
                     push(@WGAoutfiles, $splitPAF);
                     system("$GZIPBIN -f $splitMAF");
                 } else {

@@ -53,3 +53,5 @@
 24102023: added sub select_GFF_valid_genes to leave out non-coding genes; see $GFFACCEPTEDFEATS & $GFFVALIDGENEFEAT
 24102023: get_pangenes.pl now prints number of valid & non-valid genes in each input GFF file (details saved in .gff.log files)
 25102023: identical gene ids are now supported accross annotations, thanks for reporting the bug Pimmy!
+10112023: improved calculation of overlap coordinates from WGA segments in different strands
+

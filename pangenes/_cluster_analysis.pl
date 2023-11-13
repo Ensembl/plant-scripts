@@ -659,9 +659,9 @@ foreach $cluster_id (@cluster_ids) {
                     }
             }
 
-            foreach my $ggid (@checked_ids) {
-		die "$species $ggid" if(!defined($id2coords{$species}{$ggid}[1]));
-	    }
+            #foreach my $ggid (@checked_ids) { # debug
+            #die "$species $ggid" if(!defined($id2coords{$species}{$ggid}[1]));
+            #}
 
             # rank genes in terms of chr position
             @checked_ids = sort {

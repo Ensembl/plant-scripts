@@ -257,16 +257,6 @@ my ( %incluster, %cluster, %sequence, %segment, %segment_sequence );
 my ( %totalgenes, %totalclusters, %totaloverlap, %POCS_matrix );
 my ( %unclustered, %sorted_ids, %id2coords );
 my ( %cluster_links, %toremove, @tmp_cluster_ids, @cluster_ids );
-
-# columns of TSV file as produced by get_collinear_genes.pl
-
-#gene:BGIOSGA002571 gene:BGIOSGA002571 Oryza_indica.ASM465v1.chr1 2418 ortholog_collinear
-# gene:ONIVA01G00120 gene:ONIVA01G00120 Oryza_nivara_v1.chr1 2418 NULL NULL NULL 100.00 1 1:39544-42130(+);1:116435-120177(+)
-#Oryza_indica.ASM465v1.chr1:1:222338-228913 segment Oryza_indica.ASM465v1.chr1 6575 segment_collinear
-# gene:ONIVA01G00200 gene:ONIVA01G00200 Oryza_nivara_v1.chr1 6575 NULL NULL NULL 100.00 1 1:222338-228913(+);1:160018-166571(+)
-
-# NOTE: wga_cov,dn,ds,goc are not computed and have dummy values
-
 my (
     $gene_stable_id,     $prot_stable_id, $species,
     $overlap,            $homology_type,  $hom_gene_stable_id,
@@ -275,6 +265,62 @@ my (
     $wga_coverage,       $high_confidence,
     $coordinates
 );
+
+# 2.1) Parse FASTA files to get main cluster sequences (@SEQTYPE),
+#      cDNA file is is where genes get their genomic coordinates
+# Note1: if a gene lacks a cDNA will be skipped
+# Note2: there might be 1+ sequences for the same gene, same species in GFF
+foreach $species (@supported_species) {
+
+    # init, see below
+    $unclustered{$species} = 0;
+
+    foreach $seqtype (@SEQTYPE) {
+
+        $filename = "$seqfolder$species$SEQEXT{$seqtype}";
+        if($patch) {
+            $filename = "$seqfolder$species.patch$SEQEXT{$seqtype}";
+        }
+
+        if(!-s $filename){
+            die "# ERROR: cannot find sequence file $filename, set path with -seq\n";
+        }
+
+        ( $ref_geneid, $ref_fasta, $ref_coords ) = parse_sequence_FASTA_file( $filename );
+
+        # save these sequences
+        foreach $gene_stable_id ( @$ref_geneid ) {
+            $sequence{$species}{$gene_stable_id}{$seqtype} = $ref_fasta->{$gene_stable_id};
+        }
+
+        # log
+        open(INLOG,">>","$outfolder/input.log") ||
+            die "# ERROR: cannot create $outfolder/input.log\n";
+        print INLOG "$filename\n";
+        close(INLOG);
+
+        # take gene coordinates only once,
+        # only genes with cDNA sequences are considered.
+        # WARNING: rRNA, tRNA genes don't have cDNA features
+        if($seqtype eq 'cdna') {
+            $sorted_ids{$species} = $ref_geneid;
+            $id2coords{$species} = $ref_coords;
+
+            # count number of genes in this species
+            $totalgenes{$species} = scalar(@$ref_geneid);
+        }
+    }
+}
+
+# 2.2) actually parse pairs of collinear genes to grow clusters
+
+# columns of TSV file as produced by get_collinear_genes.pl:
+#gene:BGIOSGA002571 gene:BGIOSGA002571 Oryza_indica.ASM465v1.chr1 2418 ortholog_collinear
+# gene:ONIVA01G00120 gene:ONIVA01G00120 Oryza_nivara_v1.chr1 2418 NULL NULL NULL 100.00 1 1:39544-42130(+);1:116435-120177(+)
+#Oryza_indica.ASM465v1.chr1:1:222338-228913 segment Oryza_indica.ASM465v1.chr1 6575 segment_collinear
+# gene:ONIVA01G00200 gene:ONIVA01G00200 Oryza_nivara_v1.chr1 6575 NULL NULL NULL 100.00 1 1:222338-228913(+);1:160018-166571(+)
+
+# NOTE: wga_cov,dn,ds,goc are not computed and have dummy values
 
 # Iteratively get & parse TSV files that define pairs of collinear genes (made with _collinear_genes.pl) 
 # Clusters are first created as pairs and grow as new collinear genes from other species are added.
@@ -301,7 +347,17 @@ foreach $infile (@infiles) {
         next if ( !$supported{$species} || !$supported{$hom_species} );
 
         if ( $homology_type =~ m/ortholog/ ) {
- 
+
+            if($verbose) {
+                if(!defined($id2coords{$species}{$gene_stable_id}[1])) {
+                    print "# WARN: skip gene model $species $gene_stable_id as it lacks cDNA (no coordinates)\n";
+                    next;
+                } elsif(!defined($id2coords{$hom_species}{$hom_gene_stable_id}[1])) {
+                    print "# WARN: skip gene model $hom_species $hom_gene_stable_id as it lacks cDNA (no coordinates)\n";
+                    next;
+                }
+            }
+
             # add $species gene to cluster only if not clustered yet
             if ( !$incluster{ $supported{$species}.':::'.$gene_stable_id } ) {
 
@@ -377,7 +433,7 @@ foreach $infile (@infiles) {
 } print "\n";  
 
 
-# 2.0) see if disjoint clusters can be merged, can happen if long genes overlap shorther ones
+# 2.3) see if disjoint clusters can be merged, can happen if long genes overlap shorther ones
 my ($c1, $c2, $size1, $size2, $speciesOK);
 
 foreach $c1 (0 .. $#tmp_cluster_ids-1) {
@@ -421,7 +477,7 @@ foreach $c1 (0 .. $#tmp_cluster_ids-1) {
 
             # actually merge cluster2 to cluster1, requires updating data structures 
             foreach $species (keys(%{ $cluster{$cluster_id2} })) {
-                    foreach $hom_gene_stable_id (@{ $cluster{$cluster_id2}{$species} }) {
+                foreach $hom_gene_stable_id (@{ $cluster{$cluster_id2}{$species} }) {
 
                     # copy gene ids from cluster2 to cluster, for all species
                     push(@{ $cluster{$cluster_id}{$species} }, $hom_gene_stable_id);
@@ -460,7 +516,7 @@ undef(%toremove);
 
 
 
-# 2.1) Write BED & FASTA files with genomic segments (gdna), one per species,
+# 2.4) Write BED & FASTA files with genomic segments (gdna), one per species,
 # and store them in a hash with (species,coords) keys
 foreach $species (@supported_species) {
 
@@ -523,53 +579,7 @@ foreach $species (@supported_species) {
 } print "\n";
 
 
-# 2.2) Parse FASTA files to get main cluster sequences (@SEQTYPE)
-# Note: there might be 1+ sequences for the same gene, same species in GFF
-foreach $species (@supported_species) {
-
-    # init, see 2.3
-    $unclustered{$species} = 0;
-
-    foreach $seqtype (@SEQTYPE) {
-
-        $filename = "$seqfolder$species$SEQEXT{$seqtype}";
-        if($patch) {
-            $filename = "$seqfolder$species.patch$SEQEXT{$seqtype}";
-        }
-
-        if(!-s $filename){
-            die "# ERROR: cannot find sequence file $filename, set path with -seq\n"; 
-        }
-
-        ( $ref_geneid, $ref_fasta, $ref_coords ) = parse_sequence_FASTA_file( $filename );
-
-        # save these sequences
-        foreach $gene_stable_id ( @$ref_geneid ) {
-            $sequence{$species}{$gene_stable_id}{$seqtype} = $ref_fasta->{$gene_stable_id};
-        }
-
-        # log
-        open(INLOG,">>","$outfolder/input.log") ||
-            die "# ERROR: cannot create $outfolder/input.log\n";
-        print INLOG "$filename\n";
-        close(INLOG);
-
-        # take gene coordinates only once,
-        # only genes with cDNA sequences are considered.
-        # WARNING: rRNA, tRNA genes don't have cDNA features
-        if($seqtype eq 'cdna') {
-            $sorted_ids{$species} = $ref_geneid;
-            $id2coords{$species} = $ref_coords;
-
-            # count number of genes in this species
-            $totalgenes{$species} = scalar(@$ref_geneid);
-        }
-    }
-} 
-
-
-
-# 2.3) quality control of clusters, criteria: 
+# 2.5) quality control of clusters, criteria: 
 # i)  genes from same species should be neighbors, else should be removed
 # ii) genes from same species should be ordered along chr
 
@@ -659,10 +669,6 @@ foreach $cluster_id (@cluster_ids) {
                     }
             }
 
-            #foreach my $ggid (@checked_ids) { # debug
-            #die "$species $ggid" if(!defined($id2coords{$species}{$ggid}[1]));
-            #}
-
             # rank genes in terms of chr position
             @checked_ids = sort {
                 $id2coords{$species}{$a}[1] <=>
@@ -690,7 +696,7 @@ foreach $cluster_id (@cluster_ids) {
 }
 
 
-# 2.4) add unpaired sequences as singletons 
+# 2.6) add unpaired sequences as singletons 
 my $total_seqs = 0;
 foreach $species (@supported_species) {
 
@@ -722,7 +728,7 @@ foreach $species (@supported_species) {
 printf( "\n# total sequences = %d\n\n", $total_seqs );
 
 
-# 2.5) create and print shadow clusters of genomic sequences
+# 2.7) create and print shadow clusters of genomic sequences
 foreach $cluster_id (@cluster_ids) {
 
     next if( scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);
@@ -823,7 +829,7 @@ foreach $cluster_id (@cluster_ids) {
         open( CLUSTER, ">", "$outfolder/$clusterdir/$filename$SEQEXT{$seqtype}" )
           || die "# ERROR: cannot create $outfolder/$clusterdir/$filename$SEQEXT{$seqtype}\n";
 
-	foreach $species (@supported_species) {
+        foreach $species (@supported_species) {
             next if ( !$cluster{$cluster_id}{$species} );
 
             $n_cluster_sp++;
@@ -846,7 +852,7 @@ foreach $cluster_id (@cluster_ids) {
         close(CLUSTER);
 
         # cluster summary and PCOP update
-	# done with cDNAs, after gdna, cds & pep files have been created
+        # done with cDNAs, after gdna, cds & pep files have been created
         if($seqtype eq 'cdna'){
             @cluster_species = keys(%cluster_stats);
 

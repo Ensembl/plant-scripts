@@ -1036,13 +1036,15 @@ Then, the failing command should be run locally as follows:
 
 The log of _cluster_analysis.pl might contain warnings like these:
 
-* WARN: merged clusters Horvu_10350_3H01G330600 & Horvu_AKASHIN_3H01G332600 (40,10,4). Explanation: two clusters containing 10 and 4 sequences from different species (disjoint) were merged. A total of 40 collinear gene pairs are supported by WGA evidence. See global variable $MINEDGESTOMERGE above.
+* WARN: skip gene model XXX as it lacks cDNA (no coordinates)
 
-* WARN: partially overlapping clusters Horvu_AKASHIN_6H01G414400 & Horvu_MOREX_6H01G446100 (2,3,2): Explanation: two clusters containing 3 and 2 sequences from different species (disjoint) were not merged as only 2 collinear gene pairs are supported by WGA evidence. See global variable $MINEDGESTOMERGE above.
+* WARN: merged clusters XXX & YYY (40,10,4). Explanation: two clusters containing 10 and 4 sequences from different species (disjoint) were merged. A total of 40 collinear gene pairs are supported by WGA evidence. See global variable $MINEDGESTOMERGE above.
 
-* WARN: conflicting clusters gene:BGIOSGA000012 & gene:BGIOSGA000011 (Oryza_indica). Explanation: two individual clusters have WGA evidence connecting their genes but each have 1+ sequences from the same species, preventing the merge.
+* WARN: partially overlapping clusters XXX & YYY (2,3,2): Explanation: two clusters containing 3 and 2 sequences from different species (disjoint) were not merged as only 2 collinear gene pairs are supported by WGA evidence. See global variable $MINEDGESTOMERGE above.
 
-* WARN: remove gene:Os01g0531000 from cluster gene:BGIOSGA001469 (46). This happens when a non-neighbor gene is removed from a cluster for having too many intervening genes in between.
+* WARN: conflicting clusters ZZZ & YYY (Oryza_indica). Explanation: two individual clusters have WGA evidence connecting their genes but each have 1+ sequences from the same species, preventing the merge.
+
+* WARN: remove ZZZ from cluster XXX (46). This happens when a non-neighbor gene is removed from a cluster for having too many intervening genes in between.
 
 ## Funding 
 

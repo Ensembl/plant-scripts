@@ -10,7 +10,7 @@ from your own scripts and for masking & annotating
 [![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://app.travis-ci.com/Ensembl/plant-scripts)
 
 - [List of recipes](#list-of-recipes)
-- [Dependencies of recipes](#dependencies-of-recipes)
+- [Dependencies of recipes](#dependencies)
     - [FTP](#ftp)
     - [MySQL](#mysql)
     - [Perl](#perl)

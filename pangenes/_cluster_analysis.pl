@@ -588,7 +588,7 @@ my ($main_cluster_id, $new_cluster_id, $gene_id);
 
 foreach $cluster_id (@cluster_ids) {
 
-    #next if($cluster_id !~ '1:::HORVU.MOREX.r3.3HG0311160'); #gene:BGIOSGA000009'); #debug
+    #next if($cluster_id !~ 'Os01g0116250'); #1:::HORVU.MOREX.r3.3HG0311160'); #gene:BGIOSGA000009'); #debug
 
     # set main cluster id, note it can be updated within the loop
     $main_cluster_id = $cluster_id;
@@ -624,7 +624,7 @@ foreach $cluster_id (@cluster_ids) {
                         # original cluster was named after this gene,
                         # we'll need to create a new one and set it as main cluster
                         # NOTE: this can only happen once per cluster
-                        if(defined($cluster{$gene_stable_id})) {
+                        if(defined($cluster{ $supported{$species}.':::'.$gene_stable_id })) {
 
                             # copy original cluster to new main cluster id
                             $new_cluster_id = $supported{$species}.':::'.$best_gene_stable_id;                            
@@ -646,7 +646,7 @@ foreach $cluster_id (@cluster_ids) {
                             push(@{ $cluster{$cluster_id}{$species}}, $gene_stable_id); 
 
                             if($verbose) {
-                                print "# WARN: remove $gene_stable_id from cluster $cluster_id -> ".
+                                print "# WARN: remove $gene_stable_id from cluster $cluster_id => ".
                                     "$main_cluster_id ($index_dist)\n";
                             }
  

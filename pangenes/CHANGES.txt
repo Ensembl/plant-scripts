@@ -55,3 +55,4 @@
 25102023: identical gene ids are now supported accross annotations, thanks for reporting the bug Pimmy!
 10112023: improved calculation of overlap coordinates from WGA segments in different strands
 14112023: genes lacking cDNA are skipped in _cluster_analysis.pl
+15112023: removed bug from 25102023 that impaired removal of non-local genes, this duplicated a few clusters

@@ -2,7 +2,7 @@
 
 # This script matches input nucleotide sequences to clusters produced by get_pangenes.pl .
 # It creates a sequence index with nucleotide sequences from clusters and 
-# uses GMAP to scan them. Can use cdna [default ] or CDS sequences.
+# uses GMAP to scan them. Supports cdna [default] or CDS sequences.
 
 # Copyright [2023]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -41,7 +41,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
   print "-c print credits and checks installation\n";
-  print "-d directory with pangene clusters                (required, should contain *.cdna.fna or *.cds.fna files)\n";
+  print "-d directory with pangene clusters                (required, contains [cdna|cds].fna files, usually within data_pangenes/..._algMmap_)\n";
   print "-s nucleotide sequence file in FASTA format       (required, example: -s transcripts.fna,\n";
   print "                                                   useful to have genomic coords in header ie chr1:12-1200)\n";
   print "-o output file in TSV format                      (required)\n";

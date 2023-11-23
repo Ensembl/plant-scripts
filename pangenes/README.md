@@ -988,7 +988,7 @@ not considered before. You can do this with script *match_cluster.pl*, which cre
 nucleotide sequences from clusters and uses GMAP to scan them. By default it uses cDNA sequences to build 
 the index, but can also use CDS (-C). The next example shows how to do this:
 
-    perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1 -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
+    perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
 
 This will produce TAB-separated (TSV) output similar to this:
 

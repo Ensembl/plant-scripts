@@ -28,7 +28,8 @@ my $GMAPBUILDBIN = $ENV{'EXE_GMAP_BUILD'};
 
 my ($INP_dir, $INP_seqfile, $INP_isCDS, $INP_idfile) = ('','',0,'');
 my ($INP_outfile,$INP_threads, $INP_ow, $INP_verbose) = ('',4, 0, 0);
-my ($cluster_regex, $isCDS, $gmapdb_path, $gmapdb, $seq) = ( '.cdna.fna', 0 );
+my ($cluster_regex, $isCDS, $cluster_folder ) = ( '.cdna.fna', 0, '' );
+my ($gmapdb_path, $gmapdb, $seq);
 my ($max_number_isoforms, $qlen, $tlen, $identity, $cover) = ( 0 );
 my ($cluster_file, $gene_id, $isof_id, $cmd, $index_file);
 my ($cluster_id, $seq_id, $cluster_seq_id, $coords, $taxon);
@@ -40,10 +41,11 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
-  print "-c print credits and checks installation\n";
-  print "-d directory with pangene clusters                (required, contains [cdna|cds].fna files, usually within data_pangenes/..._algMmap_)\n";
+  print "-c print credits and checks installation\n"; 
+  print "-d directory produced by get_pangenes.pl          (example: -d /path/data_pangenes/..._algMmap_ ,\n";
+  print "                                                   should include folder with [cdna|cds].fna files)\n";
   print "-s nucleotide sequence file in FASTA format       (required, example: -s transcripts.fna,\n";
-  print "                                                   useful to have genomic coords in header ie chr1:12-1200)\n";
+  print "                                                   helps if header has genomic coords ie chr1:12-1200)\n";
   print "-o output file in TSV format                      (required)\n";
   print "-C use CDS sequences                              (optional, cDNA sequences are scanned by default)\n";
   print "-t threads                                        (optional, default: -t $INP_threads)\n";
@@ -65,13 +67,10 @@ if(defined($opts{'c'})) {
 
 if(defined($opts{'d'})) { 
   $INP_dir = $opts{'d'};
-  $gmapdb = basename($INP_dir) . '.gmap';
-  $gmapdb_path = dirname($INP_dir);
 
   if(defined($opts{'C'})){
     $INP_isCDS = 1;
     $cluster_regex = '.cds.fna';
-    $gmapdb = basename($INP_dir) . '.cds.gmap';
   }
 }
 else{ die "# EXIT : need a -d directory\n" }
@@ -109,14 +108,38 @@ if(defined($opts{'t'}) && $opts{'t'} >= 1){
 print "# $0 -d $INP_dir -s $INP_seqfile -o $INP_outfile -C $INP_isCDS " .
   "-w $INP_ow -t $INP_threads -v $INP_verbose\n\n";
 
-# 1) parse pre-computed cluster files, write sequences to temp file & make GMAP index
-opendir(INPDIR,$INP_dir) || 
+
+# 0) locate .cluster_list file and guess actual folder with clusters
+opendir(INPDIR,$INP_dir) ||
   die "# ERROR: cannot list $INP_dir , please check -d argument is a valid folder\n";
-my @files = grep {/$cluster_regex$/} readdir(INPDIR);
+my @files = grep {/\.cluster_list/} readdir(INPDIR);
 closedir(INPDIR);
 
+if(@files) {
+  $cluster_folder = $INP_dir. '/' . (split(/\.cluster_list/,$files[0]))[0];
+
+  $gmapdb = basename($cluster_folder) . '.gmap';
+  $gmapdb_path = dirname($cluster_folder);
+
+  if($INP_isCDS == 1) {
+    $gmapdb = basename($cluster_folder) . '.cds.gmap';
+  }
+
+} else {
+  die "# ERROR: cannot locate folder with clusters within $INP_dir\n";
+}
+
+print "# cluster folder: $cluster_folder\n";
+
+# 1) parse pre-computed cluster files, write sequences to temp file & make GMAP index
+@files = ();
+opendir(CLUSTDIR,$cluster_folder) || 
+  die "# ERROR: cannot list $cluster_folder , please check -d argument is a valid folder\n";
+@files = grep {/$cluster_regex$/} readdir(CLUSTDIR);
+closedir(CLUSTDIR);
+
 if(scalar(@files) == 0) {
-  die "# ERROR: cannot find any valid clusters in $INP_dir\n";
+  die "# ERROR: cannot find any valid clusters in $cluster_folder\n";
 }
 
 # check whether previous index should be re-used
@@ -131,7 +154,7 @@ if($INP_ow ||
   foreach $cluster_file (@files) {
 
     my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
-      parse_sequence_FASTA_file( "$INP_dir/$cluster_file" , 0);
+      parse_sequence_FASTA_file( "$cluster_folder/$cluster_file" , 0);
 
     foreach $gene_id (@$ref_geneid) {  
       foreach $seq (split(/\n/,$ref_fasta->{$gene_id})) {

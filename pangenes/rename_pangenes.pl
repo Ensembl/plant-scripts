@@ -32,7 +32,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-c print credits and checks installation\n";
   print "-d input directory with get_pangenes.pl results (required, example: -d /path/data_pangenes/..._algMmap_)\n";
   print "-o output directory and prefix ID               (required, example: -o Os4530.POR.1)\n";
-  print "-r directory with reference pangenes            (optional, these help renaming the input ones)\n";
+#  print "-r directory with reference pangenes            (optional, these help renaming the input ones)\n";
   print "-v verbose                                      (optional)\n";
   exit(0);
 }
@@ -68,7 +68,7 @@ if(defined($opts{'v'})){
 print "# $0 -d $INP_dir -r $INP_refdir -o $INP_outdir -v $INP_verbose\n\n";
 
 
-# 0) locate .cluster_list file and guess actual folder with clusters
+## 0) locate .cluster_list file and guess actual folder with clusters
 opendir(INPDIR,$INP_dir) ||
   die "# ERROR: cannot list $INP_dir , please check -d argument is a valid folder\n";
 my @files = grep {/\.cluster_list/} readdir(INPDIR);
@@ -85,7 +85,7 @@ if(@files) {
   die "# ERROR: cannot locate folder with clusters within $INP_dir\n";
 }
 
-# 1) locate matrix files (transposed only .tr) 
+## 1) locate matrix files (transposed only .tr) 
 opendir(INPDIR,$INP_dir) ||
   die "# ERROR: cannot list $INP_dir , please check -d argument is a valid folder\n";
 @matrix_files = grep {/pangene_matrix.*?\.tr/} readdir(INPDIR);
@@ -97,7 +97,7 @@ if(!@matrix_files) {
 
 
 
-# 2) create output directory
+## 2) create output directory
 if ( -e $INP_outdir ) {
   print "\n# WARNING : folder '$INP_outdir' exists, ".
    "files will be overwritten\n\n";
@@ -108,24 +108,30 @@ if ( -e $INP_outdir ) {
   }
 }
 
-# 3) parse cluster list file, rename clusters and create copies in output folder
+## 3) parse cluster list file, rename clusters and create copies in output folder
 
-my ($clustname,$size,$taxa,$cdnafile,$cdsfile,$pepfile,$gdnafile);
-my ($file, $newfile);
+my ($clustname,$size,$taxa,$gtaxa,$cdnafile,$cdsfile,$pepfile,$gdnafile);
+my ($file, $newfile, $namecol);
 my ($new_clustname, $clust_num, $clust_num1) = ('', 0, 0);	
-my (%file2ID);
+my (%file2ID, @data);
 
+# 3.1 no reference clusters
 if(!$INP_refdir) {
 
   mkdir("$INP_outdir/$cluster_folder_name");
+
+  # 3.1.1 take care of cluster_list file and FASTA cluster files
+
+  open(NEWCLUSTLIST,">","$INP_outdir/$cluster_folder_name.cluster_list") ||
+    die "# ERROR: cannot create $INP_outdir/$cluster_folder_name.cluster_list\n";
 
   open(CLUSTLIST,"<",$cluster_list_file) || 
     die "# ERROR: cannot read $cluster_list_file\n";
   while(<CLUSTLIST>) {
 
-    if(/^cluster (\S+) size=(\d+) taxa=(\d+) taxa\(gdna\)=\S+ cdnafile: (\S+) cdsfile: (\S+) pepfile: (\S+) gdnafile: (\S+)/) {
-      ($clustname,$size,$taxa,$cdnafile,$cdsfile,$pepfile,$gdnafile) =
-        ($1,$2,$3,$4,$5,$6,$7);
+    if(/^cluster (\S+) size=(\d+) taxa=(\d+) taxa\(gdna\)=(\S+) cdnafile: (\S+) cdsfile: (\S+) pepfile: (\S+) gdnafile: (\S+)/) {
+      ($clustname,$size,$taxa,$gtaxa,$cdnafile,$cdsfile,$pepfile,$gdnafile) =
+        ($1,$2,$3,$4,$5,$6,$7,$8);
 
       if($taxa > 1) {
         $clust_num++;
@@ -139,57 +145,93 @@ if(!$INP_refdir) {
       }
 
       $file2ID{ $clustname } = $new_clustname;
-      #print "$new_clustname $clustname $taxa\n";
 
-      # copy and rename FASTA files of this cluster 
+      # add this renamed cluster to new cluster list file
+      print NEWCLUSTLIST "cluster $new_clustname size=$size taxa=$taxa taxa(gdna)=$gtaxa";
+
+      $newfile = $cdnafile;
+      if($newfile ne 'void') { $newfile =~ s/\Q$clustname\E/$new_clustname/ }
+      print NEWCLUSTLIST " cdnafile: $newfile";
+
+      $newfile = $cdsfile;
+      if($newfile ne 'void') { $newfile =~ s/\Q$clustname\E/$new_clustname/ }
+      print NEWCLUSTLIST " cdsfile: $newfile";
+
+      $newfile = $pepfile;
+      if($newfile ne 'void') { $newfile =~ s/\Q$clustname\E/$new_clustname/ }
+      print NEWCLUSTLIST " pepfile: $newfile";
+
+      $newfile = $gdnafile;
+      if($newfile ne 'void') { $newfile =~ s/\Q$clustname\E/$new_clustname/ }
+      print NEWCLUSTLIST " gdnafile: $newfile\n";
+
+      # actually copy and rename FASTA files of this cluster 
       foreach $file ($cdnafile,$cdsfile,$pepfile,$gdnafile) {
         next if($file eq 'void');
 	
         if(!-s "$cluster_folder/$file") {
-          die "# ERROR: cannot find $file , skip copy\n";
+          die "# ERROR: cannot find $file , stop copying\n";
         }
 
         $newfile = $file;
         $newfile =~ s/\Q$clustname\E/$file2ID{$clustname}/;	
         print "$file -> $newfile\n" if($INP_verbose);
 
-        copy( "$cluster_folder/$file", "$INP_outdir/$cluster_folder_name/$newfile");          
+        if(!copy( "$cluster_folder/$file", "$INP_outdir/$cluster_folder_name/$newfile")) {
+          die "# ERROR: cannot cp $cluster_folder/$file to $INP_outdir/$cluster_folder_name/$newfile, stop copying\n";
+        }		
       }
+    } else {
+      print NEWCLUSTLIST;
     } 
   }
   close(CLUSTLIST);
 
+  close(NEWCLUSTLIST);
+
+  # 3.1.2 take care of (transposed) pangene matrix files
+  foreach $file (@matrix_files) {
+    
+    if($file =~ m/\.bed/) {
+      $namecol = 3
+    } else {
+      $namecol = 0
+    }
+
+    open(NEWMATFILE,">","$INP_outdir/$file") ||
+      die "# ERROR: cannot create $INP_outdir/$file\n";
+
+    open(MATFILE,"<","$INP_dir/$file") ||
+      die "# ERROR: cannot read $INP_dir/$file\n";
+
+    while(<MATFILE>) {
+      if(/^source/ || /^chr.+?\tNA/){ 
+        print NEWMATFILE
+
+      } else {
+        @data = split(/\t/, $_);
+
+        if(!defined($file2ID{ $data[$namecol] })) {
+          die "# ERROR: cannot find ID for cluster $data[$namecol] , stop copying $file\n"
+        }
+
+	$data[$namecol] = $file2ID{ $data[$namecol] };
+	
+        print NEWMATFILE join("\t",@data);
+      }   
+    }
+	  
+    close(MATFILE);
+
+    close(NEWMATFILE);   
+  } 
+
 } else {
+
+  # 3.2
 
   # TODO, steps:
   # i) read ref cluster list
   # ii) read input cluster list
   # iii) match clusters ii -> i and decide appropriate names case-by-case
 }
-
-
-# 1) parse pre-computed cluster files, write sequences to temp file & make GMAP index
-#@files = ();
-#opendir(CLUSTDIR,$cluster_folder) || 
-#  die "# ERROR: cannot list $cluster_folder , please check -d argument is a valid folder\n";
-#@files = grep {/$cluster_regex$/} readdir(CLUSTDIR);
-#closedir(CLUSTDIR);
-
-#if(scalar(@files) == 0) {
-#  die "# ERROR: cannot find any valid clusters in $cluster_folder\n";
-#}
-
-#==> test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix_genes.tr.tab <==
-#source:/home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1
-#chr:1	NA	NA	NA
-#gene:ONIVA01G00100	gene:ONIVA01G00100	gene:Os01g0100100	gene:BGIOSGA002569
-
-#==> test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.bed <==
-##1	NA	NA	gene:BGIOSGA002568	1	0	NA	NA	gene:BGIOSGA002568
-#1	4848	11824	gene:ONIVA01G00010	1	+	gene:ONIVA01G00010	NA	NA
-
-#==> test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.tab <==
-#source:/home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1
-#chr1	NA	NA	NA
-#gene:ONIVA01G00100	1	1	1
-

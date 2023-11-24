@@ -1,6 +1,19 @@
 #!/usr/bin/env perl
 
 # This script assigns stable IDs to clusters and transposed pangene matrices made by get_pangenes.pl
+# 
+# Inspired by proposal previously discussed in AgBioData group:
+# [clade].[group].[version].panddddddd
+# where:
+# clade -> 2-letter for species, 1-letter for genus, followed by NCBI Taxon ID ie
+# Os4530 for Oryza sativa
+# O4527  for Oryza genus
+# group -> unique 3-letter code for group or consortium that made the pan genes
+# version -> Unique integer version (starting from 1) referring to the build of the clade by that group
+# panddddddd -> 'pan' followed by numerical digits as local pan gene identifier; 
+# 0000001 onwards for pan-gene clusters with 2 or more members
+# 1000001 for singletons (genes found in only one genome)
+#
 # TODO: If a reference set of pangenes is passed, these will guide the nomenclature, need rules
 
 # Copyright [2023]

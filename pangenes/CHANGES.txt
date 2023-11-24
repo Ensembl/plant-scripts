@@ -57,3 +57,4 @@
 14112023: genes lacking cDNA are skipped in _cluster_analysis.pl
 15112023: removed bug from 25102023 that impaired removal of non-local genes, this duplicated a few clusters
 23112023: match_cluster.pl now takes a complete pangene results folder ie Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_
+24112023: added rename_pangenes.pl to assing pangene IDs to previously computed clusters

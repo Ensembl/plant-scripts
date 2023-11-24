@@ -114,7 +114,8 @@ test_pangenes:
 	perl get_pangenes.pl -d ../files/test_rice -H && \
 	perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna -f -v && \
 	perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1 \
-		-s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv
+		-s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv && \
+	perl rename_pangenes.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -o clade.consortium.1
 
 clean_pangenes:
-	cd pangenes && rm -rf test_rice_pangenes && rm test_transcripts.gmap.tsv
+	cd pangenes && rm -rf test_rice_pangenes && rm test_transcripts.gmap.tsv && rm -rf clade.consortium.1

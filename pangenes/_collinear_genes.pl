@@ -14,7 +14,7 @@ $|=1;
 # Produces a TSV file with pairs of collinear genes in a format similar to
 # Ensembl Compara's, genomic coordinates are 1-based
 
-# Copyright [2021-23] 
+# Copyright [2021-24] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # Uses external software:
@@ -1226,7 +1226,7 @@ sub mask_intergenic_regions {
 # features might be unsorted.
 #
 # Returns 
-# i) ref to list of BED-like lines of matched genes 
+# i) ref to list of BED-like lines of matched genes (coordinates in reference space)
 # ii) ref to list of BED-like lines of unmatched genes
 # iii) % genes in WGA blocks of at least 3 genes (float)
 #
@@ -1234,12 +1234,15 @@ sub mask_intergenic_regions {
 # Note: takes first match of each cDNA/gene only
 # Note: discards partially/poorly mapped genes 
 #
-# example input, all coords are 0-based:
+# example input (infile), all coords are 0-based:
 # 1 4848 20752 ONIVA01G00010 9999     + 1 3331 33993       + 6 26020714 26051403 29819 60 cs:Z::303*ag:30*ga... 15904
 # 1 104921 116326 ONIVA01G00100 9999  + 1 103118 152580    + 1 1132 47408 45875 60 cs:Z::70*tc:...              11405
 # Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 1000 10053455 + 1 1000 10053455 10052455 60 cs:Z::10052455          7914
 # Chr1 2903 10817 LOC_Os01g01010 9999 + Chr1 896 705000    + 1 949 705000 704051 41 cg:Z:51=53I704000=           7914
 # <--             (c)DNA/gene       --> <- (q)uery genome -> <-- (r)eference genome                         -->  ovlp
+#
+# Note: ovlp is the actual intersection overlap computed by bedtools intersect
+#
 sub query2ref_coords {
 
     my ( $refaifile, $infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose ) = @_;
@@ -1304,6 +1307,8 @@ sub query2ref_coords {
         #next if($cname ne 'ONIVA01G00100'); # debug
 		#next if($cname ne 'gene:OsIR64_12g0001370'); 
 		#next if($cname ne 'gene:OsIR64_05g0012650'); 
+        #next if($cname ne 'LOC_Os01g13840'); print "$_\n"; # + strand
+	    #next if($cname ne 'LOC_Os10g29730'); print "$_\n"; # - strand 
 
         # record <genes per alignment block
         $genes_per_block{"$qchr:$qstart-$qend"}++;
@@ -1356,7 +1361,6 @@ sub query2ref_coords {
             } else {
                 @segments = reverse split( /:/, $SAMPAFtag )
             }
-
         }
         else {
             while ( $SAMPAFtag =~ m/(\d+[MIDNSHP=X])/g ) {
@@ -1368,14 +1372,15 @@ sub query2ref_coords {
             }
         }
 
-        # loop along features updating coords
+        # loop along PAF alignment features updating coords, 
+        # qcoord overlaps are used as exit condition
         $done = 0;
         foreach $feat (@segments) {
 
             ( $deltaq, $deltar, $coordr ) =
               _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord );
 
-            # check if current position in alignment matches cDNA/gene coords
+            # check if current position in query alignment overlaps cDNA/gene coords
 
             # start coords (end in - strand)
             if ( $SAMqcoord < $cstart
@@ -1383,7 +1388,9 @@ sub query2ref_coords {
 
                 # refine delta to match exactly the start (end for strand -)
                 ( $deltaq, $deltar, $coordr ) =
-                  _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cstart );
+                  _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cstart ); 
+                  print "ss $deltaq, $deltar, $coordr : $feat, $SAMqcoord, $SAMrcoord, $cstart\n"
+                    if ( $verbose > 1 );				  
 
                 $start_deltar = -1;
                 if ( $coordr > -1 ) {
@@ -1401,7 +1408,7 @@ sub query2ref_coords {
                     $ref_coords{$cname}{'start'} = $SAMrcoord + $start_deltar;
                 }
                 else {
-                    $ref_coords{$cname}{'end'} = $SAMrcoord + $start_deltar;
+                    $ref_coords{$cname}{'end'} = $SAMrcoord - $start_deltar;
                 }
             }
 
@@ -1410,7 +1417,9 @@ sub query2ref_coords {
 
                 # refine delta to match exactly the end (start for strand -)
                 ( $deltaq, $deltar, $coordr ) =
-                  _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cend );
+                  _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cend ); 
+                  print "ee $deltaq, $deltar, $coordr : $feat, $SAMqcoord, $SAMrcoord, $cend\n"
+                    if ( $verbose > 1 );
 
                 $end_deltar = -1;
                 if ( $coordr > -1 ) {
@@ -1560,6 +1569,9 @@ sub _parseCIGARfeature {
     # example CG string:
     # cg:Z:25I235=1X57=1X33=1X20=1X47=
     # first features: 25I 235= 1X ..
+
+    # q ------------> (strand not considered)
+    # r ------------>
 
     # CG type, see https://samtools.github.io/hts-specs/SAMv1.pdf
     if ( $feat =~ m/(\d+)([MIDNSHP=X])/ ) {

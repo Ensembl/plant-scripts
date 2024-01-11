@@ -15,7 +15,7 @@
 # 3) matrix of % conserved sequences summarizing cDNA shared clusters across genomes
 # 4) optionally (-c) matrices with core- and pangene set growth simulations
 
-# Copyright [2021-23] 
+# Copyright [2021-24] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;

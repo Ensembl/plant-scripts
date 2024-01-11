@@ -1515,7 +1515,7 @@ sub query2ref_coords {
         }
     } 
 
-    close(BED); 
+    close(BED);  
 
     # printed unsorted BED records
     open( OUTBED, ">", $outfile )

@@ -1252,7 +1252,7 @@ sub query2ref_coords {
     my ( $WGAstrand, $rchr,      $rstart,       $rend );
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
-    my ( $deltaq,    $deltar,    $start_deltar, $end_deltar );
+    my ( $deltaq,    $deltar,    $start_deltar, $end_deltar, $done_start );
     my ( %ref_coords, %genes_per_block, %matched_gene, %unmatched, %ref_max_length);
     my ( @matched, @filt_unmatched, @segments );
 
@@ -1305,10 +1305,11 @@ sub query2ref_coords {
         }
 
         #next if($cname ne 'ONIVA01G00100'); # debug
-		#next if($cname ne 'gene:OsIR64_12g0001370'); 
-		#next if($cname ne 'gene:OsIR64_05g0012650'); 
+        #next if($cname ne 'gene:OsIR64_12g0001370'); 
+        #next if($cname ne 'gene:OsIR64_05g0012650'); 
         #next if($cname ne 'LOC_Os01g13840'); print "$_\n"; # + strand
-	    #next if($cname ne 'LOC_Os10g29730'); print "$_\n"; # - strand 
+        #next if($cname ne 'LOC_Os10g29730'); print "$_\n"; # - strand 
+        #next if($cname !~ 'Pr106_05g0004430'); print "$_\n"; 
 
         # record <genes per alignment block
         $genes_per_block{"$qchr:$qstart-$qend"}++;
@@ -1373,8 +1374,9 @@ sub query2ref_coords {
         }
 
         # loop along PAF alignment features updating coords, 
-        # qcoord overlaps are used as exit condition
+        # qcoord overlaps are used to check exit conditions
         $done = 0;
+        $done_start = 0;
         foreach $feat (@segments) {
 
             ( $deltaq, $deltar, $coordr ) =
@@ -1383,8 +1385,7 @@ sub query2ref_coords {
             # check if current position in query alignment overlaps cDNA/gene coords
 
             # start coords (end in - strand)
-            if ( $SAMqcoord < $cstart
-                && ( $SAMqcoord + $deltaq ) >= $cstart ) {
+            if ( $SAMqcoord < $cstart && ( $SAMqcoord + $deltaq ) >= $cstart ) {
 
                 # refine delta to match exactly the start (end for strand -)
                 ( $deltaq, $deltar, $coordr ) =
@@ -1410,6 +1411,8 @@ sub query2ref_coords {
                 else {
                     $ref_coords{$cname}{'end'} = $SAMrcoord - $start_deltar;
                 }
+
+                $done_start = 1;				
             }
 
             # end coords (start in -strand), actually copied out of loop
@@ -1673,6 +1676,8 @@ sub _parseCIGARfeature {
         # SNPs
         while ( $feat =~ m/\*\w{2}/g ) {
 
+            $totsnps++;
+
             # look up query coord (optional)
             if ( defined($opt_query_coord) && $rcoord == -1 ) {
                 $qcoord = $Qstart + $totsnps + $deltaq;
@@ -1680,8 +1685,6 @@ sub _parseCIGARfeature {
                     $rcoord = $Rstart + $totsnps + $deltar;
                 }
             }
-
-            $totsnps++;
         }
         $deltar += $totsnps;
         $deltaq += $totsnps;

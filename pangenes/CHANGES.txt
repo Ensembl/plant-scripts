@@ -58,3 +58,5 @@
 15112023: removed bug from 25102023 that impaired removal of non-local genes, this duplicated a few clusters
 23112023: match_cluster.pl now takes a complete pangene results folder ie Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_
 24112023: added rename_pangenes.pl to assing pangene IDs to previously computed clusters
+10012024: fixed bug in handling - strand coords in sub query2ref_coords
+11012024: sub _parseCIGARfeature handles correctly 1bp CS-type SNPs when computing overlap with optional query coord

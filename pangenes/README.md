@@ -15,7 +15,7 @@ This script calls [_cut_sequences.pl](./_cut_sequences.pl),
 and produces different types of output:
 
  1) clusters of CDS (nucl & pep), cDNA sequences and genomic segments (gdna) of collinear genes (FASTA)
- 2) pangenome matrices that summarize the genome occupancy of clusters
+ 2) pangene matrices that summarize the genome occupancy of clusters
  3) matrix of % conserved sequences that summarize shared clusters across genomes
  4) optionally (-c) matrices with core- and pangene set growth simulations
 
@@ -31,6 +31,7 @@ and produces different types of output:
 	- [Parameters](#parameters)
 	- [Dependencies and installation](#dependencies-and-installation)
 	- [Command-line options](#command-line-options)
+	- [Input file format](#input-file-format)
 - [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis)
 - [Example 2: pangene and Presence-Absence Variation (PAV) analysis](#example-2-pangene-and-Presence-Absence-Variation-PAV-analysis)
 - [Example 3: splitting genome in chromosomes](#example-3-splitting-genome-in-chromosomes)
@@ -211,22 +212,35 @@ See all options with:
 
     perl get_pangenes.pl -h
 
+### Input file format
 
-## Example 1: default core pangene analysis (and HPC settings)
-
-If the installation was succesfull you should have a copy of a test dataset.
-You can browse it with:
+If the installation was succesfull you should have a copy of a test dataset. You can browse it with:
 
     ls ../files/test_rice/
 
-You should see a FASTA file and a matching GFF file for each genome. 
-Note that each pair of files has a common prefix, which is the name of each genome. 
-See for example:
+This toy dataset comprises three annotated genome assemblies:
 
-    Oryza_sativa.IRGSP-1.0.chr1.fa.gz
-    Oryza_sativa.IRGSP-1.0.chr1.gff.gz
+|accession|assembly FASTA file|annotation GFF file|
+|:--------|:------------------|:------------|-----|
+|Oryza_indica.ASM465v1.chr1|Oryza_indica.ASM465v1.chr1.fa.gz|Oryza_indica.ASM465v1.chr1.gff3.gz|
+|Oryza_sativa.IRGSP-1.0|Oryza_sativa.IRGSP-1.0.chr1.fa.gz|Oryza_sativa.IRGSP-1.0.chr1.gff.gz|
+|Oryza_nivara_v1.chr1|Oryza_nivara_v1.chr1.fa.gz|Oryza_nivara_v1.chr1.gff3.gz|
 
-In order to analyze these files and define a **core** pangene set you can start with:
+As you can see there's a FASTA file and a matching GFF file for each genome.
+Each pair of files has a common prefix or accession, which is the name of each genome.
+
+Accepted extensions for FASTA files are `.fna`, `.fa` and `.fasta`, which can all be GZIP-compressed and have also `.gz` appended.
+Accepted extensions for GFF files are `.gff` and  `.gff3`. These can also be compressed.
+
+As shown in section [Parameters](#parameters), genes are parsed from GFF files. In order to be called valid,
+a gene must include the following GFF features: `gene`, `mRNA` and `transcript`.
+Other accepted features include: `exon` and `CDS`.
+
+You can see also a file named `include.split` which shows how a custom subset of accessions can be analyzed with option `-I`.
+
+## Example 1: default core pangene analysis (and HPC settings)
+
+To compute a **core** pangene set out of the test dataset you can start with:
 
     perl get_pangenes.pl -d ../files/test_rice
 

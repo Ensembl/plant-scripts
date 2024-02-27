@@ -409,7 +409,7 @@ $reference_proteome = $refOK = $total_genes = $n_of_taxa = 0;
 $previous_files = $current_files = '';
 
 # 1.1) open and read directory, a pair of 
-# FASTA (.fa .faa .fasta) + GFF (.gff .gff3) files per genome is expected
+# FASTA (.fa .fna .fasta) + GFF (.gff .gff3) files per genome is expected
 
 opendir(DIR,$inputDIR) || die "# EXIT : cannot list $inputDIR\n";
 my @inputfiles = sort grep {

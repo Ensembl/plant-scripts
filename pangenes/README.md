@@ -221,7 +221,7 @@ If the installation was succesfull you should have a copy of a test dataset. You
 This toy dataset comprises three annotated genome assemblies:
 
 |accession|assembly FASTA file|annotation GFF file|
-|:--------|:------------------|:------------|-----|
+|:--------|:------------------|:------------------|
 |Oryza_indica.ASM465v1.chr1|Oryza_indica.ASM465v1.chr1.fa.gz|Oryza_indica.ASM465v1.chr1.gff3.gz|
 |Oryza_sativa.IRGSP-1.0|Oryza_sativa.IRGSP-1.0.chr1.fa.gz|Oryza_sativa.IRGSP-1.0.chr1.gff.gz|
 |Oryza_nivara_v1.chr1|Oryza_nivara_v1.chr1.fa.gz|Oryza_nivara_v1.chr1.gff3.gz|

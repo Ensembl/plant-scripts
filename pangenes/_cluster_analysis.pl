@@ -11,7 +11,7 @@ use pangeneTools qw(parse_sequence_FASTA_file);
 # _collinear_genes.pl
 # Adapted from https://github.com/eead-csic-compbio/get_homologues
 
-# Copyright [2021-23]
+# Copyright [2021-2024]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 # ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f folder \
@@ -963,7 +963,7 @@ foreach $sp2 (sort {$POCS2ref{$b}<=>$POCS2ref{$a}} keys(%POCS2ref)) {
 }
 
 
-## 4)  write pangenome matrices in output folder
+## 4)  write pangene matrices in output folder
 if(!$chregex){ # unsorted clusters
     push(@{ $sorted_cluster_ids{'unsorted'} }, @cluster_ids );
 }
@@ -971,13 +971,13 @@ else { # ordered along homologous chromosomes matching regex
 
     %sorted_cluster_ids = sort_clusters_by_position( 
         \@supported_species_POCS, \%supported, \%sorted_ids, \%id2coords, 
-        $chregex, \%incluster, \%cluster );
+        $chregex, \%incluster, \%cluster, $verbose );
 
     foreach $chr (sort keys(%sorted_cluster_ids)) {
 	    printf("# clusters sorted by position in chr %s = %d\n", 
         $chr, scalar(@{ $sorted_cluster_ids{$chr} }));
     }
-} 
+}  
 
 # sort chromosome names, will be used later on
 @sorted_chrs = sort {$a cmp $b} keys(%sorted_cluster_ids);
@@ -1412,7 +1412,7 @@ sub sort_clusters_by_position {
             $sortable_chr = 0;
             ($chr_name, $cluster_id) = ('unplaced', '');
 
-            $gene_id = $ref_sorted_ids->{$species}[$gene];
+            $gene_id = $ref_sorted_ids->{$species}[$gene]; 
             $chr = $ref_id2coords->{$species}{$gene_id}[0];
 
             # check chr matches regex, only these chromosomes
@@ -1433,7 +1433,9 @@ sub sort_clusters_by_position {
                 print "# WARNING(sort_clusters_by_position): skip unclustered $gene_id\n" 
                     if($verbose);
                 next;
+
             } else {
+		# cluster_ids are now sp:::gene_id to allow same ids in diff annotations    
                 $cluster_id = $ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id };
             }  
 
@@ -1451,16 +1453,15 @@ sub sort_clusters_by_position {
                         $gene_id2 = $ref_sorted_ids->{$species}[$gene2];
                         $chr2 = $ref_id2coords->{$species}{$gene_id2}[0];
                         last if($chr2 ne $chr);
- 
-                        if($ref_incluster->{$gene_id2} && 
+                        
+			if($ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id2 } && 
                             $cluster_seen{$ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id2 }}){
 
                             # cluster containg this sequence
                             $next_cluster_id = $ref_incluster->{ $ref_species_num->{$species}.':::'.$gene_id2 };
 
                             # index of this cluster in sorted list
-                            $next_cluster_idx = _get_element_index( 
-                                $sorted_cluster_ids{$chr}, $next_cluster_id);
+                            $next_cluster_idx = _get_element_index( $sorted_cluster_ids{$chr}, $next_cluster_id );
                             last;
                         }
                     }
@@ -1486,7 +1487,7 @@ sub sort_clusters_by_position {
                         push( @{ $sorted_cluster_ids{$chr_name} }, $cluster_id );
                         $cluster_idx = scalar(@{ $sorted_cluster_ids{$chr_name} })-1;
 
-                    }else {
+                    } else {
                         # inserted amid previous clusters
                         # prev: [0..N]----->cluster
                         # next: cluster-----> [N+1..$#sorted_cluster_ids]

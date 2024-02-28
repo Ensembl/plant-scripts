@@ -1082,20 +1082,11 @@ close(PANGEMATRIF);
 system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
-if($chregex && $nointerv == 1) {
-    print "# pangene_file (occup) = $pangene_matrix_file (no intervined)\n";
-    print "# pangene_file (occup, transposed) = $pangene_matrix_tr (no intervined)\n";
-    print "# pangene_file (names) = $pangene_gene_file (no intervined)\n";
-    print "# pangene_file (names, transposed) = $pangene_gene_tr (no intervined)\n";
-    #print "# pangene_FASTA_file = $pangene_fasta_file (no intervined)\n";
-
-} else {
-    print "# pangene_file (occup) = $pangene_matrix_file\n";
-    print "# pangene_file (occup, transposed) = $pangene_matrix_tr\n";
-    print "# pangene_file (names) = $pangene_gene_file\n";
-    print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
-    #print "# pangene_FASTA_file = $pangene_fasta_file\n";
-}
+print "# pangene_file (occup) = $pangene_matrix_file\n";
+print "# pangene_file (occup, transposed) = $pangene_matrix_tr\n";
+print "# pangene_file (names) = $pangene_gene_file\n";
+print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
+#print "# pangene_FASTA_file = $pangene_fasta_file\n";
 
 # 4.1) BED format matrix if clusters are chr-sorted
 if($chregex) {
@@ -1182,11 +1173,7 @@ if($chregex) {
 
     close(PANGEMATRIBED);
 
-    if($chregex && $nointerv == 1) {
-        print "# pangene_file (BED-like) = $pangene_bed_file (no intervined)\n";
-    } else {
-        print "# pangene_file (BED-like) = $pangene_bed_file\n";
-    }
+    print "# pangene_file (BED-like) = $pangene_bed_file\n";
 }
 
 exit if(!$dogrowth);

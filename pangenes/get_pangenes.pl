@@ -63,7 +63,7 @@ my ($newDIR,$output_mask,$pancore_mask,$include_file) = ('','','',0);
 my ($dowfmash,$dogsalign,$reference_string,$read_patches) = (0,0,0,0);
 my ($onlywga,$maxdistneigh,$inputDIR,$alg) = (0,$MAXDISTNEIGHBORS);
 my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
-my ($n_of_cpus,$do_soft, $highly_repetitive) = ($NUMCPUS,0,0);
+my ($n_of_cpus,$do_soft, $highly_repetitive,$nointerv) = ($NUMCPUS,0,0,0);
 my ($bedtools_path,$samtools_path,$wfmash_path,$gsalign_path) = ('','','','');
 my ($min_cluster_size,$runmode,$do_genome_composition);
 
@@ -71,7 +71,7 @@ my $random_number_generator_seed = 0;
 my $pwd = getcwd(); 
 $pwd .= '/';
 
-getopts('hvpcoAHzgwN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvpcoAHzgwfN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)) {
 
@@ -134,7 +134,9 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     " least annotated genes/features)\n";
   print   "-N max distance among neighbor genes                        ".
     "(optional, example: -N 10, default: $maxdistneigh)\n";
-  
+  print   "-f reference genes go first in pangene matrices             ".
+    "(optional, by default non-refs placed among refs, requires -s)\n";   
+
 #print   "-z add soft-core to genome composition analysis\n";
     
   print "\n".
@@ -314,8 +316,15 @@ if(defined($opts{'s'}) && $opts{'s'} ne '') {
   }
 
   $split_chr_regex = $opts{'s'};
-  $output_mask .= "split_";
-  $pancore_mask .= "_split"; 
+  if(defined($opts{'f'})) {
+    $nointerv = 1;		  
+    $output_mask .= "splitf_";
+    $pancore_mask .= "_splitf";	  
+
+  } else {  
+    $output_mask .= "split_";
+    $pancore_mask .= "_split"; 
+  }
 }
 
 if(defined($opts{'c'})) {
@@ -346,7 +355,7 @@ if(defined($opts{'B'})) {
 print "# $0 -d $inputDIR -p $read_patches -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
   "-m $runmode -w $dowfmash -g $dogsalign -O $min_overlap -Q $min_map_qual ".
-  "-N $maxdistneigh -s '$split_chr_regex' -H $highly_repetitive ".
+  "-N $maxdistneigh -s '$split_chr_regex' -f $nointerv -H $highly_repetitive ".
   "-W '$wfmash_path' -G '$gsalign_path' -B '$bedtools_path' -S '$samtools_path' ".
   "-n $n_of_cpus -R $random_number_generator_seed\n\n";
 
@@ -1048,6 +1057,10 @@ $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
 if($split_chr_regex) {
     $command .= "-x '$split_chr_regex' ";
 } 
+
+if($nointerv) {
+    $command .= "-n ";
+}
 
 if($read_patches) {
     $command .= "-p ";

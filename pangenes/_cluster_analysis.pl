@@ -46,7 +46,7 @@ my ( $infile, $filename, $cdsfile, $pepfile, $gdnafile );
 my ( $n_core_clusters, $n_cluster_sp, $n_cluster_seqs ) = ( 0, 0, 0 );
 my ( $maxdistneigh ) = ( $MAXDISTNEIGHBORS );
 my ( $NOSINGLES, $dogrowth, $patch, $chregex ) = ( 0, 0, 0, '' );
-my ( $n_of_species, $verbose, $min_taxa ) = ( 0, 0, 0 );
+my ( $n_of_species, $verbose, $min_taxa, $nointerv ) = ( 0, 0, 0, 0);
 my ( @infiles, @supported_species, @ignore_species);
 my ( %species, %ignore, %supported );
 
@@ -64,6 +64,7 @@ GetOptions(
     "mintaxa|t=i"   => \$min_taxa,
     "maxdist|m=i"   => \$maxdistneigh,
     "regex|x=s"     => \$chregex,
+    "nointerv|n"    => \$nointerv,
     "patch|p"       => \$patch,
     #"soft|z"        => \$dosoft,
     "seed|R=i"      => \$seed,
@@ -83,6 +84,7 @@ sub help_message {
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-m max distance among neighbor genes       (optional, example: -m 10, default: $maxdistneigh)\n"
       . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
+      . "-n do not intervine non-ref pangenes       (optional, by default tentatively placed among ref pangenes with -x\n"
       . "-p use patched sequences                   (optional, expects patch.SEQEXT extension)\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
@@ -971,7 +973,7 @@ else { # ordered along homologous chromosomes matching regex
 
     %sorted_cluster_ids = sort_clusters_by_position( 
         \@supported_species_POCS, \%supported, \%sorted_ids, \%id2coords, 
-        $chregex, \%incluster, \%cluster, $verbose );
+        $chregex, \%incluster, \%cluster, $nointerv );
 
     foreach $chr (sort keys(%sorted_cluster_ids)) {
 	    printf("# clusters sorted by position in chr %s = %d\n", 
@@ -1080,11 +1082,20 @@ close(PANGEMATRIF);
 system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
-print "# pangene_file (occup) = $pangene_matrix_file\n";
-print "# pangene_file (occup, transposed) = $pangene_matrix_tr\n";
-print "# pangene_file (names) = $pangene_gene_file\n";
-print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
-#print "# pangene_FASTA_file = $pangene_fasta_file\n";
+if($nointerv == 1) {
+    print "# pangene_file (occup) = $pangene_matrix_file (no intervined)\n";
+    print "# pangene_file (occup, transposed) = $pangene_matrix_tr (no intervined)\n";
+    print "# pangene_file (names) = $pangene_gene_file (no intervined)\n";
+    print "# pangene_file (names, transposed) = $pangene_gene_tr (no intervined)\n";
+    #print "# pangene_FASTA_file = $pangene_fasta_file (no intervined)\n";
+
+} else {
+    print "# pangene_file (occup) = $pangene_matrix_file\n";
+    print "# pangene_file (occup, transposed) = $pangene_matrix_tr\n";
+    print "# pangene_file (names) = $pangene_gene_file\n";
+    print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
+    #print "# pangene_FASTA_file = $pangene_fasta_file\n";
+}
 
 # 4.1) BED format matrix if clusters are chr-sorted
 if($chregex) {
@@ -1171,7 +1182,11 @@ if($chregex) {
 
     close(PANGEMATRIBED);
 
-    print "# pangene_file (BED-like) = $pangene_bed_file\n";
+    if($nointerv == 1) {
+        print "# pangene_file (BED-like) = $pangene_bed_file (no intervined)\n";
+    } else {
+        print "# pangene_file (BED-like) = $pangene_bed_file\n";
+    }
 }
 
 exit if(!$dogrowth);
@@ -1384,11 +1399,12 @@ sub write_boxplot_file {
 # v)    regex to match chr names; unmatched are added to 'unplaced' virtual chr
 # vi)   ref to hash mapping sp:::gene_ids to clusters
 # vii)  ref to 2-way hash containing clustered gene_ids
-# viii) optional boolean flag to enable verbose output
+# viii) optional boolean flag to make sure non-reference pangenes are not intervined
+# ix)   optional boolean flag to enable verbose output
 sub sort_clusters_by_position {
 
     my ($ref_species, $ref_species_num, $ref_sorted_ids, $ref_id2coords, 
-        $regex, $ref_incluster, $ref_cluster, 
+        $regex, $ref_incluster, $ref_cluster, $do_not_intervine,
         $verbose) = @_;
 
     my $species_seen = 0;
@@ -1448,7 +1464,9 @@ sub sort_clusters_by_position {
                     ## 1) index of cluster with next clustered gene on same chr,
                     ##    might be the same for consecutive PAV clusters
                     ($next_cluster_id,$next_cluster_idx) = ('',-1);
-                    foreach $gene2 ($gene .. $last_gene) {
+                    foreach $gene2 ($gene .. $last_gene) { 
+
+                        last if($do_not_intervine);			    
                             
                         $gene_id2 = $ref_sorted_ids->{$species}[$gene2];
                         $chr2 = $ref_id2coords->{$species}{$gene_id2}[0];
@@ -1469,7 +1487,7 @@ sub sort_clusters_by_position {
                     print "$species $gene_id $cluster_id $chr $prev_cluster_idx ".
                         "$next_cluster_idx $next_cluster_id $species_seen\n" if($verbose); 
 
-                    # 2) actually insert cluster in list 
+                    # 2) actually insert cluster in sorted list 
 
                     # before previous clusters
                     # prev: NA

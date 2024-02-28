@@ -84,7 +84,7 @@ sub help_message {
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-m max distance among neighbor genes       (optional, example: -m 10, default: $maxdistneigh)\n"
       . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
-      . "-n do not intervine non-ref pangenes       (optional, by default tentatively placed among ref pangenes with -x\n"
+      . "-n dont intervine non-ref pangenes with -x (optional, by default tentatively placed among ref pangenes)\n"
       . "-p use patched sequences                   (optional, expects patch.SEQEXT extension)\n"
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
@@ -1082,7 +1082,7 @@ close(PANGEMATRIF);
 system("$TRANSPOSEXE $pangene_matrix_file > $pangene_matrix_tr");
 system("$TRANSPOSEXE $pangene_gene_file > $pangene_gene_tr");
 
-if($nointerv == 1) {
+if($chregex && $nointerv == 1) {
     print "# pangene_file (occup) = $pangene_matrix_file (no intervined)\n";
     print "# pangene_file (occup, transposed) = $pangene_matrix_tr (no intervined)\n";
     print "# pangene_file (names) = $pangene_gene_file (no intervined)\n";
@@ -1182,7 +1182,7 @@ if($chregex) {
 
     close(PANGEMATRIBED);
 
-    if($nointerv == 1) {
+    if($chregex && $nointerv == 1) {
         print "# pangene_file (BED-like) = $pangene_bed_file (no intervined)\n";
     } else {
         print "# pangene_file (BED-like) = $pangene_bed_file\n";

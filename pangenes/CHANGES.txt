@@ -62,3 +62,4 @@
 11012024: sub _parseCIGARfeature handles correctly 1bp CS-type SNPs when computing overlap with optional query coord
 28022024: removed bug from 25102023 that misordered non-reference clusters in matrices
 28022024: added -n to avoid intervining non-reference pangenes in _cluster_analysis.pl
+28022024: added -f to get_pangenes.pl

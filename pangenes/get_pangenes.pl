@@ -134,7 +134,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     " least annotated genes/features)\n";
   print   "-N max distance among neighbor genes                        ".
     "(optional, example: -N 10, default: $maxdistneigh)\n";
-  print   "-f reference genes go first in pangene matrices             ".
+  print   "-f reference genes in blocks in pangene matrices             ".
     "(optional, by default non-refs placed among refs, requires -s)\n";   
 
 #print   "-z add soft-core to genome composition analysis\n";
@@ -316,10 +316,10 @@ if(defined($opts{'s'}) && $opts{'s'} ne '') {
   }
 
   $split_chr_regex = $opts{'s'};
-  if(defined($opts{'f'})) {
+  if(defined($opts{'f'})) { # ref blocks
     $nointerv = 1;		  
-    $output_mask .= "splitf_";
-    $pancore_mask .= "_splitf";	  
+    $output_mask .= "splitrb_";
+    $pancore_mask .= "_splitrb";	  
 
   } else {  
     $output_mask .= "split_";

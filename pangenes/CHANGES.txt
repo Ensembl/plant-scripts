@@ -63,3 +63,4 @@
 28022024: removed bug from 25102023 that misordered non-reference clusters in matrices
 28022024: added -n to avoid intervining non-reference pangenes in _cluster_analysis.pl
 28022024: added -f to get_pangenes.pl, which calls _cluster_analysis -v to make blocks of ref genes 
+24052024: check_quality.pl -h prints header 

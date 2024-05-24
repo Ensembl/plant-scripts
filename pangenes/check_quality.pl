@@ -3,7 +3,7 @@
 # This script takes a cDNA/CDS cluster produced by get_pangenes.pl and 
 # produces a quality control report 
 
-# Copyright [2023]
+# Copyright [2023-24]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -42,7 +42,10 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-i cdna/cds .fna/.faa file as in .cluster_list  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-I take 1st isoform only                        (optional, by default takes all)\n";
   print "-o folder to write output files                 (optional, MSA files removed by default)\n";
-  print "-n do not print header in text report           (optional)\n";
+  print "-n do not print header in text report           (optional, by default the following header is added:\n";
+  print "                                                 file 1stisof occup seqs mode_len SE_len mode_exons\n";
+  print "                                                 SE_exons mode_dist max_dist SE_dist sites Ca Cr_max\n";
+  print "                                                 Cr_min Cc_max Cc_min Cij_max Cij_min)\n";
   exit(0);
 }
 

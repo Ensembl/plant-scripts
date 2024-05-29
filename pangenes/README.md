@@ -636,7 +636,7 @@ In this case, a pangene cluster **might contain genes encoded in different chrom
 |pangene_matrix_genes.tr.tab|p+2 X g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
 
 
-
+### Other result files
 
 There are different types of intermediate result files produced by the pipeline.
 Probably the most valuable files are those containing collinear gene models

@@ -32,7 +32,7 @@ and produces different types of output:
 	- [Dependencies and installation](#dependencies-and-installation)
 	- [Command-line options](#command-line-options)
 	- [Input file format](#input-file-format)
-- [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis)
+- [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis-and-hpc-settings)
 - [Example 2: pangene and Presence-Absence Variation (PAV) analysis](#example-2-pangene-and-Presence-Absence-Variation-PAV-analysis)
 - [Example 3: splitting genome in chromosomes](#example-3-splitting-genome-in-chromosomes)
 - [Example 4: using GSAlign instead of minimap2](#example-4-using-GSAlign-instead-of-minimap2)
@@ -601,7 +601,7 @@ The resulting pan and core gene files look like this:
 
 The main results of the pipeline include a directory (*cluster_dir*) and a list (*cluster_list*) of pangene clusters
 and pangene matrices in several formats, which have already been introduced in 
-[Example 1](#example-1-default-core-pangene-analysis) and
+[Example 1](#example-1-default-core-pangene-analysis-and-hpc-settings) and
 [Example 3](#example-3-splitting-genome-in-chromosomes).
 
 The different types of pangene matrices that can be produced are summarized in the following tables,
@@ -619,11 +619,10 @@ pangenes are sorted by position along the reference chromosomes when possible:
 |pangene_matrix_genes.tr.tab|p+n+2 X g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
 |pangene_matrix.tr.bed|p X g+6|(string) names of genes from genome g<sub>i</sub> in pangene cluster, BED-like format, non-reference pangenes lack exact coordinates and are commented out with `#`|
 
-**Note 1:** BED-like `pangene_matrix.tr.bed` is also special for it includes all pangene clusters regardless of their occupancy,
+BED-like `pangene_matrix.tr.bed` is special for it includes all pangene clusters regardless of their occupancy,
 which is useful for [plotting the genomic context of a pangene cluster](#plotting-the-genome-context-of-a-pangene-cluster).
 
-
-**Note 2:** Matrices `pangene_matrix.tab` and `pangene_matrix_genes.tab` are transposed with respect to `pangene_matrix.tr.tab` and `pangene_matrix_genes.tr.tab`; `pangene_matrix.fasta` is a FASTA compressed version of `pangene_matrix.tab`.
+Matrices `pangene_matrix.tab` and `pangene_matrix_genes.tab` are transposed with respect to `pangene_matrix.tr.tab` and `pangene_matrix_genes.tr.tab`; `pangene_matrix.fasta` is a FASTA compressed version of `pangene_matrix.tab`.
 
 
 * If genome was **not split in chromosomes** all-vs-all chromosome alignments are computed and
@@ -635,6 +634,8 @@ In this case, a pangene cluster **might contain genes encoded in different chrom
 |:-------|:---------|:-------|
 |pangene_matrix.tr.tab|p+2 X g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
 |pangene_matrix_genes.tr.tab|p+2 X g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
+
+
 
 
 There are different types of intermediate result files produced by the pipeline.

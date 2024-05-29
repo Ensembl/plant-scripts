@@ -37,7 +37,7 @@ and produces different types of output:
 - [Example 3: splitting genome in chromosomes](#example-3-splitting-genome-in-chromosomes)
 - [Example 4: using GSAlign instead of minimap2](#example-4-using-GSAlign-instead-of-minimap2)
 - [Example 5: simulation of pangene set growth](#example-5-simulation-of-pangene-set-growth)
-- [Inspection of result files](#inspection-of-result-files)
+- [Explaining pangene matrices and other result files](#explaining-pangene-matrices-and-other-result-files)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
 - [Quality metrics of clusters](#quality-metrics-of-clusters)
@@ -524,11 +524,6 @@ The BED file contents should be like this, with genome occupancy in column 5:
     1	98770	99876	gene:ONIVA01G00080	1	-	gene:ONIVA01G00080	NA	NA
     1	100726	101071	gene:ONIVA01G00090	1	-	gene:ONIVA01G00090	NA	NA
 
-As opposed to the other types of matrices (ie pangene_matrix.tab, pangene_matrix_genes.tab,
-pangene_matrix.fasta, pangene_matrix.tr.tab, pangene_matrix_genes.tr.tab), which contain only clusters 
-of the selected occupancy class ([alltaxa] by default), the **BED-like matrix is complete** as it contains all
-clusters, even those not included in the cluster folder for being of less occupancy.
-
 ## Example 4: using GSAlign instead of minimap2
 
 In our tests GSAlign produces comparable results to minimap2 but using less RAM.
@@ -602,10 +597,47 @@ The resulting pan and core gene files look like this:
     4893	6801	7840	
     5063	6637	7840
 
-## Inspection of result files
+## Explaining pangene matrices and other result files
 
-In addition to the result files described in [Example 1](#example-1-default-core-pangene-analysis),
-there are different types of intermediate result files produced by the pipeline.
+The main results of the pipeline include a directory (*cluster_dir*) and a list (*cluster_list*) of pangene clusters
+and pangene matrices in several formats, which have already been introduced in 
+[Example 1](#example-1-default-core-pangene-analysis) and
+[Example 3](#example-3-splitting-genome-in-chromosomes).
+
+The different types of pangene matrices that can be produced are summarized in the following tables,
+assuming *g* genomes, *n* chromosomes and *p* pangenes with occupancy => numberOfTaxa ([alltaxa] by default).
+In these matrices an extra, **artifical chromosome named 'chrunsorted'** is created to accomodate unsorted pangenes.
+Note that the contents of these matrices correspond to clustered FASTA sequences in *cluster_dir*.
+
+If genome was **split in chromosomes** with an optional regular expression, 
+as in [Example 3](#example-3-splitting-genome-in-chromosomes),
+pangenes are sorted by position along the reference chromosomes when possible:
+
+|filename|dimensions|contents|
+|:-------|:---------|:-------|
+|pangene_matrix.tr.tab|p+n+2 x g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
+|pangene_matrix_genes.tr.tab|p+n+2 x g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
+|pangene_matrix.tr.bed|p x g+6|(string) names of genes from genome g<sub>i</sub> in pangene cluster, BED-like format, non-reference pangenes lack exact coordinates and are commented out with `#`|
+
+**Note 1:** BED-like `pangene_matrix.tr.bed` is also special for it includes all pangene clusters regardless of their occupancy,
+which is useful for [plotting the genomic context of a pangene cluster](#plotting-the-genome-context-of-a-pangene-cluster).
+
+
+**Note 2:** Matrices `pangene_matrix.tab` and `pangene_matrix_genes.tab` are transposed with respect to `pangene_matrix.tr.tab` and `pangene_matrix_genes.tr.tab`; `pangene_matrix.fasta` is a FASTA compressed version of `pangene_matrix.tab`.
+
+
+If genome was **not split in chromosomes** all-vs-all chromosome alignments are computed and
+pangenes are stacked in the **chromosome 'chrunsorted'**, 
+with clusters that include the reference genome first and singletons last.
+In this case, a pangene cluster **might contain genes encoded in different chromosomes** from different genomes:
+
+|filename|dimensions|contents|
+|:-------|:---------|:-------|
+|pangene_matrix.tr.tab|p+2 x g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
+|pangene_matrix_genes.tr.tab|p+2 x g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
+
+
+There are different types of intermediate result files produced by the pipeline.
 Probably the most valuable files are those containing collinear gene models
 resulting from a pairwise WGA, which are stored in TSV format (see also [Dotplots](#dotplots)).
 For instance, let's inspect one such file, in this case produced with the GSal algorithm:

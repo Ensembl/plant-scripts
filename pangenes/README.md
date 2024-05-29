@@ -609,15 +609,15 @@ assuming *g* genomes, *n* chromosomes and *p* pangenes with occupancy => numberO
 In these matrices an extra, **artifical chromosome named 'chrunsorted'** is created to accomodate unsorted pangenes.
 Note that the contents of these matrices correspond to clustered FASTA sequences in *cluster_dir*.
 
-If genome was **split in chromosomes** with an optional regular expression, 
+* If genome was **split in chromosomes** with an optional regular expression, 
 as in [Example 3](#example-3-splitting-genome-in-chromosomes),
 pangenes are sorted by position along the reference chromosomes when possible:
 
 |filename|dimensions|contents|
 |:-------|:---------|:-------|
-|pangene_matrix.tr.tab|p+n+2 x g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
-|pangene_matrix_genes.tr.tab|p+n+2 x g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
-|pangene_matrix.tr.bed|p x g+6|(string) names of genes from genome g<sub>i</sub> in pangene cluster, BED-like format, non-reference pangenes lack exact coordinates and are commented out with `#`|
+|pangene_matrix.tr.tab|p+n+2 X g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
+|pangene_matrix_genes.tr.tab|p+n+2 X g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format, n+1 chromosome blocks|
+|pangene_matrix.tr.bed|p X g+6|(string) names of genes from genome g<sub>i</sub> in pangene cluster, BED-like format, non-reference pangenes lack exact coordinates and are commented out with `#`|
 
 **Note 1:** BED-like `pangene_matrix.tr.bed` is also special for it includes all pangene clusters regardless of their occupancy,
 which is useful for [plotting the genomic context of a pangene cluster](#plotting-the-genome-context-of-a-pangene-cluster).
@@ -626,15 +626,15 @@ which is useful for [plotting the genomic context of a pangene cluster](#plottin
 **Note 2:** Matrices `pangene_matrix.tab` and `pangene_matrix_genes.tab` are transposed with respect to `pangene_matrix.tr.tab` and `pangene_matrix_genes.tr.tab`; `pangene_matrix.fasta` is a FASTA compressed version of `pangene_matrix.tab`.
 
 
-If genome was **not split in chromosomes** all-vs-all chromosome alignments are computed and
+* If genome was **not split in chromosomes** all-vs-all chromosome alignments are computed and
 pangenes are stacked in the **chromosome 'chrunsorted'**, 
 with clusters that include the reference genome first and singletons last.
 In this case, a pangene cluster **might contain genes encoded in different chromosomes** from different genomes:
 
 |filename|dimensions|contents|
 |:-------|:---------|:-------|
-|pangene_matrix.tr.tab|p+2 x g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
-|pangene_matrix_genes.tr.tab|p+2 x g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
+|pangene_matrix.tr.tab|p+2 X g+1|(int) number of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
+|pangene_matrix_genes.tr.tab|p+2 X g+1|(string) names of genes from genome g<sub>i</sub> in pangene cluster, TSV format|
 
 
 There are different types of intermediate result files produced by the pipeline.

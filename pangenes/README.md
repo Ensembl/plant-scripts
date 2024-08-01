@@ -95,7 +95,7 @@ This is recommended for large or multiple genomes.
 Please read how to set up your HPC environment
 [here](http://eead-csic-compbio.github.io/get_homologues/manual-est/manual-est.html#SECTION00033000000000000000).
 A sample configuration file for a LSF cluster can be found is provided ([HPC.conf.sample](./HPC.conf.sample)),
-it should be renamed as +HPC.conf+ for it to work.
+it should be renamed as `HPC.conf` for it to work.
 
 
 ### Transformation of gene coordinates 

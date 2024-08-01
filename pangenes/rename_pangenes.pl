@@ -16,7 +16,7 @@
 #
 # TODO: If a reference set of pangenes is passed, these will guide the nomenclature, need rules
 
-# Copyright [2023]
+# Copyright [2023-24]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -32,11 +32,11 @@ use pangeneTools qw( parse_sequence_FASTA_file );
 
 my $GENEIDIGITS = 6;
 
-my ($INP_dir, $INP_refdir, $INP_outdir, $INP_verbose) = ('','','',0);
+my ($INP_dir, $INP_refdir, $INP_outdir, $INP_verbose) = ('','','',1);
 my ($cluster_folder, $cluster_folder_name, $cluster_list_file ) = ( '','','' );
 my (%opts, @matrix_files);
 
-getopts('hvcd:r:o:', \%opts);
+getopts('hScd:r:o:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0))
 {
@@ -46,7 +46,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-d input directory with get_pangenes.pl results (required, example: -d /path/data_pangenes/..._algMmap_)\n";
   print "-o output directory and prefix ID               (required, example: -o Os4530.POR.1)\n";
 #  print "-r directory with reference pangenes            (optional, these help renaming the input ones)\n";
-  print "-v verbose                                      (optional)\n";
+  print "-S silent                                       (optional, by default prints mappings old -> renamed)\n";
+  print 
   exit(0);
 }
 
@@ -74,11 +75,13 @@ if(defined($opts{'o'})){
 } 
 else{ die "# EXIT : need -o directory/prefixID\n" }
 
-if(defined($opts{'v'})){
-  $INP_verbose = 1;
+if(defined($opts{'S'})){
+  $INP_verbose = 0;
 }
 
-print "# $0 -d $INP_dir -r $INP_refdir -o $INP_outdir -v $INP_verbose\n\n";
+printf("# %s -d %s -r %s -o %s -S %d\n\n",
+	$0, $INP_dir, $INP_refdir, $INP_outdir, !$INP_verbose);
+
 
 
 ## 0) locate .cluster_list file and guess actual folder with clusters
@@ -159,6 +162,9 @@ if(!$INP_refdir) {
 
       $file2ID{ $clustname } = $new_clustname;
 
+      # mappings
+      print "cluster: $clustname -> $new_clustname\n" if($INP_verbose);
+
       # add this renamed cluster to new cluster list file
       print NEWCLUSTLIST "cluster $new_clustname size=$size taxa=$taxa taxa(gdna)=$gtaxa";
 
@@ -188,7 +194,9 @@ if(!$INP_refdir) {
 
         $newfile = $file;
         $newfile =~ s/\Q$clustname\E/$file2ID{$clustname}/;	
-        print "$file -> $newfile\n" if($INP_verbose);
+
+		# mappings
+        print "file: $file -> $newfile\n" if($INP_verbose);
 
         if(!copy( "$cluster_folder/$file", "$INP_outdir/$cluster_folder_name/$newfile")) {
           die "# ERROR: cannot cp $cluster_folder/$file to $INP_outdir/$cluster_folder_name/$newfile, stop copying\n";

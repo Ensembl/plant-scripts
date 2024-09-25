@@ -22,6 +22,7 @@ and produces different types of output:
 ## Table of contents
 
 - [Objective](#objective)
+- [Definition of pangene](#definition-of-pangene)
 - [How it works](#how-it-works)
     - [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
 	- [Transformation of gene coordinates](#transformation-of-gene-coordinates)
@@ -37,6 +38,7 @@ and produces different types of output:
 - [Example 3: splitting genome in chromosomes](#example-3-splitting-genome-in-chromosomes)
 - [Example 4: using GSAlign instead of minimap2](#example-4-using-GSAlign-instead-of-minimap2)
 - [Example 5: simulation of pangene set growth](#example-5-simulation-of-pangene-set-growth)
+- [Example 6: estimation of haplotype diversity](#example-6-estimation-of-haplotype-diversity)
 - [Explaining pangene matrices and other result files](#explaining-pangene-matrices-and-other-result-files)
 - [Plotting the results](#plotting-the-results)
 - [Sequence alignments of clusters](#sequence-alignments-of-clusters)
@@ -73,6 +75,15 @@ across a set of genomes (or pangenome) so that pangenes can be defined:
 taken from [GET_HOMOLOGUES](http://eead-csic-compbio.github.io/get_homologues/manual). 
 Accessory genes include both shell and cloud genes.*
 
+## Definition of pangene
+
+In the [main paper](https://doi.org/10.1186/s13059-023-03071-z) a `pangene` is defined as follows:
+ 
+    A gene model or allele found in some or all individuals of a species in a similar genomic location. 
+    A pangene should integrate additional naming schemes, e.g., so that a cluster of gene models can 
+    share a common identifier that links back to their original gene identifiers. A pangene set defines 
+    our current understanding of the total coding potential of a species and can assist in gene model 
+    curation, by providing a pool of possible gene models for assessment.
 
 ## How it works
 
@@ -596,6 +607,63 @@ The resulting pan and core gene files look like this:
     5011	6394	7840	
     4893	6801	7840	
     5063	6637	7840
+
+
+## Example 6: estimation of haplotype diversity
+
+Pangene clusters can be used to
+
+he raw material for plant breeding is the accessible genetic variance. While some loci in the genome are fixed, other regions are variable and change across individuals and populations. Of all variants, most genomic studies focus on those that affect protein-coding sequences, as those are the easiest to annotate with help from curated databases. The recent availability of a pangenome of barley cultivars has allowed us to estimate, for the first time, the degree of variability of coding regions across the complete genome and representative germplasm. 
+
+
+# clusters with 4+ taxa
+perl -lne 'if(/^cluster \S+ size=\d+ taxa=(\d+) \S+ cdnafile: (\S+) \S+ \S+ pepfile: (\S+)/){ print "$3" if($1 >= 4)}' barley_pangenes/MorexV3_highrep_0taxa_5neigh_list.med_algMmap_split_/MorexV3.cluster_list > list.barley.4.pep.txt
+
+wc  list.barley.4.pep.txt 
+#57182   57182 2169765 list.barley.4.pep.txt
+
+# 1st isoform only
+cat list.barley.4.pep.txt | parallel --gnu -j 30 /homes/bcontreras/panoryza/plant-scripts/pangenes/check_quality.pl -d barley_pangenes/MorexV3_highrep_0taxa_5neigh_list.med_algMmap_split_ -i {} -n -I -o quality.barley.I ::: &> log.quality.barley.I.tsv
+
+# header
+# file 1stisof occup seqs mode_len SE_len mode_exons SE_exons mode_dist max_dist SE_dist sites Ca Cr_max Cr_min Cc_max Cc_min Cij_max Cij_min)
+
+https://github.com/Ensembl/plant-scripts/tree/master/pangenes#quality-metrics-of-clusters
+
+## run locally
+
+# run trimAl to define well aligned blocks (n=22 only)
+cd aln 
+for file in *.cds.faa; do ~/soft/trimAl_Linux_x86-64/trimal -keepheader -automated1 -terminalonly -in $file -out ../trimal/$file; done
+cd ..
+
+# count alleles in trimmed blocks, leaving out MorexV3, BarkeBaRT2v18 
+cd trimal
+for file in *.cds.faa; do
+        echo -n $file
+        perl -ne 'chomp; if(/^>/){ print "\n$_\n" }else{print}' $file | grep --no-group-separator -f ../list20 -A 1 | perl -ne 'if(/^>.*\[(\S+)\]/){} else { $cv{$_}.=
+"$1,"; $sq{$_}++ }; END{ print "\t".scalar(keys(%sq))."\t"; foreach $s (keys(%sq)){print "$sq{$s}:$cv{$s};" } }'
+        echo 
+done > ../alleles.trimmed.tsv
+cd..
+
+# count alleles in original aligned pangenes, leaving out MorexV3, BarkeBaRT2v18
+cd aln
+for file in *.cds.faa; do
+        echo -n $file
+        perl -ne 'chomp; if(/^>/){ print "\n$_\n" }else{print}' $file | grep --no-group-separator -f ../list20 -A 1 | perl -ne 'if(/^>.*\[(\S+)\]/){} else { $cv{$_}.=
+"$1,"; $sq{$_}++ }; END{ print "\t".scalar(keys(%sq))."\t"; foreach $s (keys(%sq)){print "$sq{$s}:$cv{$s};" } }'
+        echo
+done > ../alleles.tsv
+cd..
+
+perl -lane 'print $F[1] if($F[1])' alleles.trimmed.tsv | wc
+  56679   56679  115065
+
+perl -lane 'print $F[1] if($F[1])' alleles.trimmed.tsv | sort | uniq -c | sort -k2,2n
+
+
+
 
 ## Explaining pangene matrices and other result files
 

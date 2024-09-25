@@ -65,3 +65,4 @@
 28022024: added -f to get_pangenes.pl, which calls _cluster_analysis -v to make blocks of ref genes 
 24052024: check_quality.pl -h prints header
 01082024: added -S to rename_pangenes.pl
+25092024: added section 'Example 6: estimation of haplotype diversity'

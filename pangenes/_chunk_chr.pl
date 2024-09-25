@@ -8,8 +8,10 @@ use Getopt::Long qw(:config no_ignore_case);
 # A new chunk is created when the next gene on the current chr is further 
 # than MAXGENEDIST bp. A chunk is a genomic block containing at least one gene,
 # usually also ending with a gene.
+#
+# Not used anymore, legacy only.
 
-# Copyright [2022] 
+# Copyright [2022-24] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # perl _chunk_chr.pl -sp oryza_sativa -fa Oryza_sativa.IRGSP-1.0.dna.toplevel.fa \

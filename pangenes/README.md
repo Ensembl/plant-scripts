@@ -77,7 +77,7 @@ Accessory genes include both shell and cloud genes.*
 
 ## Definition of pangene
 
-Based on <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene` can be defined as follows:
+According to our paper <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene` can be defined as follows:
  
     A gene model or allele/haplotype found in some or all individuals of a species in a similar genomic location. 
     A pangene should integrate additional naming schemes, e.g., so that a cluster of gene models can 
@@ -611,58 +611,62 @@ The resulting pan and core gene files look like this:
 
 ## Example 6: estimation of haplotype diversity
 
-Pangene clusters can be used to
+Pangene clusters can be used to estimate the diversity of haplotypes or alleles of one or more genes.
+While this can be done with cDNA FASTA files, haplotypes of coding sequences, particularly those
+harboring missense and nonsense mutations, are the easiest to interpret in relation to phenotype.
 
-he raw material for plant breeding is the accessible genetic variance. While some loci in the genome are fixed, other regions are variable and change across individuals and populations. Of all variants, most genomic studies focus on those that affect protein-coding sequences, as those are the easiest to annotate with help from curated databases. The recent availability of a pangenome of barley cultivars has allowed us to estimate, for the first time, the degree of variability of coding regions across the complete genome and representative germplasm. 
+The commands in this section can be used to compute the haplotype diversity of a pangene set.
+They include script `check_quality.pl`, introduced in section 
+[Quality metrics of clusters](quality-metrics-of-clusters),
+two optional packages are required:
 
+|software|source|installation instructions|notes|
+|:-------|:-----|:------------------------|-----|
+|parallel|https://www.gnu.org/software/parallel|sudo apt install parallel|example for debian/ubuntu)|
+|trimAl|https://github.com/inab/trimal/releases/tag/v1.5.0||download and save in appropriate folder|
 
-# clusters with 4+ taxa
-perl -lne 'if(/^cluster \S+ size=\d+ taxa=(\d+) \S+ cdnafile: (\S+) \S+ \S+ pepfile: (\S+)/){ print "$3" if($1 >= 4)}' barley_pangenes/MorexV3_highrep_0taxa_5neigh_list.med_algMmap_split_/MorexV3.cluster_list > list.barley.4.pep.txt
+    cd .. && make install_pangenes_quality && cd pangenes
 
-wc  list.barley.4.pep.txt 
-#57182   57182 2169765 list.barley.4.pep.txt
+    # select protein FASTA files of pangenes with ideally 4+ taxa, 3 in this toy example
+    perl -lne 'if(/\s+taxa=(\d+) \S+ cdnafile: (\S+) \S+ \S+ pepfile: (\S+)/){ print "$3" if($1 >= 3)}' \
+        test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list \
+        > test_rice_pangenes/list.diversity.pep.txt
 
-# 1st isoform only
-cat list.barley.4.pep.txt | parallel --gnu -j 30 /homes/bcontreras/panoryza/plant-scripts/pangenes/check_quality.pl -d barley_pangenes/MorexV3_highrep_0taxa_5neigh_list.med_algMmap_split_ -i {} -n -I -o quality.barley.I ::: &> log.quality.barley.I.tsv
+    #wc test_rice_pangenes/list.diversity.pep.txt
 
-# header
-# file 1stisof occup seqs mode_len SE_len mode_exons SE_exons mode_dist max_dist SE_dist sites Ca Cr_max Cr_min Cc_max Cc_min Cij_max Cij_min)
+    # compute multiple alignments of selected FASTA files with 10 parallel threads,
+    # -o is the name of the output folder
+    # -I means that only the 1st isoform of each gene model is used,
+    cat list.diversity.pep.txt | parallel --gnu -j 10 ./check_quality.pl -d \
+        test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i {} \
+        -n -I -o test_rice_pangenes/diversity.pep ::: &> test_rice_pangenes/log.diversity.pep.I.tsv
 
-https://github.com/Ensembl/plant-scripts/tree/master/pangenes#quality-metrics-of-clusters
+    # header of log.diversity.pep.I.tsv
+    # file 1stisof occup seqs mode_len SE_len mode_exons SE_exons mode_dist max_dist SE_dist sites Ca Cr_max Cr_min Cc_max Cc_min Cij_max Cij_min
 
-## run locally
+    # run trimAl to define well aligned blocks, in the example located in 
+    # folder ~/soft/trimAl_Linux_x86-64 , and save results in new folder trimal.out
+    mkdir test_rice_pangenes/trimal.out
+    cd test_rice_pangenes/diversity.pep
+    for file in *.cds.aln.faa; do ~/soft/trimAl_Linux_x86-64/trimal -keepheader -automated1 -terminalonly -in $file -out ../trimal.out/$file; done
+    cd ..
 
-# run trimAl to define well aligned blocks (n=22 only)
-cd aln 
-for file in *.cds.faa; do ~/soft/trimAl_Linux_x86-64/trimal -keepheader -automated1 -terminalonly -in $file -out ../trimal/$file; done
-cd ..
-
-# count alleles in trimmed blocks, leaving out MorexV3, BarkeBaRT2v18 
-cd trimal
-for file in *.cds.faa; do
+    # count alleles in trimmed blocks
+    cd trimal.out
+    for file in *.cds.aln.faa; do
         echo -n $file
-        perl -ne 'chomp; if(/^>/){ print "\n$_\n" }else{print}' $file | grep --no-group-separator -f ../list20 -A 1 | perl -ne 'if(/^>.*\[(\S+)\]/){} else { $cv{$_}.=
-"$1,"; $sq{$_}++ }; END{ print "\t".scalar(keys(%sq))."\t"; foreach $s (keys(%sq)){print "$sq{$s}:$cv{$s};" } }'
+        perl -ne 'chomp; if(/^>/){ print "\n$_\n" }else{print}' $file | \
+            perl -ne 'next if(/^$/);if(/^>.*\[(\S+)\]/){ $tx=$1 } else { $hp{$_}.="$tx,"; $sq{$_}++ }; END{ print "\t".scalar(keys(%sq))."\t"; foreach $s (keys(%sq)){ print "$sq{$s}:$hp{$s};" } }' 
         echo 
-done > ../alleles.trimmed.tsv
-cd..
+    done > ../haplotypes.trimmed.tsv
+    cd ../..
 
-# count alleles in original aligned pangenes, leaving out MorexV3, BarkeBaRT2v18
-cd aln
-for file in *.cds.faa; do
-        echo -n $file
-        perl -ne 'chomp; if(/^>/){ print "\n$_\n" }else{print}' $file | grep --no-group-separator -f ../list20 -A 1 | perl -ne 'if(/^>.*\[(\S+)\]/){} else { $cv{$_}.=
-"$1,"; $sq{$_}++ }; END{ print "\t".scalar(keys(%sq))."\t"; foreach $s (keys(%sq)){print "$sq{$s}:$cv{$s};" } }'
-        echo
-done > ../alleles.tsv
-cd..
+    # histogram, note that clusters with tandem copies might inflate the diversity
+    #perl -lane 'print $F[1] if($F[1])' test_rice_pangenes/haplotypes.trimmed.tsv | sort | uniq -c | sort -k2,2n
 
-perl -lane 'print $F[1] if($F[1])' alleles.trimmed.tsv | wc
-  56679   56679  115065
+![Histogram of haplotypes](plots/haplotypes.trimmed.png)
 
-perl -lane 'print $F[1] if($F[1])' alleles.trimmed.tsv | sort | uniq -c | sort -k2,2n
-
-
+*Figure 6. Histogram of trimmed protein haplotypes encoded in test pangene set.*
 
 
 ## Explaining pangene matrices and other result files
@@ -778,22 +782,22 @@ These will produce figures such as these:
 
 ![Pangene set (pan) plot](./plots/pan_gene.tab_pan.png)
 
-*Figure 6. Pangene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
+*Figure 7. Pangene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl*
 
 ![Pangene set (core) plot](./plots/core_gene.tab_core_both.png)
 
-*Figure 7. Core-pangene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl.*
+*Figure 8. Core-pangene set growth after pooling 11 Oryza species, generated with get_homologues/plot_pancore_matrix.pl.*
 
 ![Pan-geneset occupancy barplot](./plots/pangene_matrix__shell.png)
 
-*Figure 8. Occupancy of pangene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
+*Figure 9. Occupancy of pangene clusters of 11 Oryza species, generated with get_homologues/parse_pangenome_matrix.pl*
 
 
 ## Sequence alignments of clusters 
 
 Multiple alignments can be computed for each cluster FASTA file to determine,
 for instance, if there is a conserved gene structure. For instance, we can
-align the cDNA cluster gene:ONIVA01G52180.cdna.fna with [clustal-omega](http://www.clustal.org/omega):
+align the cDNA cluster gene:ONIVA01G52180.cdna.fna:
 
     >transcript:Os01t0978100-02 gene:Os01g0978100 1:43232034-43238012(-) [Oryza_sativa.IRGSP-1.0.chr1]
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GGGAGGGGATTAGGCAACAAAAGCTCGTCGTCCATCCGCAGATACGGAACTACTCCCCTATCCAACACCTCCGAGTCCGAGCAACGCAAGATGGCGTCGTGGTCGTCGCCCGTCGCCGCCGCCGCCTTGCAGGTCCATTTCGGGTCCTCCTGCTTCTTCTCCGCCCGATCGCCACGACAGACCCTCCTCCTACCACCTCTCGCCCGCAACCCTACACTGACCATCCAGCCCCGGCCCCATCCCTTCCGGAACATCAACTCCTCCTCCTCCTCCAGCTGGATGTGCCACGCCGTCGCCGCCGAGGTCGAGGGCCTCAACATCGCCGACGACGTCACCCAGCTCATCGGCAAGACTCCAATGGTATATCTCAACAACATCGTCAAGGGATGTGTTGCCAATGTCGCTGCTAAGCTCGAGATTATGGAGCCCTGTTGCAGTGTCAAGGACAGGATAGGATACAGTATGATTTCTGATGCGGAAGAGAAAGGCTTGATAACTCCTGGAA------------------------------------------------------AGAGTGTTTTGGTGGAACCAACAAGTGGAAATACAGGCATTGGTCTTGCCTTCATTGCTGCTTCCAGAGGATATAAATTAATATTGACCATGCCTGCATCAATGAGCATGGAGAGAAGAGTTCTACTCAAAGCTTTTGGCGCTGAACTTGTCCTTACTGATGCCGCAAAAGGGATGAAGGGGGCTGTAGATAAGGCTACAGAGATTTTAAATAAGACACCTGATGCCTATATGCTGCAGCAGTTTGACAACCCTGCCAACCCAAAGGTACATTATGAGACTACTGGGCCAGAAATCTGGGAGGATTCTAAAGGGAAGGTGGATGTATTCATTGGTGGAATTGGAACAGGTGGAACAATATCTGGTGCTGGCCGTTTCCTGAAAGAGAAAAATCCTGGAATTAAGGTTATTGGTATTGAGCCTTCTGAGAGTAACATACTCTCTGGTGGAAAACCTGGCCCACATAAGATTCAAGGCATTGGGGCAGGATTTGTTCCAAGGAACTTGGATAGTGAAGTTCTCGATGAAGTGATTGAGATATCTAGTGATGAGGCTGTTGAGACAGCAAAGCAATTGGCTCTTCAGGAAGGATTACTGGTTGGAATTTCATCTGGGGCAGCAGCAGCAGCTGCCATTAAAGTTGCAAAAAGACCAGAAAATGCTGGAAAGTTGGTAGTGGTTGTGTTTCCAAGCTTTGGTGAGAGGTACCTTTCATCTATCCTTTTTCAGTCGATAAGAGAAGAATGTGAGAAGTTGCAACCTGAACCATGAGCCTAACTTCAGTGTTCACAACATCATAATTGTTTCTGAGATTTCTGGCCATTAGTTTTTTTTTTCTGAGAAGTATCATACCACTCCATAGCTGTTTGTTCGATAAATAAAACAGTTACCTTTGCACTTATAATGAGGCTTGTGAGGGTACTGTGAAATTTCTCTGAACATCTTCTACTCTTCTCTTTTATCCTTAAATCAATCTGGGAGCAGTTTGTAATACATACGTAAATTTAAAGCTGGGTGTTTGGTAATTGTAAACAAATGTTTCGAAGAGCCGTGAAACATTATCAATTAGCATGAAGCACTTTAAAAGTGCTTTCCGG-------
@@ -809,6 +813,10 @@ align the cDNA cluster gene:ONIVA01G52180.cdna.fna with [clustal-omega](http://w
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------CAGATACGGAACTACTCCCCTATCCAACACCTCCGAGTCCGAGCAACGCAAGATGGCGTCGTGGTCGTCGCCCGTCGCCGCCGCCGCCTTGCAGGTCCATTTCGGGTCCTCCTGCTTCTTCTCCGCCCGATCGCCACGACAGACCCTCCTCCTACCACCTCTCGCCCGCAACCCTACACTGACCATCCAGCCCCGGCCCCATCCCTTCCGGAACATCAACTCCTCCTCCTCCTCCAGCTGGATGTGCCACGCCGTCGCCGCCGAGGTCGAGGGCCTCAACATCGCCGACGACGTCACCCAGCTCATCGGCAAGACTCCAATGGTATATCTCAACAACATCGTCAAGGGATGTGTTGCCAATGTCGCTGCTAAGCTCGAGATTATGGAGCCCTGTTGCAGTGTCAAGGACAGGATAGGATACAGTATGATTTCTGATGCGGAAGAGAAAGGCTTGATAACTCCTGGAA------------------------------------------------------AGAGTGTTTTGGTGGAACCAACAAGTGGAAATACAGGCATTGGTCTTGCCTTCATTGCTGCTTCCAGAGGATATAAATTAATATTGACCATGCCTGCATCAATGAGCATGGAGAGAAGAGTTCTACTCAAAGCTTTTGGCGCTGAACTTGTCCTTACTGATGCCGCAAAAGGGATGAAGGGGGCTGTAGATAAGGCTACAGAGATTTTAAATAAGACACCTGATGCCTATATGCTGCAGCAGTTTGACAACCCTGCCAACCCAAAGGTACATTATGAGACTACTGGGCCAGAAATCTGGGAGGATTCTAAAGGGAAGGTGGATGTATTCATTGGTGGAATTGGAACAGGTGGAACAATATCTGGTGCTGGCCGTTTCCTGAAAGAGAAAAATCCTGGAATTAAGGTTATTGGTATTGAGCCTTCTGAGAGTAACATACTCTCTGGTGGAAAACCTGGCCCACATAAGATTCAAGGCATTGGGGCAGGATTTGTTCCAAGGAACTTGGATAGTGAAGTTCTCGATGAAGTGATTGAGATATCTAGTGATGAGGCTGTTGAGACAGCAAAGCAATTGGCTCTTCAGGAAGGATTACTGGTTGGAATTTCATCTGGGGCAGCAGCAGCAGCTGCCATTAAAGTTGCAAAAAGACCAGAAAATGCTGGAAAGTTGGTAGTGGTTGTGTTTCCAAGCTTTGGTGAGAGGTACCTTTCATCTATCCTTTTTCAGTCGATAAGAGAAGAATGTGAGAAGTTGCAACCTGAACCATGAGCCTAACTTCAGTGTTCACAACATCATAATTGTTTCTGAGATTTCTGGCCATTAGTTTTTTTTTTCTGAGAAGTATCATACCACTCCATAGCTGTTTGTTCGATAAATAAAACAGTTACCTTTGCACTTATAATGAGGCTTGTGAGGGTACTGTGAAATTTCTCTGAACATCTTCTACTCTTCTCTTTTATCCTTAAATCAATCTGGGAGCAGTTTGTAATACATACGTAAATTTAAAGCTGGGTGTTTGGTAATTGTAAACAAATGTTTCGAAGAGCCGTGAAACATTATCAATTAGCATGAAGCACTTTAAAAGTGCTTTCC---------
     >transcript:ONIVA01G52180.2 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATGGCGTCGTGGTCGTCGCCCGTCGCCGCCGCCGCCTTGCAGGTCCATTTCGGGTCCTCCTGCTTCTTCTCCGCCCGATCGCCACGACAGACCCTCCTCCTACCACCTCTCGCCCGCAACCCTACACTGACCATCCAGCCCCGGCCCCATCCCTTCCGGAACATCAACTCCTCCTCCTCCTCCAGCTGGATGTGCCACGCCGTCGCCGCCGAGGTCGAGGGCCTCAACATCGCCGACGA---------CCTCATCGGCAAGACTCCAATGGTATATCTCAACAACATCGTCAAGGGATGTGTTGCCAATGTCGCTGCTAAGCTCGAGATTATGGAGCCCTGTTGCAGTGTCAAGGACAGGATAGGATACAGTATGATTTCTGATGCGGAAGAGAAAGGCTTGATAACTCCTGGAAAGCTCTCACCCAGTGACTTACCATGCATGACATATTACTTTATGCTCTATGCTCAGAGTGTTTTGGTGGAACCAACAAGTGGAAATACAGGCATTGGTCTTGCCTTCATTGCTGCTTCCAGAGGATATAAATTAATATTGACCATGCCTGCATCAATGAGCATGGAGAGAAGAGTTCTACTCAAAGCTTTTGGCGCTGAACTTGTCCTTACTGATGCCGCAAAAGGGATGAAGGGGGCTGTAGATAAGGCTACAGAGATTTTAAATAAGACACCTGATGCCTATATGCTGCAGCAGTTTGACAACCCTGCCAACCCAAAGGTACATTATGAGACTACTGGGCCAGAAATCTGGGAGGATTCTAAAGGGAAGGTGGATGTATTCATTGGTGGAATTGGAACAGGTGGAACAATATCTGGTGCTGGCCGTTTCCTGAAAGAGAAAAATCCTGGAATTAAGGTTATTGGTATTGAGCCTTCTGAGAGTAACATACTCTCTGGTGGAAAACCTGGCCCACATAAGATTCAAGGCATTGGGGCAGGATTTGTTCCAAGGAACTTGGATAGTGAAGTTCTCGATGAAGTGATTGAGATATCTAGTGATGAGGCTGTTGAGACAGCAAAGCAATTGGCTCTTCAGGAAGGATTACTGGTTGGAATTTCATCTGGGGCAGCAGCAGCAGCTGCCATTAAAGTTGCAAAAAGACCAGAAAATGCTGGAAAGTTGGTAGTGGTTGTGTTTCCAAGCTTTGGTGAGAGGTACCTTTCATCTATCCTTTTTCAGTCGATAAGAGAAGAATGTGAGAAGTTGCAACCTGAACCATGAGC-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+The script `check_evidence.pl`, introduced in section 
+[Quality metrics of clusters](#quality-metrics-of-clusters),
+calls [clustal-omega](http://www.clustal.org/omega) to perform such alignments.
 
 If you installed [GET-HOMOLOGUES](https://github.com/eead-csic-compbio/get_homologues) earlier,
 you can also compute local BLAST alignments, coverage and sequence identity to the longest sequence 
@@ -828,7 +836,7 @@ Note it requires the installation of optional software,
 and [AliStat](https://github.com/thomaskf/AliStat),
 which can be done as follows:
 
-    cd ../.. && make install_pangenes_quality
+    cd .. && make install_pangenes_quality
 
 The automatic report includes metrics based on multiple sequence alignment and the corresponding distance matrix.
 It can be produced as follows:
@@ -953,7 +961,7 @@ changing the extension of the target file from .png to .pdf or .svg .
 
 ![Pangene cluster context plot](./plots/pangene_context.png)
 
-*Figure 9. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script check_evidence.pl.
+*Figure 10. Genomic context of cluster gene:ONIVA01G52020.cds.fna, generated with script check_evidence.pl.
 Note that several genes might fit in the same slot, due to split gene models or to tandem copies.*
 
 
@@ -973,7 +981,7 @@ Currently, the following fixes have been tested:
 
 ![check_evidence.pl flowchart](pics/flow-check-evidence.png)
 
-*Figure 10. Flowchart of script check_evidence.pl -f*
+*Figure 11. Flowchart of script check_evidence.pl -f*
 
 
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):

@@ -158,23 +158,23 @@ Here I list the most important ones, they can be changed by editing the script s
 
 |script|variable|value|meaning|
 |:-----|:-------|:----|:------|
-|get_pangenes.pl|$MINGFFLEN|100|min length of sequences of features (cdna, cds) extracted from input GFF files|
-|get_pangenes.pl|$NOFSAMPLESREPORT|20|number of samples while simulating pangene growth with -c|
-|get_pangenes.pl|$GFFACCEPTEDFEATS|gene,mRNA,transcript,exon,CDS|accepted features in input GFF files|
-|get_pangenes.pl|$GFFVALIDGENEFEAT|gene,mRNA,transcript|features used to call valid genes in input GFF files|
+|get_pangenes.pl|MINGFFLEN|100|min length of sequences of features (cdna, cds) extracted from input GFF files|
+|get_pangenes.pl|NOFSAMPLESREPORT|20|number of samples while simulating pangene growth with -c|
+|get_pangenes.pl|GFFACCEPTEDFEATS|gene,mRNA,transcript,exon,CDS|accepted features in input GFF files|
+|get_pangenes.pl|GFFVALIDGENEFEAT|gene,mRNA,transcript|features used to call valid genes in input GFF files|
 |_collinear_genes.pl|MINIMAPPARS|--secondary=no --cs -x asm20 -r1k,5k|minimap2 settings|
-|_collinear_genes.pl|$GSALIGNPARS|-sen -no_vcf -fmt 1|GSAlign settings|
-|_collinear_genes.pl|$BEDINTSCPAR|-wo -f XXX -F XXX -e|bedtools intersect parameters, XXX replaced with user selected overlap [0-1]|
-|_collinear_genes.pl|$MINMASKLEN|1000000|mask longer (intergenic, repetitive) fragments with -H|
-|_collinear_genes.pl|$GENEMARGIN|5000|do not mask gene margins|
-|_collinear_genes.pl|$MINALNLEN|100|min alignment length when mapping & transforming gene coords on WGA|
-|_cluster_analysis.pl|$MINEDGESTOMERGE|0.75|ratio of edges connecting two clusters so they can be merged|
-|check_evidence.pl|$GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
-|check_evidence.pl|$MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
-|check_evidence.pl|$MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
-|check_evidence.pl|$MINLIFTIDENTITY|90.0|min % of identity of gmap CDS/cDNA to genome alignments to be considered|
-|check_evidence.pl|$MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
-|_dotplot.pl|$MINCONTIGSIZE|100000|min length of chrs/contigs to be considered for dotplot|
+|_collinear_genes.pl|GSALIGNPARS|-sen -no_vcf -fmt 1|GSAlign settings|
+|_collinear_genes.pl|BEDINTSCPAR|-wo -f XXX -F XXX -e|bedtools intersect parameters, XXX replaced with user selected overlap [0-1]|
+|_collinear_genes.pl|MINMASKLEN|1000000|mask longer (intergenic, repetitive) fragments with -H|
+|_collinear_genes.pl|GENEMARGIN|5000|do not mask gene margins|
+|_collinear_genes.pl|MINALNLEN|100|min alignment length when mapping & transforming gene coords on WGA|
+|_cluster_analysis.pl|MINEDGESTOMERGE|0.75|ratio of edges connecting two clusters so they can be merged|
+|check_evidence.pl|GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
+|check_evidence.pl|MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
+|check_evidence.pl|MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
+|check_evidence.pl|MINLIFTIDENTITY|90.0|min % of identity of gmap CDS/cDNA to genome alignments to be considered|
+|check_evidence.pl|MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
+|_dotplot.pl|MINCONTIGSIZE|100000|min length of chrs/contigs to be considered for dotplot|
 
 ### Dependencies and installation
 
@@ -620,10 +620,10 @@ They include script `check_quality.pl`, introduced in section
 [Quality metrics of clusters](#quality-metrics-of-clusters),
 two optional packages are required:
 
-|software|source|installation instructions|notes|
-|:-------|:-----|:------------------------|-----|
-|parallel|https://www.gnu.org/software/parallel|sudo apt install parallel|example for debian/ubuntu)|
-|trimAl|https://github.com/inab/trimal/releases/tag/v1.5.0||download and save in appropriate folder|
+|software|source|installation instructions|
+|:-------|:-----|:------------------------|
+|parallel|https://www.gnu.org/software/parallel|sudo apt install parallel|
+|trimAl|https://github.com/inab/trimal/releases/tag/v1.5.0|download and save in appropriate folder|
 
     cd .. && make install_pangenes_quality && cd pangenes
 

@@ -617,7 +617,7 @@ harboring missense and nonsense mutations, are the easiest to interpret in relat
 
 The commands in this section can be used to compute the haplotype diversity of a pangene set.
 They include script `check_quality.pl`, introduced in section 
-[Quality metrics of clusters](quality-metrics-of-clusters),
+[Quality metrics of clusters](#quality-metrics-of-clusters),
 two optional packages are required:
 
 |software|source|installation instructions|notes|

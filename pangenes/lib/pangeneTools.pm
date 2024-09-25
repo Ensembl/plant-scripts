@@ -4,7 +4,7 @@ require Exporter;
 # Subroutines use by get_pangenes.pl and related scripts.
 # Some adapted from https://github.com/eead-csic-compbio/get_homologues
 #
-# Copyright [2021-23]
+# Copyright [2021-24]
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 @ISA = qw(Exporter);

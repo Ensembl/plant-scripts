@@ -661,8 +661,20 @@ two optional packages are required:
     done > ../haplotypes.trimmed.tsv
     cd ../..
 
+The resulting file `test_rice_pangenes/haplotypes.trimmed.tsv` can be used to create a histogram of haplotypes/alleles:
+
+    head -6 test_rice_pangenes/haplotypes.trimmed.tsv
+
+    gene:ONIVA01G00100.cds.aln.faa	3	1:Oryza_indica.ASM465v1.chr1,;1:Oryza_sativa.IRGSP-1.0.chr1,;1:Oryza_nivara_v1.chr1,;
+    gene:ONIVA01G00110.cds.aln.faa	3	1:Oryza_sativa.IRGSP-1.0.chr1,;1:Oryza_indica.ASM465v1.chr1,;1:Oryza_nivara_v1.chr1,;
+    gene:ONIVA01G00120.cds.aln.faa	3	1:Oryza_indica.ASM465v1.chr1,;1:Oryza_sativa.IRGSP-1.0.chr1,;1:Oryza_nivara_v1.chr1,;
+    gene:ONIVA01G00130.cds.aln.faa	3	1:Oryza_indica.ASM465v1.chr1,;1:Oryza_sativa.IRGSP-1.0.chr1,;1:Oryza_nivara_v1.chr1,;
+    gene:ONIVA01G00140.cds.aln.faa	3	1:Oryza_nivara_v1.chr1,;1:Oryza_indica.ASM465v1.chr1,;1:Oryza_sativa.IRGSP-1.0.chr1,;
+    gene:ONIVA01G00150.cds.aln.faa	2	2:Oryza_nivara_v1.chr1,Oryza_sativa.IRGSP-1.0.chr1,;1:Oryza_indica.ASM465v1.chr1,;
+
     # histogram, note that clusters with tandem copies might inflate the diversity
     #perl -lane 'print $F[1] if($F[1])' test_rice_pangenes/haplotypes.trimmed.tsv | sort | uniq -c | sort -k2,2n
+
 
 ![Histogram of haplotypes](plots/haplotypes.trimmed.png)
 

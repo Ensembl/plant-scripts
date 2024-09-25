@@ -77,9 +77,9 @@ Accessory genes include both shell and cloud genes.*
 
 ## Definition of pangene
 
-In the [main paper](https://doi.org/10.1186/s13059-023-03071-z) a `pangene` is defined as follows:
+Based on <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene` can be defined as follows:
  
-    A gene model or allele found in some or all individuals of a species in a similar genomic location. 
+    A gene model or allele/haplotype found in some or all individuals of a species in a similar genomic location. 
     A pangene should integrate additional naming schemes, e.g., so that a cluster of gene models can 
     share a common identifier that links back to their original gene identifiers. A pangene set defines 
     our current understanding of the total coding potential of a species and can assist in gene model 

@@ -772,7 +772,7 @@ This is the location of genome alignments in PAF format and genome indices.
 These are temporary files that are re-used by future jobs if possible to save computing time.
 As the number of input genomes increases, so will the disk space required by `tmp/`.
 For instance, the analysis of 22 barley genomes resulted in 956GB of temporary data.
-It is perfectly save to remove/compress this folder if you need to save space, 
+It is perfectly safe to remove/compress this folder if you need to save space, 
 but that will mean that previous temporary files need to be computed again.
 
 ## Plotting the results

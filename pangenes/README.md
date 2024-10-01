@@ -766,6 +766,14 @@ These files can be analyzed in bulk in the terminal for quality control, for ins
 
     grep "collinear gene pairs" test_rice_pangenes/*Mmap.overlap0.5.tsv.queue | perl -lane 'print $F[1]' | sort -r
 
+### tmp/ folder
+
+This is the location of genome alignments in PAF format and genome indices.
+These are temporary files that are re-used by future jobs if possible to save computing time.
+As the number of input genomes increases, so will the disk space required by `tmp/`.
+For instance, the analysis of 22 barley genomes resulted in 956GB of temporary data.
+It is perfectly save to remove/compress this folder if you need to save space, 
+but that will mean that previous temporary files need to be computed again.
 
 ## Plotting the results
 

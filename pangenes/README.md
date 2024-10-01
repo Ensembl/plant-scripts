@@ -103,10 +103,10 @@ but it can also run in parallel on a cluster both with options `-m cluster`
 and `-m dryrun`, if you prefer to copy and paste your commands in batches directly in the terminal.
 This is recommended for large or multiple genomes.
 
-Please read how to set up your HPC environment
-[here](http://eead-csic-compbio.github.io/get_homologues/manual-est/manual-est.html#SECTION00033000000000000000).
-A sample configuration file for a LSF cluster can be found is provided ([HPC.conf.sample](./HPC.conf.sample)),
-it should be renamed as `HPC.conf` for it to work.
+Sample configuration files for LSF and SLURM managers are provided at 
+([HPC.conf.sample](./HPC.conf.sample)) and
+([HPC.conf.sample.slurm](./HPC.conf.sample.slurm)).
+Please adapt them and rename then `HPC.conf` for them to work.
 
 
 ### Transformation of gene coordinates 

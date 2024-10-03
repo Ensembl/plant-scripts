@@ -310,7 +310,7 @@ if(defined($opts{'P'})) {
   }
   $output_mask .= "P$min_perc_ident\_";
   $pancore_mask .= "_P$min_perc_ident";
-}
+} 
 
 if(defined($opts{'S'})) {
   $samtools_path = $opts{'S'};

@@ -39,6 +39,7 @@ my $VERSION = '1.x';
 my $NUMCPUS    = 4;
 my $MINQUAL    = 50;       # minimap2 mapping quality
 my $MINOVERLAP = 0.50;     # used by bedtools to call overlapping features    
+my $MINPERCID  = 95;       # min percent identity of aligned overlapping genes
 my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
 my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
 my $MAXDISTNEIGHBORS = 5;  # neighbor genes in a cluster cannot be more than N genes away
@@ -62,7 +63,8 @@ my (%opts,%included_input_files);
 my ($newDIR,$output_mask,$pancore_mask,$include_file) = ('','','',0);
 my ($dowfmash,$dogsalign,$reference_string,$read_patches) = (0,0,0,0);
 my ($onlywga,$maxdistneigh,$inputDIR,$alg) = (0,$MAXDISTNEIGHBORS);
-my ($min_overlap,$min_map_qual,$split_chr_regex) = ($MINOVERLAP,$MINQUAL,'');
+my ($min_overlap,$min_map_qual,$min_perc_ident) = ($MINOVERLAP,$MINQUAL,$MINPERCID);
+my $split_chr_regex = '';
 my ($n_of_cpus,$do_soft, $highly_repetitive,$nointerv) = ($NUMCPUS,0,0,0);
 my ($bedtools_path,$samtools_path,$wfmash_path,$gsalign_path) = ('','','','');
 my ($min_cluster_size,$runmode,$do_genome_composition);
@@ -71,7 +73,7 @@ my $random_number_generator_seed = 0;
 my $pwd = getcwd(); 
 $pwd .= '/';
 
-getopts('hvpcoAHzgwfN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:s:', \%opts);
+getopts('hvpcoAHzgwfN:G:W:n:m:d:r:t:I:C:R:B:S:O:Q:P:s:', \%opts);
 
 if(($opts{'h'})||(scalar(keys(%opts))==0)) {
 
@@ -116,6 +118,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     "(optional, range [0-1], default: -O $MINOVERLAP)\n";
   print   "-Q min mapping quality, minimap2 only                       ".
     "(optional, default: -Q $MINQUAL)\n";
+  print   "-P min gene %sequence identity                              ".
+    "(optional, default: -P $MINPERCID)\n";
   print   "-s split genome in chrs, align only homologous chrs         ".
     "(optional, requires regex to match chr names\n".
     "                                                            ".
@@ -300,6 +304,14 @@ if(defined($opts{'w'})) {
   }
 }
 
+if(defined($opts{'P'})) {
+  if($opts{'P'} >= 0 && $opts{'P'} <= 100) {	
+    $min_perc_ident = $opts{'P'};
+  }
+  $output_mask .= "P$min_perc_ident\_";
+  $pancore_mask .= "_P$min_perc_ident";
+}
+
 if(defined($opts{'S'})) {
   $samtools_path = $opts{'S'};
   $ENV{"EXE_SAMTOOLS"} = $samtools_path;
@@ -354,7 +366,7 @@ if(defined($opts{'B'})) {
 
 print "# $0 -d $inputDIR -p $read_patches -o $onlywga -r $reference_string ".
   "-t $min_cluster_size -c $do_genome_composition -z $do_soft -I $include_file ".
-  "-m $runmode -w $dowfmash -g $dogsalign -O $min_overlap -Q $min_map_qual ".
+  "-m $runmode -w $dowfmash -g $dogsalign -O $min_overlap -Q $min_map_qual -P $min_perc_ident ".
   "-N $maxdistneigh -s '$split_chr_regex' -f $nointerv -H $highly_repetitive ".
   "-W '$wfmash_path' -G '$gsalign_path' -B '$bedtools_path' -S '$samtools_path' ".
   "-n $n_of_cpus -R $random_number_generator_seed\n\n";
@@ -854,7 +866,7 @@ foreach $tx1 (0 .. $#taxa-1) {
     $taxon2 = $taxa[$tx2];
     next if($include_file && !$included_input_files{$taxon2});
 
-    $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap";
+    $outTSVfile = $newDIR ."/_$taxon.$taxon2.alg$alg.overlap$min_overlap.id$min_perc_ident";
     $outANIfile = $newDIR ."/_$taxon.$taxon2.alg$alg";
     if($split_chr_regex) {
       $outTSVfile .= '.split';
@@ -882,7 +894,8 @@ foreach $tx1 (0 .. $#taxa-1) {
       } 
     }
 
-    $command = "$ENV{'EXE_COLLINEAR'} -ovl $min_overlap -t $n_of_cpus ".
+    $command = "$ENV{'EXE_COLLINEAR'} -t $n_of_cpus ".
+	    "-ovl $min_overlap -q $min_map_qual -m $min_perc_ident ".
         "-sp1 $taxon ".
         "-fa1 $newDIR/_$taxon.fna -gf1 $newDIR/_$taxon.gff ".
         "-sp2 $taxon2 ".

@@ -76,16 +76,17 @@ my $DUMMYSCORE   = 9999;
 my $MINQUAL    = 50;          # works well with minimap2
 my $MINALNLEN  = 100;         # min alignment length when transforming gene coords on WGA
 my $MINOVERLAP = 0.50;
-my $VERBOSE    = 2;           # values > 1
+my $MINPERCID  = 95.0;        # min %sequence identity of gene alignment extracted from WGA 
+my $VERBOSE    = 0;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
 my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = (0, 0, 0, '', '');
 my ( $sp1, $fasta1, $gff1, $sp2, $fasta2, $gff2, $index_fasta1 ) = 
   ('', '', '', '', '', '', '');
 my ( $fasta1orig, $fasta2orig ) = ('', ''); 
-my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd, $gene );
-my ( $indexonly, $no_inversions, $minoverlap, $qual, $alg, $outANIfile, $outfilename ) =
-  ( 0, 0, $MINOVERLAP, $MINQUAL, 'minimap2', '' );
+my ( $chr, $chrfasta1, $chrfasta2, $splitPAF, $ref_chr_pairs, $cmd, $gene, $outfilename );
+my ( $indexonly, $no_inversions, $minoverlap, $qual, $min_perc_ident, $alg, $outANIfile ) =
+  ( 0, 0, $MINOVERLAP, $MINQUAL, $MINPERCID, 'minimap2', '' );
 my ( $minimap_path, $wfmash_path, $gsalign_path, $bedtools_path, $samtools_path ) =
   ( $MINIMAP2EXE, $WFMASHEXE, $GSALIGNPATH, $BEDTOOLSEXE, $SAMTOOLSEXE );
 my $threads = $THREADS;
@@ -102,6 +103,7 @@ GetOptions(
     "ovl|overlap=f"  => \$minoverlap,
     "p|patch"        => \$patch,
     "q|quality=i"    => \$qual,
+    "m|minident=f"   => \$min_perc_ident,
     "s|split=s"      => \$split_chr_regex,
     "c|check"        => \$do_sequence_check,
     "r|reuse"        => \$reuse,
@@ -137,6 +139,7 @@ sub help_message {
       . "-wf  use wfmash aligner                 (optional, requires samtools ; by default minimap2 is used)\n"
       . "-gs  use GSAlign aligner                (optional, by default minimap2 is used)\n"
       . "-q   min mapping quality, minimap2 only (optional, default: -q $MINQUAL)\n"
+      . "-m   min gene %sequence identity        (optional, default: -m $MINPERCID)\n" 	  
       . "-M   path to minimap2 binary            (optional, default: -M $MINIMAP2EXE)\n"
       . "-W   path to wfmash binary              (optional, default: -W $WFMASHEXE)\n"
       . "-G   path to GSAlign bin/               (optional, default: -G $GSALIGNPATH)\n"
@@ -178,6 +181,11 @@ if ( $qual && ( $qual < 0 || $qual > 255 ) ) {
     exit(0);
 }
 
+if ( $min_perc_ident && ( $min_perc_ident < 0 || $min_perc_ident > 100 ) ) {
+    print "# ERROR: option -m requires values [0,100]\n";
+    exit(0);
+}
+
 # add actual value to dummy values in param string
 $BEDINTSCPAR =~ s/XXX/$minoverlap/g;
 
@@ -211,21 +219,21 @@ if($tmpdir ne '' && $tmpdir !~ /\/$/){
 
 # set default outfile
 if ( !$outfilename ) {
-    $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.tsv";
+    $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.id$min_perc_ident.tsv";
     if($patch) {
-        $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.patch.tsv";
+        $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.id$min_perc_ident.patch.tsv";
     }
 
     if ($split_chr_regex ne '') {
-        $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.split.tsv";
+        $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.id$min_perc_ident.split.tsv";
         if($patch) {
-            $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.split.patch.tsv";
+            $outfilename = ucfirst($alg) . ".homologies.$sp1.$sp2.overlap$minoverlap.id$min_perc_ident.split.patch.tsv";
         }
     }
 }
 
 print "\n# $0 -sp1 $sp1 -fa1 $fasta1 -gf1 $gff1 "
-  . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -p $patch -a $noheader "
+  . "-sp2 $sp2 -fa2 $fasta2 -gf2 $gff2 -out $outfilename -p $patch -a $noheader -m $min_perc_ident "
   . "-ovl $minoverlap -q $qual -wf $dowfmash -gs $dogsalign -A $outANIfile -c $do_sequence_check "
   . "-s '$split_chr_regex' -M $minimap_path -W $wfmash_path -G $gsalign_path -B $bedtools_path "
   . "-T $tmpdir -t $threads -i $indexonly -r $reuse -H $repetitive -n $no_inversions\n\n";
@@ -718,7 +726,7 @@ my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
   query2ref_coords( "$fasta1orig.fai", $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
-    $qual, $MINALNLEN, $no_inversions, $perc_ident, $VERBOSE ); 
+    $qual, $MINALNLEN, $no_inversions, $min_perc_ident, $VERBOSE ); 
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n\n",
     scalar(@$ref_matched), $perc_blocks_3genes,
@@ -737,7 +745,7 @@ if ( scalar(@$ref_matched) == 0 ) {
 
 my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
   query2ref_coords( "$fasta2orig.fai", $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
-    $qual, $MINALNLEN, $no_inversions, $perc_ident, $VERBOSE );
+    $qual, $MINALNLEN, $no_inversions, $min_perc_ident, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n\n",
     scalar(@$ref_matched1), $perc_blocks_3genes1,

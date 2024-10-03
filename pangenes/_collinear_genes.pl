@@ -76,7 +76,7 @@ my $DUMMYSCORE   = 9999;
 my $MINQUAL    = 50;          # works well with minimap2
 my $MINALNLEN  = 100;         # min alignment length when transforming gene coords on WGA
 my $MINOVERLAP = 0.50;
-my $VERBOSE    = 0;           # values > 1
+my $VERBOSE    = 2;           # values > 1
 
 my ( $help, $do_sequence_check, $reuse, $noheader, $repetitive) = (0, 0, 0, 0, 0);
 my ($dowfmash, $dogsalign, $patch, $split_chr_regex, $tmpdir ) = (0, 0, 0, '', '');
@@ -1310,6 +1310,7 @@ sub query2ref_coords {
         #next if($cname ne 'LOC_Os01g13840'); print "$_\n"; # + strand
         #next if($cname ne 'LOC_Os10g29730'); print "$_\n"; # - strand 
         #next if($cname !~ 'Pr106_05g0004430'); print "$_\n"; 
+		next if($cname !~ 'OsCMeo_12g0011020'); print "$_\n";
 
         # record <genes per alignment block
         $genes_per_block{"$qchr:$qstart-$qend"}++;
@@ -1515,7 +1516,7 @@ sub query2ref_coords {
         }
     } 
 
-    close(BED);  
+    close(BED); exit; 
 
     # printed unsorted BED records
     open( OUTBED, ">", $outfile )
@@ -1551,10 +1552,12 @@ sub query2ref_coords {
 # 2) start query coordinate
 # 3) start reference coordinate
 # 4 optional) target query coordinate
-# Returns 3 scalars:
+# Returns 5 scalars:
 # 1) the increment (delta) in query (q) coords after adding the new CS feature
 # 2) the increment in reference (r) coords
 # 3) the reference coord matching to the optional target query coord, -1 by default
+# 4) number of matched identical bases
+# 5) number of matched non-identical bases
 # Note: CS tags are CIGAR-like strings produced by minimap2 with flag --cs;
 # CS tags start with preffix 'cs:Z::' and can be :-split into features.
 # Note: CG tags are CIGAR-like strings produced by wfmash, with preffix 'cg::Z:'
@@ -1562,7 +1565,7 @@ sub _parseCIGARfeature {
 
     my ( $feat, $Qstart, $Rstart, $opt_query_coord ) = @_;
 
-    my ( $deltaq, $deltar, $totsnps, $rcoord ) = ( 0, 0, 0, -1 );
+    my ( $deltaq, $deltar, $totident, $totsnps, $rcoord ) = ( 0, 0, 0, 0, -1 );
     my ( $delta, $offset, $res, $qcoord, $op );
 
     # example CS string (coords are 0-based):
@@ -1584,6 +1587,12 @@ sub _parseCIGARfeature {
         if ( $op eq 'M' || $op eq '=' || $op eq 'X' ) {
             $deltar += $delta;
             $deltaq += $delta;
+
+            if($op eq '=') {
+                $totident = $delta;
+            } elsif($op eq 'X') {
+                $totsnps = $delta;
+            }				
 
             # look up query coord (optional)
             if ( defined($opt_query_coord) ) {
@@ -1632,6 +1641,7 @@ sub _parseCIGARfeature {
             $delta = $1;
             $deltar += $delta;
             $deltaq += $delta;
+			$totident = $delta;
 
             # look up query coord (optional)
             if ( defined($opt_query_coord) ) {
@@ -1690,7 +1700,7 @@ sub _parseCIGARfeature {
         $deltaq += $totsnps;
     }
 
-    return ( $deltaq, $deltar, $rcoord );
+    return ( $deltaq, $deltar, $rcoord, $totident, $totsnps );
 }
 
 # Takes 2 params:

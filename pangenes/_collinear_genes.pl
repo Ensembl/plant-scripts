@@ -718,7 +718,7 @@ my $geneBEDfile1mapped = $tmpdir . "_$sp1.$sp2.$alg.gene.mapped.rev.bed";
 
 my ( $ref_matched, $ref_unmatched, $perc_blocks_3genes ) =
   query2ref_coords( "$fasta1orig.fai", $sp2wgaBEDfile_sorted, $geneBEDfile2mapped,
-    $qual, $MINALNLEN, $no_inversions, $VERBOSE ); 
+    $qual, $MINALNLEN, $no_inversions, $perc_ident, $VERBOSE ); 
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (%d unmapped)\n\n",
     scalar(@$ref_matched), $perc_blocks_3genes,
@@ -737,7 +737,7 @@ if ( scalar(@$ref_matched) == 0 ) {
 
 my ( $ref_matched1, $ref_unmatched1, $perc_blocks_3genes1 ) =
   query2ref_coords( "$fasta2orig.fai", $sp1wgaBEDfile_sorted, $geneBEDfile1mapped,
-    $qual, $MINALNLEN, $no_inversions, $VERBOSE );
+    $qual, $MINALNLEN, $no_inversions, $perc_ident, $VERBOSE );
 
 printf( "# %d genes mapped (%1.1f%% in 3+blocks) in %s (reverse, %d unmapped)\n\n",
     scalar(@$ref_matched1), $perc_blocks_3genes1,
@@ -1219,7 +1219,8 @@ sub mask_intergenic_regions {
 # iv) min quality score (real)
 # v) min alignment length (natural)
 # vi) same strand only (boolean) 
-# vii) verbose, optional (boolean)
+# vii) min percentage of sequence identity (real)
+# viii) verbose, optional (boolean)
 #
 # Parses sorted BED intersect -wo output and writes to BED file
 # features (cDNA/transcripts) mapped on reference genome. Note:
@@ -1245,13 +1246,14 @@ sub mask_intergenic_regions {
 #
 sub query2ref_coords {
 
-    my ( $refaifile, $infile, $outfile, $minqual, $minalnlen, $samestrand, $verbose ) = @_;
+    my ( $refaifile, $infile, $outfile, $minqual, $minalnlen, $samestrand, $min_perc_ident, $verbose ) = @_;
 
     my ( $cchr, $cstart, $cend, $cname, $cmatch, $cstrand );
     my ( $qchr, $qstart, $qend, $cigartype, $bedline );
     my ( $WGAstrand, $rchr,      $rstart,       $rend );
     my ( $rmatch,    $rmapqual,  $SAMPAFtag,    $overlap, $done, $strand );
     my ( $SAMqcoord, $SAMrcoord, $feat,         $coordr );
+    my ( $ident, $nonident, $total_ident, $total_nonident, $perc_ident );
     my ( $deltaq,    $deltar,    $start_deltar, $end_deltar, $done_start );
     my ( %ref_coords, %genes_per_block, %matched_gene, %unmatched, %ref_max_length);
     my ( @matched, @filt_unmatched, @segments );
@@ -1310,7 +1312,7 @@ sub query2ref_coords {
         #next if($cname ne 'LOC_Os01g13840'); print "$_\n"; # + strand
         #next if($cname ne 'LOC_Os10g29730'); print "$_\n"; # - strand 
         #next if($cname !~ 'Pr106_05g0004430'); print "$_\n"; 
-		next if($cname !~ 'OsCMeo_12g0011020'); print "$_\n";
+		#next if($cname !~ 'OsCMeo_12g0011020'); print "$_\n";
 
         # record <genes per alignment block
         $genes_per_block{"$qchr:$qstart-$qend"}++;
@@ -1378,9 +1380,10 @@ sub query2ref_coords {
         # qcoord overlaps are used to check exit conditions
         $done = 0;
         $done_start = 0;
+        ($total_ident, $total_nonident ) = (0, 0);		
         foreach $feat (@segments) {
 
-            ( $deltaq, $deltar, $coordr ) =
+            ( $deltaq, $deltar, $coordr, $ident, $nonident ) =
               _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord );
 
             # check if current position in query alignment overlaps cDNA/gene coords
@@ -1389,7 +1392,7 @@ sub query2ref_coords {
             if ( $SAMqcoord < $cstart && ( $SAMqcoord + $deltaq ) >= $cstart ) {
 
                 # refine delta to match exactly the start (end for strand -)
-                ( $deltaq, $deltar, $coordr ) =
+                ( $deltaq, $deltar, $coordr, $ident, $nonident ) =
                   _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cstart ); 
                   print "ss $deltaq, $deltar, $coordr : $feat, $SAMqcoord, $SAMrcoord, $cstart\n"
                     if ( $verbose > 1 );				  
@@ -1420,7 +1423,7 @@ sub query2ref_coords {
             if ( $SAMqcoord < $cend && ( $SAMqcoord + $deltaq ) >= $cend ) {
 
                 # refine delta to match exactly the end (start for strand -)
-                ( $deltaq, $deltar, $coordr ) =
+                ( $deltaq, $deltar, $coordr, $ident, $nonident ) =
                   _parseCIGARfeature( $feat, $SAMqcoord, $SAMrcoord, $cend ); 
                   print "ee $deltaq, $deltar, $coordr : $feat, $SAMqcoord, $SAMrcoord, $cend\n"
                     if ( $verbose > 1 );
@@ -1463,7 +1466,10 @@ sub query2ref_coords {
                 $SAMrcoord -= $deltar;
             }
 
-            print "$SAMqcoord $SAMrcoord $feat $deltaq $deltar\n"
+            $total_ident += $ident;
+            $total_nonident += $nonident;			
+
+            print "$SAMqcoord $SAMrcoord $feat $deltaq $deltar $total_ident $total_nonident\n"
               if ( $verbose > 1 );
 
             last if ($done);
@@ -1487,36 +1493,52 @@ sub query2ref_coords {
             }
         }
 
+        # compute sequence identity
+        if($total_ident > 0 || $total_nonident > 0) {
+            $perc_ident = 100*$total_ident / ($total_ident + $total_nonident);
+        } else {
+            $perc_ident = -99.99;
+        }
+
         # put together BED line
-        $bedline = sprintf("%s\t%d\t%d\t%s\t%d\t%s\n",
+        $bedline = sprintf("%s\t%d\t%d\t%s\t%d\t%s\t%1.2f\n",
             $ref_coords{$cname}{'chr'},
             $ref_coords{$cname}{'start'},
             $ref_coords{$cname}{'end'},
             $cname,
             $overlap,
-            $strand);
+            $strand,
+	        $perc_ident,		
+	    );
 
         # compute actual overlap between cDNA/CDS and ref genome
         $overlap = 1 + $ref_coords{$cname}{'end'} - $ref_coords{$cname}{'start'};
 
-        # check match is within reference chr bounds
-        if($ref_coords{$cname}{'start'} < 0 ||
-            (defined($ref_max_length{$ref_coords{$cname}{'chr'}}) && 
-            $ref_coords{$cname}{'end'} > $ref_max_length{$ref_coords{$cname}{'chr'}})) {
-            $unmatched{$cname} = "[overlap outside chr] $bedline";
+        # check sequence identity
+        if($perc_ident < $min_perc_ident) {
+            $unmatched{$cname} = "[sequence identity $perc_ident < $min_perc_ident] $bedline";
 
-        } elsif ( $overlap >= $minalnlen ) { # if overlapping segment is long enough
-            push(@matched, $bedline);
-            $matched_gene{ $cname } = 1;
-            print "$bedline\n" if($verbose > 1)
-        }
-        else {
-            # skip gene models with short overlap with WGA segments
-            $unmatched{$cname} = "[overlap $overlap < $minalnlen] $bedline";
-        }
+		} else {
+
+            # check match is within reference chr bounds
+            if($ref_coords{$cname}{'start'} < 0 ||
+                (defined($ref_max_length{$ref_coords{$cname}{'chr'}}) && 
+                $ref_coords{$cname}{'end'} > $ref_max_length{$ref_coords{$cname}{'chr'}})) {
+                $unmatched{$cname} = "[overlap outside chr] $bedline";
+
+            } elsif ( $overlap >= $minalnlen ) { # if overlapping segment is long enough
+                push(@matched, $bedline);
+                $matched_gene{ $cname } = 1;
+                print "$bedline\n" if($verbose > 1)
+            }
+            else {
+                # skip gene models with short overlap with WGA segments
+                $unmatched{$cname} = "[overlap $overlap < $minalnlen] $bedline";
+            }
+		}
     } 
 
-    close(BED); exit; 
+    close(BED); 
 
     # printed unsorted BED records
     open( OUTBED, ">", $outfile )

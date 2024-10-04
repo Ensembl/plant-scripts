@@ -42,7 +42,7 @@ my $MINOVERLAP = 0.50;     # used by bedtools to call overlapping features
 my $MINPERCID  = 95;       # min percent identity of aligned overlapping genes
 my $MINGFFLEN  = 100;      # used by gffread to extract GFF features
 my $NOFSAMPLESREPORT = 20; # number of samples while simulating pangene growth
-my $MAXDISTNEIGHBORS = 5;  # neighbor genes in a cluster cannot be more than N genes away
+my $MAXDISTNEIGHBORS = 2;  # neighbor genes in a cluster cannot be more than N genes away
 
 # features considered in GFF files, and feats required in valid genes
 my $GFFACCEPTEDFEATS  = 'gene,mRNA,transcript,exon,CDS'; 
@@ -138,7 +138,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
     " least annotated genes/features)\n";
   print   "-N max distance among neighbor genes                        ".
     "(optional, example: -N 10, default: $maxdistneigh)\n";
-  print   "-f reference genes in blocks in pangene matrices             ".
+  print   "-f reference genes in blocks in pangene matrices            ".
     "(optional, by default non-refs placed among refs, requires -s)\n";   
 
 #print   "-z add soft-core to genome composition analysis\n";

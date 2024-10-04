@@ -65,6 +65,7 @@ my %feature_output = (
   'EXE_BZIP2'=>'help',
   'EXE_SORT'=>'Usage',
   'EXE_GREP'=>'Usage',
+  'EXE_JOIN'=>'Try',  
 );
 
 my %ubuntu_packages = (
@@ -116,6 +117,7 @@ sub set_pangeneTools_env {
   if( ! defined($ENV{'EXE_BZIP2'}) ){ $ENV{'EXE_BZIP2'} = 'bzip2' }
   if( ! defined($ENV{'EXE_SORT'}) ){ $ENV{'EXE_SORT'} = 'sort' }
   if( ! defined($ENV{'EXE_GREP'}) ){ $ENV{'EXE_GREP'} = 'grep' }
+  if( ! defined($ENV{'EXE_JOIN'}) ){ $ENV{'EXE_JOIN'} = 'join' }
 
   # scripts from this repo
   if( ! defined($ENV{"EXE_COLLINEAR"}) ){ 
@@ -206,7 +208,9 @@ sub feature_is_installed {
     if($env_missing =~ /SORT/){ return 0 }
   } elsif($feature eq 'GREP') {
     if($env_missing =~ /GREP/){ return 0 }
-  }
+  } elsif($feature eq 'JOIN') {
+    if($env_missing =~ /JOIN/){ return 0 }
+  }	
 
   return 1;
 }

@@ -930,7 +930,7 @@ While in the previous section we described the evidence for pairs of overlapping
 the primary evidence of this algorithm are actually pairs of aligned genomic segments, 
 which are stored in [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md) format. 
 
-The following line, taken from file *_Oryza_sativa.IRGSP-1.0.chr1.Oryza_indica.ASM465v1.chr1.minimap2.paf*,
+The following line, taken from file *tmp/_Oryza_sativa.IRGSP-1.0.chr1.Oryza_indica.ASM465v1.chr1.minimap2.paf*,
 shows a segment from chr1 in Oryza_sativa.IRGSP-1.0 aligned to a collinear segment in Oryza_indica.ASM465v1. 
 The segments have coordinates 1:5902373-6068137 and 1:6345936-6511263, respectively. 
 The last column is a CIGAR string that summarizes the actual alignment:
@@ -940,17 +940,19 @@ The last column is a CIGAR string that summarizes the actual alignment:
 As depicted on Figure 3, gene models are placed within aligned collinear genomic segments to
 check whether they overlap across. During this process some genes might fail to be mapped.
 It is possible to see exactly which ones failed and the actual reason by inspecting the logs.
-The following lines, taken from log file *_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algMmap.overlap0.5.tsv.queue*,
-indicate that 70 genes could not be mapped, and the list below shows some examples:
+The following lines, taken from log file *_Oryza_nivara_v1.chr1.Oryza_sativa.IRGSP-1.0.chr1.algMmap.overlap0.5.id95.tsv.queue*,
+indicate that 165 genes could not be confidently mapped, and the list below shows some examples:
 
-    # 4664 genes mapped (83.9% in 3+blocks) in _Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (70 unmapped)
+    # 4569 genes mapped (85.7% in 3+blocks) in tmp/_Oryza_sativa.IRGSP-1.0.chr1.Oryza_nivara_v1.chr1.minimap2.gene.mapped.bed (165 unmapped)
 
-    # unmapped: [quality 37 < 50] 1 34167935 34171573 gene:Os01g0805900 9999 + 1 34170717 34171348 - 111145515 11146146 560 37 631
-    # unmapped: [overlap 54 < 100] 1 30059934 30059987 gene:Os01g0742150 53 +
+    # unmapped: [sequence identity 91.949685534591195 < 95] 1 26030520 26031331 gene:Os01g0554400 888 + 91.95
+	# unmapped: [quality 37 < 50] 1 34167935 34171573 gene:Os01g0805900 9999 + 1 34170717 34171348 - 111145515 11146146 560 37 631
+    # unmapped: [overlap 54 < 100] 1 30059934 30059987 gene:Os01g0742150 53 + 98.89
 
 This happens in function *query2ref_coords* within _collinear_genes.pl. 
-Note that gene models might fail to map for having less than $MINALNLEN = 100 aligned nucleotides 
-or for mapping genomic regions aligned with poor quality (parameter -q).
+Note that gene models might fail to map for having less sequence identity than $MINPERCID = 95 or 
+less than $MINALNLEN = 100 aligned nucleotides or
+for mapping genomic regions aligned with poor quality (parameter -q).
 
 ## Plotting the genome context of a pangene cluster
 

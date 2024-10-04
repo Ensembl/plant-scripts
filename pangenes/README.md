@@ -162,7 +162,7 @@ Here I list the most important ones, they can be changed by editing the script s
 |get_pangenes.pl|NOFSAMPLESREPORT|20|number of samples while simulating pangene growth with -c|
 |get_pangenes.pl|GFFACCEPTEDFEATS|gene,mRNA,transcript,exon,CDS|accepted features in input GFF files|
 |get_pangenes.pl|GFFVALIDGENEFEAT|gene,mRNA,transcript|features used to call valid genes in input GFF files|
-|get_pangenes.pl|MINPERCID|95|min percent identity of aligned overlapping genes|
+|get_pangenes.pl|MINPERCID|95.0|min percent identity of aligned overlapping genes|
 |get_pangenes.pl|MAXDISTNEIGHBORS|2|neighbor genes in a cluster cannot be more than 2 genes away on same strand|
 |_collinear_genes.pl|MINIMAPPARS|--secondary=no --cs -x asm20 -r1k,5k|minimap2 settings|
 |_collinear_genes.pl|GSALIGNPARS|-sen -no_vcf -fmt 1|GSAlign settings|
@@ -174,7 +174,7 @@ Here I list the most important ones, they can be changed by editing the script s
 |check_evidence.pl|GMAPARAMS|-t 1 -2 -z sense_force -n 1 -F|gmap settings|
 |check_evidence.pl|MAXSEGMENTSIZE|100000|max length of genomic segment containing candidate split genes|
 |check_evidence.pl|MINPAIRPECNONOUTLIERS|0.25|min %pairs of genes from same species among non-outliers, used to correct long gene models|
-|check_evidence.pl|MINLIFTIDENTITY|90.0|min % of identity of gmap CDS/cDNA to genome alignments to be considered|
+|check_evidence.pl|MINLIFTIDENTITY|95.0|min % of identity of gmap CDS/cDNA to genome alignments to be considered|
 |check_evidence.pl|MINFIXOVERLAP|0.75|min overlap [0-1] of mapped genes to fix long/split gene models|
 |_dotplot.pl|MINCONTIGSIZE|100000|min length of chrs/contigs to be considered for dotplot|
 
@@ -1028,7 +1028,7 @@ The following call shows an example cluster analyzed with argument -f (option -n
     422	2	832	median	values
 
     # FIX PARAMETERS:
-    # -p 0 $MINPAIRPECNONOUTLIERS=0.25 $MINLIFTIDENTITY=90 $MINFIXOVERLAP=0.75 $MAXSEGMENTSIZE=100000
+    # -p 0 $MINPAIRPECNONOUTLIERS=0.25 $MINLIFTIDENTITY=95 $MINFIXOVERLAP=0.75 $MAXSEGMENTSIZE=100000
 
     # long gene model: corrected gene:ONIVA01G25360 [Oryza_nivara_v1.chr1]
     ## replaces gene:ONIVA01G25360 [Oryza_nivara_v1.chr1] source=Oryza_indica.ASM465v1.chr1 matches=855 mismatches=18 indels=9

@@ -33,7 +33,7 @@ use pangeneTools qw( check_installed_features feature_is_installed
 my @standard_stop_codons = qw( TAG TAA TGA );
 
 my $MINPAIRPECNONOUTLIERS = 0.25;
-my $MINLIFTIDENTITY = 90.0;
+my $MINLIFTIDENTITY = 95.0;
 my $MINFIXOVERLAP   = 0.75; # min overlap of mapped genes to correct long/split models
 my $MAXSEGMENTSIZE  = 100_000;
 my $GMAPARAMS       = '-t 1 -2 -z sense_force -n 1 -F ';

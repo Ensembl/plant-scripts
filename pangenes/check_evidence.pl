@@ -13,7 +13,7 @@
 # Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
 
-# Copyright [2022-23]
+# Copyright [2022-24]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -390,7 +390,7 @@ my $TSVdb_file   = "$INP_dir/mergedpairs.tsv.bdb";
 # only first time
 if(!-s $TSVdb_file) {
 
-  print "\n# creating database (might take long, first time)\n";
+  print "\n# creating database (might take long first time)\n";
 
   if(!-s $mergedTSVgz) {
     die "# ERROR: cannot find $mergedTSVgz, please check -d argument\n";

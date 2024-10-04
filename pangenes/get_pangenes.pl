@@ -1064,7 +1064,8 @@ $clusteroutfile = $outfolder.'.queue';
 
 $command = "$ENV{'EXE_CLUSTANALYSIS'} ".
   "-T $merged_tsv_file -r $reference_name ".
-  "-f $outfolder -t $min_cluster_size -s $newDIR ".
+  "-f $outfolder -s $newDIR ".
+  "-t $min_cluster_size -m $maxdistneigh ". 
   "-B $ENV{'EXE_BEDTOOLS'} -v ";
 
 if($split_chr_regex) {

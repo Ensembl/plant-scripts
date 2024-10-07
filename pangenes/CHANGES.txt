@@ -67,3 +67,4 @@
 01082024: added -S to rename_pangenes.pl
 25092024: added section 'Example 6: estimation of haplotype diversity'
 03102024: get_pangenes.pl expects min 95% sequence identity for WGA-based gene alignments, as in GET_HOMOLOGUES-EST, to help avoid diverged tandem copies
+04102024: get_pangenes.pl now set MAXDISTNEIGHBORS=2, neighbor genes in a cluster cannot be more than 2 genes away

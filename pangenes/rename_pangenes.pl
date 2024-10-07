@@ -44,11 +44,13 @@ $ENV{'LC_ALL'}   = 'POSIX';
 
 
 my $GENEIDIGITS = 6;
+my $MINSINGLETON= 1000_000;
+my $MINCLUSTERINTERSECT = 0.5;
 
 my ($INP_dir, $INP_refdir, $INP_outdir, $INP_verbose) = ('','','',1);
 my ($cluster_folder, $cluster_folder_name, $cluster_list_file, $matfile) = ('','','','');
 my ($ref_cluster_folder, $ref_cluster_folder_name, $ref_cluster_list_file, $ref_matfile) = ('','','','');
-my ($f,$colr,$col,$row,$rowr,$cmd);
+my ($f,$colr,$col,$row,$rowr,$cmd,$id,$idr,$intersect);
 my (%opts, @matrix_files, @ref_matrix_files);
 
 getopts('hScd:r:o:', \%opts);
@@ -215,7 +217,7 @@ if(!$INP_refdir) {
         $newfile = $file;
         $newfile =~ s/\Q$clustname\E/$file2ID{$clustname}/;	
 
-		# mappings
+        # mappings
         print "file: $file -> $newfile\n" if($INP_verbose);
 
         if(!copy( "$cluster_folder/$file", "$INP_outdir/$cluster_folder_name/$newfile")) {
@@ -269,9 +271,11 @@ if(!$INP_refdir) {
 
 } else { # 3.2 reference clusters passed to guide the nomenclature of new ones
 
-  my (@ref_taxa, @ref_clusters, @ref_cluster_names);
-  my (@taxa, @clusters, @cluster_names, %input2ref, %input2ref_cluster);
-  my ($n_common_taxa, $n_ref_clusters, $n_identical_clusters) = (0,0,0);
+  my (@ref_taxa, @ref_clusters, @ref_cluster_names, @ref_cluster_size);
+  my (@taxa, @clusters, @cluster_names, @cluster_size); 
+  my (%input2ref, %input2ref_cluster, %matched);
+  my ($n_common_taxa, $n_ident, $n_cons, $n_new) = (0,0,0,0);
+  my ($curr_num, $curr_cluster_num, $curr_singleton_num, $curr_name) = (0,0,0);
 
   ## 3.2.0) locate .cluster_list file and guess actual folder with reference clusters
   opendir(REFDIR,$INP_refdir) ||
@@ -314,12 +318,25 @@ if(!$INP_refdir) {
     if($data[0] =~ /^source:/) {		
       @ref_taxa = @data[1 .. $#data];
 
-	} elsif($data[0] =~ /^chr:/) { 
+    } elsif($data[0] =~ /^chr:/) { 
 
     } else {
-      push(@ref_cluster_names, shift(@data));
-      push(@ref_clusters, \@data);	   
-      $n_ref_clusters++;
+      $curr_name = shift(@data); 
+
+      push(@ref_cluster_names, $curr_name);
+      push(@ref_clusters, \@data);
+      push(@ref_cluster_size, count_taxa(\@data));
+
+      # check latest reference pangene ids  
+      if($curr_name =~ /pan(\d+)/) {
+        $curr_num = $1; 
+        if($curr_num > $MINSINGLETON && $curr_num > $curr_singleton_num) {
+          $curr_singleton_num = $curr_num
+
+	} elsif($curr_num > $curr_cluster_num) {
+          $curr_cluster_num = $curr_num
+        }	
+      }
     }
   }
   close(GENEMATR);
@@ -336,37 +353,39 @@ if(!$INP_refdir) {
     if($data[0] =~ /^source:/) {
       @taxa = @data[1 .. $#data];
 
-	  # check common taxa
-	  foreach $col (0 .. $#taxa) {
-        foreach $colr (0 .. $#ref_taxa) {
-          next if(defined($input2ref{$colr})); 			
-          if($ref_taxa[$colr] eq $taxa[$col]) {
-            $input2ref{$colr} = $col; #print "$colr $col $ref_taxa[$colr] $taxa[$col]\n";
-            $n_common_taxa++;			
-            last;		 	
-		  }
-        }		  
-      }
-      if($n_common_taxa == 0) {
+    # check common taxa
+    foreach $col (0 .. $#taxa) {
+      foreach $colr (0 .. $#ref_taxa) {
+        next if(defined($input2ref{$colr})); 			
+        if($ref_taxa[$colr] eq $taxa[$col]) {
+          $input2ref{$colr} = $col; #print "$colr $col $ref_taxa[$colr] $taxa[$col]\n";
+          $n_common_taxa++;			
+          last;		 	
+        }
+      }		  
+    }
+
+    if($n_common_taxa == 0) {
         die "# ERROR: no common taxa between $matfile and $ref_matfile, exit\n";
-      }
+    }
 
     } elsif($data[0] =~ /^chr:/) {
-
+      #do nothing
     } else {
       push(@cluster_names, shift(@data));
 
       # save matrix row in same order as reference matrix
       my @row;	   
-	  foreach $colr (0 .. $#ref_taxa) {
+      foreach $colr (0 .. $#ref_taxa) {
         push(@row,$data[$input2ref{$colr}]);
       }		  
-      push(@clusters, \@row);
+      push(@clusters, \@row); 
+      push(@cluster_size, count_taxa(\@row));
     }
   }
-  close(GENEMAT);
+  close(GENEMAT); 
 
-  # 3.2.4) match input to reference clusters (sort & join)
+  # 3.2.4) match input clusters to identical reference clusters (sort & join)
   my ($infh, $tempmatfile) = tempfile(UNLINK => 1);
   my ($infhr, $tempmatfiler) = tempfile(UNLINK => 1);
   my ($infhs, $tempmatfiles) = tempfile(UNLINK => 1);
@@ -390,30 +409,102 @@ if(!$INP_refdir) {
   while(<SYSJOIN>) {
     #  gene:OsGoSa_12g0016870 Os4530.POR.1.pan0040985
     #  OsMH63_12G017040 
-    if(/^(\S+)\s+(\S+)/){ 
-      $input2ref_cluster{ $1 } = $2;
-	  $n_identical_clusters++;
-    } elsif(/^(\S+)/){
-      $input2ref_cluster{ $1 } = 'NA';
-    }		
+    if(/^(\S+)\s+(\S+)/){
+      ($id, $idr) = ($1, $2);	    
+      $input2ref_cluster{ $id } = $idr;
+      $n_ident++;
+      $matched{ $id } = 1;
+      $matched{ $idr } = 1;	 
+
+    } 
+    #elsif(/^(\S+)/){
+    #  $id = $1;	    
+    #  $input2ref_cluster{ $id } = 'NA';
+    #}		
   }
   close(SYSJOIN);  
+  printf("# identical clusters: %d / %d\n",$n_ident,scalar(@clusters));
 
+  # 3.2.5) match non-identical, 50%-overlapping, conserved clusters
+  INP: foreach $row (0 .. $#clusters) {
+    next if($matched{ $cluster_names[$row] });	  
 
-  # 3.2.5) match input to reference clusters and decide appropriate names, case-by-case
-  #my %seen;
-  #foreach $row (0 .. $#clusters) {
-  #  foreach $rowr (0 .. $#ref_clusters) {
-  #    next if(defined($seen{$rowr}));		
-  #    #print join("\t",@{$clusters[$row]})."\n";		
-  #    if(join("\t",@{$clusters[$row]}) eq join("\t",@{$ref_clusters[$rowr]})) {
-  #      #print "$cluster_names[$row] $ref_cluster_names[$rowr]\n";
-#		$n_identical_clusters++;
-   #     $seen{$rowr}++;		
-  #      last;		
-  #    }
-  #  }
-  #}
+    #print "$cluster_names[$row]\n";
+
+    # no point in computing intersection
+    if($cluster_size[$row] > 2) {
+
+      foreach $rowr (0 .. $#ref_clusters) {
+        next if($matched{ $ref_cluster_names[$rowr] } || $ref_cluster_size[$rowr] < 3);
+	#print cluster_intersect($ref_clusters[$rowr], $clusters[$row]) . "\n";
+	
+        $intersect = cluster_intersect($ref_clusters[$rowr], $clusters[$row]);	
+	
+        if($intersect > $MINCLUSTERINTERSECT) {
+          $input2ref_cluster{ $cluster_names[$row] } = $ref_cluster_names[$rowr];  
+          $matched{ $cluster_names[$row] } = 1;
+	  $matched{ $ref_cluster_names[$rowr] } = 1;
+          $n_cons++; #print " $cluster_names[$row] $ref_cluster_names[$rowr] $intersect\n";
+	  #if($intersect == 1) {
+	  #  print join(":",@{$ref_clusters[$rowr]})."\n";
+	  #   print join(":",@{$clusters[$row]})."\n";
+	  #}
+          next INP;
+        } 
+      }  
+    }
+
+    # unmatched clusters are defined as new clusters
+    #print "$cluster_names[$row] $cluster_size[$row]\n"; 
+    $n_new++;	      
+  }
   
-  print "# identical clusters: $n_identical_clusters / $n_ref_clusters\n";
+  printf("# conserved clusters: %d / %d\n",$n_cons,scalar(@clusters));
+  printf("# new clusters: %d / %d\n",$n_new,scalar(@clusters));
+}
+
+
+# Takes a reference to a list of gene names and returns the number of taxa/occupancy ie
+# the number of elements <> '-'
+sub count_taxa {
+  my ($ref_list) = @_;
+  my $occup = 0;
+
+  foreach my $genes (@{$ref_list}) {
+    $occup++ if($genes ne '-');
+  }
+
+  return $occup;	  
+}
+
+
+# Takes two references, ref and input, each pointing to lists of gene names,
+# and returns the fraction [0,1] of ref genes found also in input list 
+sub cluster_intersect {
+
+  my ($ref_list, $inp_list) = @_;
+  my ($genes, $g, %count);
+  my ($total_ref, $intersection) = (0, 0);  
+
+  foreach $genes (@$ref_list) {
+    while($genes =~ m/([^,]+)/g) {
+      $g = $1;
+      next if($g eq '-');	    
+      $count{ $1 }++; 
+      $total_ref++;
+    }	    
+  }
+
+  foreach $genes (@$inp_list) {
+    while($genes =~ m/([^,]+)/g) {
+      $g = $1;	    
+      next if($g eq '-');
+      $count{ $g }++;
+      if($count{$g} > 1) { 
+        $intersection++      
+      }       	
+    }
+  }  
+  
+  return $intersection / $total_ref;
 }

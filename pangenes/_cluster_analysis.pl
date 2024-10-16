@@ -89,7 +89,7 @@ sub help_message {
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
       #. "-z add soft-core to genome growth analysis (optional)\n"
-      . "-v verbose                                 (optional, example: -v\n";
+      . "-v verbose                                 (optional, example: -v)\n";
 
     exit(0);
 }

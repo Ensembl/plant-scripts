@@ -80,7 +80,7 @@ sub help_message {
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
       . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files, ignores -t)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
-      . "-s folder with gene seqs of species in TSV (optional, default current folder, files created by _cut_sequences.pl)\n"
+      . "-s folder with gene seqs of species in TSV (optional, default _pangenes folder, files created by _cut_sequences.pl)\n"
       . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
       . "-m max distance among neighbor genes       (optional, example: -m 10, default: $maxdistneigh)\n"
       . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
@@ -89,7 +89,7 @@ sub help_message {
       . "-R random seed for genome growth analysis  (optional, requires -g, example -R 1234)\n"
       . "-B path to bedtools binary                 (optional, default: -B bedtools)\n"
       #. "-z add soft-core to genome growth analysis (optional)\n"
-      . "-v verbose                                 (optional, example: -v\n";
+      . "-v verbose                                 (optional, example: -v)\n";
 
     exit(0);
 }

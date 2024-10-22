@@ -5,10 +5,13 @@ cd plant-scripts/
 # if you already had the software you could update as this
 git pull
 
+sleep 3
 
 # install dependencies and download dataset test_rice, takes some time
 make install_pangenes
 ls lib pangenes/bin
+
+sleep 3
 
 # configure for your HPC cluster (optional, recommended)
 cd pangenes/
@@ -23,6 +26,7 @@ cat HPC.conf
 # for instance, the provided sample file assumes a queue named 'production' and max 70GB RAM per job, 
 # enough in our benchmarks up to wheat and maize using minimap2, you might want to change that
 
+sleep 3
 
 ## examples
 
@@ -31,6 +35,8 @@ perl get_pangenes.pl -d ../files/test_rice
 
 # results folder is: /home/contrera/plant-scripts/pangenes/test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_
 ls /home/contrera/plant-scripts/pangenes/test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_
+
+sleep 3
 
 # now restrict whole-genome alignments (WGA) to homologous chromosomes,
 # for this to work chr names in input FASTA files must be consistent so that regular expression will match them all, let's check:
@@ -42,19 +48,33 @@ perl get_pangenes.pl -d ../files/test_rice -s '^\d+'
 # now the results are in /home/contrera/plant-scripts/pangenes/test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_split_
 # you can see the folder name now is added 'split_' to indicate that input genomes were split by chr matching the regular expression
 
+sleep 3
+
 # now we will mask geneless regions >= 1Mb, this is required by minimap2 with large genomes 
 perl get_pangenes.pl -d ../files/test_rice -H
 # in this case, output is saved to Oryza_nivara_v1chr1_highrep_alltaxa_2neigh_algMmap_
 # note the 'highrep_' tag
+
+sleep 3
 
 # let's check how much disk the output folder takes, most are temporary files
 # that might be re-used in future jobs, but can be removed if needed
 du -hs test_rice_pangenes/
 du -hs test_rice_pangenes/tmp
 
+sleep 3
+
 # we will now extract the WGA evidence supporting an example pangene cluster,
 # see also options -f -v
-perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna
+perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/ -i gene:ONIVA01G50800.cdna.fna
+
+sleep 3
+
+# match arbitrary sequences to computed pangene clusters
+perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/ -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
+cat test_transcripts.gmap.tsvtest_transcripts.gmap.tsv
+
+sleep 3
 
 # clean up
 rm -rf test_rice_pangenes

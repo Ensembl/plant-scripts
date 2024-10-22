@@ -23,6 +23,7 @@ and produces different types of output:
 
 - [Objective](#objective)
 - [Definition of pangene](#definition-of-pangene)
+- [Command line demo](#command-line-demo)
 - [How it works](#how-it-works)
     - [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
 	- [Transformation of gene coordinates](#transformation-of-gene-coordinates)
@@ -84,6 +85,10 @@ According to our paper <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene`
     share a common identifier that links back to their original gene identifiers. A pangene set defines 
     our current understanding of the total coding potential of a species and can assist in gene model 
     curation, by providing a pool of possible gene models for assessment.
+
+## [Command line demo]
+
+Please check this [asciinema step-by-step demo](https://asciinema.org/a/W7xVe1112Fl8BImRB5ZW2MWE7) on how to install and run GET_PANGENES on a Debian/Ubuntu linux system.
 
 ## How it works
 

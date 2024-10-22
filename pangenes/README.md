@@ -90,6 +90,11 @@ According to our paper <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene`
 
 Please check this [asciinema step-by-step demo](https://asciinema.org/a/W7xVe1112Fl8BImRB5ZW2MWE7) on how to install and run GET_PANGENES on a Debian/Ubuntu linux system.
 
+<!-- 
+asciinema rec -t "GET_PANGENES tutorial" get_pangenes.cast
+asciinema upload get_pangenes.cast
+-->
+
 ## How it works
 
 The next flowchart shows the three main tasks of the pipeline:

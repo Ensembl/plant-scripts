@@ -15,12 +15,12 @@
 # 0000001 onwards for pan-gene clusters with 2 or more members
 # 1000001 for singletons (genes found in only one genome)
 #
-# If a reference set of pangenes is passed, these will guide the nomenclature, current rules 
-# to go from version n to version n+1:
-# * if reference gene membership is unchanged and >=50% of other existing members stay in the same cluster, the same identifier as before is used
-# * if cluster did not contain a reference gene in version n, and does not in version n+1, then >=50% members rule is maintained
-# * singletons get assigned the codes starting at 1000001 so they don’t interfere with numbering system of others
-# * If a reference gene starts as a singleton, but later clusters with other genes, then it will be assigned a non-singleton (0000001 type) identifier
+# If a reference set of pangenes is passed, it will guide the nomenclature.
+# The following rules are applied to go from version n to version n+1, note that all genes wight the same, 
+# including those from reference annotation ie RAPDB for rice or TAIR for Arabidopsis thaliana:
+# I)   if gene membership is unchanged or >50% of members stay in the same cluster, the same identifier as before is used
+# II)  new singletons assigned unused singleton codes (1000001 onwards)
+# III) if a gene was a singleton, but later clusters with other genes, it will be assigned a non-singleton (0000001 type) id
 
 # Copyright [2023-24]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -429,7 +429,7 @@ if(!$INP_refdir) {
   INP: foreach $row (0 .. $#clusters) {
     next if($matched{ $cluster_names[$row] });	  
 
-    # no point in computing intersection
+    # no point in computing intersection otherwsie
     if($cluster_size[$row] > 2) {
 
       foreach $rowr (0 .. $#ref_clusters) {
@@ -440,7 +440,7 @@ if(!$INP_refdir) {
         if($intersect > $MINCLUSTERINTERSECT) {
           $input2ref_cluster{ $cluster_names[$row] } = $ref_cluster_names[$rowr];  
           $matched{ $cluster_names[$row] } = 1;
-	  $matched{ $ref_cluster_names[$rowr] } = 1;
+          $matched{ $ref_cluster_names[$rowr] } = 1;
           $n_cons++; 
           next INP;
         } 
@@ -471,12 +471,13 @@ if(!$INP_refdir) {
         ($1,$2,$3,$4,$5,$6,$7,$8);
 
       if($input2ref_cluster{ $clustname }) {
+
         $new_clustname = $input2ref_cluster{ $clustname };
         $new_clustname =~ s/$old_suffix/$INP_outdir/;
 
         print "cluster: $clustname -> $new_clustname\n" if($INP_verbose);
 
-      } else {
+      } else { # unmatched pangene clusters get new id numbers
 
         if($taxa > 1) {
           $curr_cluster_num++;

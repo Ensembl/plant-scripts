@@ -1,5 +1,5 @@
 
-# Pan-gene analysis
+# Pan-gene analysis (GET_PANGENES)
 
 The script *get_pangenes.pl* computes whole genome alignments (WGA) to define 
 clusters of collinear, orthologous genes/features annotated in GFF files. Such

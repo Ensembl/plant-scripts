@@ -7,7 +7,7 @@ from your own scripts and for masking & annotating
 [repeats](#repeat-masking-and-annotation) and 
 [calling pangenes](#pangenes) in plant genomes.
 
-[![Build Status](https://travis-ci.com/Ensembl/plant-scripts.svg?branch=master)](https://app.travis-ci.com/Ensembl/plant-scripts)
+[![Build Status](https://github.com/Ensembl/plant-scripts/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Ensembl/plant-scripts/actions/workflows/ci.yml)
 
 - [List of recipes](#list-of-recipes)
 - [Dependencies of recipes](#dependencies)

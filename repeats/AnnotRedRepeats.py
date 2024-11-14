@@ -7,7 +7,7 @@
 # pyenv local 3.7.6
 # pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
 #
-# Copyright [2020-21] EMBL-European Bioinformatics Institute
+# Copyright [2020-24] EMBL-European Bioinformatics Institute
 
 import argparse
 import os
@@ -15,14 +15,15 @@ import re
 import errno
 import subprocess
 
-import sqlalchemy as db
-import sqlalchemy_utils as db_utils
+from typing import TYPE_CHECKING
 
-# sqlalchemy requires MySQLdb but MySQLdb doesn't support Python 3.x
-# pymysql can be imported and used instead
-import pymysql
-
-pymysql.install_as_MySQLdb()
+if TYPE_CHECKING: # False at runtime
+    import sqlalchemy as db
+    import sqlalchemy_utils as db_utils
+    # sqlalchemy requires MySQLdb but MySQLdb doesn't support Python 3.x
+    # pymysql can be imported and used instead
+    import pymysql
+    pymysql.install_as_MySQLdb()
 
 
 def fetch_repeats_FASTA(logpath, synpath, annotdir, minlen):

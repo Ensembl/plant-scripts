@@ -187,7 +187,7 @@ def _parse_files_from_log(regex, log_filename, order=[]):
             for elem in order:
                 elemOK = False
                 for file in parsed_files:
-                    thisregex = "rpt/" + elem + "\." 
+                    thisregex = "rpt/" + elem + "\\." 
                     match = re.search(thisregex, file)
                     if match:
                         order_files.append(file)
@@ -217,7 +217,7 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname,
     # check whether previous results exist
     if os.path.isfile(log_filepath):
         rpt_files = _parse_files_from_log(
-          "locations to: (\S+)", log_filepath, seqnames)
+          "locations to: (\\S+)", log_filepath, seqnames)
         if rpt_files:
             print("# re-using previous Red results")
             return rpt_files
@@ -259,7 +259,7 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname,
     # merge masked chromosomes if requested
     if outmskfilename:
         msk_files = _parse_files_from_log(
-          "masked sequence to: (\S+)", log_filepath, seqnames)
+          "masked sequence to: (\\S+)", log_filepath, seqnames)
         with open(outmskfilename, "w") as outmskfile:
             for fname in msk_files:
                 with open(fname) as infile:
@@ -270,7 +270,7 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname,
 
     # parse log and capture repeat filenames
     rpt_files = _parse_files_from_log(
-      "locations to: (\S+)", log_filepath, seqnames)
+      "locations to: (\\S+)", log_filepath, seqnames)
     return rpt_files
 
 

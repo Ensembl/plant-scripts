@@ -4,7 +4,7 @@ require Exporter;
 # Subroutines use by get_pangenes.pl and related scripts.
 # Some adapted from https://github.com/eead-csic-compbio/get_homologues
 #
-# Copyright [2021-24]
+# Copyright [2021-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 @ISA = qw(Exporter);
@@ -83,14 +83,25 @@ sub set_pangeneTools_env {
 
   if( ! defined($ENV{'PANGENE_MISSING_BINARIES'}) ) { $ENV{'PANGENE_MISSING_BINARIES'} = '' }
   if( ! defined($ENV{'PANGENE'}) ) { $ENV{'PANGENE'} =  $PANGENEPATH .'/' }
+  if(!-e $ENV{'PANGENE'}){
+    $ENV{'PANGENE'} = ''; # should work in conda
+  }
 
   # installed in this repo
   if( ! defined($ENV{"EXE_MINIMAP"}) ){ 
     $ENV{"EXE_MINIMAP"} = $ENV{'PANGENE'}.'../lib/minimap2/minimap2' 
   }
+  if(!-e $ENV{'EXE_MINIMAP'}){
+    $ENV{'EXE_MINIMAP'} = 'minimap2'; # should work if in conda PATH
+  }
+
   if( ! defined($ENV{"EXE_GFFREAD"}) ){ 
     $ENV{"EXE_GFFREAD"} = $ENV{'PANGENE'}.'bin/gffread/gffread' 
   }
+  if(!-e $ENV{'EXE_GFFREAD'}){
+    $ENV{'EXE_GFFREAD'} = 'gffread'; # should work if in conda PATH
+  }
+
   if( ! defined($ENV{"EXE_WFMASH"}) ){ 
     $ENV{"EXE_WFMASH"} = $ENV{'PANGENE'}.'bin/wfmash/build/bin/wfmash' 
   }
@@ -98,17 +109,28 @@ sub set_pangeneTools_env {
     $ENV{"EXE_GSAPATH"} = $ENV{'PANGENE'}.'bin/GSAlign/bin/';
     $ENV{"EXE_GSALIGN"} = $ENV{'EXE_GSAPATH'}.'GSAlign';
   }
+  if(!-e $ENV{'EXE_GSALIGN'}){
+    $ENV{'EXE_GSALIGN'} = 'GSAlign'; # should work if in conda PATH
+  }
+
   if( ! defined($ENV{"EXE_GMAP"}) ){
     $ENV{"EXE_GMAP"} = $ENV{'PANGENE'}.'bin/gmap/exe/bin/gmap';
     $ENV{"EXE_GMAP_BUILD"} = $ENV{'PANGENE'}.'bin/gmap/util/gmap_build';
   }
+  if(!-e $ENV{'EXE_GMAP'}){
+    $ENV{'EXE_GMAP'} = 'gmap'; # should work if in conda PATH
+  }
+  if(!-e $ENV{'EXE_GMAP_BUILD'}){
+    $ENV{'EXE_GMAP_BUILD'} = 'gmap_build'; # should work if in conda PATH
+  }
+
+  # not required in conda 
   if( ! defined($ENV{"EXE_CLUSTALO"}) ){
     $ENV{"EXE_CLUSTALO"} = $ENV{'PANGENE'}.'bin/clustalo';
   }
   if( ! defined($ENV{"EXE_ALISTAT"}) ){
     $ENV{"EXE_ALISTAT"} = $ENV{'PANGENE'}.'bin/AliStat/alistat';
   }
-
 
   # should be pre-installed in most settings
   if( ! defined($ENV{"EXE_SAMTOOLS"}) ){ $ENV{"EXE_SAMTOOLS"} = 'samtools' }

@@ -211,12 +211,12 @@ Note this will also download a test rice dataset. You can test everything is in 
 This should print something like this:
 
     Checking required binaries and data sources, set in pangeneTools.pm or in command line:
-      EXE_MINIMAP : OK (path:/home/contrera/plant-scripts/pangenes/../lib/minimap2/minimap2)
+      EXE_MINIMAP : OK (path:plant-scripts/pangenes/../lib/minimap2/minimap2)
       EXE_BEDTOOLS : OK (path:bedtools)
-      EXE_GFFREAD : OK (path:/home/contrera/plant-scripts/pangenes/bin/gffread/gffread)
-      EXE_COLLINEAR : OK (path:/home/contrera/plant-scripts/pangenes/_collinear_genes.pl)
-      EXE_CUTSEQUENCES : OK (path:/home/contrera/plant-scripts/pangenes/_cut_sequences.pl)
-      EXE_CLUSTANALYSIS : OK (path:/home/contrera/plant-scripts/pangenes/_cluster_analysis.pl)
+      EXE_GFFREAD : OK (path:plant-scripts/pangenes/bin/gffread/gffread)
+      EXE_COLLINEAR : OK (path:plant-scripts/pangenes/_collinear_genes.pl)
+      EXE_CUTSEQUENCES : OK (path:plant-scripts/pangenes/_cut_sequences.pl)
+      EXE_CLUSTANALYSIS : OK (path:plant-scripts/pangenes/_cluster_analysis.pl)
       EXE_GZIP : OK (path:gzip)
       EXE_BZIP2 : OK (path:bzip2)
       EXE_SORT : OK (path:sort)
@@ -283,18 +283,18 @@ $ perl get_pangenes.pl -d ../files/test_rice
 # get_pangenes.pl -d ../files/test_rice -o 0 -r 0 -t all -c 0 -z 0 -I 0 -m local -w 0 -g 0 -O 0.5 -Q 50 -N 5 -s '' -H 0 -W '' -G '' -B '' -S '' -n 4 -R 0
 
 # version ...
-# results_directory=/home/contrera/github/plant-scripts/pangenes/test_rice_pangenes
+# results_directory=plant-scripts/pangenes/test_rice_pangenes
 # parameters: MINGFFLEN=100 GFFACCEPTEDFEATS=gene,mRNA,transcript,exon,CDS GFFVALIDGENEFEAT=gene,mRNA,transcript
 
 # checking input files...
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
 # ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz 45.84MB genes=5292 non-valid=0
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
 # ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz 41.54MB genes=5143 non-valid=0
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
 # ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 non-valid=0
 
 # 3 genomes, 15706 genes
@@ -517,14 +517,14 @@ When you run it you'll see a couple differences in the output:
 
 ```
 # checking input files...
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.fna
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.gff
 # ../files/test_rice/Oryza_indica.ASM465v1.chr1.fa.gz 45.84MB genes=5292 non-valid=0 chrs/contigs=1
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.fna
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_nivara_v1.chr1.gff
 # ../files/test_rice/Oryza_nivara_v1.chr1.fa.gz 41.54MB genes=5143 non-valid=0 chrs/contigs=1
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
-# re-using /home/contrera/github/plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.fna
+# re-using plant-scripts/pangenes/test_rice_pangenes/_Oryza_sativa.IRGSP-1.0.chr1.gff
 # ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 non-valid=0 chrs/contigs=1
 
 ...
@@ -1181,7 +1181,6 @@ As get_pangenes.pl includes 3 other scripts, logs are split in independent files
 |_cluster_analysis.pl|test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_.queue|
 
 The main log of get_pangenes.pl might contain error messages such as:
- 1125  /homes/bcontreras/panoryza/plant-scripts/pangenes/bin/gffread/gffread --keep-genes BarkeBaRT2v18.gff |less
 
 * EXIT, folder_pangenes/_oryza_sativa_arc.oryza_sativa_chaomeo.algMmap.overlap0.5.patch.tsv does not exist, WGA might have failed or hard drive is still writing it (please re-run). This can happen in HPC cluster jobs due to drive latency issues. The fix is to open the relevant specific log (_collinear_genes.pl in this case) and look for the failing command, which in this example looks like:
 

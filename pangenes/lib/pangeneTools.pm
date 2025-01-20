@@ -167,14 +167,21 @@ sub check_installed_features {
 
   foreach my $bin (@to_be_checked) {
     $check_summary .= sprintf("%18s : ",$bin);
+
     if($ENV{$bin}) {
-      if($bin eq 'EXE_GZIP' || $bin eq 'EXE_BZIP2' || $bin eq 'EXE_GREP'){ 
+
+      if($bin eq 'EXE_GZIP' || $bin eq 'EXE_BZIP2' || 
+        $bin eq 'EXE_GREP' || $bin eq 'EXE_GFFREAD'){ 
         $output = `$ENV{$bin} -h 2>&1 ` 
+
       } elsif($bin eq 'EXE_SORT'){
         $output = `$ENV{$bin} --help`
+
       }else {
         $output = `$ENV{$bin} 2>&1`;
       }
+
+      # no output if syscall fails 
       if(!$output){ $output = '' }
     }
 

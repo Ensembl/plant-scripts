@@ -116,7 +116,7 @@ This is recommended for large or multiple genomes.
 Sample configuration files for LSF and SLURM managers are provided at 
 ([HPC.conf.sample](./HPC.conf.sample)) and
 ([HPC.conf.sample.slurm](./HPC.conf.sample.slurm)).
-Please adapt them and rename then `HPC.conf` for them to work.
+Please adapt them, rename them as `HPC.conf` and place them at the same path as `get_pangenes.pl`.
 
 
 ### Transformation of gene coordinates 

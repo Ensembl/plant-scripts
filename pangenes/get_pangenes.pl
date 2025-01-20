@@ -207,7 +207,8 @@ if($runmode eq 'cluster') {
   read_cluster_config( "$Bin/HPC.conf" );
 
   if(!cluster_is_available()) {       
-    print "# EXIT : cluster is not available, please create/edit config file HPC.conf\n";
+    print "# EXIT : cluster is not available, please create/edit config file HPC.conf,\n";
+    print "#        read more at https://github.com/Ensembl/plant-scripts/tree/master/pangenes\n\n";
     print_cluster_config();
     die "# EXIT : or choose runmode -m local\n";
   }

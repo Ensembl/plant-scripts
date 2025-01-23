@@ -820,7 +820,11 @@ foreach $tx1 (0 .. $#taxa) {
   if($dowfmash) {
     $command .= "-wf -W $ENV{'EXE_WFMASH'} ";
   } elsif($dogsalign) {
-    $command .= "-gs -G $ENV{'EXE_GSAPATH'} ";
+    if($ENV{'EXE_GSAPATH'} ne '') {	  
+      $command .= "-gs -G $ENV{'EXE_GSAPATH'} ";
+    } else {
+      $command .= "-gs "; #conda
+    }  
   } else {
     $command .= "-M $ENV{'EXE_MINIMAP'} "
   }

@@ -110,6 +110,7 @@ sub set_pangeneTools_env {
     $ENV{"EXE_GSALIGN"} = $ENV{'EXE_GSAPATH'}.'GSAlign';
   }
   if(!-e $ENV{'EXE_GSALIGN'}){
+    $ENV{'EXE_GSAPATH'} = '';	  
     $ENV{'EXE_GSALIGN'} = 'GSAlign'; # should work if in conda PATH
   }
 

@@ -14,7 +14,7 @@ $|=1;
 # Produces a TSV file with pairs of collinear genes in a format similar to
 # Ensembl Compara's, genomic coordinates are 1-based
 
-# Copyright [2021-24] 
+# Copyright [2021-25] 
 # EMBL-European Bioinformatics Institute & Estacion Experimental de Aula Dei-CSIC
 
 # Uses external software:
@@ -258,9 +258,11 @@ if ($dowfmash) {
     }
 } elsif($dogsalign) {
 
-    $GSAINDXEXE = "$gsalign_path/$GSAINDXEXE";
-    $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
-    
+    if($gsalign_path ne '') {
+        $GSAINDXEXE = "$gsalign_path/$GSAINDXEXE";
+        $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
+    }
+
     if(`$GSALIGNEXE 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $GSALIGNEXE , exit\n";
         exit(-4)

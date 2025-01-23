@@ -263,6 +263,8 @@ if ($dowfmash) {
         $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
     }
 
+    print "\n# gsalign binaries: $GSAINDXEXE , $GSALIGNEXE\n\n";
+
     if(`$GSALIGNEXE 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $GSALIGNEXE , exit\n";
         exit(-4)

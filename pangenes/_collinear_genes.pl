@@ -52,7 +52,7 @@ my $WFMASHPARS  = '-p 80 -s 1000';   # -s: median rice gene 2362, barley 1323
                                      # -p 80 -s 1000 -> 1793
                                      # -p 80 -s 2000 -> 1528
 
-my $GSALIGNPATH = './';
+my $GSALIGNPATH = '';
 my $GSAINDXEXE  = 'bwt_index';
 my $GSALIGNEXE  = 'GSAlign';
 my $GSALIGNPARS = '-sen -no_vcf -fmt 1';
@@ -261,9 +261,7 @@ if ($dowfmash) {
     if($gsalign_path ne '') {
         $GSAINDXEXE = "$gsalign_path/$GSAINDXEXE";
         $GSALIGNEXE = "$gsalign_path/$GSALIGNEXE";  
-    }
-
-    print "\n# gsalign binaries: $GSAINDXEXE , $GSALIGNEXE\n\n";
+    } #print "\n# gsalign binaries: $GSAINDXEXE , $GSALIGNEXE\n\n";
 
     if(`$GSALIGNEXE 2>&1` !~ 'Usage') {
         print "# ERROR: cannot find binary file $GSALIGNEXE , exit\n";

@@ -178,18 +178,19 @@ If you want to annotate repeats you must first run:
 ## Pangenes
 
 See examples and documentation in folder [pangenes](./pangenes/).
+We recommend checking out the 
+[Runmodes and HPC configuration](https://github.com/Ensembl/plant-scripts/tree/master/pangenes#runmodes-and-hpc-configuration) docs.
 
 Install it the [bioconda](https://anaconda.org/bioconda/get_pangenes) way:
 
     conda activate bioconda
     conda create -n get_pangenes -c conda-forge -c bioconda get_pangenes
-    # optionally check 'Runmodes and HPC configuration' in documentation
     conda activate get_pangenes
 
 Install it the compilation way:
 
     #make install # install required bedtools
-    make install_pangenes # requires gcc & g++ compilers
+    make install_pangenes # requires gcc & g++ c:ompilers
 
     # optionally you might also want to try:
     make install_gsalign

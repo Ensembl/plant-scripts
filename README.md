@@ -190,7 +190,7 @@ Install it the [bioconda](https://anaconda.org/bioconda/get_pangenes) way:
 Install it the compilation way:
 
     #make install # install required bedtools
-    make install_pangenes # requires gcc & g++ c:ompilers
+    make install_pangenes # requires gcc & g++ compilers
 
     # optionally you might also want to try:
     make install_gsalign

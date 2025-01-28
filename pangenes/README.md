@@ -106,20 +106,8 @@ The next flowchart shows the three main tasks of the pipeline:
 Note that each of the three scripts called by get_pangenes.pl 
 (cut_sequences.pl, _collinear_genes.pl & _cluster_analysis.pl) create their own logfiles.
 
-### Runmodes and HPC configuration
-
-By default GET_PANGENES performs the required tasks serially, which equals to option `-m local`,
-but it can also run in parallel on a cluster both with options `-m cluster`
-and `-m dryrun`, if you prefer to copy and paste your commands in batches directly in the terminal.
-This is recommended for large or multiple genomes.
-
-Sample configuration files for LSF and SLURM managers are provided at 
-([HPC.conf.sample](./HPC.conf.sample)) and
-([HPC.conf.sample.slurm](./HPC.conf.sample.slurm)).
-Please adapt them, rename them as `HPC.conf` and place them at the same path as `get_pangenes.pl`.
-
-
 ### Transformation of gene coordinates 
+
 The second block of the flow aligns genome sequences (in pairs A & B) and uses 
 the resulting alignments to transform gene coordinates:
  
@@ -190,23 +178,33 @@ Here I list the most important ones, they can be changed by editing the script s
 
 ### Dependencies and installation
 
-In addition to Perl, these scripts require:
+To install it via [bioconda](https://anaconda.org/bioconda/get_pangenes) try:
+
+    conda activate bioconda
+    conda create -n get_pangenes -c conda-forge -c bioconda get_pangenes
+    conda activate get_pangenes
+
+Alternatively you can compile it from source, which in addition to Perl requires:
 
 * https://github.com/lh3/minimap2 
 * https://github.com/gpertea/gffread
 * https://bedtools.readthedocs.io/en/latest/
 
-Assuming *bedtools* are installed in most settings,and that gcc & g++ compilers are available,
+Assuming *bedtools* are installed in most settings, and that gcc & g++ compilers are available,
 the remaining dependencies can be installed on Ubuntu/Debian in folder bin/ with:
 
     # does not require root privileges
     cd ../..
     make install_pangenes
+    # optionally you might also want to try
+    make install_gsalign
+    make install_pangenes_quality
 
 Note this will also download a test rice dataset. You can test everything is in place with:
 
     perl pangenes/get_pangenes.pl -v
-    make test_pangenes
+    # optionally run the rice toy examples
+    # make test_pangenes
 
 This should print something like this:
 
@@ -221,13 +219,29 @@ This should print something like this:
       EXE_BZIP2 : OK (path:bzip2)
       EXE_SORT : OK (path:sort)
 
-
-In addition to minimap2, two other genome aligners have been integrated:
+In addition to minimap2, two other genome aligners have been tested:
 
 |software|flag|source|installation instructions|notes|
 |:-------|:---|:-----|:------------------------|-----|
 |GSAlign (benchmarked) | -g | https://doi.org/10.1186/s12864-020-6569-1 | cd ../.. && make [install_gsalign](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L75) | requires gcc compiler |
 |Wfmash (experimental) | -w | https://github.com/ekg/wfmash | cd ../.. && make [install_wfmash](https://github.com/Ensembl/plant-scripts/blob/a39066be76b687f46229264e8e8b995f1a857af9/Makefile#L71) | requires sudo & g++ compiler |
+
+Regardless of the installation procedure, we suggest checking the
+[Runmodes and HPC configuration](https://github.com/Ensembl/plant-scripts/tree/master/pangenes#runmodes-and-hpc-configuration)
+section to configure the software for a high-performance computer cluster.
+
+
+### Runmodes and HPC configuration
+
+By default GET_PANGENES performs the required tasks serially, which equals to option `-m local`,
+but it can also run in parallel on a cluster both with options `-m cluster`
+and `-m dryrun`, if you prefer to copy and paste your commands in batches directly in the terminal.
+This is recommended for large or multiple genomes.
+
+Sample configuration files for LSF and SLURM managers are provided at
+([HPC.conf.sample](./HPC.conf.sample)) and
+([HPC.conf.sample.slurm](./HPC.conf.sample.slurm)).
+Please adapt them, rename them as `HPC.conf` and place them at the same path as `get_pangenes.pl`.
 
 ### Command-line options
 

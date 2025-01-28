@@ -1,6 +1,8 @@
 
 # Pan-gene analysis (GET_PANGENES)
 
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/get_pangenes/badges/version.svg)](https://anaconda.org/bioconda/get_pangenes)
+
 The script *get_pangenes.pl* computes whole genome alignments (WGA) to define 
 clusters of collinear, orthologous genes/features annotated in GFF files. Such
 clusters define pangenes across a pangenome.

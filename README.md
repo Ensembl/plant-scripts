@@ -186,6 +186,8 @@ Install it the [bioconda](https://anaconda.org/bioconda/get_pangenes) way:
     conda activate bioconda
     conda create -n get_pangenes -c conda-forge -c bioconda get_pangenes
     conda activate get_pangenes
+    # or simply
+    conda install bioconda::get_pangenes    
 
 Install it the compilation way:
 

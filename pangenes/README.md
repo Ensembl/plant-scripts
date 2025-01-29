@@ -33,7 +33,7 @@ and produces different types of output:
 	- [From pairs of genes to clusters](#from-pairs-of-genes-to-clusters)
 	- [Parameters](#parameters)
 	- [Dependencies and installation](#dependencies-and-installation)
-    - [Runmodes and HPC configuration](#runmodes-and-hpc-configuration) 
+    - [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
 	- [Command-line options](#command-line-options)
 	- [Input file format](#input-file-format)
 - [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis-and-hpc-settings)
@@ -180,11 +180,16 @@ Here I list the most important ones, they can be changed by editing the script s
 
 ### Dependencies and installation
 
-To install it via [bioconda](https://anaconda.org/bioconda/get_pangenes) try:
+To install it via [bioconda](https://anaconda.org/bioconda/get_pangenes) you can try:
 
     conda activate bioconda
     conda create -n get_pangenes -c conda-forge -c bioconda get_pangenes
     conda activate get_pangenes
+
+    # or simply
+    conda install bioconda::get_pangenes  
+
+The bioconda recipe can be found [here](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/get_pangenes).
 
 Alternatively you can compile it from source, which in addition to Perl requires:
 

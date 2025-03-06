@@ -965,16 +965,20 @@ if(@tmp_wga_output_files) {
   print "# sorting collinearity results...\n";
 
   $command = "$SORTBIN $SORTPARS -k1,1 -k4,4nr ";
+
+  # tempfile with filenames to sort to avoid "Argument list too long"
+  my ($ffh, $ffilename) = tempfile();
+
   foreach $outTSVfile (@tmp_wga_output_files) {
     if(!-e $outTSVfile) {
       die "# EXIT, $outTSVfile does not exist, WGA might have failed ".
         "or hard drive is still writing it (please re-run)\n";
     } else {
-      $command .= "$outTSVfile ";
+      print $ffh "$outTSVfile\0"; #NUL-separated
     }
   }
 
-  $command .= "> $merged_tsv_file";
+  $command .= "--files0-from=$ffilename > $merged_tsv_file";
   system("$command"); #print $command;
   if($? != 0) {
     die "# EXIT: failed while concatenating WGA results\n";

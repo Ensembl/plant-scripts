@@ -70,3 +70,4 @@
 04102024: get_pangenes.pl now set MAXDISTNEIGHBORS=2, neighbor genes in a cluster cannot be more than 2 genes away
 09102024: rename_pangenes.pl -r creates all expected outfiles, tested with rice data
 15012025: prepare for conda package
+06032025: get_pangenes.pl: sort & concat alignment results using tempfile with filenames to sort to avoid "Argument list too long"

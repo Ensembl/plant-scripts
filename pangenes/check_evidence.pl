@@ -13,7 +13,7 @@
 # Optionally it can also liftover/suggest fixes to the gene models based on the 
 # pangene consensus (-f), this requires gmap (make install_pangenes)
 
-# Copyright [2022-24]
+# Copyright [2022-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -605,7 +605,7 @@ if($INP_plot_code) {
     # this might happen twice if cluster split in reference annotation/genome
     if($data[3] eq $ref_geneid->[0]){
 
-      $clusterOK++; # > 1 for split ref genes, these appease in consecutive rows  
+      $clusterOK++; # > 1 for split ref genes, these appear in consecutive rows  
 
       # recall line of input cluster
       if($clusterOK == 1) {

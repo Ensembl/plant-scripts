@@ -570,6 +570,13 @@ The BED file contents should be like this, with genome occupancy in column 5:
     1	98769	99876	gene:ONIVA01G00080	1	-	gene:ONIVA01G00080	NA	NA
     1	100725	101071	gene:ONIVA01G00090	1	-	gene:ONIVA01G00090	NA	NA
 
+In cases where two neighbor reference genes are clustered together, the corresponding pangenes appear as 
+repeated lines in the BED file. As `MAXDISTNEIGHBORS` increases such blocks might break the ordering in the BED file:
+
+    1       286651  290944  gene:ONIVA01G00370      1       -       gene:ONIVA01G00370      NA      NA
+    1       287224  288326  gene:ONIVA01G00380      3       +       gene:ONIVA01G00380      gene:BGIOSGA002602      gene:Os01g0106200
+    1       290231  293270  gene:ONIVA01G00380      3       +       gene:ONIVA01G00390      gene:BGIOSGA002602      gene:Os01g0106200
+    1       293516  294555  gene:ONIVA01G00400      3       -       gene:ONIVA01G00400      gene:BGIOSGA002552      gene:Os01g0106300
 
 ## Example 4: using GSAlign instead of minimap2
 

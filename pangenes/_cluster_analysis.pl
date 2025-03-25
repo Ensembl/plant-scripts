@@ -11,7 +11,7 @@ use pangeneTools qw(parse_sequence_FASTA_file);
 # _collinear_genes.pl
 # Adapted from https://github.com/eead-csic-compbio/get_homologues
 
-# Copyright [2021-2024]
+# Copyright [2021-2025]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 # ./_cluster_analysis.pl -T rices4_pangenes/tmp/mergedpairs.tsv -f folder \
@@ -524,7 +524,7 @@ foreach $species (@supported_species) {
 
     $num_segments = 0; 
 
-    # write BED
+    # write BED, changes coords to 0-based
     $filename = "$seqfolder$species.gdna.bed";
     open(GDNA,">",$filename) ||
         die "# ERROR: cannot create $filename\n";
@@ -535,9 +535,11 @@ foreach $species (@supported_species) {
 
         #1:125929-131075(+)
         #UN-Ctg123:12-1234(-)
+        #Note: TSV coords are 1-based; this means BED interval is one-short 
+        #but is left like that to make sure intervals are compatible in the code
         $coords_id = $segment{$stable_id}{$species};
         if($coords_id =~ m/^(\S+)?:(\d+)-(\d+)\(([+-])\)/) {
-            print GDNA "$1\t$2\t$3\tNA\t0\t$4\n";
+            printf(GDNA "%s\t%d\t%d\tNA\t0\t%s\n", $1,$2,$3,$4);
             $num_segments++;
         }
     }
@@ -1088,7 +1090,7 @@ print "# pangene_file (names) = $pangene_gene_file\n";
 print "# pangene_file (names, transposed) = $pangene_gene_tr\n";
 #print "# pangene_FASTA_file = $pangene_fasta_file\n";
 
-# 4.1) BED format matrix if clusters are chr-sorted
+# 4.1) 0-based BED format matrix if clusters are chr-sorted
 if($chregex) {
 
     my ( $start, $end, $strand, $occup, @sorted_ref_gene_ids );
@@ -1133,7 +1135,7 @@ if($chregex) {
                             @{$id2coords{$ref_genome}{$gene_stable_id}}[1,2,3];
 
                         printf(PANGEMATRIBED "%s\t%d\t%d\t%s\t%d\t%s\t%s",
-                            $chr,$start,$end,$filename,$occup,$strand,$gene_stable_id);
+                            $chr,$start-1,$end,$filename,$occup,$strand,$gene_stable_id);
 
                     } else { # short reference genes lack coords, cannot be parsed
 

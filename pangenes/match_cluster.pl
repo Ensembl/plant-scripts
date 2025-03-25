@@ -1,10 +1,12 @@
 #!/usr/bin/env perl
 
 # This script matches input nucleotide sequences to clusters produced by get_pangenes.pl .
-# It creates a sequence index with nucleotide sequences from clusters and 
+# It creates a temporary sequence index with nucleotide sequences from clusters and 
 # uses GMAP to scan them. Supports cdna [default] or CDS sequences.
 # Optionally, sequence index can be exported as gene-based pangenome for mapping,
 # with <global pangenome positions> estimated from reference genome.
+#
+# Note: -F currently looks for ../INP_dir/_reference_genome.fna.fai (usually _pangenes folder)
 
 # Copyright [2023-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC

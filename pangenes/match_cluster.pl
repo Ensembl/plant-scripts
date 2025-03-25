@@ -3,8 +3,10 @@
 # This script matches input nucleotide sequences to clusters produced by get_pangenes.pl .
 # It creates a sequence index with nucleotide sequences from clusters and 
 # uses GMAP to scan them. Supports cdna [default] or CDS sequences.
+# Optionally, sequence index can be exported as gene-based pangenome for mapping,
+# with <global pangenome positions> estimated from reference genome.
 
-# Copyright [2023]
+# Copyright [2023-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -12,11 +14,14 @@ $|=1;
 use strict;
 use warnings;
 use Getopt::Std;
+use Cwd qw/ abs_path /;
 use File::Temp qw/ tempfile /;
 use File::Basename;
+use File::Copy;
 use FindBin '$Bin';
 use lib "$Bin/lib";
-use pangeneTools qw( check_installed_features feature_is_installed 
+use pangeneTools qw( check_installed_features 
+                     feature_is_installed 
                      parse_sequence_FASTA_file );
 
 my @FEATURES2CHECK = (
@@ -28,26 +33,30 @@ my $GMAPBUILDBIN = $ENV{'EXE_GMAP_BUILD'};
 
 my ($INP_dir, $INP_seqfile, $INP_isCDS, $INP_idfile) = ('','',0,'');
 my ($INP_outfile,$INP_threads, $INP_ow, $INP_verbose) = ('',4, 0, 0);
-my ($cluster_regex, $isCDS, $cluster_folder ) = ( '.cdna.fna', 0, '' );
-my ($gmapdb_path, $gmapdb, $seq);
-my ($max_number_isoforms, $qlen, $tlen, $identity, $cover) = ( 0 );
+my ($INP_make_FASTA_reference,$INP_minident) = (0, 95.0);
+my ($pangene_bed_file,$pangene_ref_file) = ('','');
+my ($cluster_regex, $isCDS, $cluster_folder ) = ('.cdna.fna', 0, '');
+my ($gmapdb_path, $gmapdb, $seq, $regex, $gcoords);
+my ($max_number_isoforms, $qlen, $tlen, $identity, $cover) = (0);
 my ($cluster_file, $gene_id, $isof_id, $cmd, $index_file);
 my ($cluster_id, $seq_id, $cluster_seq_id, $coords, $taxon);
-my (%opts, %matches, @order_geneid);
+my (%opts, %matches, @order_geneid, %global_coords, @pangene_files);
 
-getopts('hvcCwI:d:s:t:o:', \%opts);
+getopts('hFvcCwI:d:s:t:o:i:', \%opts);
 
-if(($opts{'h'})||(scalar(keys(%opts))==0))
-{
+if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print "\nusage: $0 [options]\n\n";
   print "-h this message\n";
   print "-c print credits and checks installation\n"; 
   print "-d directory produced by get_pangenes.pl          (example: -d /path/data_pangenes/..._algMmap_ ,\n";
   print "                                                   should include folder with [cdna|cds].fna files)\n";
-  print "-s nucleotide sequence file in FASTA format       (required, example: -s transcripts.fna,\n";
+  print "-s nucleotide sequence file in FASTA format       (example: -s transcripts.fna,\n";
   print "                                                   helps if header has genomic coords ie chr1:12-1200)\n";
-  print "-o output file in TSV format                      (required)\n";
+  print "-o output file in TSV format                      (required with -s)\n";
+  print "-F make pangene reference FASTA format            (optional, pangenome coordinates estimated from reference,\n";
+  print "                                                   requires -d 0taxa.._split dir, obtained with get_pangenes.pl -s -t 0)\n";
   print "-C use CDS sequences                              (optional, cDNA sequences are scanned by default)\n";
+  print "-i min % sequence identity                        (optional, default: -i $INP_minident)\n";
   print "-t threads                                        (optional, default: -t $INP_threads)\n";
   print "-w overwrite GMAP index                           (optional, by default index is re-used if possible)\n";
   print "-v verbose                                        (optional)\n";
@@ -72,6 +81,19 @@ if(defined($opts{'d'})) {
     $INP_isCDS = 1;
     $cluster_regex = '.cds.fna';
   }
+
+  if(defined($opts{'F'})){
+
+    $pangene_bed_file = $INP_dir.'/pangene_matrix.tr.bed';
+    $pangene_ref_file = $INP_dir.'/pangene_matrix.reference.fna';
+
+    if($INP_dir =~ m/_0taxa_/ && $INP_dir =~ m/_split_/ && -e $pangene_bed_file) {
+        $INP_make_FASTA_reference = 1
+
+    } else {
+      die "# EXIT : -F requires a -d directory with _split_ in name, obtained with get_pangenes.pl -s\n";
+    }
+  }    
 }
 else{ die "# EXIT : need a -d directory\n" }
 
@@ -82,12 +104,16 @@ if(defined($opts{'s'})){
     die "# EXIT : need a valid -s file\n"
   }
 } 
-else{ die "# EXIT : need parameter -s\n" }
+elsif($INP_make_FASTA_reference == 0) {  
+  die "# EXIT : need parameter -s or -F\n" 
+}
 
 if(defined($opts{'o'})){
   $INP_outfile = $opts{'o'};
 } 
-else{ die "# EXIT : need parameter -o\n" }
+elsif($INP_make_FASTA_reference == 0) { 
+  die "# EXIT : need parameter -o\n" 
+}
 
 if(defined($opts{'I'})){ 
   $INP_idfile = $opts{'I'};  
@@ -105,25 +131,33 @@ if(defined($opts{'t'}) && $opts{'t'} >= 1){
   $INP_threads = int($opts{'t'});
 }
 
+if(defined($opts{'i'}) && $opts{'i'} >= 0 && $opts{'i'} <= 100){
+  $INP_minident = int($opts{'i'});
+}
+
+
 print "# $0 -d $INP_dir -s $INP_seqfile -o $INP_outfile -C $INP_isCDS " .
-  "-w $INP_ow -t $INP_threads -v $INP_verbose\n\n";
+  "-w $INP_ow -t $INP_threads -i $INP_minident -F $INP_make_FASTA_reference -v $INP_verbose\n\n";
 
 
 # 0) locate .cluster_list file and guess actual folder with clusters
 opendir(INPDIR,$INP_dir) ||
   die "# ERROR: cannot list $INP_dir , please check -d argument is a valid folder\n";
-my @files = grep {/\.cluster_list/} readdir(INPDIR);
+my @dirfiles = grep {/\.cluster_list/} readdir(INPDIR);
 closedir(INPDIR);
 
-if(@files) {
-  $cluster_folder = $INP_dir. '/' . (split(/\.cluster_list/,$files[0]))[0];
+if(@dirfiles) {
+  $cluster_folder = $INP_dir. '/' . (split(/\.cluster_list/,$dirfiles[0]))[0];
 
-  $gmapdb = basename($cluster_folder) . '.gmap';
-  $gmapdb_path = dirname($cluster_folder);
-
-  if($INP_isCDS == 1) {
-    $gmapdb = basename($cluster_folder) . '.cds.gmap';
+  $gmapdb_path = dirname($cluster_folder);  
+  $gmapdb = basename($cluster_folder); 
+  if($INP_make_FASTA_reference) {
+    $gmapdb .= '.reference';  
   }
+  if($INP_isCDS == 1) {
+    $gmapdb .= '.cds';
+  }	  
+  $gmapdb .= '.gmap';
 
 } else {
   die "# ERROR: cannot locate folder with clusters within $INP_dir\n";
@@ -132,15 +166,166 @@ if(@files) {
 print "# cluster folder: $cluster_folder\n";
 
 # 1) parse pre-computed cluster files, write sequences to temp file & make GMAP index
-@files = ();
-opendir(CLUSTDIR,$cluster_folder) || 
-  die "# ERROR: cannot list $cluster_folder , please check -d argument is a valid folder\n";
-@files = grep {/$cluster_regex$/} readdir(CLUSTDIR);
-closedir(CLUSTDIR);
 
-if(scalar(@files) == 0) {
-  die "# ERROR: cannot find any valid clusters in $cluster_folder\n";
+# 1.1) by default parse FASTA files from pangene folder, no pangenome/graph global coords.
+# Cluster files are not sorted, we noticed this can sometimes change gmap results 
+if($INP_make_FASTA_reference == 0) {
+
+  opendir(CLUSTDIR,$cluster_folder) || 
+    die "# ERROR: cannot list $cluster_folder , please check -d argument is a valid folder\n";
+  @pangene_files = grep {/$cluster_regex$/} readdir(CLUSTDIR);
+  closedir(CLUSTDIR);
+
+  if(scalar(@pangene_files) == 0) {
+    die "# ERROR: cannot find any valid clusters in $cluster_folder\n";
+  }
+
+} else { 
+
+  # 1.2) alternatively parse 0-based BED-file to assign pangenome/graph global coords to individual clusters
+
+  # first it assigns start coords to non-ref pangenes, then end coords are added (two passes), rules: 
+  # leading non-ref clusters get assigned global coords before 1st gene model,
+  # middle non-ref clusters get assigned global interval defined between prev,next ref gene model on same strand,
+  # trailing non-ref clusters get assigned global coords after last gene model,
+  # 
+  # contents of BED file look like this:
+  # #1     NA    NA   gene:BGIOSGA002568      1       0       NA      ...
+  # 1   4848  11824   gene:ONIVA01G00010      1       +       gene:ONIVA01G00010
+  # #1     NA    NA ..
+  # 1 104921  115645  gene:ONIVA01G00100      3       +       gene:ONIVA01G00100
+  # #1     NA     NA  gene:BGIOSGA002570      2       0       NA      ...
+  # ...
+  # Note: a pangene can appear in consecutive lines if it includes neighbor ref genes:
+  #1 2531186 2535515 gene:ONIVA01G03460	3 - gene:ONIVA01G03460 ..
+  #1 2536276 2536905 gene:ONIVA01G03460	3 - gene:ONIVA01G03470 ..
+  #1 2536922 2540925 gene:ONIVA01G03460	3 - gene:ONIVA01G03480 ..
+
+  my ($gchr,$gstart,$gend,$gstrand,$index,$p,$refp);
+  my ($ref_genome, $fai_file) = ('','');
+  my (%prev_end, %prev_start, %prev_strand);
+  my (@nonref,%isref,%ref_chr_size);
+
+  # find out last position of reference genome:
+
+  # i) find out reference genome
+  open(TAB,"<", $INP_dir.'/pangene_matrix.tr.tab') ||
+    die "# ERROR: cannot read $INP_dir/pangene_matrix.tr.tab\n";
+  while(<TAB>) {
+    $ref_genome = (split(/\t/))[1];
+    last; 
+  }
+  close (TAB);
+  
+  # ii) get ref chr sizes
+  $fai_file = dirname(abs_path($INP_dir))."/_$ref_genome.fna.fai";
+  open(FAI,"<", $fai_file) ||
+    die "# ERROR: cannot read $fai_file\n";
+  while(<FAI>) {
+    if(/^(\S+)\t(\d+)\t/) {	  
+      $ref_chr_size{ $1 } = $2;
+    }
+  }
+  close (FAI); 
+
+  # 1st pass, assumes pangenes are BED-sorted
+  open(BED,"<",$pangene_bed_file) ||
+    die "# ERROR: cannot read $pangene_bed_file\n";
+  while(<BED>) {
+
+    # 1   4848  11824   gene:ONIVA01G00010      1       +       gene:ONIVA01G00010	  
+    if(/^(\S+)\t(\S+)\t(\S+)\t(\S+)\t\S+\t(\S+)/) {
+
+      ($gchr,$gstart,$gend,$cluster_id,$gstrand) = ($1,$2,$3,$4,$5);  
+      $cluster_id .= $cluster_regex;
+      $index = scalar(@pangene_files);
+
+      if($gchr !~ /^#/) { # ref pangene
+
+        $gstart += 1; # BED is 0-based
+
+        # updated ref pangene, same cluster contains several ref gene models
+        if(defined($global_coords{ $cluster_id })) {
+          $global_coords{ $cluster_id }->[2] = $gend;
+
+        } else { # new ref pangene
+          $global_coords{ $cluster_id } = [$gchr,$gstart,$gend,$gstrand,$index];
+          $isref{ $cluster_id } = 1;
+          push(@pangene_files, $cluster_id);  	  
+        }	
+
+        # keep track of previous pangene
+        $prev_end{$gchr} = $gend;
+        $prev_strand{$gchr} = $gstrand;
+
+      } else { #non-ref pangene
+
+        $gchr =~ s/^#//;
+
+        push(@nonref,$cluster_id);
+
+        if(defined($prev_end{$gchr})) { 				
+
+          # middle/trailing non-ref pangene, end coord to be added on 2nd pass
+	  $global_coords{ $cluster_id } = [$gchr,$prev_end{$gchr}+1,0,$prev_strand{$gchr},$index]; 
+
+        } else {
+          # leading non-ref, save only chr
+          $global_coords{ $cluster_id } = [$gchr,0,0,'',$index]; 
+	}
+
+	push(@pangene_files, $cluster_id);
+      }
+    }
+  }
+  close(BED);
+
+  # 2nd pass, complete coords of non-ref pangenes
+  foreach $cluster_id (@nonref) {
+
+    ($gchr,$gstart,$gend,$gstrand,$index) = 
+      ( $global_coords{$cluster_id}->[0], $global_coords{$cluster_id}->[1],
+        $global_coords{$cluster_id}->[2], $global_coords{$cluster_id}->[3],
+        $global_coords{$cluster_id}->[4]+1 ); # +1 to get to next pangene
+    #print "$gchr,$gstart,$gend,$cluster_id,$gstrand,$index\n";
+
+    # find next ref pangene ($files[$p]) in BED file on same strand
+    $refp = -1; 
+    foreach $p ($index .. $#pangene_files) {
+      next if(
+        !$isref{$pangene_files[$p]} || # nonref
+        ($gstrand ne '' && $gstrand ne $global_coords{$pangene_files[$p]}->[3])); # wrong strand
+      $refp = $p; #print ">$cluster_id $p $files[$p]\n"; 
+      last;  
+    }	    
+
+    if($gstart == 0) { # leading pangenes
+
+      $global_coords{ $cluster_id }->[1] = 1;
+      $global_coords{ $cluster_id }->[2] = $global_coords{$pangene_files[$refp]}->[1] - 1; 
+      #print "$gchr,$global_coords{ $cluster_id }->[1],$global_coords{ $cluster_id }->[2],$cluster_id\n";
+
+    } else {
+    
+      if($refp == -1) { # trailing non-ref
+        $global_coords{ $cluster_id }->[2] = $ref_chr_size{ $gchr };
+	#print "$gchr,$gstart,$global_coords{ $cluster_id }->[2],$cluster_id\n";
+
+
+      } else {	      
+        $global_coords{ $cluster_id }->[2] = $global_coords{$pangene_files[$refp]}->[1] - 1;	    
+	#print "$gchr,$gstart,$global_coords{ $cluster_id }->[2],$cluster_id\n";
+      }
+
+    }   
+
+    # QC  
+    if($gstart > $global_coords{ $cluster_id }->[2]) {
+      print "# WARN: not valid non-reference interval for pangene $cluster_id ($gchr,$gstart,$global_coords{ $cluster_id }->[2])\n";
+    }
+  }
 }
+
 
 # check whether previous index should be re-used
 $index_file = "$gmapdb.ref153positions";
@@ -151,7 +336,7 @@ if($INP_ow ||
 
   my ($fh, $filename) = tempfile( '/tmp/tempfnaXXXXX', UNLINK => 1);
 
-  foreach $cluster_file (@files) {
+  foreach $cluster_file (@pangene_files) {
 
     my ( $ref_geneid, $ref_fasta, $ref_isof_coords, $ref_taxon ) = 
       parse_sequence_FASTA_file( "$cluster_folder/$cluster_file" , 0);
@@ -160,12 +345,20 @@ if($INP_ow ||
       foreach $seq (split(/\n/,$ref_fasta->{$gene_id})) {
 
         if($seq =~ /^>(\S+) (\S+) (\S+) (\S+)/) {
+
           # FASTA headers in clusters produced by get_pangenes.pl look like this:
           #>transcript:Os01t0100100-01 gene:Os01g0100100 1:2983-10815(+) [Oryza_sativa.IRGSP-1.0.chr1]
 
           # prepend cluster filename to header and print to temp file
           ($isof_id, $gene_id, $coords, $taxon) = ($1, $2, $3, $4);
-          print $fh ">$cluster_file|$isof_id|$gene_id|$coords|$taxon\n";
+          print $fh ">$cluster_file|$isof_id|$gene_id|$coords|$taxon|";
+
+          # add <global coordinates> to the end of header
+	  if($INP_make_FASTA_reference) {
+	    print $fh "<$global_coords{$cluster_file}->[0]:$global_coords{$cluster_file}->[1]-$global_coords{$cluster_file}->[2]>\n";
+	  } else {	    
+            print $fh "<>\n";
+	  }	  
 
         } else {
           print $fh "$seq\n";
@@ -173,7 +366,6 @@ if($INP_ow ||
       }
     }
   } 
-
 
   # actually create GMAP index from temp file
   $cmd = "$GMAPBUILDBIN -e 0 -d $gmapdb -D $gmapdb_path $filename 2>&1";
@@ -184,11 +376,25 @@ if($INP_ow ||
     die "# ERROR: failed running $GMAPBUILDBIN ($cmd)\n";
   } else {
     print "\n# created GMAP index $gmapdb_path/$gmapdb\n\n";
+
+    if($INP_make_FASTA_reference) {
+      move($filename, $pangene_ref_file);
+      print "# pangene reference file: $pangene_ref_file\n\n";
+    } 
   }
 
 } else {
   print "\n# re-using GMAP index $gmapdb_path/$gmapdb\n\n";
+
+  if(-s $pangene_ref_file) {
+    print "# pangene reference file: $pangene_ref_file\n\n";
+  }
 }
+
+if($INP_seqfile eq '') {
+  exit(0);
+}
+
 
 ## 2) map input sequence(s) to indexed cluster sequences with GMAP
 $cmd = "$GMAPBIN --no-chimeras -t $INP_threads -n 100 -S -d $gmapdb -D $gmapdb_path $INP_seqfile 2>&1";
@@ -218,24 +424,32 @@ while(<GMAP>) {
 
   } elsif(/^    \+(\S+)\s+\(\d+-\d+\)/){
     # expected to be on the plus/+ strand as these are sequences cut from GFF in the right strand:
-    # +cluster.cdna.fna|Os01t0829900-01|gene:Os01g0829900|1:35501996-35505052(-)|[taxon]:1-1820  (1-1768)   97%
+    # +cluster.cdna.fna|Os01t0829900-01|gene:Os01g0829900|1:35501996-35505052(-)|[taxon]|<1:35501996-35505052>:1-1820  (1-1768)   97%
+    # +cluster.cdna.fna|Os01t0829900-01|gene:Os01g0829900|1:35501996-35505052(-)|[taxon]|:1-1820  (1-1768)   97%
 
-    ($cluster_seq_id) = ($1);
-    if($cluster_seq_id =~ m/^([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|\[([^\]]+)\]:/){
-      ($cluster_id, $isof_id, $gene_id, $coords, $taxon) = ($1, $2, $3, $4, $5);
-    }
+    $cluster_seq_id = $1;
 
-    # compile match stats
-    $matches{$seq_id}{$cluster_id}{'total'}++;
+    $regex = '^([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|\[([^\]]+)\]\|<([^>]*)';
 
-    # take stats from hit with best cover
-    if(!defined($matches{$seq_id}{$cluster_id}{'cover'}) || 
-      $cover > $matches{$seq_id}{$cluster_id}{'cover'}) {
-      $matches{$seq_id}{$cluster_id}{'cover'} = $cover;
-      $matches{$seq_id}{$cluster_id}{'identity'} = $identity;
-      $matches{$seq_id}{$cluster_id}{'coords'} = $coords;
-      $matches{$seq_id}{$cluster_id}{'qlength'} = $qlen;
-      $matches{$seq_id}{$cluster_id}{'tlength'} = $tlen;
+    if($identity >= $INP_minident && $cluster_seq_id =~ m/$regex/){
+
+      ($cluster_id, $isof_id, $gene_id, $coords, $taxon, $gcoords) = ($1, $2, $3, $4, $5, $6);
+    
+      # compile match stats
+      $matches{$seq_id}{$cluster_id}{'total'}++;
+
+      # take stats from hit with best cover
+      if(!defined($matches{$seq_id}{$cluster_id}{'cover'}) || 
+        $cover > $matches{$seq_id}{$cluster_id}{'cover'}) {
+
+        $matches{$seq_id}{$cluster_id}{'cover'} = $cover;
+        $matches{$seq_id}{$cluster_id}{'identity'} = $identity;
+        $matches{$seq_id}{$cluster_id}{'taxon'} = $taxon;	
+        $matches{$seq_id}{$cluster_id}{'coords'} = $coords;
+        $matches{$seq_id}{$cluster_id}{'qlength'} = $qlen;
+        $matches{$seq_id}{$cluster_id}{'tlength'} = $tlen;
+        $matches{$seq_id}{$cluster_id}{'gcoords'} = $gcoords || 'NA';
+      }	
     }
   }
 }
@@ -248,13 +462,13 @@ open(TSV,">",$INP_outfile) ||
   die "# ERROR: cannot create $INP_outfile\n";
 
 print TSV "#query\tqlength\tpangene\tlength\t".
-  "matches\tperc_qcover\tperc_identity\tcoords\n";
+  "matches\tperc_qcover\tperc_identity\tcoords\ttaxon\tpangenome_coords\n";
 
 foreach $seq_id (@order_geneid) {
 
   # no matches
   if(!defined($matches{$seq_id})) {
-      print TSV "$seq_id\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n";
+      print TSV "$seq_id\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n";
       next;
   }
 	
@@ -262,7 +476,7 @@ foreach $seq_id (@order_geneid) {
   # a sequence can potentially match several clusters
   foreach $cluster_id (keys(%{ $matches{$seq_id} })) {
 
-    printf(TSV "%s\t%d\t%s\t%d\t%d\t%d\t%1.1f\t%s\n",
+    printf(TSV "%s\t%d\t%s\t%d\t%d\t%1.1f\t%1.1f\t%s\t%s\t%s\n",
       $seq_id,
       $matches{$seq_id}{$cluster_id}{'qlength'},
       $cluster_id,
@@ -270,7 +484,9 @@ foreach $seq_id (@order_geneid) {
       $matches{$seq_id}{$cluster_id}{'total'},      
       $matches{$seq_id}{$cluster_id}{'cover'},
       $matches{$seq_id}{$cluster_id}{'identity'},
-      $matches{$seq_id}{$cluster_id}{'coords'}
+      $matches{$seq_id}{$cluster_id}{'coords'},
+      $matches{$seq_id}{$cluster_id}{'taxon'},
+      $matches{$seq_id}{$cluster_id}{'gcoords'}      
     );
   }
 }

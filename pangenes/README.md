@@ -53,6 +53,7 @@ and produces different types of output:
 - [Pangene analysis with GFF patches](#pangene-analysis-with-GFF-patches)
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
 - [Matching nucleotide sequences to precomputed pangene clusters](#matching-nucleotide-sequences-to-precomputed-pangene-clusters)
+- [Exporting FASTA reference file for mapping](#exporting-fasta-reference-file-for-mapping)
 - [Troubleshooting](#troubleshooting)
 - [Funding](#funding)
 - [Citation](#citation)
@@ -324,7 +325,7 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # taxa considered = 3 genes = 15706
 
-# mask=Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ (_5neigh_algMmap_split)
+# mask=Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_split_ (_2neigh_algMmap_split)
 
 
 # indexing genomes ...
@@ -348,25 +349,25 @@ $ perl get_pangenes.pl -d ../files/test_rice
 
 # number of clusters = 7801 (core = 3008)
 
-# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
-# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
+# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
+# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1
 
-# percent_conserved_sequences_file = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
+# percent_conserved_sequences_file = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/POCS.matrix.tab
 
-# pangene_file (occup) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix.tab
-# pangene_file (occup, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix.tr.tab
-# pangene_file (names) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tab
-# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
+# pangene_file (occup) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/pangene_matrix.tab
+# pangene_file (occup, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/pangene_matrix.tr.tab
+# pangene_file (names) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/pangene_matrix_genes.tab
+# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/pangene_matrix_genes.tr.tab
 
 
 ```
 In this example, the clusters are stored in folder 
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1
 
 and a text file describing the clusters is also produced
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
 
 which looks like this:
 
@@ -390,7 +391,7 @@ supporting the alignment of annotated genes from one assembly to genomic segment
 Clusters are FASTA files like this, and might include **several sequences for the same gene**:
 
 ```
-$ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
+$ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
 
 >transcript:ONIVA01G52180.1 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
 >transcript:ONIVA01G52180.2 gene:ONIVA01G52180 1:42818942-42824598(-) [Oryza_nivara_v1.chr1]
@@ -409,7 +410,7 @@ genomes. The latter files are good starting points for lifting over genes, as ex
 The **gene collinearity evidence** supporting the clusters is summarized in a compressed file
 which is added to the output folder of each run of the script. In this example this is:
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/mergedpairs.tsv.gz
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/mergedpairs.tsv.gz
 
 See section [Evidence supporting clusters](#evidence-supporting-clusters) to learn how to 
 extract the evidence for a selected cluster.
@@ -417,7 +418,7 @@ extract the evidence for a selected cluster.
 The script also produces % of Conserved Sequence (POCS) and pangene matrices,
 which look like this:
  
-    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/POCS.matrix.tab
+    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/POCS.matrix.tab
     genomes	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1
     Oryza_nivara_v1.chr1	100.00	61.81	60.62
     Oryza_sativa.IRGSP-1.0.chr1	61.81	100.00	62.65
@@ -425,7 +426,7 @@ which look like this:
 
 And 
 
-    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix.tr.tab
+    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/pangene_matrix.tr.tab
     source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5niegh_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
     chrunsorted	NA	NA	NA	
     gene:ONIVA01G52180	1	1	1	
@@ -437,8 +438,8 @@ And
     gene:ONIVA01G52060	1	1	1	
     gene:ONIVA01G52030	1	1	1	
 
-    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
-    source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
+    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/pangene_matrix_genes.tr.tab
+    source:test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1	Oryza_indica.ASM465v1.chr1	
     chr:unsorted	NA	NA	NA	
     gene:ONIVA01G52180	gene:ONIVA01G52180	gene:Os01g0978100	gene:BGIOSGA000001	
     gene:ONIVA01G52140	gene:ONIVA01G52140	gene:Os01g0977600	gene:BGIOSGA000002	
@@ -462,30 +463,30 @@ pangene set with clusters of all occupancy classes (-t 0, see [Table 1](#objecti
     perl get_pangenes.pl -d ../files/test_rice -t 0
 
 The output is similar to the previous one, 
-but saved in a different folder (*Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_*).
+but saved in a different folder (*Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_*).
 The main differences are shown below, note the larger number of clusters:
 
 ```
 # number of clusters = 7801 (core = 3008)
 
-# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
-# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1
+# cluster_list = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/Oryzanivarav1.chr1.cluster_list
+# cluster_directory = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/Oryzanivarav1.chr1
 
 ...
 
-# pangene_file (occup, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix.tr.tab
+# pangene_file (occup, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/pangene_matrix.tr.tab
 ...
-# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab
+# pangene_file (names, transposed) = test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/pangene_matrix_genes.tr.tab
 ```
 
 The last two output files can be easily parsed to discover pangenes with Presence-Absence Variation (PAV).
 For instance, to find pangenes that contain gene models from *Oryza_indica.ASM465v1.chr1* and 
 *Oryza_sativa.IRGSP-1.0.chr1* but no models from *Oryza_nivara_v1.chr1* you could do:
 
-    perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | wc -l
+    perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/pangene_matrix_genes.tr.tab | wc -l
     #508
 
-    perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/pangene_matrix_genes.tr.tab | head	
+    perl -lane 'print if($F[1] eq "-" && $F[2] ne "-" && $F[3] ne "-")' test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/pangene_matrix_genes.tr.tab | head	
     gene:BGIOSGA000032	-	gene:BGIOSGA000032	gene:Os01g0969700	
     gene:BGIOSGA000039	-	gene:BGIOSGA000039	gene:Os01g0968200	
     gene:BGIOSGA000074	-	gene:BGIOSGA000074	gene:Os01g0960300	
@@ -500,7 +501,7 @@ For instance, to find pangenes that contain gene models from *Oryza_indica.ASM46
 As explained earlier, the first column shows the actual cluster names, 
 which can be found with different extensions at
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_5neigh_algMmap_/Oryzanivarav1.chr1
+    test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_/Oryzanivarav1.chr1
   
 
 ## Example 3: splitting genome in chromosomes
@@ -508,13 +509,14 @@ which can be found with different extensions at
 In this example we will split the input genomes in chromosomes and will **limit the alignments
 to homologous chromosomes**, which might be what you expect when talking about collinear genes.
 This has also the beneficial side-effect of reducing the RAM consumption of the software 
-(see also option -H).
+(see also option -H). We will also request `-t 0` as in 
+[example 2](#example-2-pangene-and-Presence-Absence-Variation-PAV-analysis).
 
 In order to identify homologous chromosomes you'll need to pass a 
 [regular expression](https://en.wikipedia.org/wiki/Regular_expression) 
 as an argument: 
 
-    perl get_pangenes.pl -d ../files/test_rice -s '^\d+$' 
+    perl get_pangenes.pl -d ../files/test_rice -t 0 -s '^\d+$' 
 
 This particular example tells the script to identify chromosomes named with 
 a natural number, as done for instance in [Ensembl Plants](https://plants.ensembl.org/index.html).
@@ -534,7 +536,7 @@ Any chromosome names that don't match the regex are pooled in a dummy 'unplaced'
 When you run it you'll see a couple differences in the output:
 
 * the number of chrs/contigs parsed in each input FASTA file
-* a BED-like pangene matrix 
+* a BED-like pangene matrix with 0-based coordinates
 
 ```
 # checking input files...
@@ -549,24 +551,25 @@ When you run it you'll see a couple differences in the output:
 # ../files/test_rice/Oryza_sativa.IRGSP-1.0.chr1.fa.gz 42.56MB genes=5271 non-valid=0 chrs/contigs=1
 
 ...
-# clusters sorted by position in chr 1 = 7808
+# clusters sorted by position in chr 1 = 7944
 ...
-# pangene_file (BED-like) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.bed
+# pangene_file (BED-like) = Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_split_/pangene_matrix.tr.bed
 ```
 
 The BED file contents should be like this, with genome occupancy in column 5:
 
-    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_/pangene_matrix.tr.bed
+    $ head test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_split_/pangene_matrix.tr.bed
     #1	NA	NA	gene:BGIOSGA002568	1	0	NA	NA	gene:BGIOSGA002568
-    1	4848	11824	gene:ONIVA01G00010	1	+	gene:ONIVA01G00010	NA	NA
-    1	43371	62621	gene:ONIVA01G00020	1	+	gene:ONIVA01G00020	NA	NA
-    1	62743	64526	gene:ONIVA01G00030	1	+	gene:ONIVA01G00030	NA	NA
-    1	64707	65654	gene:ONIVA01G00040	1	+	gene:ONIVA01G00040	NA	NA
-    1	68827	69733	gene:ONIVA01G00050	1	+	gene:ONIVA01G00050	NA	NA
-    1	73630	75670	gene:ONIVA01G00060	1	+	gene:ONIVA01G00060	NA	NA
-    1	78105	78695	gene:ONIVA01G00070	1	+	gene:ONIVA01G00070	NA	NA
-    1	98770	99876	gene:ONIVA01G00080	1	-	gene:ONIVA01G00080	NA	NA
-    1	100726	101071	gene:ONIVA01G00090	1	-	gene:ONIVA01G00090	NA	NA
+    1	4847	11824	gene:ONIVA01G00010	1	+	gene:ONIVA01G00010	NA	NA
+    1	43370	62621	gene:ONIVA01G00020	1	+	gene:ONIVA01G00020	NA	NA
+    1	62742	64526	gene:ONIVA01G00030	1	+	gene:ONIVA01G00030	NA	NA
+    1	64706	65654	gene:ONIVA01G00040	1	+	gene:ONIVA01G00040	NA	NA
+    1	68826	69733	gene:ONIVA01G00050	1	+	gene:ONIVA01G00050	NA	NA
+    1	73629	75670	gene:ONIVA01G00060	1	+	gene:ONIVA01G00060	NA	NA
+    1	78104	78695	gene:ONIVA01G00070	1	+	gene:ONIVA01G00070	NA	NA
+    1	98769	99876	gene:ONIVA01G00080	1	-	gene:ONIVA01G00080	NA	NA
+    1	100725	101071	gene:ONIVA01G00090	1	-	gene:ONIVA01G00090	NA	NA
+
 
 ## Example 4: using GSAlign instead of minimap2
 
@@ -577,12 +580,12 @@ You can try it out with:
 
 Note that the output folder is now
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algGSal_
 
 A unique output produce by GSAlign is an Average Nucleotide identitiy (ANI) matrix,
 which summarizes the %identity of pairs of aligned genomes:
 
-    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_/ANI.matrix.tab
+    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algGSal_/ANI.matrix.tab
     genomes	Oryza_indica.ASM465v1.chr1	Oryza_nivara_v1.chr1	Oryza_sativa.IRGSP-1.0.chr1
     Oryza_indica.ASM465v1.chr1	100.00	97.88	97.47
     Oryza_nivara_v1.chr1	97.88	100.00	96.86
@@ -626,13 +629,13 @@ named core_gene.tab and pan_gene.tab
 # adding Oryza_sativa.IRGSP-1.0.chr1: core=2975 pan=7840
 
 
-# pan-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
-# core-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/core_gene.tab
+# pan-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algGSal_split_/pan_gene.tab
+# core-gene (number of clusters) = test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algGSal_split_/core_gene.tab
 ```
 
 The resulting pan and core gene files look like this:
 
-    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algGSal_split_/pan_gene.tab
+    $ cat test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algGSal_split_/pan_gene.tab
     g1	g2	g3	
     5063	6801	7840	
     4893	6394	7840	
@@ -662,7 +665,7 @@ two optional packages are required:
 
     # select protein FASTA files of pangenes with ideally 4+ taxa, 3 in this toy example
     perl -lne 'if(/\s+taxa=(\d+) \S+ cdnafile: (\S+) \S+ \S+ pepfile: (\S+)/){ print "$3" if($1 >= 3)}' \
-        test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1.cluster_list \
+        test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1.cluster_list \
         > test_rice_pangenes/list.diversity.pep.txt
 
     #wc test_rice_pangenes/list.diversity.pep.txt
@@ -671,7 +674,7 @@ two optional packages are required:
     # -o is the name of the output folder
     # -I means that only the 1st isoform of each gene model is used,
     cat list.diversity.pep.txt | parallel --gnu -j 10 ./check_quality.pl -d \
-        test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i {} \
+        test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -i {} \
         -n -I -o test_rice_pangenes/diversity.pep ::: &> test_rice_pangenes/log.diversity.pep.I.tsv
 
     # header of log.diversity.pep.I.tsv
@@ -876,8 +879,8 @@ you can also compute local BLAST alignments, coverage and sequence identity to t
 in a cluster as follows:
 
 ```
-get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
-get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cds.faa
+get_homologues/annotate_cluster.pl -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cdna.fna
+get_homologues/annotate_cluster.pl -P -f test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G52180.cds.faa
 ```
 
 ## Quality metrics of clusters
@@ -894,7 +897,7 @@ which can be done as follows:
 The automatic report includes metrics based on multiple sequence alignment and the corresponding distance matrix.
 It can be produced as follows:
 
-    $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
+    $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
 
     file	1stisof	occup	seqs	mode_len	SE_len	mode_exons	SE_exons	mode_dist	max_dist	SE_dist	sites	Ca	Cr_max	Cr_min	Cc_max	Cc_min	Cij_max	Cij_min
     gene:ONIVA01G50850.cdna.fna	0	3	6	2067	267.9	10	1.5	0.000000	0.776042	0.000000	2069	0.609554	0.999033	0.092799	0.833333	0.166667	0.880135	0.000000
@@ -919,11 +922,11 @@ In sections [Pairwise genome comparisons](#pairwise-genome-comparisons) and
 These files summarize the **collinearity evidence** supporting the produced gene clusters.
 For each get_pangenes.pl run these files are merged and sorted in a compressed TSV file such as 
 
-    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/mergedpairs.tsv.gz
+    test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/mergedpairs.tsv.gz
 
 It is possible to extract the collinearity evidence supporting selected clusters as follows:
 
-    $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
+    $ perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -i gene:ONIVA01G50850.cdna.fna
 
     # sequence-level stats
 
@@ -993,7 +996,7 @@ Note that it requires the BED-like pangene matrix obtained as explained in
 [Example 3](#example-3-splitting-genome-in-chromosomes) and also the installation of
 [pyGenomeViz](https://pypi.org/project/pygenomeviz). This is how you can run it:
 
-    perl check_evidence.pl -d Otest_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n
+    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_split_ -i gene:ONIVA01G52020.cds.fna -P -n
 
 After adding option -P the output should now include:
 
@@ -1041,7 +1044,7 @@ Currently, the following fixes have been tested:
 
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
 
-    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -f -i gene:ONIVA01G25360.cds.fna
+    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -f -i gene:ONIVA01G25360.cds.fna
 
     # sequence-level stats
 
@@ -1087,7 +1090,7 @@ Argument -p might be used to allow partial (not multiple of 3) CDS lifted-over b
 ## Pan-gene analysis with GFF patches
 
     # locate cluster of interest 
-    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G50620.cdna.fna
+    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1/gene:ONIVA01G50620.cdna.fna
     >transcript:ONIVA01G50620.6 gene:ONIVA01G50620 1:41880970-41884290(+) [Oryza_nivara_v1.chr1]
     >transcript:ONIVA01G50620.1 gene:ONIVA01G50620 1:41880970-41888135(+) [Oryza_nivara_v1.chr1]
     >transcript:ONIVA01G50620.2 gene:ONIVA01G50620 1:41880970-41888135(+) [Oryza_nivara_v1.chr1]
@@ -1102,7 +1105,7 @@ Argument -p might be used to allow partial (not multiple of 3) CDS lifted-over b
     >transcript:BGIOSGA005214-TA gene:BGIOSGA005214 1:46296594-46299549(+) [Oryza_indica.ASM465v1.chr1]
  
     # fix a gene model and save GFF patch in folder patch/
-    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_/ -i gene:ONIVA01G50620.cdna.fna -f -o patch/
+    perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/ -i gene:ONIVA01G50620.cdna.fna -f -o patch/
 
     # copy patch GFF files to same input dir used in original run (Example 1)
     cp patch/*.patch.gff ../files/test_rice/
@@ -1111,12 +1114,12 @@ Argument -p might be used to allow partial (not multiple of 3) CDS lifted-over b
     perl get_pangenes.pl -d ../files/test_rice/ -p -m
 
     # check how the updated clusters look like
-    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA005213.path1.cdna.fna
+    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_patch_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA005213.path1.cdna.fna
     >gene:BGIOSGA005213.mrna1 gene:BGIOSGA005213.path1 1:41880970-41882361(+) [Oryza_nivara_v1.chr1]
     >transcript:Os01t0958200-01 gene:Os01g0958200 1:42238811-42240420(+) [Oryza_sativa.IRGSP-1.0.chr1]
     >transcript:BGIOSGA005213-TA gene:BGIOSGA005213 1:46293601-46294992(+) [Oryza_indica.ASM465v1.chr1]
 
-    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_patch_alltaxa_5neigh_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA005214.path1.cdna.fna
+    grep "^>" test_rice_pangenes/Oryza_nivara_v1chr1_patch_alltaxa_2neigh_algMmap_/Oryzanivarav1.chr1/gene:BGIOSGA005214.path1.cdna.fna
     >gene:BGIOSGA005214.mrna1 gene:BGIOSGA005214.path1 1:41883977-41886935(+) [Oryza_nivara_v1.chr1]
     >transcript:Os01t0958400-01 gene:Os01g0958400 1:42240825-42244043(+) [Oryza_sativa.IRGSP-1.0.chr1]
     >transcript:Os01t0958400-02 gene:Os01g0958400 1:42240837-42244651(+) [Oryza_sativa.IRGSP-1.0.chr1]
@@ -1166,23 +1169,46 @@ not considered before. You can do this with script *match_cluster.pl*, which cre
 nucleotide sequences from clusters and uses GMAP to scan them. By default it uses cDNA sequences to build 
 the index, but can also use CDS (-C). The next example shows how to do this:
 
-    perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_5neigh_algMmap_ -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
+    perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
 
 This will produce TAB-separated (TSV) output similar to this:
 
-    #query	qlength	pangene	length	matches	perc_qcover	perc_identity	coords
+    #query	qlength	pangene	length	matches	perc_qcover	perc_identity	coords	taxon	pangenome_coords
     TR2	NA	NA	NA	NA	NA	NA	NA
     TR1	NA	NA	NA	NA	NA	NA	NA
-    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100	97.1	1:35501996-35505052(-)
-    TR3	890	gene:ONIVA01G42530.cdna.fna	617	2	69	87.4	1:35899105-35900529(+)
+    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100.0	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	NA
+    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA
 
 The column 'matches' indicates how many individual alignments support the assignment of the input
-sequence to the same cluster, which in the last example is 2. Note that potentially a sequence
+sequence to the same cluster, which in the last example is 1. Note that potentially a sequence
 could match more than one cluster.
+
+Adding flag -F will ensure that matches are also estimated pangenome coordinates, but note this requires
+a set of pangenes computed with *get_pangenes.pl -s -t 0*, see [section](#example-3-splitting-genome-in-chromosomes).
 
 Before you run this script it might be handy to add genomic coordinates to the headers of the input
 FASTA file, so that you can quickly check whether they match clusters in the same chromosome.
 
+## Exporting FASTA reference file for mapping
+
+The script *match_cluster.pl* can export a FASTA file which can be used to map arbitrary sequences within
+a gene-based pangenome. Sequences in this reference file are assigned <global pangenome positions> based on the 
+BED-like file obtained with *get_pangenes.pl -s -t 0*, see [section](#example-3-splitting-genome-in-chromosomes).
+The next example shows how to do this:
+
+    perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_split_ -F
+
+The file in question is:
+
+    # pangene reference file: test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_split_/pangene_matrix.reference.fna
+
+Headers in this file look like this:
+
+    >gene:BGIOSGA002568.cdna.fna|transcript:BGIOSGA002568-TA|gene:BGIOSGA002568|1:18113-20165(+)|[Oryza_indica.ASM465v1.chr1]|<1:1-4847>
+
+In this example the first set of coordinates correspond to the cDNA BGIOSGA002568-TA within the the [Oryza_indica.ASM465v1.chr1] assembly;
+the second set of coordinates are an estimated location of this sequence in the reference genome used to compute the pangenes, even if this
+particular cDNA might not be annotated or contained. We expect these coordinates to be useful for mapping.
 
 ## Troubleshooting
 

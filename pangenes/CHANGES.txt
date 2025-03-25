@@ -71,3 +71,8 @@
 09102024: rename_pangenes.pl -r creates all expected outfiles, tested with rice data
 15012025: prepare for conda package
 06032025: get_pangenes.pl: sort & concat alignment results using tempfile with filenames to sort to avoid "Argument list too long"
+24032025: BED matrix produced by _cluster_analysis.pl is 0-based 
+25032025: match_cluster.pl was added -i to control sequence identity of matches
+25032025: match_cluster.pl was added -F to produce a FASTA file with sequence index that can be exported as gene-based pangenome for mapping, 
+25032025: with <global pangenome positions> estimated from reference genome
+25032025: updated Makefiles and documentation

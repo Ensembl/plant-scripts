@@ -313,6 +313,8 @@ if($INP_make_FASTA_reference == 0) {
     } else { #non-ref pangene
 
       $gchr =~ s/^#//; # remove # from chr name
+    
+      next if($gchr eq 'unplaced');  
 
       push(@nonref,$cluster_id . $cluster_regex);
 
@@ -320,7 +322,7 @@ if($INP_make_FASTA_reference == 0) {
 
         # middle/trailing non-ref pangene, end coord to be added on 2nd pass
         $global_coords{ $cluster_id . $cluster_regex } = 
-          [$gchr,$prev_end{$gchr}+1,0,$prev_strand{$gchr},$index]; #print "$gchr,$prev_end{$gchr},0,$prev_strand{$gchr},$index,$cluster_id . $cluster_regex\n";
+          [$gchr,$prev_end{$gchr}+1,0,$prev_strand{$gchr},$index];
 
       } else {
         # leading non-ref, save only chr
@@ -330,7 +332,7 @@ if($INP_make_FASTA_reference == 0) {
       push(@pangene_files, $cluster_id . $cluster_regex);
     }
   }
-  undef(@BED); 
+  undef(@BED);
 
   # iv) 2nd pass, complete coords of non-ref pangenes
   foreach $cluster_id (@nonref) {
@@ -341,11 +343,12 @@ if($INP_make_FASTA_reference == 0) {
         $global_coords{$cluster_id}->[4]+1 ); # +1 to get to next pangene
     #print "$gchr,$gstart,$gend,$cluster_id,$gstrand,$index\n";
 
-    # find next ref pangene ($files[$p]) in BED file on same strand
+    # find next ref pangene ($files[$p]) in BED file on same strand & chr
     $refp = -1; 
     foreach $p ($index .. $#pangene_files) {
       next if( !$isref{$pangene_files[$p]} || # nonref
-        ($gstrand ne '' && $gstrand ne $global_coords{$pangene_files[$p]}->[3])); # wrong strand
+        ($gchr ne $global_coords{$pangene_files[$p]}->[0]) || # wrong chr 	      
+        ($gstrand ne '' && $gstrand ne $global_coords{$pangene_files[$p]}->[3]) ); # wrong strand
 
       $refp = $p; #print ">$cluster_id $p $pangene_files[$p]\n"; 
       last;  

@@ -6,7 +6,7 @@
 # Optionally, sequence index can be exported as gene-based pangenome for mapping,
 # with <global pangenome positions> estimated from reference genome.
 #
-# Note: -F currently looks for ../INP_dir/_reference_genome.fna.fai (usually _pangenes folder)
+# Note: -F looks for ../INP_dir/_reference_genome.fna.fai (ie _pangenes folder)
 
 # Copyright [2023-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
@@ -36,7 +36,7 @@ my $GMAPBUILDBIN = $ENV{'EXE_GMAP_BUILD'};
 my ($INP_dir, $INP_seqfile, $INP_isCDS, $INP_idfile) = ('','',0,'');
 my ($INP_outfile,$INP_threads, $INP_ow, $INP_verbose) = ('',4, 0, 0);
 my ($INP_make_FASTA_reference,$INP_minident) = (0, 95.0);
-my ($pangene_bed_file,$pangene_ref_file) = ('','');
+my ($pangene_bed_file,$pangene_ref_file,$neigh) = ('','',0);
 my ($cluster_regex, $isCDS, $cluster_folder ) = ('.cdna.fna', 0, '');
 my ($gmapdb_path, $gmapdb, $seq, $regex, $gcoords);
 my ($max_number_isoforms, $qlen, $tlen, $identity, $cover) = (0);
@@ -90,7 +90,11 @@ if(defined($opts{'d'})) {
     $pangene_ref_file = $INP_dir.'/pangene_matrix.reference.fna';
 
     if($INP_dir =~ m/_0taxa_/ && $INP_dir =~ m/_split_/ && -e $pangene_bed_file) {
-        $INP_make_FASTA_reference = 1
+      $INP_make_FASTA_reference = 1;
+      
+      if($INP_dir =~ m/_(\d+)neigh_/) { # store neighbor distance used to compute pangenes
+        $neigh = $1;
+      }    
 
     } else {
       die "# EXIT : -F requires a -d directory with _split_ in name, obtained with get_pangenes.pl -s\n";
@@ -187,6 +191,7 @@ if($INP_make_FASTA_reference == 0) {
   # 1.2) alternatively parse 0-based BED-file to assign pangenome/graph global coords to individual clusters
 
   # first it assigns start coords to non-ref pangenes, then end coords are added (two passes), rules: 
+  # out-of-order ref genes (non-consecutive in same pangene) are excluded,
   # leading non-ref clusters get assigned global coords before 1st gene model,
   # middle non-ref clusters get assigned global interval defined between prev,next ref gene model on same strand,
   # trailing non-ref clusters get assigned global coords after last gene model,
@@ -203,13 +208,15 @@ if($INP_make_FASTA_reference == 0) {
   #1 2536276 2536905 gene:ONIVA01G03460	3 - gene:ONIVA01G03470 ..
   #1 2536922 2540925 gene:ONIVA01G03460	3 - gene:ONIVA01G03480 ..
 
-  my ($gchr,$gstart,$gend,$gstrand,$index,$p,$refp);
+  my ($gchr,$gstart,$gend,$gstrand,$gene);
+  my ($gchr2,$gstart2,$gend2,$gstrand2,$gene2,$cluster_id2);
+  my ($e,$e2,$elem,$elem2,$dist,$index,$p,$refp);
   my ($ref_genome, $fai_file) = ('','');
   my (%prev_end, %prev_start, %prev_strand);
-  my (@nonref,%isref,%ref_chr_size);
+  my (%nonconsec, %isref, %ref_chr_size);
+  my (@BED,@nonref);
 
-  # find out last position of reference genome:
-
+  ## find out last position of reference chromosomes:
   # i) find out reference genome
   open(TAB,"<", $INP_dir.'/pangene_matrix.tr.tab') ||
     die "# ERROR: cannot read $INP_dir/pangene_matrix.tr.tab\n";
@@ -230,59 +237,102 @@ if($INP_make_FASTA_reference == 0) {
   }
   close (FAI); 
 
-  # 1st pass, assumes pangenes are BED-sorted
+  ## actually parse BED
+
+  # i) slurp file into array, columns split; will be read more than once
   open(BED,"<",$pangene_bed_file) ||
     die "# ERROR: cannot read $pangene_bed_file\n";
-  while(<BED>) {
-
-    # 1   4848  11824   gene:ONIVA01G00010      1       +       gene:ONIVA01G00010	  
-    if(/^(\S+)\t(\S+)\t(\S+)\t(\S+)\t\S+\t(\S+)/) {
-
-      ($gchr,$gstart,$gend,$cluster_id,$gstrand) = ($1,$2,$3,$4,$5);  
-      $cluster_id .= $cluster_regex;
-      $index = scalar(@pangene_files);
-
-      if($gchr !~ /^#/) { # ref pangene
-
-        $gstart += 1; # BED is 0-based
-
-        # updated ref pangene, same cluster contains several ref gene models
-        if(defined($global_coords{ $cluster_id })) {
-          $global_coords{ $cluster_id }->[2] = $gend;
-
-        } else { # new ref pangene
-          $global_coords{ $cluster_id } = [$gchr,$gstart,$gend,$gstrand,$index];
-          $isref{ $cluster_id } = 1;
-          push(@pangene_files, $cluster_id);  	  
-        }	
-
-        # keep track of previous pangene
-        $prev_end{$gchr} = $gend;
-        $prev_strand{$gchr} = $gstrand;
-
-      } else { #non-ref pangene
-
-        $gchr =~ s/^#//;
-
-        push(@nonref,$cluster_id);
-
-        if(defined($prev_end{$gchr})) { 				
-
-          # middle/trailing non-ref pangene, end coord to be added on 2nd pass
-	  $global_coords{ $cluster_id } = [$gchr,$prev_end{$gchr}+1,0,$prev_strand{$gchr},$index]; 
-
-        } else {
-          # leading non-ref, save only chr
-          $global_coords{ $cluster_id } = [$gchr,0,0,'',$index]; 
-	}
-
-	push(@pangene_files, $cluster_id);
-      }
-    }
-  }
+  while(<BED>) { # 1 4848 11824 gene:ONIVA01G00010 1 + gene:ONIVA01G00010 ..	  
+    my @data = split(/\t/,$_);   	  
+    push(@BED, \@data);	  
+  } 
   close(BED);
 
-  # 2nd pass, complete coords of non-ref pangenes
+  # ii) identify non consecutive reference genes in same pangene,
+  # should not be considered for coordinate calculations,
+  for $e (0 .. $#BED) {
+    next if($BED[$e]->[0] =~ m/^#/);
+
+    $elem = $BED[$e];
+    ($gchr,$gstart,$gend,$cluster_id,$gene) = 
+      ($elem->[0],$elem->[1],$elem->[2],$elem->[3],$elem->[6]);
+
+    $dist = 0;
+    for $e2 ($e+1 .. $#BED) {
+      next if($BED[$e2]->[0] =~ m/^#/);
+      $dist++;
+      last if($dist > $neigh); 
+
+      $elem2 = $BED[$e2];
+      ($gchr2,$gstart2,$gend2,$cluster_id2,$gene2) = 
+        ($elem2->[0],$elem2->[1],$elem2->[2],$elem2->[3],$elem2->[6]);
+
+      next if($gchr ne $gchr2 || $cluster_id eq $cluster_id2);
+
+      if($gstart2 < $gstart || $gstart2 < $gend) {
+        #print "$gchr,$gstart,$gend,$cluster_id,$gene -> $gchr2,$gstart2,$gend2,$cluster_id2,$gene2\n";
+        $nonconsec{ $gene } = 1;
+      }
+    }  
+  }  
+  
+  # iii) 1st pass, assumes pangenes are BED-sorted, 
+  # skips non-consecutive, out-of-order ref genes
+  for $e (0 .. $#BED) {
+
+    $elem = $BED[$e];
+    ($gchr,$gstart,$gend,$cluster_id,$gstrand,$gene) =
+      ($elem->[0],$elem->[1],$elem->[2],$elem->[3],$elem->[5],$elem->[6]); 
+    #print "$gchr,$gstart,$gend,$cluster_id,$gstrand,$gene\n";
+
+    $index = scalar(@pangene_files);
+
+    if($gchr !~ /^#/) { # ref pangene
+
+      # update pangene: contains several ref gene models
+      if(defined($global_coords{ $cluster_id . $cluster_regex })) {
+
+        if(defined($nonconsec{$gene})) { # out-of-order ref gene, skip
+          next; 
+
+        } else {	
+          $global_coords{ $cluster_id . $cluster_regex }->[2] = $gend;
+        }
+
+      } else { # new ref pangene, correct start as BED is 0-based  
+        $global_coords{ $cluster_id . $cluster_regex } = 
+          [$gchr,$gstart+1,$gend,$gstrand,$index];
+        $isref{ $cluster_id . $cluster_regex} = 1;
+        push(@pangene_files, $cluster_id . $cluster_regex);  	  
+      }	
+
+      # keep track of previous pangene
+      $prev_end{$gchr} = $gend;
+      $prev_strand{$gchr} = $gstrand;
+
+    } else { #non-ref pangene
+
+      $gchr =~ s/^#//; # remove # from chr name
+
+      push(@nonref,$cluster_id . $cluster_regex);
+
+      if(defined($prev_end{$gchr})) { 				
+
+        # middle/trailing non-ref pangene, end coord to be added on 2nd pass
+        $global_coords{ $cluster_id . $cluster_regex } = 
+          [$gchr,$prev_end{$gchr}+1,0,$prev_strand{$gchr},$index]; #print "$gchr,$prev_end{$gchr},0,$prev_strand{$gchr},$index,$cluster_id . $cluster_regex\n";
+
+      } else {
+        # leading non-ref, save only chr
+        $global_coords{ $cluster_id . $cluster_regex } = [$gchr,0,0,'',$index]; 
+      }
+
+      push(@pangene_files, $cluster_id . $cluster_regex);
+    }
+  }
+  undef(@BED); 
+
+  # iv) 2nd pass, complete coords of non-ref pangenes
   foreach $cluster_id (@nonref) {
 
     ($gchr,$gstart,$gend,$gstrand,$index) = 
@@ -294,10 +344,10 @@ if($INP_make_FASTA_reference == 0) {
     # find next ref pangene ($files[$p]) in BED file on same strand
     $refp = -1; 
     foreach $p ($index .. $#pangene_files) {
-      next if(
-        !$isref{$pangene_files[$p]} || # nonref
+      next if( !$isref{$pangene_files[$p]} || # nonref
         ($gstrand ne '' && $gstrand ne $global_coords{$pangene_files[$p]}->[3])); # wrong strand
-      $refp = $p; #print ">$cluster_id $p $files[$p]\n"; 
+
+      $refp = $p; #print ">$cluster_id $p $pangene_files[$p]\n"; 
       last;  
     }	    
 
@@ -308,26 +358,25 @@ if($INP_make_FASTA_reference == 0) {
       #print "$gchr,$global_coords{ $cluster_id }->[1],$global_coords{ $cluster_id }->[2],$cluster_id\n";
 
     } else {
-    
       if($refp == -1) { # trailing non-ref
         $global_coords{ $cluster_id }->[2] = $ref_chr_size{ $gchr };
 	#print "$gchr,$gstart,$global_coords{ $cluster_id }->[2],$cluster_id\n";
 
-
-      } else {	      
+      } else {	    
         $global_coords{ $cluster_id }->[2] = $global_coords{$pangene_files[$refp]}->[1] - 1;	    
 	#print "$gchr,$gstart,$global_coords{ $cluster_id }->[2],$cluster_id\n";
       }
-
     }   
 
     # QC  
-    if($gstart > $global_coords{ $cluster_id }->[2]) {
+    if(defined($global_coords{ $cluster_id }) && 
+      $global_coords{ $cluster_id }->[0] ne 'unplaced' && 
+      $gstart > $global_coords{ $cluster_id }->[2]) {
       print "# WARN: not valid non-reference interval for pangene $cluster_id ($gchr,$gstart,$global_coords{ $cluster_id }->[2])\n";
     }
   }
-}
 
+}#1.2
 
 # check whether previous index should be re-used
 $index_file = "$gmapdb.ref153positions";
@@ -356,8 +405,12 @@ if($INP_ow ||
           print $fh ">$cluster_file|$isof_id|$gene_id|$coords|$taxon|";
 
           # add <global coordinates> to the end of header
-	  if($INP_make_FASTA_reference) {
-	    print $fh "<$global_coords{$cluster_file}->[0]:$global_coords{$cluster_file}->[1]-$global_coords{$cluster_file}->[2]>\n";
+          if($INP_make_FASTA_reference && $global_coords{$cluster_file}->[0] ne 'unplaced') {
+            printf($fh "<%s:%d-%d>\n",
+              $global_coords{$cluster_file}->[0],
+              $global_coords{$cluster_file}->[1],
+              $global_coords{$cluster_file}->[2]);
+
 	  } else {	    
             print $fh "<>\n";
 	  }	  

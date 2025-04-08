@@ -55,8 +55,8 @@ if(($opts{'h'})||(scalar(keys(%opts))==0)) {
   print "-s nucleotide sequence file in FASTA format       (example: -s transcripts.fna,\n";
   print "                                                   helps if header has genomic coords ie chr1:12-1200)\n";
   print "-o output file in TSV format                      (required with -s)\n";
-  print "-F make pangene reference FASTA format            (optional, pangenome coordinates estimated from reference,\n";
-  print "                                                   requires -d 0taxa.._split dir, obtained with get_pangenes.pl -s -t 0)\n";
+  print "-F pangenome coords estimated from reference      (optional, modifies -s, outputs FASTA with pangene mapping reference,\n";
+  print "                                                   requires -d 0taxa.._split dir made by get_pangenes.pl -s -t 0)\n";
   print "-C use CDS sequences                              (optional, cDNA sequences are scanned by default)\n";
   print "-i min % sequence identity                        (optional, default: -i $INP_minident)\n";
   print "-t threads                                        (optional, default: -t $INP_threads)\n";
@@ -95,7 +95,6 @@ if(defined($opts{'d'})) {
       if($INP_dir =~ m/_(\d+)neigh_/) { # store neighbor distance used to compute pangenes
         $neigh = $1;
       }    
-
     } else {
       die "# EXIT : -F requires a -d directory with _split_ in name, obtained with get_pangenes.pl -s\n";
     }
@@ -108,17 +107,16 @@ if(defined($opts{'s'})){
 
   if(!-e $INP_seqfile) {
     die "# EXIT : need a valid -s file\n"
+
+  } elsif(defined($opts{'o'})) {
+    $INP_outfile = $opts{'o'};
+
+  } else {
+    die "# EXIT : need parameter -o\n"
   }
 } 
 elsif($INP_make_FASTA_reference == 0) {  
   die "# EXIT : need parameter -s or -F\n" 
-}
-
-if(defined($opts{'o'})){
-  $INP_outfile = $opts{'o'};
-} 
-elsif($INP_make_FASTA_reference == 0) { 
-  die "# EXIT : need parameter -o\n" 
 }
 
 if(defined($opts{'I'})){ 
@@ -165,6 +163,8 @@ if(@dirfiles) {
   }	  
   $gmapdb .= '.gmap';
 
+  $index_file = "$gmapdb.ref153positions";
+
 } else {
   die "# ERROR: cannot locate folder with clusters within $INP_dir\n";
 }
@@ -175,7 +175,8 @@ print "# cluster folder: $cluster_folder\n";
 
 # 1.1) by default parse FASTA files from pangene folder, no pangenome/graph global coords.
 # Cluster files are not sorted, we noticed this can sometimes change gmap results 
-if($INP_make_FASTA_reference == 0) {
+if($INP_make_FASTA_reference == 0 &&
+  ($INP_ow || !-d "$gmapdb_path/$gmapdb" || !-e "$gmapdb_path/$gmapdb/$index_file")) {
 
   print "\n# listing pangene files...\n";
 
@@ -188,7 +189,7 @@ if($INP_make_FASTA_reference == 0) {
     die "# ERROR: cannot find any valid clusters in $cluster_folder\n";
   }
 
-} else { 
+} elsif($INP_ow || !-d "$gmapdb_path/$gmapdb" || !-e "$gmapdb_path/$gmapdb/$index_file") { 
 
   # 1.2) alternatively parse 0-based BED-file to assign pangenome/graph global coords to individual clusters
 
@@ -394,8 +395,6 @@ if($INP_make_FASTA_reference == 0) {
 print "# done\n\n";
 
 # check whether previous index should be re-used
-$index_file = "$gmapdb.ref153positions";
-
 if($INP_ow ||
   !-d "$gmapdb_path/$gmapdb" ||
   !-e "$gmapdb_path/$gmapdb/$index_file") {

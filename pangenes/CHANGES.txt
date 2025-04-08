@@ -76,4 +76,5 @@
 25032025: match_cluster.pl was added -F to produce a FASTA file with sequence index that can be exported as gene-based pangenome for mapping, 
 25032025: with <global pangenome positions> estimated from reference genome
 25032025: updated Makefiles and documentation
+08042025: match_cluster.pl TSV output updated, tested with barley
 08042025: add pangenome coords example to documentation

@@ -1182,25 +1182,26 @@ the next example shows how to do match arbitrary sequences in a FASTA file (`-s`
 
 This will produce TAB-separated (TSV) output similar to this:
 
-    #query	qlength	pangene	length	matches	perc_qcover	perc_cover	perc_identity	coords	taxon	pangenome_coords
-    TR2	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
-    TR1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
-    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100.0	97.1	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	NA
-    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    #query	qlength	pangene	phit_length	phits	aligned	perc_identity	coords	taxon	pangenome_coords
+    TR2	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR1	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	1768	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	NA
+    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA
 
-The column 'matches' indicates how many individual alignments support the assignment of the input
-sequence to the same cluster, which in the last example is 1. Note that potentially a sequence
+The column `phits indicates how many individual alignments support the assignment of the input
+sequence to the same pangene, which in the last example is 1. Columns `aligned` and `perc_identity`
+refer to the best aligned sequence from the matched pangene. Note that potentially a sequence
 could match more than one cluster.
 
 Adding flag -F will ensure that matches are also estimated pangenome coordinates, but note this requires
 a set of pangenes computed with *get_pangenes.pl -s -t 0*, see [section](#example-3-splitting-genome-in-chromosomes).
 In this case you get also pangenome coordinates, which are explained in the next section:
 
-    #query	qlength	pangene	length	matches	perc_qcover	perc_cover	perc_identity	coords	taxon	pangenome_coords
-    TR2	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
-    TR1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
-    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100.0	97.1	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	1:34752043-34754633
-    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    #query	qlength	pangene	phit_length	phits	aligned	perc_identity	coords	taxon	pangenome_coords
+    TR2	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR1	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	1768	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	1:34752043-34754633
+    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA
 
 ## Exporting FASTA reference file for mapping
 

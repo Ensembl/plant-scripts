@@ -523,6 +523,7 @@ while(<GMAP>) {
         ($cover > $matches{$seq_id}{$cluster_id}{'cover'} ||
         $identity > $matches{$seq_id}{$cluster_id}{'identity'})) { 
 
+        $matches{$seq_id}{$cluster_id}{'alnlen'} = $matches;
         $matches{$seq_id}{$cluster_id}{'qcover'} = $qcover;
         $matches{$seq_id}{$cluster_id}{'cover'} = $cover;
         $matches{$seq_id}{$cluster_id}{'identity'} = $identity;
@@ -543,14 +544,14 @@ close(GMAP);
 open(TSV,">",$INP_outfile) ||
   die "# ERROR: cannot create $INP_outfile\n";
 
-print TSV "#query\tqlength\tpangene\tlength\t".
-  "matches\tperc_qcover\tperc_cover\tperc_identity\tcoords\ttaxon\tpangenome_coords\n";
+print TSV "#query\tqlength\tpangene\tphit_length\t".
+  "phits\taligned\tperc_identity\tcoords\ttaxon\tpangenome_coords\n";
 
 foreach $seq_id (@order_geneid) {
 
   # no matches
   if(!defined($matches{$seq_id})) {
-      print TSV "$seq_id\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n";
+      print TSV "$seq_id\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n";
       next;
   }
 	
@@ -558,14 +559,13 @@ foreach $seq_id (@order_geneid) {
   # a sequence can potentially match several clusters
   foreach $cluster_id (keys(%{ $matches{$seq_id} })) {
 
-    printf(TSV "%s\t%d\t%s\t%d\t%d\t%1.1f\t%1.1f\t%1.1f\t%s\t%s\t%s\n",
+    printf(TSV "%s\t%d\t%s\t%d\t%d\t%d\t%1.1f\t%s\t%s\t%s\n",
       $seq_id,
       $matches{$seq_id}{$cluster_id}{'qlength'},
       $cluster_id,
       $matches{$seq_id}{$cluster_id}{'tlength'},
       $matches{$seq_id}{$cluster_id}{'total'},      
-      $matches{$seq_id}{$cluster_id}{'qcover'},
-      $matches{$seq_id}{$cluster_id}{'cover'},
+      $matches{$seq_id}{$cluster_id}{'alnlen'},
       $matches{$seq_id}{$cluster_id}{'identity'},
       $matches{$seq_id}{$cluster_id}{'coords'},
       $matches{$seq_id}{$cluster_id}{'taxon'},

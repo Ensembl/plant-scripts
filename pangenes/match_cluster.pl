@@ -177,6 +177,8 @@ print "# cluster folder: $cluster_folder\n";
 # Cluster files are not sorted, we noticed this can sometimes change gmap results 
 if($INP_make_FASTA_reference == 0) {
 
+  print "\n# listing pangene files...\n";
+
   opendir(CLUSTDIR,$cluster_folder) || 
     die "# ERROR: cannot list $cluster_folder , please check -d argument is a valid folder\n";
   @pangene_files = grep {/$cluster_regex$/} readdir(CLUSTDIR);
@@ -189,6 +191,8 @@ if($INP_make_FASTA_reference == 0) {
 } else { 
 
   # 1.2) alternatively parse 0-based BED-file to assign pangenome/graph global coords to individual clusters
+
+  print "\n# parsing BED file...\n";
 
   # first it assigns start coords to non-ref pangenes, then end coords are added (two passes), rules: 
   # out-of-order ref genes (non-consecutive in same pangene) are excluded,
@@ -387,12 +391,16 @@ if($INP_make_FASTA_reference == 0) {
 
 }#1.2
 
+print "# done\n\n";
+
 # check whether previous index should be re-used
 $index_file = "$gmapdb.ref153positions";
 
 if($INP_ow ||
   !-d "$gmapdb_path/$gmapdb" ||
   !-e "$gmapdb_path/$gmapdb/$index_file") {
+
+  print "\n# parsing pangenes files...\n";
 
   my ($fh, $filename) = tempfile( '/tmp/tempfnaXXXXX', UNLINK => 1);
 
@@ -430,6 +438,8 @@ if($INP_ow ||
       }
     }
   } 
+
+  print "# done\n\n";
 
   # actually create GMAP index from temp file
   $cmd = "$GMAPBUILDBIN -e 0 -d $gmapdb -D $gmapdb_path $filename 2>&1";

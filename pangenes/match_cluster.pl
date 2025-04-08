@@ -289,6 +289,12 @@ if($INP_make_FASTA_reference == 0) {
 
     if($gchr !~ /^#/) { # ref pangene
 
+      # skip ref genes contained in other ref genes
+      if(defined($prev_strand{$gchr}) && $gstrand eq $prev_strand{$gchr} && 
+        defined($prev_end{$gchr}) && $gend < $prev_end{$gchr}) {
+        next;
+      }
+
       # update pangene: contains several ref gene models
       if(defined($global_coords{ $cluster_id . $cluster_regex })) {
 

@@ -380,8 +380,8 @@ if($INP_make_FASTA_reference == 0) {
     # QC  
     if(defined($global_coords{ $cluster_id }) && 
       $global_coords{ $cluster_id }->[0] ne 'unplaced' && 
-      $gstart > $global_coords{ $cluster_id }->[2]) {
-      print "# WARN: not valid non-reference interval for pangene $cluster_id ($gchr,$gstart,$global_coords{ $cluster_id }->[2])\n";
+      $gstart > $global_coords{ $cluster_id }->[2]+1) { # +1 to resist to neighbor overlapping genes ie HORVU.MOREX.r3.3HG0311710
+      print "# WARN: not valid non-ref interval for pangene $cluster_id ($gchr,$gstart,$global_coords{ $cluster_id }->[2])\n";
     }
   }
 

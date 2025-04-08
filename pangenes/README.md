@@ -1174,17 +1174,19 @@ If you have a set of precomputed pangene clusters you might want to assign arbit
 without recomputing new pangenes. For instance, these sequences could be transcripts from a new cultivar/genotype 
 not considered before. You can do this with script *match_cluster.pl*, which creates a sequence index with 
 nucleotide sequences from clusters and uses GMAP to scan them. By default it uses cDNA sequences to build 
-the index, but can also use CDS (-C). The next example shows how to do this:
+the index, but can also use CDS (-C). Note that it might be handy to add genomic coordinates to the headers 
+of the input FASTA file, to quickly check whether they match clusters in the same chromosome. Anyway, 
+the next example shows how to do match arbitrary sequences in a FASTA file (`-s`):
 
     perl match_cluster.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -s ../files/test_transcripts.fna -o test_transcripts.gmap.tsv 
 
 This will produce TAB-separated (TSV) output similar to this:
 
-    #query	qlength	pangene	length	matches	perc_qcover	perc_identity	coords	taxon	pangenome_coords
-    TR2	NA	NA	NA	NA	NA	NA	NA
-    TR1	NA	NA	NA	NA	NA	NA	NA
-    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100.0	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	NA
-    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    #query	qlength	pangene	length	matches	perc_qcover	perc_cover	perc_identity	coords	taxon	pangenome_coords
+    TR2	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100.0	97.1	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	NA
+    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
 
 The column 'matches' indicates how many individual alignments support the assignment of the input
 sequence to the same cluster, which in the last example is 1. Note that potentially a sequence
@@ -1192,9 +1194,13 @@ could match more than one cluster.
 
 Adding flag -F will ensure that matches are also estimated pangenome coordinates, but note this requires
 a set of pangenes computed with *get_pangenes.pl -s -t 0*, see [section](#example-3-splitting-genome-in-chromosomes).
+In this case you get also pangenome coordinates, which are explained in the next section:
 
-Before you run this script it might be handy to add genomic coordinates to the headers of the input
-FASTA file, so that you can quickly check whether they match clusters in the same chromosome.
+    #query	qlength	pangene	length	matches	perc_qcover	perc_cover	perc_identity	coords	taxon	pangenome_coords
+    TR2	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+    TR4	1768	gene:ONIVA01G40940.cdna.fna	1820	1	100.0	97.1	97.1	1:35501996-35505052(-)	Oryza_sativa.IRGSP-1.0.chr1	1:34752043-34754633
+    TR3	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
 
 ## Exporting FASTA reference file for mapping
 
@@ -1215,7 +1221,7 @@ Headers in this file look like this:
 
 In this example the first set of coordinates correspond to the cDNA BGIOSGA002568-TA within the the [Oryza_indica.ASM465v1.chr1] assembly;
 the second set of coordinates are an estimated location of this sequence in the reference genome used to compute the pangenes, even if this
-particular cDNA might not be annotated or contained. We expect these coordinates to be useful for mapping.
+particular cDNA might not be annotated or contained in the reference. We expect these coordinates to be useful for mapping.
 
 ## Troubleshooting
 

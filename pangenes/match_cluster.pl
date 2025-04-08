@@ -35,11 +35,11 @@ my $GMAPBUILDBIN = $ENV{'EXE_GMAP_BUILD'};
 
 my ($INP_dir, $INP_seqfile, $INP_isCDS, $INP_idfile) = ('','',0,'');
 my ($INP_outfile,$INP_threads, $INP_ow, $INP_verbose) = ('',4, 0, 0);
-my ($INP_make_FASTA_reference,$INP_minident) = (0, 95.0);
-my ($pangene_bed_file,$pangene_ref_file,$neigh) = ('','',0);
+my ($INP_make_FASTA_reference, $INP_minident) = (0, 95.0);
+my ($pangene_bed_file, $pangene_ref_file, $neigh) = ('','',0);
 my ($cluster_regex, $isCDS, $cluster_folder ) = ('.cdna.fna', 0, '');
-my ($gmapdb_path, $gmapdb, $seq, $regex, $gcoords);
-my ($max_number_isoforms, $qlen, $tlen, $identity, $cover) = (0);
+my ($gmapdb_path, $gmapdb, $seq, $regex, $gcoords, $header, $matches);
+my ($max_number_isoforms, $qlen, $tlen, $identity, $cover, $qcover) = (0);
 my ($cluster_file, $gene_id, $isof_id, $cmd, $index_file);
 my ($cluster_id, $seq_id, $cluster_seq_id, $coords, $taxon);
 my (%opts, %matches, @order_geneid, %global_coords, @pangene_files);
@@ -394,7 +394,7 @@ if($INP_make_FASTA_reference == 0 &&
 
 print "# done\n\n";
 
-# check whether previous index should be re-used
+# 1.3 make GMAP index, check whether previous index should be re-used
 if($INP_ow ||
   !-d "$gmapdb_path/$gmapdb" ||
   !-e "$gmapdb_path/$gmapdb/$index_file") {
@@ -470,6 +470,12 @@ if($INP_seqfile eq '') {
 
 
 ## 2) map input sequence(s) to indexed cluster sequences with GMAP
+
+# matches headers produced in 1.3)
+# gene:ONIVA01G00010.cdna.fna|transcript:ONIVA01G00010.2|gene:ONIVA01G00010|1:4848-11824(+)|[Oryza_nivara_v1.chr1]|<1:4848-11824>
+#          cl_id     isof_id   gene_id   coords      taxon        gcoords
+$regex = '^([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|\[([^\]]+)\]\|<([^>]*)>:\S+';
+
 $cmd = "$GMAPBIN --no-chimeras -t $INP_threads -n 100 -S -d $gmapdb -D $gmapdb_path $INP_seqfile 2>&1";
 open(GMAP, "$cmd |") ||
   die "# ERROR: cannot run $cmd\n"; 
@@ -484,37 +490,40 @@ while(<GMAP>) {
     $seq_id = $1;
     push(@order_geneid, $seq_id);
 
-  } elsif(/^  Path \d+: .*?(\d+) bp\)$/){
+  } elsif(/^  Path \d+: query \S+ \((\d+) bp\) => genome (\S+) \((\d+) bp/){
     #Path 1: query 1..1768 (1768 bp) => genome gene:...:1..1,820 (1820 bp)
-    ($tlen) = ($1); 
+    #Path 1: query 1..333 (333 bp) => genome HORVU..cdna.fna|HORVU.HOR_3474.PROJ.4HG00272400.1| .
+    # HORVU.HOR_3474.PROJ.4HG00272400|chr4H:607021655-607023603(-)|[HOR_3474]|<chr4H:604188191-604217781>:134..466 (333 bp)
+
+    ($matches,$header,$tlen) = ($1,$2,$3); 
+    if($header =~ m/$regex/){
+      ($cluster_id, $isof_id, $gene_id, $coords, $taxon, $gcoords) = ($1, $2, $3, $4, $5, $6);
+
+    } else {
+      $header = ''; # cases where header could not be parsed
+    }
 
   } elsif(/^    Coverage: (\S+) \(query length: (\d+) bp/){	  
-    ($cover,$qlen) = ($1, $2);
+    ($qcover,$qlen) = ($1, $2);
 
   } elsif(/^    Percent identity: (\S+)/) {
     #Percent identity: 87.4 (546 matches, 62 mismatches, 17 indels, 0 unknowns)
     ($identity) = ($1);
 
-  } elsif(/^    \+(\S+)\s+\(\d+-\d+\)/){
-    # expected to be on the plus/+ strand as these are sequences cut from GFF in the right strand:
-    # +cluster.cdna.fna|Os01t0829900-01|gene:Os01g0829900|1:35501996-35505052(-)|[taxon]|<1:35501996-35505052>:1-1820  (1-1768)   97%
-    # +cluster.cdna.fna|Os01t0829900-01|gene:Os01g0829900|1:35501996-35505052(-)|[taxon]|:1-1820  (1-1768)   97%
+    if($identity >= $INP_minident && $header ne ''){ 
 
-    $cluster_seq_id = $1;
-
-    $regex = '^([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|\[([^\]]+)\]\|<([^>]*)';
-
-    if($identity >= $INP_minident && $cluster_seq_id =~ m/$regex/){
-
-      ($cluster_id, $isof_id, $gene_id, $coords, $taxon, $gcoords) = ($1, $2, $3, $4, $5, $6);
-    
       # compile match stats
       $matches{$seq_id}{$cluster_id}{'total'}++;
 
+      # compute cover of pangene
+      $cover = 100 * $matches / $tlen;
+
       # take stats from hit with best cover
       if(!defined($matches{$seq_id}{$cluster_id}{'cover'}) || 
-        $cover > $matches{$seq_id}{$cluster_id}{'cover'}) {
+        ($cover > $matches{$seq_id}{$cluster_id}{'cover'} ||
+        $identity > $matches{$seq_id}{$cluster_id}{'identity'})) { 
 
+        $matches{$seq_id}{$cluster_id}{'qcover'} = $qcover;
         $matches{$seq_id}{$cluster_id}{'cover'} = $cover;
         $matches{$seq_id}{$cluster_id}{'identity'} = $identity;
         $matches{$seq_id}{$cluster_id}{'taxon'} = $taxon;	
@@ -535,13 +544,13 @@ open(TSV,">",$INP_outfile) ||
   die "# ERROR: cannot create $INP_outfile\n";
 
 print TSV "#query\tqlength\tpangene\tlength\t".
-  "matches\tperc_qcover\tperc_identity\tcoords\ttaxon\tpangenome_coords\n";
+  "matches\tperc_qcover\tperc_cover\tperc_identity\tcoords\ttaxon\tpangenome_coords\n";
 
 foreach $seq_id (@order_geneid) {
 
   # no matches
   if(!defined($matches{$seq_id})) {
-      print TSV "$seq_id\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n";
+      print TSV "$seq_id\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\n";
       next;
   }
 	
@@ -549,12 +558,13 @@ foreach $seq_id (@order_geneid) {
   # a sequence can potentially match several clusters
   foreach $cluster_id (keys(%{ $matches{$seq_id} })) {
 
-    printf(TSV "%s\t%d\t%s\t%d\t%d\t%1.1f\t%1.1f\t%s\t%s\t%s\n",
+    printf(TSV "%s\t%d\t%s\t%d\t%d\t%1.1f\t%1.1f\t%1.1f\t%s\t%s\t%s\n",
       $seq_id,
       $matches{$seq_id}{$cluster_id}{'qlength'},
       $cluster_id,
       $matches{$seq_id}{$cluster_id}{'tlength'},
       $matches{$seq_id}{$cluster_id}{'total'},      
+      $matches{$seq_id}{$cluster_id}{'qcover'},
       $matches{$seq_id}{$cluster_id}{'cover'},
       $matches{$seq_id}{$cluster_id}{'identity'},
       $matches{$seq_id}{$cluster_id}{'coords'},

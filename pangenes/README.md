@@ -1232,8 +1232,9 @@ it might be due to a lack of 'gene' records. This can be fixed with
 
     plant-scripts/pangenes/bin/gffread/gffread --keep-genes geneless.gff > genes.gff 
 
-If you encounter an error, or the program stops, it is useful to look for error messages in the logfiles.
-As get_pangenes.pl includes 3 other scripts, logs are split in independent files:
+If you encounter an error, the number of core pangenes is too small or the program stops, 
+it is useful to look for error messages in the logfiles.
+As `get_pangenes.pl` includes 3 other scripts, logs are split in separate text files:
 
 |script|example logfile|
 |:-----|:-------|
@@ -1241,7 +1242,12 @@ As get_pangenes.pl includes 3 other scripts, logs are split in independent files
 |_collinear_genes.pl|test_rice_pangenes/_Oryza_indica.ASM465v1.chr1.Oryza_nivara_v1.chr1.algMmap.overlap0.5.tsv.queue|
 |_cluster_analysis.pl|test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_algMmap_.queue|
 
-The main log of get_pangenes.pl might contain error messages such as:
+To identify which genomes are reducing the core size it is usefull to check outfile
+`POCS.matrix.tab`, which summarizes the % of Conserved Sequence clusters, ie
+
+    test_rice_pangenes/Oryza_nivara_v1chr1_0taxa_2neigh_algMmap_split_/POCS.matrix.tab
+
+The main log of `get_pangenes.pl` might contain error messages such as:
 
 * INFO: no cluster config file; see section [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
 

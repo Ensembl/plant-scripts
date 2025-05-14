@@ -78,3 +78,4 @@
 25032025: updated Makefiles and documentation
 08042025: match_cluster.pl TSV output updated, tested with barley
 08042025: add pangenome coords example to documentation
+14052025: added POCS to troubleshooting to explain small cores

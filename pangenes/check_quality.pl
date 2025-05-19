@@ -3,7 +3,7 @@
 # This script takes a cDNA/CDS cluster produced by get_pangenes.pl and 
 # produces a quality control report 
 
-# Copyright [2023-24]
+# Copyright [2023-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;
@@ -38,7 +38,7 @@ if(($opts{'h'})||(scalar(keys(%opts))==0))
   print "-h this message\n";
   print "-c print credits and checks installation\n";
   print "-d directory produced by get_pangenes.pl        (example: -d /path/data_pangenes/..._algMmap_,\n";
-  print "                                                 genomic sequences usually one folder up)\n";
+  print "                                                 genomic and gff files usually one folder up)\n";
   print "-i cdna/cds .fna/.faa file as in .cluster_list  (example: -i gene:ONIVA01G52180.cdna.fna)\n";
   print "-I take 1st isoform only                        (optional, by default takes all)\n";
   print "-o folder to write output files                 (optional, MSA files removed by default)\n";
@@ -164,19 +164,24 @@ foreach $gene_id (@$ref_geneid) {
     # find GFF file & get number of exons
     $n_exons = 0;
     $gff_file = $updir . "/_$ref_taxon->{$gene_id}.gff";
-    open(GREP, "$ENV{'EXE_GREP'} '$isof_id;' $gff_file |");
-    while(<GREP>) {
-      #1	NAM	exon	2575663	2575953 ...
-      my @data = split(/\t/,$_);
 
-      if($isCDS == 0 && $data[2] eq 'exon') {
-        $n_exons++
+    # not always there, perhaps only results folder present   
+    if(-z $gff_file) {
+      open(GREP, "$ENV{'EXE_GREP'} '$isof_id;' $gff_file |");
+      while(<GREP>) {
+        #1	NAM	exon	2575663	2575953 ...
+        my @data = split(/\t/,$_);
 
-      } elsif($isCDS == 1 && $data[2] eq 'CDS') {
-        $n_exons++
+        if($isCDS == 0 && $data[2] eq 'exon') {
+          $n_exons++
+
+        } elsif($isCDS == 1 && $data[2] eq 'CDS') {
+          $n_exons++
+        }
       }
+      close(GREP);  
     }
-    close(GREP);  
+
     push(@exons, $n_exons);
 
     # actually print to temp file

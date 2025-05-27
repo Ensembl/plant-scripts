@@ -652,6 +652,13 @@ The resulting pan and core gene files look like this:
     5063	6637	7840
 
 
+If your pangene set contains a lot of clusters with genes from a single annotated assembly (singletons) it
+might be worth checking the growth without those. In that case you can perform the simulation as follows,
+requiring pangenes to have occupancy >= 2: 
+
+    perl get_pangenes.pl -d ../files/test_rice/ -s '^\d+$' -g -c -t 2
+
+
 ## Example 6: estimation of haplotype diversity
 
 Pangene clusters can be used to estimate the diversity of haplotypes or alleles of one or more genes.

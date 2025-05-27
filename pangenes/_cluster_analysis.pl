@@ -8,7 +8,8 @@ use pangeneTools qw(parse_sequence_FASTA_file);
 
 # Makes pan-gene analysis based on clusters of collinear genes shared by
 # species in a pre-computed Minimap2/GSAlign synteny TSV file, produced by 
-# _collinear_genes.pl
+# _collinear_genes.pl . Produces several pangene matrices and optionally
+# simulates pangene set growth (-c).
 # Adapted from https://github.com/eead-csic-compbio/get_homologues
 
 # Copyright [2021-2025]
@@ -78,10 +79,10 @@ sub help_message {
       . "-r reference species_name to name clusters (required, example: -r arabidopsis_thaliana)\n"
       . "-l list supported species in -T file       (optional, example: -l)\n"
       . "-i ignore species_name(s)                  (optional, example: -i selaginella_moellendorffii -i ...)\n"
-      . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files, ignores -t)\n" 
+      . "-g do pangene set growth simulations       (optional, example: -g 10; makes [core|pan_gene]*.tab files)\n" 
       . "-S skip singletons                         (optional, by default unclustered sequences are taken)\n"
       . "-s folder with gene seqs of species in TSV (optional, default _pangenes folder, files created by _cut_sequences.pl)\n"
-      . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken)\n"
+      . "-t consider only clusters with -t taxa     (optional, by default all clusters are taken, affects -g & output matrices\n"
       . "-m max distance among neighbor genes       (optional, example: -m 10, default: $maxdistneigh)\n"
       . "-x regex to match chromosomes in genome    (optional, ie: -x '^\\d+\$')\n"
       . "-n dont intervine non-ref pangenes with -x (optional, by default tentatively placed among ref pangenes)\n"
@@ -269,7 +270,7 @@ my (
 );
 
 # 2.1) Parse FASTA files to get main cluster sequences (@SEQTYPE),
-#      cDNA file is is where genes get their genomic coordinates
+#      cDNA file is where genes get their genomic coordinates
 # Note1: if a gene lacks a cDNA will be skipped
 # Note2: there might be 1+ sequences for the same gene, same species in GFF
 foreach $species (@supported_species) {
@@ -927,25 +928,19 @@ foreach $sp ( 0 .. $#supported_species ) {
 
         if ( $sp == $sp2 ) { 
             print POCSMATRIX "\t100.00"
+
         } else {
-            if ( $POCS_matrix{ $supported_species[$sp] }
-                { $supported_species[$sp2] } )
-            {
+            if ( $POCS_matrix{ $supported_species[$sp] }{ $supported_species[$sp2] } ) {
                 $perc = sprintf("\t%1.2f",
-                    (
-                        100 * $POCS_matrix{ $supported_species[$sp] }
-                          { $supported_species[$sp2] }
-                    ) / (
-                        $totalgenes{ $supported_species[$sp] } +
-                          $totalgenes{ $supported_species[$sp2] }
-                    )
-                );
+                    (100 * $POCS_matrix{ $supported_species[$sp] }{ $supported_species[$sp2] }) / 
+		    ($totalgenes{ $supported_species[$sp] } + $totalgenes{ $supported_species[$sp2] }));
+
                 print POCSMATRIX "$perc";
 
                 # save %POCS for all species vs reference
                 if($sp == 0){ $POCS2ref{$supported_species[$sp2]} = $perc }
-            }
-            else {
+
+            } else {
                 print POCSMATRIX "\tNA";
             }
         }
@@ -1181,16 +1176,43 @@ if($chregex) {
 exit if(!$dogrowth);
 
 
-## 5) optionally make genome composition analysis to simulate pangene set growth
+## 5) optionally run genome composition analysis to simulate pangene set growth
 ## as new annotated genomes are added to the pool
 ## NOTE: this is measured in clusters added/missed per genome, 
 ## a cluster might contain 1+ gene of same species
 
 my ( $core_occup, $mean, $sd, $data_file, $sort, $s ); #$s = sample
-my ( %previous_sorts, @sample, @clusters, @pangenome, @coregenome );
+my ( %previous_sorts, %low_occup_clusters ); 
+my ( @sample, @clusters, @pangenome, @coregenome );
 my @taxa    = @supported_species;
 my @tmptaxa = @taxa;
 
+# if required, count how many clusters are removed due to low occupancy
+if($min_taxa > 1) {
+
+  foreach $species (@supported_species) {
+    $low_occup_clusters{$species} = 0;
+  }	
+
+  foreach $cluster_id (@cluster_ids) {	
+
+    next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) >= $min_taxa);	  
+
+    foreach $species (@supported_species) {
+      if(defined($cluster{$cluster_id}{$species}) &&
+        scalar(@{ $cluster{$cluster_id}{$species} }) > 0 ) {
+        $low_occup_clusters{$species}++
+      }
+    }
+  }
+ 
+  print "\n# pangene clusters with occupancy < $min_taxa :\n"; 
+  foreach $species (@supported_species) {
+    print "# $species : $low_occup_clusters{$species}\n";
+  }
+}
+
+# random-sort the list of taxa $NOFSAMPLESREPORT times
 my $n_of_permutations = sprintf( "%g", factorial($n_of_species) );
 if ( $n_of_permutations < $NOFSAMPLESREPORT ) {
     $NOFSAMPLESREPORT = $n_of_permutations;
@@ -1198,7 +1220,6 @@ if ( $n_of_permutations < $NOFSAMPLESREPORT ) {
 printf( "\n# genome composition report (samples=%d,seed=%d)\n",
     $NOFSAMPLESREPORT, $RNDSEED );
 
-# random-sort the list of taxa $NOFSAMPLESREPORT times
 for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
     if ( $s > 0 ) {    # reshuffle until a new permutation is obtained
         $sort = fisher_yates_shuffle( \@tmptaxa );
@@ -1232,6 +1253,9 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
 
     # calculate pan/core-gene size adding genomes one-by-one
     $coregenome[$s][0] = $totalclusters{ $tmptaxa[0] };
+    if($min_taxa > 1 && $low_occup_clusters{ $tmptaxa[0] } > 0) {
+      $coregenome[$s][0] -= $low_occup_clusters{ $tmptaxa[0] };  
+    }	    
     $pangenome[$s][0]  = $coregenome[$s][0];
 
     print "# adding $tmptaxa[0]: core=$coregenome[$s][0] pan=$pangenome[$s][0]\n"
@@ -1250,6 +1274,8 @@ for ( $s = 0 ; $s < $NOFSAMPLESREPORT ; $s++ ) {
             foreach my $cl (0 .. scalar(@{ $sorted_cluster_ids{$chr} })-1) {
 
                 $cluster_id = $sorted_cluster_ids{$chr}->[$cl];
+
+                next if(scalar( keys( %{ $cluster{$cluster_id} } ) ) < $min_taxa);        
 
                 # check reference species is in this cluster (1st iteration only)
                 if ( $sp == 1 && defined($cluster{$cluster_id}{ $tmptaxa[0] }) && 

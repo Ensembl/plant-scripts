@@ -80,3 +80,4 @@
 08042025: add pangenome coords example to documentation
 14052025: added POCS to troubleshooting to explain small cores
 19052025: check_quality.pl does not assume gff files are available
+27052025: _cluster_analysis.pl -t now affects pangene set growth simulation

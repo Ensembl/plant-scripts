@@ -245,7 +245,6 @@ if($show_supported) {
 }
 
 print "\n# clustering parameters:\n";
-print "# \$MAXDISTNEIGHBORS: $MAXDISTNEIGHBORS\n";
 print "# \$MINEDGESTOMERGE: $MINEDGESTOMERGE\n\n";
 
 print "# total selected species : $n_of_species\n\n";

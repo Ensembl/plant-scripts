@@ -155,7 +155,8 @@ Option -N controls the max distance (in genes) among sequences of same species i
 ### Parameters
 
 A few parameters are encoded as variables in the scripts and their values printed to log files.
-Here I list the most important ones, they can be changed by editing the script source if needed:
+Here I list the most important ones, they can be changed by using optional parameters 
+(or editing the script source in some cases) if needed:
 
 |script|variable|value|meaning|
 |:-----|:-------|:----|:------|

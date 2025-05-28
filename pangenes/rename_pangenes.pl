@@ -22,7 +22,7 @@
 # II)  new singletons assigned unused singleton codes (1000001 onwards)
 # III) if a gene was a singleton, but later clusters with other genes, it will be assigned a non-singleton (0000001 type) id
 
-# Copyright [2023-24]
+# Copyright [2023-25]
 # EMBL-European Bioinformatics Institute & Estacion Experimental Aula Dei-CSIC
 
 $|=1;

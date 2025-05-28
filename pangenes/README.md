@@ -54,6 +54,7 @@ and produces different types of output:
 - [Dotplots of gene-based whole-genome alignments](#dotplots)
 - [Matching nucleotide sequences to precomputed pangene clusters](#matching-nucleotide-sequences-to-precomputed-pangene-clusters)
 - [Exporting FASTA reference file for mapping](#exporting-fasta-reference-file-for-mapping)
+- [Renaming pangenes with stable identifiers](#renaming-pangenes-with-stable-identifiers)
 - [Troubleshooting](#troubleshooting)
 - [Funding](#funding)
 - [Citation](#citation)
@@ -1239,6 +1240,43 @@ Headers in this file look like this:
 In this example the first set of coordinates correspond to the cDNA BGIOSGA002568-TA within the the [Oryza_indica.ASM465v1.chr1] assembly;
 the second set of coordinates are an estimated location of this sequence in the reference genome used to compute the pangenes, even if this
 particular cDNA might not be annotated or contained in the reference. We expect these coordinates to be useful for mapping.
+
+
+## Renaming pangenes with stable identifiers
+
+If you need to distribute your pangenes among your community it might be a good idea to assign them stable identifiers.
+Script `rename_pangenes.pl` is a prototype to help you do that. 
+In its current form it is inspired by a proposal discussed in [AgBioData](https://www.agbiodata.org),
+which is illustrated here with rice:
+
+    [clade].[group].[version].panddddddd
+    where:
+    clade -> 2-letter for species, 1-letter for genus, followed by NCBI Taxon ID ie
+    Os4530 for Oryza sativa
+    O4527  for Oryza genus
+    group -> unique 3-letter code for group or consortium that made the pan genes
+    version -> Unique integer version (starting from 1) referring to the build of the clade by that group
+    panddddddd -> 'pan' followed by numerical digits as local pan gene identifier; 
+    0000001 onwards for pan-gene clusters with 2 or more members
+    1000001 for singletons (genes found in only one genome)
+
+If a reference set of pangenes is passed, it will guide the nomenclature.
+The following rules are applied to go from version n to version n+1, note that all genes weight the same, 
+including those from reference annotation ie RAPDB for rice or TAIR for *Arabidopsis thaliana*:
+
+    I)   if gene membership is unchanged or >50% of members stay in the same cluster, the same identifier as before is used
+    II)  new singletons assigned unused singleton codes (1000001 onwards)
+    III) if a gene was a singleton, but later clusters with other genes, it will be assigned a non-singleton (0000001 type) id
+
+Say you have a pangene set, computed with 5 neighbors, in folder `rice_0taxa_5neigh_algMmap_`. 
+You can use the following command to assign them stable ids:
+
+    perl rename_pangenes.pl -d magic15_pangenes/rice_0taxa_5neigh_algMmap_ -o Os4530.POR.1
+
+Suppose you recomputed the pangenes changing params or adding extra data, you could update their ids (to version 2) as follows:
+
+    perl rename_pangenes.pl -d magic15_pangenes/rice_0taxa_2neigh_algMmap_ -r Os4530.POR.1 -o Os4530.POR.2 
+
 
 ## Troubleshooting
 

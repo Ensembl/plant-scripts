@@ -1060,6 +1060,11 @@ Currently, the following fixes have been tested:
 
 *Figure 12. Remediating gene models by inspecting pangene evidence with script check_evidence.pl*
 
+![long model](pics/long_model.png)
+
+*Figure 13. Example long pangene. Long gene models from rice cultivars MH63 & ZS97 match two neighbor genes in all other cultivars analyzed. 
+cDNA sequences aligned with [clustal-omega](http://www.clustal.org/omega), figure made with https://www.ncbi.nlm.nih.gov/projects/msaviewer*
+
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
 
     perl check_evidence.pl -d test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_ -f -i gene:ONIVA01G25360.cds.fna
@@ -1174,7 +1179,7 @@ note that this requires installing the [pafr](https://cran.r-project.org/package
 
 ![Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0](plots/dotplot.png)
 
-*Figure 13. Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0*
+*Figure 14. Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0*
 
 check_evidence.pl check_evidence.pl check_evidence.pl 
 

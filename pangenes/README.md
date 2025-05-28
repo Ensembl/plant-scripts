@@ -1056,6 +1056,9 @@ Currently, the following fixes have been tested:
 
 *Figure 11. Flowchart of script check_evidence.pl -f*
 
+![fixing_genemodels](pics/fixing_genemodels.png)
+
+*Figure 12. Remediating gene models by inspecting pangene evidence with script check_evidence.pl*
 
 The following call shows an example cluster analyzed with argument -f (option -n avoids the TSV evidence to be printed):
 
@@ -1171,7 +1174,7 @@ note that this requires installing the [pafr](https://cran.r-project.org/package
 
 ![Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0](plots/dotplot.png)
 
-*Figure 11. Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0*
+*Figure 13. Dotplot of collinear genes in chr1 of Oryza_nivara_v1 and Oryza_sativa.IRGSP-1.0*
 
 check_evidence.pl check_evidence.pl check_evidence.pl 
 

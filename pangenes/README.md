@@ -1273,7 +1273,22 @@ You can use the following command to assign them stable ids:
 
     perl rename_pangenes.pl -d magic15_pangenes/rice_0taxa_5neigh_algMmap_ -o Os4530.POR.1
 
-Suppose you recomputed the pangenes changing params or adding extra data, you could update their ids (to version 2) as follows:
+This will produce output like this:
+
+    cluster: Os01g0115300 -> Os4530.POR.1.pan0000001
+    file: Os01g0115300.cdna.fna -> Os4530.POR.1.pan0000001.cdna.fna
+    file: Os01g0115300.cds.fna -> Os4530.POR.1.pan0000001.cds.fna
+    file: Os01g0115300.cds.faa -> Os4530.POR.1.pan0000001.cds.faa
+    file: Os01g0115300.gdna.fna -> Os4530.POR.1.pan0000001.gdna.fna
+    cluster: LOC_Os01g04270 -> Os4530.POR.1.pan0000002
+    file: LOC_Os01g04270.cdna.fna -> Os4530.POR.1.pan0000002.cdna.fna
+    file: LOC_Os01g04270.cds.fna -> Os4530.POR.1.pan0000002.cds.fna
+    file: LOC_Os01g04270.cds.faa -> Os4530.POR.1.pan0000002.cds.faa
+    file: LOC_Os01g04270.gdna.fna -> Os4530.POR.1.pan0000002.gdna.fna
+    ...
+
+Now suppose you recomputed or updated the pangene sets changing params or adding extra data.
+You could update the pangene ids (to version 2) as follows:
 
     perl rename_pangenes.pl -d magic15_pangenes/rice_0taxa_2neigh_algMmap_ -r Os4530.POR.1 -o Os4530.POR.2 
 

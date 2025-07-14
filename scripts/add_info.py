@@ -1,10 +1,10 @@
 import os
 import re
 
-file=open("sorted_combined.gff3","r")    
+file=open("merged_genes.tsv","r")    
 lines=file.readlines()
 
-output=open("full_gff.gff3", "w")
+output=open("merged_genes.gff", "w")
 list_id=[]
 list_mrna=[]
 main_id=""
@@ -46,7 +46,7 @@ for line in lines:
             if gene_id.startswith('LOC_Os'):
                 cmd="grep -P '\smRNA\s.+Parent=" + gene_id + "' oryza_sativa_MSU.gff"
             if gene_id.startswith('gene:Osativa'):
-                cmd="grep -P '\smRNA\s.+Parent=" + gene_id + "' oryza_sativa_nipponbare.gff"
+                cmd="grep -P '\smRNA\s.+Parent=" + gene_id + "' oryza_sativa_gramene.gff"
             match=os.popen(cmd).read()
             list_mrna=re.split("\n",match)
             list_mrna.remove(list_mrna[-1])
@@ -61,15 +61,8 @@ for line in lines:
                 if mrna_id.startswith('LOC_Os'):
                     cmd2="grep -w Parent=" + mrna_id + " oryza_sativa_MSU.gff"
                 if mrna_id.startswith('transcript:Osativa'):
-                    cmd2="grep -w  Parent=" + mrna_id + " oryza_sativa_nipponbare.gff"
+                    cmd2="grep -w  Parent=" + mrna_id + " oryza_sativa_gramene.gff"
                 exons_match=os.popen(cmd2).read()
                 output.write(new_mrna)
                 output.write("\n")
                 output.write(exons_match)
-
-
-
-
-
-
-

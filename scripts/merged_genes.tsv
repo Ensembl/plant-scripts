@@ -1,0 +1,5 @@
+chr	source	gene	start	end	score	strand	frame	attribute
+Chr1	panoryza	gene	2903	10817	.	+	.	ID=LOC_Os01g01010,ID=gene:Osativa.01G000010,ID=Os01g0100100
+Chr1	panoryza	gene	11218	12435	.	+	.	ID=Os01g0100200,ID=LOC_Os01g01019,ID=gene:Osativa.01G000020
+Chr1	panoryza	gene	12648	15915	.	+	.	ID=LOC_Os01g01030,ID=Os01g0100400,ID=gene:Osativa.01G000040
+Chr1	panoryza	gene	16292	20323	.	+	.	ID=LOC_Os01g01040

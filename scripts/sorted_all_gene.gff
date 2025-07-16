@@ -1,0 +1,10 @@
+Chr1	MSU_osa1r7	gene	2903	10817	.	+	.	ID=LOC_Os01g01010;Name=LOC_Os01g01010;Note=TBC%20domain%20containing%20protein%2C%20expressed
+Chr1	NAM	gene	2976	9671	.	+	.	ID=gene:Osativa.01G000010;biotype=protein_coding;logic_name=oryza_cshl
+Chr1	irgsp1_locus	gene	2983	10815	.	+	.	ID=Os01g0100100;Name=Os01g0100100;Note=RabGAP/TBC domain containing protein. (Os01t0100100-01);Transcript variants=Os01t0100100-01
+Chr1	irgsp1_locus	gene	11218	12435	.	+	.	ID=Os01g0100200;Name=Os01g0100200;Note=Conserved hypothetical protein. (Os01t0100200-01);Transcript variants=Os01t0100200-01
+Chr1	MSU_osa1r7	gene	11218	12435	.	+	.	ID=LOC_Os01g01019;Name=LOC_Os01g01019;Note=expressed%20protein
+Chr1	NAM	gene	11371	12435	.	+	.	ID=gene:Osativa.01G000020;biotype=protein_coding;logic_name=oryza_cshl
+Chr1	MSU_osa1r7	gene	12648	15915	.	+	.	ID=LOC_Os01g01030;Name=LOC_Os01g01030;Note=monocopper%20oxidase%2C%20putative%2C%20expressed
+Chr1	irgsp1_locus	gene	12721	15685	.	+	.	ID=Os01g0100400;Name=Os01g0100400;Note=Similar to Pectinesterase-like protein. (Os01t0100400-01);Transcript variants=Os01t0100400-01
+Chr1	NAM	gene	12721	15915	.	+	.	ID=gene:Osativa.01G000040;biotype=protein_coding;logic_name=oryza_cshl
+Chr1	MSU_osa1r7	gene	16292	20323	.	+	.	ID=LOC_Os01g01040;Name=LOC_Os01g01040;Note=expressed%20protein

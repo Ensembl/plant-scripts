@@ -179,11 +179,11 @@ sub get_gene_coords_GTF_file {
       || die "# ERROR(get_gene_coords_GTF_file): cannot open $GTF_filename\n";
     while ( my $line = <GTF> ) {
 
-        #1 araport11 gene 3631 5899 . + . gene_id "AT1G01010";...
+        #1  araport11 gene 3631 5899 . + . gene_id "AT1G01010";...
+	#C3 brad      gene 4809 5027 . - . gene_id "Bo3g025160";...
         if ( $line =~
-               m/^([^#])\t[^\t]+\tgene\t(\d+)\t(\d+)\t[^\t]\t(\S+)\t[^\t]\tgene_id "([^";]+)/
-          )
-        {
+               m/^([^#]+)\t[^\t]+\tgene\t(\d+)\t(\d+)\t[^\t]\t(\S+)\t[^\t]\tgene_id "([^";]+)/) {
+	  
             ( $chr, $start, $end, $strand, $geneid ) = ( $1, $2, $3, $4, $5 );
             push( @chr_sorted_gene_ids,
                 [ $geneid, $chr, $start, $end, $strand ] );

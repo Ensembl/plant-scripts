@@ -18,7 +18,7 @@ use PlantCompUtils qw(
 # Uses canonical transcripts, used in the gene tree analysis,
 # which usually are the longest translation with no stop codons
 #
-# Copyright [2019-2021] EMBL-European Bioinformatics Institute
+# Copyright [2019-2025] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
 my $RESTURL   = 'http://rest.ensembl.org';

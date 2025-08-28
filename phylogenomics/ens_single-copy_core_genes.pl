@@ -15,7 +15,7 @@ use PlantCompUtils qw(
 );
 
 # Retrieves single-copy orthologous genes/proteins shared by (plant) species in clade
-# by querying pre-computed Compara data from Ensembl (Genomes) with a reference genome.
+# by querying pre-computed Compara data from Ensembl with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
 # Copyright [2019-2025] EMBL-European Bioinformatics Institute

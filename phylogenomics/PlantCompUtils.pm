@@ -274,19 +274,6 @@ sub download_compara_TSV_file {
           . $ftp->message();
 
         # find file to be downloaded
-	
-	# species-specific Compara TSV files are not complete anymore (Aug2025)
-	#if ( 0 && $ftp->cwd($ref_genome) ) { 
-	#  foreach my $file ( $ftp->ls() ) {
-	#    if ( $file =~ m/protein_default.homologies.tsv.gz/ ) {
-	#        $compara_file        = $file;
-	#        $stored_compara_file = "$targetdir/$compara_file";
-	#        $stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
-	#        last;
-	#    }
-	#  }
-	#} else {  # try all-vs-all file instead (Fungi, Protists, Metazoa)
-
         print "# WARNING(download_compara_TSV_file): try all-vs-all\n";
 
         foreach my $file ( $ftp->ls() ) {

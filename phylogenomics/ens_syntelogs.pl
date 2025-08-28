@@ -309,7 +309,7 @@ foreach my $gene ( @{$ref_sorted_genes} ) {
         $chrcoords{$gene_stable_id} =
           "$gene->[1]:$gene->[2]-$gene->[3]:$gene->[4]";
     }
-} 
+}
 
 # check GOC availability
 foreach $hom_species (@supported_species) {

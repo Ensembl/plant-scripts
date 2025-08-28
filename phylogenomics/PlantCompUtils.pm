@@ -1,7 +1,7 @@
 package PlantCompUtils;
 require Exporter;
 
-# Copyright [2019-2023] EMBL-European Bioinformatics Institute
+# Copyright [2019-2025] EMBL-European Bioinformatics Institute
 
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(
@@ -23,8 +23,7 @@ use Time::HiRes;
 use HTTP::Tiny;
 use DBI;
 
-# Fungi Protists Metazoa have collections and one all-vs-all TSV file
-# This code won't work there
+# Only tested in Plants; Fungi Protists Metazoa have collections, code will need tweaking
 our @DIVISIONS  = qw( Plants );
 our $FTPURL     = 'ftp.ensemblgenomes.org';
 our $COMPARADIR = '/pub/xxx/current/tsv/ensembl-compara/homologies';
@@ -180,11 +179,11 @@ sub get_gene_coords_GTF_file {
       || die "# ERROR(get_gene_coords_GTF_file): cannot open $GTF_filename\n";
     while ( my $line = <GTF> ) {
 
-        #1 araport11 gene 3631 5899 . + . gene_id "AT1G01010";...
+        #1  araport11 gene 3631 5899 . + . gene_id "AT1G01010";...
+        #C3 brad      gene 4809 5027 . - . gene_id "Bo3g025160";...
         if ( $line =~
-               m/^([^#])\t[^\t]+\tgene\t(\d+)\t(\d+)\t[^\t]\t(\S+)\t[^\t]\tgene_id "([^";]+)/
-          )
-        {
+               m/^([^#]+)\t[^\t]+\tgene\t(\d+)\t(\d+)\t[^\t]\t(\S+)\t[^\t]\tgene_id "([^";]+)/) {
+	  
             ( $chr, $start, $end, $strand, $geneid ) = ( $1, $2, $3, $4, $5 );
             push( @chr_sorted_gene_ids,
                 [ $geneid, $chr, $start, $end, $strand ] );
@@ -258,7 +257,7 @@ sub download_GTF_file {
 
 # download compressed TSV file from FTP site, renames it
 # and saves it in $targetdir; uses FTP globals defined above
-# NOTE: if species file is not found it tries the bulky all-vs-all file
+# NOTE: tries only the bulky all-vs-all file (GBs)
 sub download_compara_TSV_file {
 
     my ( $dir, $ref_genome, $targetdir ) = @_;
@@ -274,32 +273,18 @@ sub download_compara_TSV_file {
           || die "# ERROR(download_compara_TSV_file): cannot change working directory to $dir "
           . $ftp->message();
 
-        # find out which file is to be downloaded
-        if ( $ftp->cwd($ref_genome) ) {
-            foreach my $file ( $ftp->ls() ) {
-                if ( $file =~ m/protein_default.homologies.tsv.gz/ ) {
-                    $compara_file        = $file;
-                    $stored_compara_file = "$targetdir/$compara_file";
-                    $stored_compara_file =~ s/tsv.gz/$ref_genome.tsv.gz/;
-                    last;
-                }
-            }
-        }
-        else {    # try all-vs-all file instead (Fungi, Protists, Metazoa)
+        # find file to be downloaded
+        print "# WARNING(download_compara_TSV_file): try all-vs-all\n";
 
-            print "# WARNING(download_compara_TSV_file): cannot find ".
-			    "$ref_genome in $dir, try all-vs-all\n";
-
-            foreach my $file ( $ftp->ls() ) {
-                if ( $file =~ m/protein_default.homologies.tsv.gz/ ) {
-                    $compara_file        = $file;
-                    $stored_compara_file = "$targetdir/$compara_file";
-                    foreach my $div (@DIVISIONS) {
-                        if ( $dir =~ m/($div)/i ) {
-                            $div = $1;
-                            $stored_compara_file =~ s/tsv.gz/$div.tsv.gz/;
-                            last;
-                        }
+        foreach my $file ( $ftp->ls() ) {
+            if ( $file =~ m/protein_default.homologies.tsv.gz/ ) {
+                $compara_file        = $file;
+                $stored_compara_file = "$targetdir/$compara_file";
+                foreach my $div (@DIVISIONS) {
+                    if ( $dir =~ m/($div)/i ) {
+                        $div = $1;
+                        $stored_compara_file =~ s/tsv.gz/$div.tsv.gz/;
+                        last;
                     }
                 }
             }

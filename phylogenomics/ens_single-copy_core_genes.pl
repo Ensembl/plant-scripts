@@ -306,7 +306,6 @@ while (<TSV>) {
             && $homology_type eq 'ortholog_one2many' )
       )
     {
-        
         # add $ref_genome protein
         if ( !$core{$gene_stable_id} ) {
 

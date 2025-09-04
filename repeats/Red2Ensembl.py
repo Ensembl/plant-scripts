@@ -7,7 +7,7 @@
 # pyenv local 3.7.6
 # pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
 #
-# Copyright [2020-24] EMBL-European Bioinformatics Institute
+# Copyright [2020-25] EMBL-European Bioinformatics Institute
 
 import argparse
 import sys

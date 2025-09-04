@@ -15,10 +15,10 @@ use PlantCompUtils qw(
 );
 
 # Retrieves single-copy orthologous genes/proteins shared by (plant) species in clade
-# by querying pre-computed Compara data from Ensembl Genomes with a reference genome.
+# by querying pre-computed Compara data from Ensembl with a reference genome.
 # Multiple copies are optionally allowed for selected or all species.
 #
-# Copyright [2019-2023] EMBL-European Bioinformatics Institute
+# Copyright [2019-2025] EMBL-European Bioinformatics Institute
 
 # Ensembl Genomes
 my $RESTURL   = 'http://rest.ensembl.org';
@@ -273,14 +273,22 @@ while (<TSV>) {
         $wga_coverage,       $high_confidence
     ) = split(/\t/);
 
-    if ( $species ne $ref_genome ) {
+    next if( !$supported{$species} || !$supported{$hom_species} );
+    
+    # ref genome forced to be species as opposed to hom_species
+    if( $hom_species eq $ref_genome ) {
+        ($gene_stable_id, $hom_gene_stable_id) = ($hom_gene_stable_id, $gene_stable_id);
+        ($prot_stable_id, $hom_prot_stable_id) = ($hom_prot_stable_id, $prot_stable_id);
+        ($species, $hom_species) = ($hom_species, $species);
+        ($identity, $hom_identity) = ($hom_identity, $identity);
+    }
+
+    if ( $species ne $ref_genome ) { 
         if ( keys(%present) == $n_of_species ) {
             last;
         }    # in case all-vs-all file is used
         else { next }
     }
-
-    next if ( !$supported{$hom_species} || $hom_species eq $ref_genome );
 
     if ( defined($high_confidence) ) {
         next
@@ -298,7 +306,6 @@ while (<TSV>) {
             && $homology_type eq 'ortholog_one2many' )
       )
     {
-
         # add $ref_genome protein
         if ( !$core{$gene_stable_id} ) {
 

@@ -33,7 +33,7 @@ and produces different types of output:
 	- [From pairs of genes to clusters](#from-pairs-of-genes-to-clusters)
 	- [Parameters](#parameters)
 	- [Dependencies and installation](#dependencies-and-installation)
-    - [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
+	- [Runmodes and HPC configuration](#runmodes-and-hpc-configuration)
 	- [Command-line options](#command-line-options)
 	- [Input file format](#input-file-format)
 - [Example 1: default core pangene set analysis](#example-1-default-core-pangene-analysis-and-hpc-settings)
@@ -80,6 +80,9 @@ across a set of genomes (or pangenome) so that pangenes can be defined:
 taken from [GET_HOMOLOGUES](http://eead-csic-compbio.github.io/get_homologues/manual). 
 Accessory genes include both shell and cloud genes.*
 
+This 30min [video](https://www.youtube.com/watch?v=JcxQ97TzzzQ) introduces GET_HOMOLOGUES, GET_HOMOLOGUES-EST
+and GET_PANGENES.
+
 ## Definition of pangene
 
 According to our paper <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene` can be defined as follows:
@@ -92,7 +95,8 @@ According to our paper <https://doi.org/10.1186/s13059-023-03071-z>, a `pangene`
 
 ## [Command line demo]
 
-Please check this [asciinema step-by-step demo](https://asciinema.org/a/W7xVe1112Fl8BImRB5ZW2MWE7) on how to install and run GET_PANGENES on a Debian/Ubuntu linux system.
+Please check this [asciinema step-by-step demo](https://asciinema.org/a/W7xVe1112Fl8BImRB5ZW2MWE7) 
+on how to install and run GET_PANGENES on a Debian/Ubuntu linux system.
 
 <!-- 
 asciinema rec -t "GET_PANGENES tutorial" get_pangenes.cast

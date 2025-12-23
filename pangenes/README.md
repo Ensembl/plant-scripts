@@ -1348,11 +1348,14 @@ funded by [BBSRC.NSF/BIO](https://gtr.ukri.org/projects?ref=BB%2FT015691%2F1).
 
 ## Citation
 
-The paper describing this protocol is:
+The papers describing this protocol are:
 
 Contreras-Moreira B, Saraf S, Naamati G, Casas AM, Amberkar SS, Flicek P, Jones AR & Dyer S (2023)
 GET_PANGENES: calling pangenes from plant genome alignments confirms presence-absence variation. 
 Genome Biol 24, 223. https://doi.org/10.1186/s13059-023-03071-z
+
+Contreras-Moreira B, Sharma E, Saraf S et al (2026) The PanOryza pangene catalog of Asian cultivated rice. 
+Genome Res 36(1) https://doi.org/doi:10.1101/gr.280790.125
 
 Check all the references you need to cite in each script by running:
 

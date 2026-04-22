@@ -411,7 +411,7 @@ $ grep ">" test_rice_pangenes/Oryza_nivara_v1chr1_alltaxa_2neigh_algMmap_/Oryzan
 While cdna, cds and pep cluster files contain sequences annotated in the input GFF files,
 the gdna FASTA files contain genomic segments from assemblies matching gene models annotated in other
 genomes. The latter files are good starting points for lifting over genes, as explained in section
-[Lifting over gene models in genomic segment clusters](#lifting-over-gene-models-in-genomic-segment-clusters).
+[Remediating pangene models with check_evidence-pl](#remediating-pangene-models-with-check_evidencepl).
 
 The **gene collinearity evidence** supporting the clusters is summarized in a compressed file
 which is added to the output folder of each run of the script. In this example this is:

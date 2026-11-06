@@ -47,7 +47,7 @@ install_minimap2:
 install_Red:
 	cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make
 	#in case you need to use an alternative g++ compiler
-	#cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make CXX=g++-10
+	#cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make CXX=g++-16
 
 install_repeats: install_minimap2 install_Red
 	pip3 install --user -r requirements.txt
@@ -75,7 +75,7 @@ clean_repeats:
 # gmap takes several minutes to compile
 install_gmap: 
 	cd pangenes/bin && wget http://research-pub.gene.com/gmap/src/gmap-gsnap-${gmaprelease}.tar.gz && tar xfz gmap-gsnap-${gmaprelease}.tar.gz && \
-		cd gmap-${gmaprelease} && ./configure --prefix=${PWD}/pangenes/bin/gmap-${gmaprelease}/exe && \
+		cd gmap-${gmaprelease} && ./configure --prefix=${PWD}/pangenes/bin/gmap-${gmaprelease}/exe CFLAGS="-O3 -fomit-frame-pointer -std=gnu17" && \
 		make && make install && cd .. && rm -rf gmap-gsnap-${gmaprelease}.tar.gz && ln -fs gmap-${gmaprelease} gmap
 	
 install_gffread:

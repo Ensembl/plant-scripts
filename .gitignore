@@ -1,0 +1,5 @@
+lib/minimap2*
+lib/Red
+repeats/test_Atha_chr4/*
+*.bed
+*.fna

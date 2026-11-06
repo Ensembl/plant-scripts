@@ -19,7 +19,7 @@ clean:
 	rm -f oryza_sativa*
 
 install:
-	-sudo apt install -y wget mysql-client libmysqlclient-dev libdb-dev bedtools pip cpanminus
+	sudo apt install -y wget mysql-client libmysqlclient-dev libdb-dev bedtools pip cpanminus
 
 install_REST:
 	cpanm --local-lib lib --installdeps --notest --cpanfile lib/cpanfileREST .
@@ -47,14 +47,16 @@ install_minimap2:
 install_Red:
 	cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make
 	#in case you need to use an alternative g++ compiler
-        #cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make CXX=g++-10
+	#cd lib && git clone https://github.com/EnsemblGenomes/Red.git && cd Red/src_2.0 && make bin && make CXX=g++-16
 
 install_repeats: install_minimap2 install_Red
-	pip3 install --user -r lib/requirements.txt
+	pip3 install --user -r requirements.txt
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.3/nrTEplantsJune2020.fna.bz2 && bunzip2 nrTEplantsJune2020.fna.bz2
 
+# REdat (mipsREdat_9.3p) is no longer downloadable: both MIPS FTP servers (ftpmips.helmholtz-muenchen.de, ftp.mips.embnet.org) are offline.
+# Use nrTEplants instead, installed by `make install_repeats`.
 install_redat:
-	cd files && wget -c ftp://ftpmips.helmholtz-muenchen.de/plants/REdat/mipsREdat_9.3p_ALL.fasta.gz && gunzip mipsREdat_9.3p_ALL.fasta.gz
+	@echo "REdat is no longer available online; use nrTEplants (make install_repeats)" && exit 1
 
 test_repeats_travis:
 	cd repeats && ./Red2Ensembl.py ../files/Arabidopsis_thaliana.fna.gz test_Atha_chr4 --msk_file Atha.sm.fna
@@ -73,7 +75,7 @@ clean_repeats:
 # gmap takes several minutes to compile
 install_gmap: 
 	cd pangenes/bin && wget http://research-pub.gene.com/gmap/src/gmap-gsnap-${gmaprelease}.tar.gz && tar xfz gmap-gsnap-${gmaprelease}.tar.gz && \
-		cd gmap-${gmaprelease} && ./configure --prefix=${PWD}/pangenes/bin/gmap-${gmaprelease}/exe && \
+		cd gmap-${gmaprelease} && ./configure --prefix=${PWD}/pangenes/bin/gmap-${gmaprelease}/exe CFLAGS="-O3 -fomit-frame-pointer -std=gnu17" && \
 		make && make install && cd .. && rm -rf gmap-gsnap-${gmaprelease}.tar.gz && ln -fs gmap-${gmaprelease} gmap
 	
 install_gffread:
@@ -82,7 +84,7 @@ install_gffread:
 		rm -f gffread-${gffreadrelease}.tar.gz && ln -fs gffread-${gffreadrelease} gffread
 
 install_pangenes: install_minimap2 install_gffread install_gmap
-        # core perl modules, DB_File not installed in Travis
+	# core perl modules, DB_File not installed in Travis
 	cpanm -v --installdeps --notest --cpanfile pangenes/cpanfile .
 	cd files && wget -c https://github.com/Ensembl/plant-scripts/releases/download/v0.4/test_rice.tgz && tar xfz test_rice.tgz && rm -f test_rice.tgz
 

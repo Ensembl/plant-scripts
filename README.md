@@ -107,6 +107,9 @@ exampleVEP.sh:## V4) Predict effect of variants for species not in Ensembl
 Some of the recipes and scripts depend on additional software packages, see below to learn how to install them.
 Note that only *make install* requires **sudo**, you might need help from your sysadmin for that task.
 
+> [!WARNING]
+> Parts of the code in this repository depend on the old Ensembl site that has now been archived. As of November 2026, the latest release data and codebase is planned to remain available until 2031.
+
 #### FTP
 
 The examples for bulk downloads from the FTP site require the software [wget](https://www.gnu.org/software/wget/), 

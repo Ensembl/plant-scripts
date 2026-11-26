@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Python3 script to annotate Red repeats.
 
-# Python3 script to annotate Red repeats and optionally
-# feed the new consensus_repeats into an Ensembl core database.
-#
-# Tested with:
-# pyenv local 3.7.6
-# pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
-#
-# Copyright [2020-25] EMBL-European Bioinformatics Institute
+Optionally feed the new consensus_repeats into an Ensembl core database.
+"""
 
 import argparse
 import os
@@ -15,15 +24,7 @@ import re
 import errno
 import subprocess
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING: # False at runtime
-    import sqlalchemy as db
-    import sqlalchemy_utils as db_utils
-    # sqlalchemy requires MySQLdb but MySQLdb doesn't support Python 3.x
-    # pymysql can be imported and used instead
-    import pymysql
-    pymysql.install_as_MySQLdb()
+import sqlalchemy as db
 
 
 def fetch_repeats_FASTA(logpath, synpath, annotdir, minlen):
@@ -50,7 +51,7 @@ def fetch_repeats_FASTA(logpath, synpath, annotdir, minlen):
 
         try:
             synfile = open(synpath)
-        except OSError as error:
+        except OSError:
             print("# INFO: cannot find synonyms file, will use real names")
         else:
             print("# INFO: will use real and synonym sequence names")
@@ -207,7 +208,7 @@ def format_reference_minimap(miniexe, cores, fasta_file, outdir):
 
     # run minimap2 and capture stderr
     try:
-        osresponse = subprocess.check_call(cmd.split(), stderr=logfile)
+        _ = subprocess.check_call(cmd.split(), stderr=logfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run minimap2 ", cmd, err.returncode)
         # does not seem to work on bshell jobs
@@ -378,7 +379,7 @@ def run_minimap(miniexe, cores, lib_filename, fasta_filename, outdir):
 
     # run minimap2 and capture stdout & stderr
     try:
-        osresponse = subprocess.check_call(cmd.split(), stdout=outfile, stderr=logfile)
+        _ = subprocess.check_call(cmd.split(), stdout=outfile, stderr=logfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run minimap2 ", cmd, err.returncode)
     finally:
@@ -401,7 +402,7 @@ def run_minimap(miniexe, cores, lib_filename, fasta_filename, outdir):
     cmd = "sort -k1,1 -k3,3n -k10,10nr -k4,4n " + output_filename
 
     try:
-        osresponse = subprocess.check_call(cmd.split(), stdout=sortfile)
+        _ = subprocess.check_call(cmd.split(), stdout=sortfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run sort ", cmd, err.returncode)
     finally:
@@ -534,7 +535,7 @@ def make_annotation_report(
             return {}
 
         try:
-            osresponse = subprocess.check_call(cmd.split(), stdout=sortedBedfile)
+            _ = subprocess.check_call(cmd.split(), stdout=sortedBedfile)
         except subprocess.CalledProcessError as err:
             print("# ERROR: cannot run sort ", cmd, err.returncode)
         finally:
@@ -713,29 +714,56 @@ def store_annotated_repeat_database(
     also passed in order to fill the analysis & analysis_description tables.
     Returns number of inserted annotations."""
 
-    # core database handles
-    engine = db.create_engine(db_url)
-    connection = engine.connect()
+    # core database handles - local_infile is required by LOAD DATA LOCAL INFILE below
+    engine = db.create_engine(db_url, connect_args={"local_infile": True})
     metadata = db.MetaData()
 
-    # relevant db tables
-    analysis_table = db.Table("analysis", metadata, autoload=True, autoload_with=engine)
+    # relevant db tables, reflected from the live schema - repeat_feature is only written via LOAD DATA,
+    # so it isn't reflected; synonyms aren't read, repeat file used as input for minimap already used them
+    analysis_table = db.Table("analysis", metadata, autoload_with=engine)
     analysis_desc_table = db.Table(
-        "analysis_description", metadata, autoload=True, autoload_with=engine
+        "analysis_description", metadata, autoload_with=engine
     )
-    meta_table = db.Table("meta", metadata, autoload=True, autoload_with=engine)
+    meta_table = db.Table("meta", metadata, autoload_with=engine)
     repeat_consensus_table = db.Table(
-        "repeat_consensus", metadata, autoload=True, autoload_with=engine
+        "repeat_consensus", metadata, autoload_with=engine
     )
-    repeat_feature_table = db.Table(
-        "repeat_feature", metadata, autoload=True, autoload_with=engine
-    )
-    seq_region_table = db.Table(
-        "seq_region", metadata, autoload=True, autoload_with=engine
-    )
-    # don't read synonyms, repeat file used as input for minimap already used them
-    # seq_syn_table = \
-    #    db.Table('seq_region_synonym',metadata,autoload=True,autoload_with=engine)
+
+    with engine.begin() as connection:
+        return _store_annotated_repeats(
+            connection,
+            workdir,
+            matched_repeats,
+            exe,
+            minimap_version,
+            repeat_fasta_file,
+            logic_name,
+            description,
+            label,
+            analysis_table,
+            analysis_desc_table,
+            meta_table,
+            repeat_consensus_table,
+        )
+
+
+def _store_annotated_repeats(
+    connection,
+    workdir,
+    matched_repeats,
+    exe,
+    minimap_version,
+    repeat_fasta_file,
+    logic_name,
+    description,
+    label,
+    analysis_table,
+    analysis_desc_table,
+    meta_table,
+    repeat_consensus_table,
+):
+    """Does the actual inserts for store_annotated_repeat_database within
+    an open transaction. Returns number of inserted annotations."""
 
     # insert new analysis, fails if logic_name exists
     analysis_insert = analysis_table.insert().values(
@@ -753,12 +781,10 @@ def store_annotated_repeat_database(
     connection.execute(analysis_insert)
 
     # fetch the assigned analysis_id for logic_name
-    analysis_query = db.select([analysis_table.columns.analysis_id])
-    analysis_query = analysis_query.where(
-        analysis_table.columns.logic_name == logic_name
+    analysis_query = db.select(analysis_table.c.analysis_id).where(
+        analysis_table.c.logic_name == logic_name
     )
-    analysis_results = connection.execute(analysis_query).fetchall()
-    analysis_id = analysis_results[0][0]
+    analysis_id = connection.execute(analysis_query).scalar_one()
 
     # insert repeat analysis meta keys, will fails if exists
     meta_insert = meta_table.insert().values(
@@ -785,13 +811,9 @@ def store_annotated_repeat_database(
 
     # fetch the repeat_consensus_id of the new dummy consensus
     repeat_consensus_query = db.select(
-        [repeat_consensus_table.columns.repeat_consensus_id]
-    )
-    repeat_consensus_query = repeat_consensus_query.where(
-        repeat_consensus_table.columns.repeat_name == logic_name
-    )
-    repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
-    dummy_consensus_id = repeat_consensus_results[0][0]
+        repeat_consensus_table.c.repeat_consensus_id
+    ).where(repeat_consensus_table.c.repeat_name == logic_name)
+    dummy_consensus_id = connection.execute(repeat_consensus_query).scalar()
 
     # parse repeat_fasta_file to fetch full sequences of matched repeats
     sequences = _get_FASTA_sequences(repeat_fasta_file)
@@ -805,17 +827,17 @@ def store_annotated_repeat_database(
     )
 
     # insert repeat annotations in repeat_consensus table
-    cons_query = (
+    cons_query = db.text(
         "LOAD DATA LOCAL INFILE '"
         + cons_filename
         + "' INTO TABLE repeat_consensus FIELDS TERMINATED BY '\\t' "
         + "LINES TERMINATED BY '\\n' (repeat_consensus_id,repeat_name,"
         + "repeat_class,repeat_type,repeat_consensus)"
     )
-    consensus_result = connection.execute(cons_query).rowcount
+    _ = connection.execute(cons_query).rowcount
 
     # insert repeat features
-    repeat_query = (
+    repeat_query = db.text(
         "LOAD DATA LOCAL INFILE '"
         + repeat_filename
         + "' INTO TABLE repeat_feature FIELDS TERMINATED BY '\\t' "
@@ -943,19 +965,14 @@ def main():
 
     # make URL to connect to core database
     if args.user and args.pw and args.host and args.port and args.db:
-        db_url = (
-            "mysql://"
-            + args.user
-            + ":"
-            + args.pw
-            + "@"
-            + args.host
-            + ":"
-            + str(args.port)
-            + "/"
-            + args.db
-            + "?"
-            + "local_infile=1"
+        # URL.create escapes special characters in user/password
+        db_url = db.URL.create(
+            "mysql+pymysql",
+            username=args.user,
+            password=args.pw,
+            host=args.host,
+            port=args.port,
+            database=args.db,
         )
 
         num_annot = store_annotated_repeat_database(
@@ -965,8 +982,8 @@ def main():
             version,
             args.repeat_fasta_file,
             args.logic_name,
-            description,
-            displaylabel,
+            args.description,
+            args.displaylabel,
             db_url,
         )
 

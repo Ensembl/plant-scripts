@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Python3 script to run RepeatDetector (a fork of Red v2) to mask repeats.
 
-# Python3 script to run RepeatDetector (a fork of Red v2) to mask repeats,
-# and optionally feed results into an Ensembl core database
-#
-# Tested with:
-# pyenv local 3.7.6
-# pip install --user sqlalchemy==1.3.23 sqlalchemy_utils pymysql
-#
-# Copyright [2020-25] EMBL-European Bioinformatics Institute
+Optionally feed results into an Ensembl core database.
+"""
 
 import argparse
 import sys
@@ -19,15 +28,7 @@ import math
 import errno
 import subprocess
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING: # False at runtime
-    import sqlalchemy as db
-    import sqlalchemy_utils as db_utils
-    # sqlalchemy requires MySQLdb but MySQLdb doesn't support Python 3.x
-    # pymysql can be imported and used instead
-    import pymysql
-    pymysql.install_as_MySQLdb()
+import sqlalchemy as db
 
 
 def _is_gz_file(filepath):
@@ -51,24 +52,21 @@ def parse_FASTA_sequences(genome_file, dirname):
 
     seq_names = []
 
-    if _is_gz_file(genome_file) == True:
+    if _is_gz_file(genome_file):
         try:
             file = gzip.open(genome_file, "rt")
         except OSError as error:
             print("# ERROR: cannot open/read file:", genome_file, error)
-            return num_seqs
-    elif _is_bz2_file(genome_file) == True:
+    elif _is_bz2_file(genome_file):
         try:
             file = bz2.open(genome_file, "rt")
         except OSError as error:
             print("# ERROR: cannot open/read file:", genome_file, error)
-            return num_seqs
     else:
         try:
             file = open(genome_file)
         except OSError as error:
             print("# ERROR: cannot open/read file:", genome_file, error)
-            return num_seqs
 
     seq_filepath = ""
     prev_filepath = ""
@@ -194,7 +192,7 @@ def _parse_files_from_log(regex, log_filename, order=[]):
                         elemOK = True
                         break
 
-                if elemOK == False:
+                if not elemOK:
                     print("# ERROR: cannot match ordered contig: ", elem) 
                                 
             return order_files 
@@ -248,7 +246,7 @@ def run_red(red_exe, cores, outmskfilename, gnmdirname, rptdirname,
     # run Red and capture stdout
     try:
         print("# Red command: ", cmd)
-        osresponse = subprocess.check_call(cmd.split(), stdout=logfile)
+        _ = subprocess.check_call(cmd.split(), stdout=logfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run Red ", err.returncode)
         logfile.close()
@@ -322,7 +320,7 @@ def produce_BED(rpt_file_list, bed_filename):
         return 0
 
     try:
-        osresponse = subprocess.check_call(cmd.split(), stdout=sortfile)
+        _ = subprocess.check_call(cmd.split(), stdout=sortfile)
     except subprocess.CalledProcessError as err:
         print("# ERROR: cannot run sort ", cmd, err.returncode)
     finally:
@@ -353,47 +351,81 @@ def store_repeats_database(
 
     name_to_seqregion = {}
 
-    # core database handles
-    engine = db.create_engine(db_url)
-    connection = engine.connect()
+    # core database handles - local_infile is required by LOAD DATA LOCAL INFILE below
+    engine = db.create_engine(db_url, connect_args={"local_infile": True})
     metadata = db.MetaData()
 
-    # relevant db tables
-    analysis_table = db.Table("analysis", metadata, autoload=True, autoload_with=engine)
+    # relevant db tables, reflected from the live schema
+    analysis_table = db.Table("analysis", metadata, autoload_with=engine)
     analysis_desc_table = db.Table(
-        "analysis_description", metadata, autoload=True, autoload_with=engine
+        "analysis_description", metadata, autoload_with=engine
     )
-    meta_table = db.Table("meta", metadata, autoload=True, autoload_with=engine)
+    meta_table = db.Table("meta", metadata, autoload_with=engine)
     repeat_consensus_table = db.Table(
-        "repeat_consensus", metadata, autoload=True, autoload_with=engine
+        "repeat_consensus", metadata, autoload_with=engine
     )
-    repeat_feature_table = db.Table(
-        "repeat_feature", metadata, autoload=True, autoload_with=engine
-    )
-    seq_region_table = db.Table(
-        "seq_region", metadata, autoload=True, autoload_with=engine
-    )
-    seq_syn_table = db.Table(
-        "seq_region_synonym", metadata, autoload=True, autoload_with=engine
-    )
+    seq_region_table = db.Table("seq_region", metadata, autoload_with=engine)
+    seq_syn_table = db.Table("seq_region_synonym", metadata, autoload_with=engine)
+
+    with engine.begin() as connection:
+        return _store_repeats(
+            connection,
+            rptdir,
+            seq_name_list,
+            rpt_file_list,
+            red_path,
+            red_version,
+            red_params,
+            logic_name,
+            description,
+            label,
+            name_to_seqregion,
+            analysis_table,
+            analysis_desc_table,
+            meta_table,
+            repeat_consensus_table,
+            seq_region_table,
+            seq_syn_table,
+        )
+
+
+def _store_repeats(
+    connection,
+    rptdir,
+    seq_name_list,
+    rpt_file_list,
+    red_path,
+    red_version,
+    red_params,
+    logic_name,
+    description,
+    label,
+    name_to_seqregion,
+    analysis_table,
+    analysis_desc_table,
+    meta_table,
+    repeat_consensus_table,
+    seq_region_table,
+    seq_syn_table,
+):
+    """Does the actual inserts for store_repeats_database within an open
+    transaction. Returns (number of inserted repeats, name to seq_region_id dict)."""
 
     # fetch seq_region_ids of sequences
     for seq_name in seq_name_list:
-        seq_query = db.select([seq_region_table.columns.seq_region_id])
-        seq_query = seq_query.where(seq_region_table.columns.name == seq_name)
-        seq_results = connection.execute(seq_query).fetchall()
-        if seq_results:
-            seq_region_id = seq_results[0][0]
-        else:
+        seq_query = db.select(seq_region_table.c.seq_region_id).where(
+            seq_region_table.c.name == seq_name
+        )
+        seq_region_id = connection.execute(seq_query).scalar()
+        if seq_region_id is None:
             # try synonyms if that failed
-            syn_query = db.select([seq_syn_table.columns.seq_region_id])
-            syn_query = syn_query.where(seq_syn_table.columns.synonym == seq_name)
-            syn_results = connection.execute(syn_query).fetchall()
-            if syn_results:
-                seq_region_id = syn_results[0][0]
-            else:
+            syn_query = db.select(seq_syn_table.c.seq_region_id).where(
+                seq_syn_table.c.synonym == seq_name
+            )
+            seq_region_id = connection.execute(syn_query).scalar()
+            if seq_region_id is None:
                 print("# ERROR: cannot find seq_region_id for sequence %s\n" % seq_name)
-                return 0
+                return 0, name_to_seqregion
 
         print(
             "# sequence %s corresponds to seq_region_id %d" % (seq_name, seq_region_id)
@@ -421,12 +453,10 @@ def store_repeats_database(
     connection.execute(analysis_insert)
 
     # fetch the assigned analysis_id for the new Red analysis
-    analysis_query = db.select([analysis_table.columns.analysis_id])
-    analysis_query = analysis_query.where(
-        analysis_table.columns.logic_name == logic_name
+    analysis_query = db.select(analysis_table.c.analysis_id).where(
+        analysis_table.c.logic_name == logic_name
     )
-    analysis_results = connection.execute(analysis_query).fetchall()
-    analysis_id = analysis_results[0][0]
+    analysis_id = connection.execute(analysis_query).scalar_one()
 
     # insert repeat analysis meta keys, will fails if exists
     meta_insert = meta_table.insert().values(
@@ -455,13 +485,9 @@ def store_repeats_database(
 
     # fetch the repeat_consensus_id of the new dummy consensus
     repeat_consensus_query = db.select(
-        [repeat_consensus_table.columns.repeat_consensus_id]
-    )
-    repeat_consensus_query = repeat_consensus_query.where(
-        repeat_consensus_table.columns.repeat_name == logic_name
-    )
-    repeat_consensus_results = connection.execute(repeat_consensus_query).fetchall()
-    dummy_consensus_id = repeat_consensus_results[0][0]
+        repeat_consensus_table.c.repeat_consensus_id
+    ).where(repeat_consensus_table.c.repeat_name == logic_name)
+    dummy_consensus_id = connection.execute(repeat_consensus_query).scalar()
 
     # parse repeats and produce a TSV file to be loaded in repeat table
     TSVfilename = _parse_repeats(
@@ -469,7 +495,7 @@ def store_repeats_database(
     )
 
     # actually insert repeat features
-    repeat_query = (
+    repeat_query = db.text(
         "LOAD DATA LOCAL INFILE '"
         + TSVfilename
         + "' INTO TABLE repeat_feature FIELDS TERMINATED BY '\\t' "
@@ -594,7 +620,7 @@ def main():
         "--user", help="host user, required to store repeats in Ensembl core"
     )
     parser.add_argument(
-        "--pw", help="host password, required to store repeats in Ensembl core"
+        "--pw", "--pass", help="host password, required to store repeats in Ensembl core"
     )
     parser.add_argument(
         "--port", type=int, help="host port, required to store repeats in Ensembl core"
@@ -661,24 +687,19 @@ def main():
 
     # output BED if requested
     if args.bed_file:
-        num_bed_lines = produce_BED(repeat_filenames, args.bed_file)
+        _ = produce_BED(repeat_filenames, args.bed_file)
         print("# BED file with repeat coords: %s\n\n" % args.bed_file)
 
     # (optionally) store repeat features in core database
     if args.user and args.pw and args.host and args.port and args.db:
-        db_url = (
-            "mysql://"
-            + args.user
-            + ":"
-            + args.pw
-            + "@"
-            + args.host
-            + ":"
-            + str(args.port)
-            + "/"
-            + args.db
-            + "?"
-            + "local_infile=1"
+        # URL.create escapes special characters in user/password
+        db_url = db.URL.create(
+            "mysql+pymysql",
+            username=args.user,
+            password=args.pw,
+            host=args.host,
+            port=args.port,
+            database=args.db,
         )
 
         (red_version, red_params, red_summary) = parse_params_from_log(log_filepath)
